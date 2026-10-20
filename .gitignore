@@ -1,0 +1,12 @@
+# 私有原书来源和本机配置
+/private-sources/
+/local-settings/
+/.claude/settings.local.json
+
+# 运行与评测产物
+/artifacts/
+/.eval-workspaces/
+**/bin/
+**/obj/
+__pycache__/
+*.pyc
