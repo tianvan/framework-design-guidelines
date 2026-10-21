@@ -10,19 +10,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE1006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE1006 checks the first letter through the naming rules configured by FDGA052; it cannot see word boundaries inside an identifier.
 - id: FDG3002
   strength: DO
   text: use camelCasing for parameter names.
@@ -56,19 +57,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE1006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE1006 checks the first letter through the naming rule configured by FDGA057.
 - id: FDG3003
   strength: DO
   text: capitalize both characters of two-character acronyms, except the first word of a camel-cased identifier.
@@ -91,12 +93,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: "planned-analyzer: acronym casing against the book's word lists."
 - id: FDG3004
   strength: DO
   text: capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier.
@@ -119,12 +121,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: "planned-analyzer: acronym casing against the book's word lists."
 - id: FDG3005
   strength: DO NOT
   text: capitalize any of the characters of any acronyms, whatever their length, at the beginning of a camel-cased identifier.
@@ -186,12 +188,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: "planned-analyzer: acronym casing against the book's word lists."
 - id: FDG3006
   strength: DO NOT
   text: capitalize each word in so-called closed-form compound words.
@@ -265,12 +267,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: closed-form compound words from Table 3-2.'
 - id: FDG3007
   strength: DO NOT
   text: assume that all programming languages are case sensitive. They are not. Names cannot differ by case alone.
@@ -281,14 +283,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1708
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -313,7 +316,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -336,7 +339,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -355,19 +358,21 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - CA1707
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
-    test: warning
-  config: []
+    test: none
+  config:
+    - dotnet_code_quality.CA1707.api_surface = public
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1707 reports underscores in public API names; C# identifiers cannot contain hyphens. It is limited to the public API because it also reports private 's_' fields (FDGA055).
 - id: FDG3011
   strength: DO NOT
   text: use Hungarian notation.
@@ -394,7 +399,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -415,19 +420,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1716
+    coverage: partial
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1716 checks namespaces, types, and virtual or interface members against C#, Visual Basic, and C++/CLI keywords.
 - id: FDG3013
   strength: DO
   text: use only ASCII characters in identifier names.
@@ -462,12 +468,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: identifiers outside ASCII.'
 - id: FDG3014
   strength: DO NOT
   text: use abbreviations or contractions as part of identifier names.
@@ -487,7 +493,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -517,7 +523,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -542,7 +548,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -580,19 +586,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1720
+    coverage: partial
   autofix: no
   severity:
-    library: warning
-    application: warning
-    test: warning
+    library: suggestion
+    application: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1720 also reports common English words such as Long and Short, so it is a suggestion rather than a warning.
 - id: FDG3018
   strength: DO
   text: use a common name, such as value or item, rather than repeating the type name, in the rare cases when an identifier has no semantic meaning and the type of the parameter is not important.
@@ -617,12 +624,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1720 reports only identifiers that are language type names, such as 'int'; it does not see repeated type names such as 'stream'.
 - id: FDG3019
   strength: DO
   text: use a name similar to the old API when creating new versions of an existing API.
@@ -652,13 +659,13 @@
   autofix: no
   severity:
     library: warning
-    application: warning
-    test: warning
+    application: none
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Versioning guideline: applies to the library profile only.'
 - id: FDG3020
   strength: DO
   text: prefer adding a suffix rather than a prefix to indicate a new version of an existing API.
@@ -681,13 +688,13 @@
   autofix: no
   severity:
     library: warning
-    application: warning
-    test: warning
+    application: none
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Versioning guideline: applies to the library profile only.'
 - id: FDG3021
   strength: CONSIDER
   text: using a brand-new, but meaningful, identifier, instead of adding a suffix or a prefix.
@@ -704,13 +711,13 @@
   autofix: no
   severity:
     library: suggestion
-    application: suggestion
-    test: suggestion
+    application: none
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Versioning guideline: applies to the library profile only.'
 - id: FDG3022
   strength: DO
   text: use a numeric suffix to indicate a new version of an existing API, particularly if the existing name of the API is the only name that makes sense (e.g., if it is an industry standard) and if adding any meaningful suffix (or changing the name) is not an appropriate option.
@@ -746,13 +753,13 @@
   autofix: no
   severity:
     library: warning
-    application: warning
-    test: warning
+    application: none
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Versioning guideline: applies to the library profile only.'
 - id: FDG3023
   strength: DO NOT
   text: use the “Ex” (or a similar) suffix for an identifier to distinguish it from an earlier version of the same API.
@@ -773,19 +780,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1711
+    coverage: partial
   autofix: no
   severity:
     library: warning
-    application: warning
-    test: warning
+    application: none
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1711 reports the Ex and New suffixes when a member or type without the suffix exists. Versioning guideline: applies to the library profile only.'
 - id: FDG3024
   strength: DO
   text: use the “64” suffix when introducing versions of APIs that operate on a 64-bit integer (a long integer) instead of a 32-bit integer. You only need to take this approach when the existing 32-bit API exists; don’t do it for brand-new APIs with only a 64-bit version.
@@ -818,13 +826,13 @@
   autofix: no
   severity:
     library: warning
-    application: warning
-    test: warning
+    application: none
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Versioning guideline: applies to the library profile only.'
 - id: FDG3025
   strength: DO
   text: choose names for your assembly DLLs that suggest large chunks of functionality, such as `System.Data`.
@@ -844,7 +852,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -877,7 +885,7 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -908,7 +916,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -934,7 +942,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -957,7 +965,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -973,19 +981,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE1006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE1006 checks the first letter of each namespace part through the naming rule configured by FDGA052; brand casing must be suppressed.
 - id: FDG3031
   strength: CONSIDER
   text: using plural namespace names where appropriate.
@@ -1005,7 +1014,7 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1025,19 +1034,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1724
+    coverage: partial
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1724 reports type names that match a namespace name, including framework namespaces such as System.Data (see FDG3035).
 - id: FDG3033
   strength: DO NOT
   text: introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`.
@@ -1065,12 +1075,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: overly general type names.'
 - id: FDG3034
   strength: DO NOT
   text: give the same name to multiple types across namespaces within a single application model.
@@ -1090,7 +1100,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1117,7 +1127,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1140,7 +1150,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1165,7 +1175,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1190,7 +1200,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1215,7 +1225,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1250,7 +1260,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1279,7 +1289,7 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1297,14 +1307,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1715
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1333,7 +1344,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1362,7 +1373,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1390,7 +1401,7 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1411,19 +1422,21 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1715
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
-  config: []
+    test: none
+  config:
+    - dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Single-letter type parameters are left to FDG3044 and FDG3045.
 - id: FDG3047
   strength: CONSIDER
   text: indicating constraints placed on a type parameter in the name of the parameter.
@@ -1443,7 +1456,7 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1459,14 +1472,16 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1710
+      - CA1711
+    coverage: partial
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1484,14 +1499,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1710
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1507,14 +1523,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1710
+    coverage: partial
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1537,12 +1554,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: delegates not used by events that lack the Callback suffix.'
 - id: FDG3052
   strength: DO NOT
   text: add the suffix “Delegate” to a delegate.
@@ -1555,14 +1572,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1711
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1580,14 +1598,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1710
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1610,12 +1629,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: The C# compiler rejects types that derive from System.Enum (CS0644).
 - id: FDG3055
   strength: DO NOT
   text: add the suffix “Enum” or “Flag.”
@@ -1628,14 +1647,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1711
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1653,14 +1673,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1710
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1678,19 +1699,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1710
+    coverage: partial
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1710 does not report every dictionary type, such as a class derived from Dictionary<TKey, TValue>.
 - id: FDG3058
   strength: DO
   text: add the suffix “Collection,” except for reusable, specialized data types such as “Queue” and “HashSet.”
@@ -1703,19 +1725,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1710
+    coverage: partial
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1710 does not know the exception for reusable, specialized data structures.
 - id: FDG3059
   strength: DO
   text: add the suffix “Stream.”
@@ -1726,14 +1749,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1710
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1764,7 +1788,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1795,7 +1819,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1819,14 +1843,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1711
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1851,14 +1876,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1711
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1895,19 +1921,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1712
+    coverage: partial
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1712 reports only the enum's own type name as a prefix.
 - id: FDG3065
   strength: DO
   text: give methods names that are verbs or verb phrases.
@@ -1932,7 +1959,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1960,7 +1987,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -1982,14 +2009,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1721
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -2021,12 +2049,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: collection properties named with a List or Collection suffix.'
 - id: FDG3069
   strength: DO
   text: name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value.
@@ -2069,12 +2097,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: negative Boolean property names.'
 - id: FDG3070
   strength: CONSIDER
   text: giving a property the same name as its type.
@@ -2100,7 +2128,7 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -2125,7 +2153,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -2150,7 +2178,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -2166,19 +2194,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1713
+    coverage: partial
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1713 reports the Before and After prefixes, not postfixes.
 - id: FDG3074
   strength: DO
   text: name event handlers (delegates used as types of events) with the “EventHandler” suffix, such as `ClickedEventHandler`.
@@ -2198,14 +2227,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1710
+    coverage: partial
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -2237,12 +2267,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: event handler parameters named sender and e.'
 - id: FDG3076
   strength: DO
   text: 'name event argument classes with the “EventArgs” suffix, as shown in the following example:'
@@ -2265,14 +2295,15 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1710
+    coverage: full
   autofix: no
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -2296,19 +2327,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE1006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE1006 checks the first letter through the visible-field naming rule configured by FDGA052.
 - id: FDG3078
   strength: DO
   text: name fields using a noun, noun phrase, or adjective.
@@ -2326,7 +2358,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -2347,19 +2379,21 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - CA1707
+      - IDE1006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Prefixes with an underscore or a lowercase letter are reported; other prefixes are not.
 - id: FDG3080
   strength: DO
   text: use camelCasing in parameter names.
@@ -2376,19 +2410,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE1006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE1006 checks the first letter through the naming rule configured by FDGA057.
 - id: FDG3081
   strength: DO
   text: use descriptive parameter names.
@@ -2408,7 +2443,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -2433,7 +2468,7 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -2462,7 +2497,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -2487,7 +2522,7 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -2514,7 +2549,7 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
@@ -2542,12 +2577,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: operator parameters with numeric indices.'
 - id: FDG3087
   strength: DO NOT
   text: directly expose localizable resources as public (or protected) members.
@@ -2569,9 +2604,9 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: public resource classes generated from .resx files.'

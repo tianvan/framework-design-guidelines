@@ -10,6 +10,11 @@
 
   <ItemGroup>
     <PackageReference Include="AngleSharp" />
+    <PackageReference Include="JsonSchema.Net" />
+    <!-- The SDK's code style fixers reference it; the generator inspects their types. -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <!-- Newer than the analyzer pin so the generator can load the installed SDK's analyzer assemblies. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" VersionOverride="5.9.0" />
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 

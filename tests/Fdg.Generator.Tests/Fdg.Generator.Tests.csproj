@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Content Include="..\fixtures\book\*.xhtml" Link="fixtures\book\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\rules\rules.schema.json;..\..\rules\profiles.yaml" Link="rules\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

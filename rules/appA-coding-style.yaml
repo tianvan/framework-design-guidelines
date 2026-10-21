@@ -14,15 +14,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_new_line_before_open_brace = all
   minLanguage: null
   alternative: null
   analyzer: null
@@ -43,15 +45,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_new_line_before_open_brace = all
   minLanguage: null
   alternative: null
   analyzer: null
@@ -79,19 +83,28 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDGA003
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_new_line_before_else = true
+    - csharp_new_line_before_catch = true
+    - csharp_new_line_before_finally = true
+    - csharp_preserve_single_line_blocks = true
+    - csharp_preserve_single_line_statements = false
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Place the closing brace on its own line
+    category: Layout
+  notes: IDE0055 moves else, catch, and finally, and statements that follow an opening brace, to their own lines. FDGA003 reports the remaining closing braces that share a line, except the end of a do-while statement, single-line accessor lists such as '{ get; set; }' (FDGA008), initializers, and lambda bodies.
 - id: FDGA004
   strength: AVOID
   text: omitting braces, even if the language allows it.
@@ -117,19 +130,21 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0011
+    coverage: partial
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_prefer_braces = true
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE0011 does not know the argument validation preamble exception (FDGA005).
 - id: FDGA005
   strength: CONSIDER
   text: omitting braces in an argument validation preamble.
@@ -172,7 +187,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: FDGA004 (IDE0011) adds braces to the preamble too; omitting them is optional.
 - id: FDGA006
   strength: DO NOT
   text: use the braceless variant of the `using` (dispose) statement.
@@ -204,11 +219,12 @@
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_prefer_simple_using_statement = false
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: braceless using declarations. The option stops IDE0063 from suggesting them.'
 - id: FDGA007
   strength: AVOID
   text: using the braceless variant of the `await using` statement, except to simulate stacked `await using` statements with `ConfigureAwait`.
@@ -248,10 +264,10 @@
     application: warning
     test: warning
   config: []
-  minLanguage: null
-  alternative: null
+  minLanguage: "8.0"
+  alternative: Before C# 8.0 there is no 'await using'; dispose in a finally block with 'await resource.DisposeAsync().ConfigureAwait(false)'.
   analyzer: null
-  notes: null
+  notes: "planned-analyzer: braceless 'await using' outside a ConfigureAwait declaration series."
 - id: FDGA008
   strength: DO
   text: use one space before and after the opening and closing braces when they share a line with other code. Do not add a trailing space before a line break.
@@ -264,10 +280,11 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
@@ -291,15 +308,18 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_space_after_comma = true
+    - csharp_space_before_comma = false
   minLanguage: null
   alternative: null
   analyzer: null
@@ -318,15 +338,18 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_space_after_comma = true
+    - csharp_space_before_comma = false
   minLanguage: null
   alternative: null
   analyzer: null
@@ -345,15 +368,19 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_space_between_parentheses = false
+    - csharp_space_between_method_call_parameter_list_parentheses = false
+    - csharp_space_between_method_declaration_parameter_list_parentheses = false
   minLanguage: null
   alternative: null
   analyzer: null
@@ -372,15 +399,18 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_space_between_method_call_name_and_opening_parenthesis = false
+    - csharp_space_between_method_declaration_name_and_open_parenthesis = false
   minLanguage: null
   alternative: null
   analyzer: null
@@ -399,15 +429,18 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_space_within_square_brackets = false
+    - csharp_space_before_open_square_brackets = false
   minLanguage: null
   alternative: null
   analyzer: null
@@ -426,15 +459,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_space_after_keywords_in_control_flow_statements = true
   minLanguage: null
   alternative: null
   analyzer: null
@@ -453,15 +488,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_space_around_binary_operators = before_and_after
   minLanguage: null
   alternative: null
   analyzer: null
@@ -480,10 +517,11 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
@@ -503,15 +541,18 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - indent_size = 4
+    - indent_style = space
   minLanguage: null
   alternative: null
   analyzer: null
@@ -526,15 +567,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - indent_style = space
   minLanguage: null
   alternative: null
   analyzer: null
@@ -555,15 +598,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_indent_block_contents = true
   minLanguage: null
   alternative: null
   analyzer: null
@@ -587,15 +632,18 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_indent_switch_labels = true
+    - csharp_indent_case_contents = true
   minLanguage: null
   alternative: null
   analyzer: null
@@ -628,15 +676,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0055
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_indent_labels = one_less_than_current
   minLanguage: null
   alternative: null
   analyzer: null
@@ -673,7 +723,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: dotnet format keeps the indentation of continued lines as written.
 - id: FDGA023
   strength: DO
   text: chop before the first argument or parameter, indent one indentation level, and include one argument or parameter per line when a method declaration or method invocation is exceedingly long.
@@ -707,10 +757,11 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDGA023
+    coverage: partial
+  autofix: yes
   severity:
     library: warning
     application: warning
@@ -718,8 +769,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Place each argument or parameter of a long list on its own line, starting on the line after the opening parenthesis
+    category: Layout
+  notes: A list is long when its line exceeds max_line_length (default 120).
 - id: FDGA024
   strength: DO
   text: add a blank line before control flow statements.
@@ -769,19 +822,21 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE2003
+    coverage: partial
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - dotnet_style_allow_statement_immediately_after_block_experimental = false
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE2003 reports statements that follow a block, not members that follow a member.
 - id: FDGA026
   strength: DO
   text: add a blank line after “paragraphs” of code where it enhances readability.
@@ -852,19 +907,21 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0040
+    coverage: partial
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - dotnet_style_require_accessibility_modifiers = for_non_interface_members
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Interface members are exempt, as in the .NET libraries.
 - id: FDGA028
   strength: DO
   text: specify the visibility modifier as the first modifier.
@@ -879,15 +936,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0036
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,volatile,new,virtual,abstract,sealed,override,readonly,unsafe,required,async
   minLanguage: null
   alternative: null
   analyzer: null
@@ -906,15 +965,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0036
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,volatile,new,virtual,abstract,sealed,override,readonly,unsafe,required,async
   minLanguage: null
   alternative: null
   analyzer: null
@@ -933,15 +994,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0036
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,volatile,new,virtual,abstract,sealed,override,readonly,unsafe,required,async
   minLanguage: null
   alternative: null
   analyzer: null
@@ -960,15 +1023,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0036
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,volatile,new,virtual,abstract,sealed,override,readonly,unsafe,required,async
   minLanguage: null
   alternative: null
   analyzer: null
@@ -987,15 +1052,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0036
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,volatile,new,virtual,abstract,sealed,override,readonly,unsafe,required,async
   minLanguage: null
   alternative: null
   analyzer: null
@@ -1014,15 +1081,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0036
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,volatile,new,virtual,abstract,sealed,override,readonly,unsafe,required,async
   minLanguage: null
   alternative: null
   analyzer: null
@@ -1043,15 +1112,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0036
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,volatile,new,virtual,abstract,sealed,override,readonly,unsafe,required,async
   minLanguage: null
   alternative: null
   analyzer: null
@@ -1070,15 +1141,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0036
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,volatile,new,virtual,abstract,sealed,override,readonly,unsafe,required,async
   minLanguage: null
   alternative: null
   analyzer: null
@@ -1097,15 +1170,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0036
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,volatile,new,virtual,abstract,sealed,override,readonly,unsafe,required,async
   minLanguage: null
   alternative: null
   analyzer: null
@@ -1124,15 +1199,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0036
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,volatile,new,virtual,abstract,sealed,override,readonly,unsafe,required,async
   minLanguage: null
   alternative: null
   analyzer: null
@@ -1159,7 +1236,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: missing trailing comma after the last enum member.'
 - id: FDGA039
   strength: DO
   text: add the optional trailing comma after a property assignment from an object initializer, or addition via a collection initializer, when the initializer spans multiple lines.
@@ -1201,7 +1278,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: missing trailing comma in multi-line initializers.'
 - id: FDGA040
   strength: DO NOT
   text: use `this.` unless absolutely necessary.
@@ -1222,11 +1299,15 @@
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - dotnet_style_qualification_for_field = false
+    - dotnet_style_qualification_for_property = false
+    - dotnet_style_qualification_for_method = false
+    - dotnet_style_qualification_for_event = false
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE0003, which reports 'this.', is not part of the SDK's code style analyzers.
 - id: FDGA041
   strength: DO
   text: use language keywords (`string`, `int`, `double`, …) instead of BCL type names (`String`, `Int32`, `Double`, …), for both variable declarations and method invocation.
@@ -1254,11 +1335,13 @@
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - dotnet_style_predefined_type_for_locals_parameters_members = true
+    - dotnet_style_predefined_type_for_member_access = true
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: "planned-analyzer: BCL type names where a keyword exists. IDE0049 is not part of the SDK's code style analyzers."
 - id: FDGA042
   strength: DO NOT
   text: use the `var` keyword except to save the result of a `new`, `as`-cast or “hard” cast.
@@ -1305,19 +1388,23 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0008
+    coverage: partial
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_style_var_for_built_in_types = false
+    - csharp_style_var_when_type_is_apparent = true
+    - csharp_style_var_elsewhere = false
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE0008 also accepts 'var' for some factory methods whose type it considers apparent.
 - id: FDGA043
   strength: DO
   text: use object initializers where possible.
@@ -1354,19 +1441,21 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0017
+    coverage: partial
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - dotnet_style_object_initializer = true
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Suppress when the property assignment order matters, with a comment.
 - id: FDGA044
   strength: DO
   text: use collection initializers where possible.
@@ -1392,15 +1481,18 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0028
+    coverage: partial
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - dotnet_style_collection_initializer = true
+    - dotnet_style_prefer_collection_expression = never
   minLanguage: null
   alternative: null
   analyzer: null
@@ -1432,8 +1524,8 @@
     application: suggestion
     test: suggestion
   config: []
-  minLanguage: null
-  alternative: null
+  minLanguage: "6"
+  alternative: Use a block body.
   analyzer: null
   notes: null
 - id: FDGA046
@@ -1453,15 +1545,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0032
+    coverage: partial
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - dotnet_style_prefer_auto_properties = true
   minLanguage: null
   alternative: null
   analyzer: null
@@ -1499,7 +1593,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: non-ASCII characters in source files.'
 - id: FDGA048
   strength: DO
   text: use the `nameof(...)` syntax, instead of a literal string, when referring to the name of a type, member, or parameter.
@@ -1514,19 +1608,20 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - CA1507
+    coverage: partial
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
   config: []
-  minLanguage: null
-  alternative: null
+  minLanguage: "6"
+  alternative: Before C# 6, use a string literal that matches the name exactly.
   analyzer: null
-  notes: null
+  notes: CA1507 reports string literals that match a parameter or property name.
 - id: FDGA049
   strength: DO
   text: apply the `readonly` modifier to fields when possible.
@@ -1539,19 +1634,21 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0044
+    coverage: partial
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - dotnet_style_readonly_field = true
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Check fields of non-readonly struct types for defensive copies.
 - id: FDGA050
   strength: DO
   text: use `if`…`throw` instead of assignment–expression–throw for argument validation.
@@ -1593,11 +1690,12 @@
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_style_throw_expression = false
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: throw expressions in argument validation assignments.'
 - id: FDGA051
   strength: DO
   text: follow the Framework Design Guidelines for naming identifiers, except for naming private and internal fields.
@@ -1620,7 +1718,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Summary of chapter 3; see the FDG3xxx rules.
 - id: FDGA052
   strength: DO
   text: use PascalCasing for namespace, type, and member names, except for internal and private fields.
@@ -1641,19 +1739,29 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE1006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
-    test: warning
-  config: []
+    test: suggestion
+  config:
+    - dotnet_naming_rule.fdga052_types_and_members.symbols = fdg_types_and_members
+    - dotnet_naming_rule.fdga052_types_and_members.style = fdg_pascal_case
+    - dotnet_naming_symbols.fdg_types_and_members.applicable_kinds = namespace, class, struct, interface, enum, delegate, property, method, event, type_parameter
+    - dotnet_naming_symbols.fdg_types_and_members.applicable_accessibilities = *
+    - dotnet_naming_rule.fdga052_visible_fields.symbols = fdg_visible_fields
+    - dotnet_naming_rule.fdga052_visible_fields.style = fdg_pascal_case
+    - dotnet_naming_symbols.fdg_visible_fields.applicable_kinds = field
+    - dotnet_naming_symbols.fdg_visible_fields.applicable_accessibilities = public, protected, protected_internal
+    - dotnet_naming_style.fdg_pascal_case.capitalization = pascal_case
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE1006 checks the first letter only.
 - id: FDGA053
   strength: DO
   text: use PascalCasing for const locals and const fields except for interop code, where it should match the name from the called code exactly.
@@ -1678,19 +1786,31 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE1006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
-    test: warning
-  config: []
+    test: suggestion
+  config:
+    - dotnet_naming_rule.fdga053_const_fields.symbols = fdg_const_fields
+    - dotnet_naming_rule.fdga053_const_fields.style = fdg_pascal_case
+    - dotnet_naming_symbols.fdg_const_fields.applicable_kinds = field
+    - dotnet_naming_symbols.fdg_const_fields.applicable_accessibilities = *
+    - dotnet_naming_symbols.fdg_const_fields.required_modifiers = const
+    - dotnet_naming_rule.fdga053_const_locals.symbols = fdg_const_locals
+    - dotnet_naming_rule.fdga053_const_locals.style = fdg_pascal_case
+    - dotnet_naming_symbols.fdg_const_locals.applicable_kinds = local
+    - dotnet_naming_symbols.fdg_const_locals.applicable_accessibilities = *
+    - dotnet_naming_symbols.fdg_const_locals.required_modifiers = const
+    - dotnet_naming_style.fdg_pascal_case.capitalization = pascal_case
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Interop names such as ERROR_MORE_DATA start with an uppercase letter and pass.
 - id: FDGA054
   strength: DO
   text: use camelCasing for private and internal fields.
@@ -1701,19 +1821,20 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE1006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
-    test: warning
+    test: suggestion
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Checked through the naming rules configured by FDGA055.
 - id: FDGA055
   strength: DO
   text: use a prefix “_” (underscore) for private and internal instance fields, “s_” for private and internal static fields, and “t_” for private and internal thread-static fields.
@@ -1737,19 +1858,33 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE1006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
-    test: warning
-  config: []
+    test: suggestion
+  config:
+    - dotnet_naming_rule.fdga055_private_fields.symbols = fdg_private_fields
+    - dotnet_naming_rule.fdga055_private_fields.style = fdg_underscore_camel_case
+    - dotnet_naming_symbols.fdg_private_fields.applicable_kinds = field
+    - dotnet_naming_symbols.fdg_private_fields.applicable_accessibilities = private, internal
+    - dotnet_naming_style.fdg_underscore_camel_case.required_prefix = _
+    - dotnet_naming_style.fdg_underscore_camel_case.capitalization = camel_case
+    - dotnet_naming_rule.fdga055_private_static_fields.symbols = fdg_private_static_fields
+    - dotnet_naming_rule.fdga055_private_static_fields.style = fdg_s_camel_case
+    - dotnet_naming_symbols.fdg_private_static_fields.applicable_kinds = field
+    - dotnet_naming_symbols.fdg_private_static_fields.applicable_accessibilities = private, internal
+    - dotnet_naming_symbols.fdg_private_static_fields.required_modifiers = static
+    - dotnet_naming_style.fdg_s_camel_case.required_prefix = s_
+    - dotnet_naming_style.fdg_s_camel_case.capitalization = camel_case
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Naming rules cannot select [ThreadStatic] fields, so IDE1006 reports 't_' fields; suppress it there.
 - id: FDGA056
   strength: DO
   text: use camelCasing for local variables.
@@ -1760,15 +1895,21 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE1006
+    coverage: partial
+  autofix: yes
   severity:
     library: warning
     application: warning
-    test: warning
-  config: []
+    test: suggestion
+  config:
+    - dotnet_naming_rule.fdga056_locals.symbols = fdg_locals
+    - dotnet_naming_rule.fdga056_locals.style = fdg_camel_case
+    - dotnet_naming_symbols.fdg_locals.applicable_kinds = local
+    - dotnet_naming_symbols.fdg_locals.applicable_accessibilities = *
+    - dotnet_naming_style.fdg_camel_case.capitalization = camel_case
   minLanguage: null
   alternative: null
   analyzer: null
@@ -1783,15 +1924,21 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE1006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
-    test: warning
-  config: []
+    test: suggestion
+  config:
+    - dotnet_naming_rule.fdga057_parameters.symbols = fdg_parameters
+    - dotnet_naming_rule.fdga057_parameters.style = fdg_camel_case
+    - dotnet_naming_symbols.fdg_parameters.applicable_kinds = parameter
+    - dotnet_naming_symbols.fdg_parameters.applicable_accessibilities = *
+    - dotnet_naming_style.fdg_camel_case.capitalization = camel_case
   minLanguage: null
   alternative: null
   analyzer: null
@@ -1876,7 +2023,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: multi-line comment syntax.'
 - id: FDGA061
   strength: DO NOT
   text: place comments at the end of a line unless the comment is very short.
@@ -1929,7 +2076,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: comments at the end of a line.'
 - id: FDGA063
   strength: AVOID
   text: writing “I” in comments.
@@ -1985,7 +2132,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: more than one public type in a file.'
 - id: FDGA065
   strength: DO
   text: name the source file with the name of the public type it contains.
@@ -2010,7 +2157,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: file name that differs from the public type name.'
 - id: FDGA066
   strength: DO
   text: name the source file for a `partial` type with the name of the primary file and a logical description of the contents of the file separated by a “.” (period), such as “JsonDocument.Parse.cs”.
@@ -2048,19 +2195,21 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0130
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - dotnet_style_namespace_match_folder = true
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE0130 compares namespaces with folders below the project's root namespace.
 - id: FDGA068
   strength: DO
   text: 'group members into the following sections in the specified order:'
@@ -2093,7 +2242,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'planned-analyzer: member group order.'
 - id: FDGA069
   strength: CONSIDER
   text: 'grouping the remaining members into the following sections in the specified order:'
@@ -2143,15 +2292,17 @@
   status: draft
   style: true
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE0065
+    coverage: full
+  autofix: yes
   severity:
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - csharp_using_directive_placement = outside_namespace
   minLanguage: null
   alternative: null
   analyzer: null
@@ -2184,8 +2335,9 @@
     library: warning
     application: warning
     test: warning
-  config: []
+  config:
+    - dotnet_sort_system_directives_first = true
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: dotnet format sorts using directives, but no diagnostic reports unsorted ones.
