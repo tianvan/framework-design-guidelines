@@ -1,0 +1,3 @@
+library:     ["dotnet_code_quality.api_surface = public"]
+application: ["dotnet_code_quality.api_surface = all"]
+test:        ["dotnet_code_quality.api_surface = all"]

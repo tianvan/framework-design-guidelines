@@ -1,0 +1,8 @@
+repositoryUrl: https://example.test/repo
+chapters:
+  - token: "9"
+    file: sample.xhtml
+    rules: ch09-sample.yaml
+    title: Sample Chapter
+    nonGuideline:
+      - { section: "9.1", disposition: background, note: "Narrative introduction to the sample chapter." }

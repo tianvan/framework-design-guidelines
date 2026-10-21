@@ -8,7 +8,8 @@ public static class GeneratorCli
         "Usage:\n" +
         "  fdg-gen extract --book <OEBPS dir> --chapter <token> [--rules <dir>]\n" +
         "  fdg-gen verify-source --book <OEBPS dir> [--rules <dir>]\n" +
-        "  fdg-gen check [--book <OEBPS dir>] [--rules <dir>] [--sdk <SDK dir>]";
+        "  fdg-gen check [--book <OEBPS dir>] [--rules <dir>] [--sdk <SDK dir>]\n" +
+        "  fdg-gen generate [--rules <dir>] [--out <repository root>] [--version <version>]";
 
     public static int Run(string[] args, TextWriter output, TextWriter error)
     {
@@ -27,6 +28,8 @@ public static class GeneratorCli
                 return VerifySourceCommand.Run(rest, output, error);
             case "check":
                 return CheckCommand.Run(rest, output, error);
+            case "generate":
+                return GenerateCommand.Run(rest, output, error);
             case "sdk-catalog":
                 return SdkCatalogCommand.Run(rest, output, error);
             default:

@@ -77,8 +77,19 @@ public static class CheckCommand
             profiles = new Dictionary<string, IReadOnlyList<string>>();
         }
 
+        IReadOnlyList<ChapterMeta> metaChapters;
+        try
+        {
+            metaChapters = RuleLoader.LoadMeta(rulesDir).Chapters;
+        }
+        catch (Exception exception) when (exception is YamlException or FormatException)
+        {
+            errors.Add(new CheckError("meta.yaml", CheckError.NoRule, exception.Message));
+            metaChapters = Array.Empty<ChapterMeta>();
+        }
+
         var chapters = new List<ChapterRules>();
-        foreach (ChapterMeta chapter in RuleLoader.LoadMeta(rulesDir).Chapters)
+        foreach (ChapterMeta chapter in metaChapters)
         {
             string path = Path.Combine(rulesDir, chapter.Rules);
             if (!File.Exists(path))

@@ -1,0 +1,179 @@
+- id: FDG9001
+  strength: DO
+  text: "prefer records for immutable data carriers."
+  context: null
+  section: 9.1 Judgment Calls
+  anchor: sec9_1
+  body:
+    - { kind: paragraph, text: "Records give value equality for free." }
+    - { kind: code, text: "public record Point(int X, int Y);" }
+  status: verified
+  style: false
+  check: { kind: judgment, diagnostics: [], coverage: none }
+  autofix: no
+  severity: { library: warning, application: warning, test: warning }
+  config: []
+  minLanguage: "9"
+  alternative: "Use a sealed class with read-only properties."
+  analyzer: null
+  notes: null
+- id: FDG9002
+  strength: DO NOT
+  text: "use identifiers that match language keywords."
+  context: null
+  section: 9.1 Judgment Calls
+  anchor: sec9_1
+  body: []
+  status: verified
+  style: false
+  check: { kind: sdk, diagnostics: [CA1716], coverage: full }
+  autofix: no
+  severity: { library: warning, application: warning, test: none }
+  config:
+    - "dotnet_code_quality.CA1716.api_surface = public"
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG9003
+  strength: DO
+  text: "name event handlers consistently."
+  context: null
+  section: 9.2 Tool Checked
+  anchor: sec9_2
+  body: []
+  status: verified
+  style: false
+  check: { kind: sdk, diagnostics: [IDE1006], coverage: partial }
+  autofix: no
+  severity: { library: suggestion, application: suggestion, test: none }
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG9004
+  strength: AVOID
+  text: "suffixing a type with a base type name that it does not derive from."
+  context: null
+  section: 9.2 Tool Checked
+  anchor: sec9_2
+  body: []
+  status: verified
+  style: false
+  check: { kind: sdk, diagnostics: [CA1710], coverage: partial }
+  autofix: no
+  severity: { library: warning, application: warning, test: none }
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG9005
+  strength: AVOID
+  text: "renaming public members."
+  context: null
+  section: 9.2 Tool Checked
+  anchor: sec9_2
+  body: []
+  status: verified
+  style: false
+  check: { kind: sdk, diagnostics: [CA1710], coverage: partial }
+  autofix: breaking
+  severity: { library: warning, application: warning, test: none }
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG9006
+  strength: CONSIDER
+  text: "making types sealed."
+  context: "System.Object"
+  section: 9.2 Tool Checked
+  anchor: sec9_2
+  body: []
+  status: verified
+  style: false
+  check: { kind: sdk, diagnostics: [CA1000], coverage: full }
+  autofix: no
+  severity: { library: suggestion, application: suggestion, test: none }
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG9007
+  strength: DO
+  text: "put each statement on its own line."
+  context: null
+  section: 9.3 Custom Analyzers
+  anchor: sec9_3
+  body: []
+  status: verified
+  style: false
+  check: { kind: fdg, diagnostics: [FDG9007], coverage: full }
+  autofix: yes
+  severity: { library: warning, application: warning, test: warning }
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: { message: "Put each statement on its own line", category: Layout }
+  notes: null
+- id: FDG9008
+  strength: CONSIDER
+  text: "writing a short summary for each type."
+  context: null
+  section: 9.3 Custom Analyzers
+  anchor: sec9_3
+  body: []
+  status: verified
+  style: false
+  check: { kind: judgment, diagnostics: [], coverage: none }
+  autofix: no
+  severity: { library: suggestion, application: suggestion, test: suggestion }
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG9009
+  strength: DO
+  text: "use PascalCasing for public fields."
+  context: null
+  section: 9.3 Custom Analyzers
+  anchor: sec9_3
+  body: []
+  status: verified
+  style: false
+  check: { kind: sdk, diagnostics: [IDE1006], coverage: full }
+  autofix: no
+  severity: { library: warning, application: suggestion, test: silent }
+  config:
+    - "dotnet_naming_rule.fdg9009_public_fields.symbols = fdg_public_fields"
+    - "dotnet_naming_rule.fdg9009_public_fields.style = fdg_pascal_case"
+    - "dotnet_naming_symbols.fdg_public_fields.applicable_kinds = field"
+    - "dotnet_naming_symbols.fdg_public_fields.applicable_accessibilities = public"
+    - "dotnet_naming_style.fdg_pascal_case.capitalization = pascal_case"
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG9010
+  strength: DO
+  text: "indent with four spaces."
+  context: null
+  section: 9.3 Custom Analyzers
+  anchor: sec9_3
+  body: []
+  status: verified
+  style: false
+  check: { kind: none, diagnostics: [], coverage: none }
+  autofix: no
+  severity: { library: warning, application: warning, test: warning }
+  config:
+    - "indent_size = 4"
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null

@@ -3,7 +3,21 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Fdg.Generator.Rules;
 
-public sealed record ChapterMeta(string Token, string File, string Rules, string Title);
+/// <summary>Where a passage of book text that is not a guideline went: its rationale, background, or obsolete advice.</summary>
+public enum NonGuidelineDisposition
+{
+    Rationale,
+    Background,
+    Obsolete,
+}
+
+public sealed record NonGuidelineEntry(string Section, NonGuidelineDisposition Disposition, string Note);
+
+public sealed record ChapterMeta(string Token, string File, string Rules, string Title)
+{
+    /// <summary>The coverage-document entries for narrative text of this chapter; optional in <c>meta.yaml</c>.</summary>
+    public IReadOnlyList<NonGuidelineEntry> NonGuideline { get; init; } = Array.Empty<NonGuidelineEntry>();
+}
 
 public sealed record MetaFile(string RepositoryUrl, IReadOnlyList<ChapterMeta> Chapters);
 
@@ -24,7 +38,10 @@ public static class RuleLoader
 
         return new MetaFile(
             dto.RepositoryUrl,
-            dto.Chapters.Select(c => new ChapterMeta(c.Token, c.File, c.Rules, c.Title)).ToList());
+            dto.Chapters.Select(c => new ChapterMeta(c.Token, c.File, c.Rules, c.Title)
+            {
+                NonGuideline = c.NonGuideline.Select(e => ToEntry(c.Token, e)).ToList(),
+            }).ToList());
     }
 
     public static IReadOnlyList<Rule> LoadRules(string path)
@@ -37,8 +54,25 @@ public static class RuleLoader
     {
         MetaFile meta = LoadMeta(rulesDir);
         return meta.Chapters
-            .Select(c => new RuleFile(c.Token, c.Title, c.File, LoadRules(Path.Combine(rulesDir, c.Rules))))
+            .Select(c => new RuleFile(c.Token, c.Title, c.File, LoadRules(Path.Combine(rulesDir, c.Rules)))
+            {
+                RulesFile = c.Rules,
+                NonGuideline = c.NonGuideline,
+            })
             .ToList();
+    }
+
+    private static NonGuidelineEntry ToEntry(string chapter, NonGuidelineDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Section) || string.IsNullOrWhiteSpace(dto.Note))
+        {
+            throw new FormatException($"meta.yaml: a nonGuideline entry of chapter {chapter} needs a section and a note.");
+        }
+
+        return new NonGuidelineEntry(
+            dto.Section,
+            RuleYaml.ParseEnum<NonGuidelineDisposition>(dto.Disposition, $"nonGuideline disposition of chapter {chapter}"),
+            dto.Note);
     }
 
     private sealed class MetaDto
@@ -57,5 +91,16 @@ public static class RuleLoader
         public string Rules { get; set; } = string.Empty;
 
         public string Title { get; set; } = string.Empty;
+
+        public List<NonGuidelineDto> NonGuideline { get; set; } = new();
+    }
+
+    private sealed class NonGuidelineDto
+    {
+        public string Section { get; set; } = string.Empty;
+
+        public string Disposition { get; set; } = string.Empty;
+
+        public string Note { get; set; } = string.Empty;
     }
 }

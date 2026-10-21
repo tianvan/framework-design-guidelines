@@ -1,0 +1,2255 @@
+{
+  "protocol": 1,
+  "version": "0.1.0",
+  "rules": [
+    {
+      "id": "FDG3001",
+      "strength": "DO",
+      "text": "use PascalCasing for the names of namespaces, types, members, and generic type parameters.",
+      "section": "3.1.1 Capitalization Rules for Identifiers",
+      "diagnostics": [
+        "IDE1006"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3002",
+      "strength": "DO",
+      "text": "use camelCasing for parameter names.",
+      "section": "3.1.1 Capitalization Rules for Identifiers",
+      "diagnostics": [
+        "IDE1006"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3003",
+      "strength": "DO",
+      "text": "capitalize both characters of two-character acronyms, except the first word of a camel-cased identifier.",
+      "section": "3.1.2 Capitalizing Acronyms",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3004",
+      "strength": "DO",
+      "text": "capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier.",
+      "section": "3.1.2 Capitalizing Acronyms",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3005",
+      "strength": "DO NOT",
+      "text": "capitalize any of the characters of any acronyms, whatever their length, at the beginning of a camel-cased identifier.",
+      "section": "3.1.2 Capitalizing Acronyms",
+      "diagnostics": [
+        "IDE1006"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3006",
+      "strength": "DO NOT",
+      "text": "capitalize each word in so-called closed-form compound words.",
+      "section": "3.1.3 Capitalizing Compound Words and Common Terms",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3007",
+      "strength": "DO NOT",
+      "text": "assume that all programming languages are case sensitive. They are not. Names cannot differ by case alone.",
+      "section": "3.1.4 Case Sensitivity",
+      "diagnostics": [
+        "CA1708"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3008",
+      "strength": "DO",
+      "text": "choose easily readable identifier names.",
+      "section": "3.2.1 Word Choice",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3009",
+      "strength": "DO",
+      "text": "favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the X-axis).",
+      "section": "3.2.1 Word Choice",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3010",
+      "strength": "DO NOT",
+      "text": "use underscores, hyphens, or any other non-alphanumeric characters.",
+      "section": "3.2.1 Word Choice",
+      "diagnostics": [
+        "CA1707"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3011",
+      "strength": "DO NOT",
+      "text": "use Hungarian notation.",
+      "section": "3.2.1 Word Choice",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3012",
+      "strength": "AVOID",
+      "text": "using identifiers that conflict with keywords of widely used programming languages.",
+      "section": "3.2.1 Word Choice",
+      "diagnostics": [
+        "CA1716"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3013",
+      "strength": "DO",
+      "text": "use only ASCII characters in identifier names.",
+      "section": "3.2.1 Word Choice",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3014",
+      "strength": "DO NOT",
+      "text": "use abbreviations or contractions as part of identifier names.",
+      "section": "3.2.2 Using Abbreviations and Acronyms",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3015",
+      "strength": "DO NOT",
+      "text": "use any acronyms that are not widely accepted, and even if they are, only when necessary.",
+      "section": "3.2.2 Using Abbreviations and Acronyms",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3016",
+      "strength": "DO",
+      "text": "use semantically interesting names rather than language-specific keywords for type names.",
+      "section": "3.2.3 Avoiding Language-Specific Names",
+      "diagnostics": [
+        "CA1720"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3017",
+      "strength": "DO",
+      "text": "use a generic CLR type name, rather than a language-specific name, in the rare cases when an identifier has no semantic meaning beyond its type.",
+      "section": "3.2.3 Avoiding Language-Specific Names",
+      "diagnostics": [
+        "CA1720"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3018",
+      "strength": "DO",
+      "text": "use a common name, such as value or item, rather than repeating the type name, in the rare cases when an identifier has no semantic meaning and the type of the parameter is not important.",
+      "section": "3.2.3 Avoiding Language-Specific Names",
+      "diagnostics": [
+        "CA1720"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3019",
+      "strength": "DO",
+      "text": "use a name similar to the old API when creating new versions of an existing API.",
+      "section": "3.2.4 Naming New Versions of Existing APIs",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3020",
+      "strength": "DO",
+      "text": "prefer adding a suffix rather than a prefix to indicate a new version of an existing API.",
+      "section": "3.2.4 Naming New Versions of Existing APIs",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3021",
+      "strength": "CONSIDER",
+      "text": "using a brand-new, but meaningful, identifier, instead of adding a suffix or a prefix.",
+      "section": "3.2.4 Naming New Versions of Existing APIs",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3022",
+      "strength": "DO",
+      "text": "use a numeric suffix to indicate a new version of an existing API, particularly if the existing name of the API is the only name that makes sense (e.g., if it is an industry standard) and if adding any meaningful suffix (or changing the name) is not an appropriate option.",
+      "section": "3.2.4 Naming New Versions of Existing APIs",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3023",
+      "strength": "DO NOT",
+      "text": "use the “Ex” (or a similar) suffix for an identifier to distinguish it from an earlier version of the same API.",
+      "section": "3.2.4 Naming New Versions of Existing APIs",
+      "diagnostics": [
+        "CA1711"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3024",
+      "strength": "DO",
+      "text": "use the “64” suffix when introducing versions of APIs that operate on a 64-bit integer (a long integer) instead of a 32-bit integer. You only need to take this approach when the existing 32-bit API exists; don’t do it for brand-new APIs with only a 64-bit version.",
+      "section": "3.2.4 Naming New Versions of Existing APIs",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3025",
+      "strength": "DO",
+      "text": "choose names for your assembly DLLs that suggest large chunks of functionality, such as `System.Data`.",
+      "section": "3.3 Names of Assemblies, DLLs, and Packages",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3026",
+      "strength": "CONSIDER",
+      "text": "naming DLLs according to the following pattern:",
+      "section": "3.3 Names of Assemblies, DLLs, and Packages",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3027",
+      "strength": "DO",
+      "text": "prefix namespace names with a company name to prevent namespaces from different companies from having the same name.",
+      "section": "3.4 Names of Namespaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3028",
+      "strength": "DO",
+      "text": "use a stable, version-independent product name at the second level of a namespace name.",
+      "section": "3.4 Names of Namespaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3029",
+      "strength": "DO NOT",
+      "text": "use organizational hierarchies as the basis for names in namespace hierarchies, because group names within corporations tend to be short-lived. Organize the hierarchy of namespaces around groups of related technologies.",
+      "section": "3.4 Names of Namespaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3030",
+      "strength": "DO",
+      "text": "use PascalCasing, and separate namespace components with periods (e.g., `Microsoft.Office.PowerPoint`). If your brand employs nontraditional casing, you should follow the casing defined by your brand, even if it deviates from normal namespace casing.",
+      "section": "3.4 Names of Namespaces",
+      "diagnostics": [
+        "IDE1006"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3031",
+      "strength": "CONSIDER",
+      "text": "using plural namespace names where appropriate.",
+      "section": "3.4 Names of Namespaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3032",
+      "strength": "DO NOT",
+      "text": "use the same name for a namespace and a type in that namespace.",
+      "section": "3.4 Names of Namespaces",
+      "diagnostics": [
+        "CA1724"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3033",
+      "strength": "DO NOT",
+      "text": "introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`.",
+      "section": "3.4.1 Namespaces and Type Name Conf licts",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3034",
+      "strength": "DO NOT",
+      "text": "give the same name to multiple types across namespaces within a single application model.",
+      "section": "3.4.1.1 Application Model Namespaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3035",
+      "strength": "DO NOT",
+      "text": "give types names that would conflict with any type in the core namespaces.",
+      "section": "3.4.1.3 Core Namespaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3036",
+      "strength": "DO NOT",
+      "text": "assign type names that would conflict with other types within a single technology.",
+      "section": "3.4.1.4 Technology Namespace Groups",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3037",
+      "strength": "DO NOT",
+      "text": "introduce type name conflicts between types in technology namespaces and an application model namespace (unless the technology is not expected to be used with the application model).",
+      "section": "3.4.1.4 Technology Namespace Groups",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3038",
+      "strength": "DO",
+      "text": "name classes and structs with nouns or noun phrases, using PascalCasing.",
+      "section": "3.5 Names of Classes, Structs, and Interfaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3039",
+      "strength": "DO",
+      "text": "name interfaces with adjective phrases, or occasionally with nouns or noun phrases.",
+      "section": "3.5 Names of Classes, Structs, and Interfaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3040",
+      "strength": "DO NOT",
+      "text": "give class names a prefix (e.g., “C”).",
+      "section": "3.5 Names of Classes, Structs, and Interfaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3041",
+      "strength": "CONSIDER",
+      "text": "ending the name of derived classes with the name of the base class.",
+      "section": "3.5 Names of Classes, Structs, and Interfaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3042",
+      "strength": "DO",
+      "text": "prefix interface names with the letter I, to indicate that the type is an interface.",
+      "section": "3.5 Names of Classes, Structs, and Interfaces",
+      "diagnostics": [
+        "CA1715"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3043",
+      "strength": "DO",
+      "text": "ensure that the names differ only by the “I” prefix on the interface name when you are defining a class–interface pair where the class is a standard implementation of the interface.",
+      "section": "3.5 Names of Classes, Structs, and Interfaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3044",
+      "strength": "DO",
+      "text": "name generic type parameters with descriptive names unless a single-letter name is completely self-explanatory and a descriptive name would not add value.",
+      "section": "3.5.1 Names of Generic Type Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3045",
+      "strength": "CONSIDER",
+      "text": "using `T` as the type parameter name for types with one single-letter type parameter.",
+      "section": "3.5.1 Names of Generic Type Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3046",
+      "strength": "DO",
+      "text": "prefix descriptive type parameter names with `T`.",
+      "section": "3.5.1 Names of Generic Type Parameters",
+      "diagnostics": [
+        "CA1715"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3047",
+      "strength": "CONSIDER",
+      "text": "indicating constraints placed on a type parameter in the name of the parameter.",
+      "section": "3.5.1 Names of Generic Type Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3048",
+      "strength": "DO",
+      "text": "follow the guidelines described in Table 3-5 when naming types derived from or implementing certain .NET types.",
+      "section": "3.5.2 Names of Common Types",
+      "diagnostics": [
+        "CA1710",
+        "CA1711"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3049",
+      "strength": "DO",
+      "text": "add the suffix “Attribute” to names of custom attribute classes.",
+      "section": "3.5.2 Names of Common Types",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3050",
+      "strength": "DO",
+      "text": "add the suffix “EventHandler” to names of delegates that are used in events.",
+      "section": "3.5.2 Names of Common Types",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3051",
+      "strength": "DO",
+      "text": "add the suffix “Callback” to names of delegates other than those used as event handlers.",
+      "section": "3.5.2 Names of Common Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3052",
+      "strength": "DO NOT",
+      "text": "add the suffix “Delegate” to a delegate.",
+      "section": "3.5.2 Names of Common Types",
+      "diagnostics": [
+        "CA1711"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3053",
+      "strength": "DO",
+      "text": "add the suffix “EventArgs.”",
+      "section": "3.5.2 Names of Common Types",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3054",
+      "strength": "DO NOT",
+      "text": "derive from this class; use the keyword supported by your language instead; for example, in C#, use the `enum` keyword.",
+      "section": "3.5.2 Names of Common Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3055",
+      "strength": "DO NOT",
+      "text": "add the suffix “Enum” or “Flag.”",
+      "section": "3.5.2 Names of Common Types",
+      "diagnostics": [
+        "CA1711"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3056",
+      "strength": "DO",
+      "text": "add the suffix “Exception.”",
+      "section": "3.5.2 Names of Common Types",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3057",
+      "strength": "DO",
+      "text": "add the suffix “Dictionary.” Note that `IDictionary` is a specific type of collection, but this guideline takes precedence over the more general collections guideline that follows.",
+      "section": "3.5.2 Names of Common Types",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3058",
+      "strength": "DO",
+      "text": "add the suffix “Collection,” except for reusable, specialized data types such as “Queue” and “HashSet.”",
+      "section": "3.5.2 Names of Common Types",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3059",
+      "strength": "DO",
+      "text": "add the suffix “Stream.”",
+      "section": "3.5.2 Names of Common Types",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3060",
+      "strength": "DO",
+      "text": "use a singular type name for an enumeration unless its values are bit fields.",
+      "section": "3.5.3 Naming Enumerations",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3061",
+      "strength": "DO",
+      "text": "use a plural type name for an enumeration with bit fields as values, also called flags enum.",
+      "section": "3.5.3 Naming Enumerations",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3062",
+      "strength": "DO NOT",
+      "text": "use an “Enum” suffix in enum type names.",
+      "section": "3.5.3 Naming Enumerations",
+      "diagnostics": [
+        "CA1711"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3063",
+      "strength": "DO NOT",
+      "text": "use “Flag” or “Flags” suffixes in enum type names.",
+      "section": "3.5.3 Naming Enumerations",
+      "diagnostics": [
+        "CA1711"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3064",
+      "strength": "DO NOT",
+      "text": "use a prefix on enumeration value names (e.g., “ad” for ADO enums, “rtf” for rich text enums).",
+      "section": "3.5.3 Naming Enumerations",
+      "diagnostics": [
+        "CA1712"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3065",
+      "strength": "DO",
+      "text": "give methods names that are verbs or verb phrases.",
+      "section": "3.6.1 Names of Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3066",
+      "strength": "DO",
+      "text": "name properties using a noun, noun phrase, or adjective.",
+      "section": "3.6.2 Names of Properties",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3067",
+      "strength": "DO NOT",
+      "text": "have properties that match the name of “Get” methods, such as a property named `TextWriter` and a method named `GetTextWriter`.",
+      "section": "3.6.2 Names of Properties",
+      "diagnostics": [
+        "CA1721"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3068",
+      "strength": "DO",
+      "text": "name collection properties with a plural phrase describing the items in the collection instead of using a singular phrase followed by “List” or “Collection.”",
+      "section": "3.6.2 Names of Properties",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3069",
+      "strength": "DO",
+      "text": "name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value.",
+      "section": "3.6.2 Names of Properties",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3070",
+      "strength": "CONSIDER",
+      "text": "giving a property the same name as its type.",
+      "section": "3.6.2 Names of Properties",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3071",
+      "strength": "DO",
+      "text": "name events with a verb or a verb phrase.",
+      "section": "3.6.3 Names of Events",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3072",
+      "strength": "DO",
+      "text": "give events names with a concept of before and after, using the present and past tenses, such as `Closing` and `Closed`.",
+      "section": "3.6.3 Names of Events",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3073",
+      "strength": "DO NOT",
+      "text": "use “Before” or “After” prefixes or postfixes to indicate pre- and post-events. Use present and past tenses as just described.",
+      "section": "3.6.3 Names of Events",
+      "diagnostics": [
+        "CA1713"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3074",
+      "strength": "DO",
+      "text": "name event handlers (delegates used as types of events) with the “EventHandler” suffix, such as `ClickedEventHandler`.",
+      "section": "3.6.3 Names of Events",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3075",
+      "strength": "DO",
+      "text": "use two parameters named sender and e in event handlers.",
+      "section": "3.6.3 Names of Events",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3076",
+      "strength": "DO",
+      "text": "name event argument classes with the “EventArgs” suffix, as shown in the following example:",
+      "section": "3.6.3 Names of Events",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3077",
+      "strength": "DO",
+      "text": "use PascalCasing in field names.",
+      "section": "3.6.4 Naming Fields",
+      "diagnostics": [
+        "IDE1006"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3078",
+      "strength": "DO",
+      "text": "name fields using a noun, noun phrase, or adjective.",
+      "section": "3.6.4 Naming Fields",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3079",
+      "strength": "DO NOT",
+      "text": "use a prefix for `public` or `protected` field names.",
+      "section": "3.6.4 Naming Fields",
+      "diagnostics": [
+        "CA1707",
+        "IDE1006"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3080",
+      "strength": "DO",
+      "text": "use camelCasing in parameter names.",
+      "section": "3.7 Naming Parameters",
+      "diagnostics": [
+        "IDE1006"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3081",
+      "strength": "DO",
+      "text": "use descriptive parameter names.",
+      "section": "3.7 Naming Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3082",
+      "strength": "CONSIDER",
+      "text": "using names based on a parameter’s meaning rather than the parameter’s type.",
+      "section": "3.7 Naming Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3083",
+      "strength": "DO",
+      "text": "use left and right for binary operator overload parameter names if there is no meaning to the parameters.",
+      "section": "3.7.1 Naming Operator Overload Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3084",
+      "strength": "DO",
+      "text": "use value for unary operator overload parameter names if there is no meaning to the parameters.",
+      "section": "3.7.1 Naming Operator Overload Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3085",
+      "strength": "CONSIDER",
+      "text": "meaningful names for operator overload parameters if doing so adds significant value.",
+      "section": "3.7.1 Naming Operator Overload Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3086",
+      "strength": "DO NOT",
+      "text": "use abbreviations or numeric indices for operator overload parameter names.",
+      "section": "3.7.1 Naming Operator Overload Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDG3087",
+      "strength": "DO NOT",
+      "text": "directly expose localizable resources as public (or protected) members.",
+      "section": "3.8 Naming Resources",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      }
+    },
+    {
+      "id": "FDGA001",
+      "strength": "DO",
+      "text": "place the opening brace on the next line, indented to the same level as the block statement.",
+      "section": "A.1.1 Brace Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA002",
+      "strength": "DO",
+      "text": "align the closing brace with the opening brace.",
+      "section": "A.1.1 Brace Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA003",
+      "strength": "DO",
+      "text": "place the closing brace on its own line, except the end of a `do`..`while` statement.",
+      "section": "A.1.1 Brace Usage",
+      "diagnostics": [
+        "FDGA003",
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA004",
+      "strength": "AVOID",
+      "text": "omitting braces, even if the language allows it.",
+      "section": "A.1.1 Brace Usage",
+      "diagnostics": [
+        "IDE0011"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA005",
+      "strength": "CONSIDER",
+      "text": "omitting braces in an argument validation preamble.",
+      "section": "A.1.1 Brace Usage",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      }
+    },
+    {
+      "id": "FDGA006",
+      "strength": "DO NOT",
+      "text": "use the braceless variant of the `using` (dispose) statement.",
+      "section": "A.1.1 Brace Usage",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA007",
+      "strength": "AVOID",
+      "text": "using the braceless variant of the `await using` statement, except to simulate stacked `await using` statements with `ConfigureAwait`.",
+      "section": "A.1.1 Brace Usage",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA008",
+      "strength": "DO",
+      "text": "use one space before and after the opening and closing braces when they share a line with other code. Do not add a trailing space before a line break.",
+      "section": "A.1.2 Space Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA009",
+      "strength": "DO",
+      "text": "use a single space after a comma between parameters.",
+      "section": "A.1.2 Space Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA010",
+      "strength": "DO",
+      "text": "use a single space between arguments.",
+      "section": "A.1.2 Space Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA011",
+      "strength": "DO NOT",
+      "text": "use spaces after the opening parenthesis or before the closing parenthesis.",
+      "section": "A.1.2 Space Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA012",
+      "strength": "DO NOT",
+      "text": "use spaces between a member name and an opening parenthesis.",
+      "section": "A.1.2 Space Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA013",
+      "strength": "DO NOT",
+      "text": "use spaces after or before square braces.",
+      "section": "A.1.2 Space Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA014",
+      "strength": "DO",
+      "text": "use spaces between flow control keywords and the open parenthesis.",
+      "section": "A.1.2 Space Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA015",
+      "strength": "DO",
+      "text": "use spaces before and after binary operators.",
+      "section": "A.1.2 Space Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA016",
+      "strength": "DO NOT",
+      "text": "use spaces before or after unary operators.",
+      "section": "A.1.2 Space Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA017",
+      "strength": "DO",
+      "text": "use four consecutive space characters for indents.",
+      "section": "A.1.3 Indent Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA018",
+      "strength": "DO NOT",
+      "text": "use the tab character for indents.",
+      "section": "A.1.3 Indent Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA019",
+      "strength": "DO",
+      "text": "indent contents of code blocks.",
+      "section": "A.1.3 Indent Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA020",
+      "strength": "DO",
+      "text": "indent `case` blocks even if not using braces.",
+      "section": "A.1.3 Indent Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA021",
+      "strength": "DO",
+      "text": "“outdent” `goto` labels one indentation level.",
+      "section": "A.1.3 Indent Usage",
+      "diagnostics": [
+        "IDE0055"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA022",
+      "strength": "DO",
+      "text": "indent all continued lines of a single statement one indentation level.",
+      "section": "A.1.3 Indent Usage",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA023",
+      "strength": "DO",
+      "text": "chop before the first argument or parameter, indent one indentation level, and include one argument or parameter per line when a method declaration or method invocation is exceedingly long.",
+      "section": "A.1.3 Indent Usage",
+      "diagnostics": [
+        "FDGA023"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA024",
+      "strength": "DO",
+      "text": "add a blank line before control flow statements.",
+      "section": "A.1.4 Vertical Whitespace",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA025",
+      "strength": "DO",
+      "text": "add a blank line after a closing brace, unless the next line is also a closing brace.",
+      "section": "A.1.4 Vertical Whitespace",
+      "diagnostics": [
+        "IDE2003"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA026",
+      "strength": "DO",
+      "text": "add a blank line after “paragraphs” of code where it enhances readability.",
+      "section": "A.1.4 Vertical Whitespace",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA027",
+      "strength": "DO",
+      "text": "always explicitly specify visibility modifiers.",
+      "section": "A.1.5 Member Modifiers",
+      "diagnostics": [
+        "IDE0040"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA028",
+      "strength": "DO",
+      "text": "specify the visibility modifier as the first modifier.",
+      "section": "A.1.5 Member Modifiers",
+      "diagnostics": [
+        "IDE0036"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA029",
+      "strength": "DO",
+      "text": "specify the `static` modifier immediately after visibility, for static members or static classes.",
+      "section": "A.1.5 Member Modifiers",
+      "diagnostics": [
+        "IDE0036"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA030",
+      "strength": "DO",
+      "text": "specify the `extern` method modifier immediately after the `static` modifier for an `extern` method.",
+      "section": "A.1.5 Member Modifiers",
+      "diagnostics": [
+        "IDE0036"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA031",
+      "strength": "DO",
+      "text": "specify the member slot modifier (`new`, `virtual`, `abstract`, `sealed`, or `override`) immediately after the `static` modifier (if specified).",
+      "section": "A.1.5 Member Modifiers",
+      "diagnostics": [
+        "IDE0036"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA032",
+      "strength": "DO",
+      "text": "specify the `readonly` modifier for fields or methods immediately after the member slot modifier (if specified).",
+      "section": "A.1.5 Member Modifiers",
+      "diagnostics": [
+        "IDE0036"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA033",
+      "strength": "DO",
+      "text": "specify the `unsafe` modifier for methods immediately after the `readonly` modifier (if specified).",
+      "section": "A.1.5 Member Modifiers",
+      "diagnostics": [
+        "IDE0036"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA034",
+      "strength": "DO",
+      "text": "specify the `volatile` modifier for fields immediately after the `static` modifier (if specified).",
+      "section": "A.1.5 Member Modifiers",
+      "diagnostics": [
+        "IDE0036"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA035",
+      "strength": "DO",
+      "text": "specify the `async` modifier as the last method modifier, when used.",
+      "section": "A.1.5 Member Modifiers",
+      "diagnostics": [
+        "IDE0036"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA036",
+      "strength": "DO",
+      "text": "use “`protected internal`” instead of “`internal protected`” for a member that can be called by derived types or types in the same assembly.",
+      "section": "A.1.5 Member Modifiers",
+      "diagnostics": [
+        "IDE0036"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA037",
+      "strength": "DO",
+      "text": "use “`private protected`” instead of “`protected private`” for a member that can be called by derived types within the same assembly.",
+      "section": "A.1.5 Member Modifiers",
+      "diagnostics": [
+        "IDE0036"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA038",
+      "strength": "DO",
+      "text": "add the optional trailing comma after the last enum member.",
+      "section": "A.1.6 Other",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA039",
+      "strength": "DO",
+      "text": "add the optional trailing comma after a property assignment from an object initializer, or addition via a collection initializer, when the initializer spans multiple lines.",
+      "section": "A.1.6 Other",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA040",
+      "strength": "DO NOT",
+      "text": "use `this.` unless absolutely necessary.",
+      "section": "A.1.6 Other",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA041",
+      "strength": "DO",
+      "text": "use language keywords (`string`, `int`, `double`, …) instead of BCL type names (`String`, `Int32`, `Double`, …), for both variable declarations and method invocation.",
+      "section": "A.1.6 Other",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA042",
+      "strength": "DO NOT",
+      "text": "use the `var` keyword except to save the result of a `new`, `as`-cast or “hard” cast.",
+      "section": "A.1.6 Other",
+      "diagnostics": [
+        "IDE0008"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA043",
+      "strength": "DO",
+      "text": "use object initializers where possible.",
+      "section": "A.1.6 Other",
+      "diagnostics": [
+        "IDE0017"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA044",
+      "strength": "DO",
+      "text": "use collection initializers where possible.",
+      "section": "A.1.6 Other",
+      "diagnostics": [
+        "IDE0028"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA045",
+      "strength": "CONSIDER",
+      "text": "using expression-bodied members when the implementation of a property or method is unlikely to change.",
+      "section": "A.1.6 Other",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      }
+    },
+    {
+      "id": "FDGA046",
+      "strength": "DO",
+      "text": "use auto-implemented properties when the implementation is unlikely to change.",
+      "section": "A.1.6 Other",
+      "diagnostics": [
+        "IDE0032"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA047",
+      "strength": "DO",
+      "text": "restrict code to ASCII characters, and use Unicode escape sequences (`\\uXXXX`) when needed for non-ASCII values.",
+      "section": "A.1.6 Other",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA048",
+      "strength": "DO",
+      "text": "use the `nameof(...)` syntax, instead of a literal string, when referring to the name of a type, member, or parameter.",
+      "section": "A.1.6 Other",
+      "diagnostics": [
+        "CA1507"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA049",
+      "strength": "DO",
+      "text": "apply the `readonly` modifier to fields when possible.",
+      "section": "A.1.6 Other",
+      "diagnostics": [
+        "IDE0044"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA050",
+      "strength": "DO",
+      "text": "use `if`…`throw` instead of assignment–expression–throw for argument validation.",
+      "section": "A.1.6 Other",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA051",
+      "strength": "DO",
+      "text": "follow the Framework Design Guidelines for naming identifiers, except for naming private and internal fields.",
+      "section": "A.2 Naming Conventions",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA052",
+      "strength": "DO",
+      "text": "use PascalCasing for namespace, type, and member names, except for internal and private fields.",
+      "section": "A.2 Naming Conventions",
+      "diagnostics": [
+        "IDE1006"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "suggestion"
+      }
+    },
+    {
+      "id": "FDGA053",
+      "strength": "DO",
+      "text": "use PascalCasing for const locals and const fields except for interop code, where it should match the name from the called code exactly.",
+      "section": "A.2 Naming Conventions",
+      "diagnostics": [
+        "IDE1006"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "suggestion"
+      }
+    },
+    {
+      "id": "FDGA054",
+      "strength": "DO",
+      "text": "use camelCasing for private and internal fields.",
+      "section": "A.2 Naming Conventions",
+      "diagnostics": [
+        "IDE1006"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "suggestion"
+      }
+    },
+    {
+      "id": "FDGA055",
+      "strength": "DO",
+      "text": "use a prefix “_” (underscore) for private and internal instance fields, “s_” for private and internal static fields, and “t_” for private and internal thread-static fields.",
+      "section": "A.2 Naming Conventions",
+      "diagnostics": [
+        "IDE1006"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "suggestion"
+      }
+    },
+    {
+      "id": "FDGA056",
+      "strength": "DO",
+      "text": "use camelCasing for local variables.",
+      "section": "A.2 Naming Conventions",
+      "diagnostics": [
+        "IDE1006"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "suggestion"
+      }
+    },
+    {
+      "id": "FDGA057",
+      "strength": "DO",
+      "text": "use camelCasing for parameters.",
+      "section": "A.2 Naming Conventions",
+      "diagnostics": [
+        "IDE1006"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "suggestion"
+      }
+    },
+    {
+      "id": "FDGA058",
+      "strength": "DO NOT",
+      "text": "use Hungarian notation (i.e., do not encode the type of a variable in its name).",
+      "section": "A.2 Naming Conventions",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA059",
+      "strength": "DO NOT",
+      "text": "use comments unless they describe something not obvious to someone other than the developer who wrote the code.",
+      "section": "A.3 Comments",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA060",
+      "strength": "AVOID",
+      "text": "multiline syntax (`/* ... */`) for comments. The single-line syntax (`// ...`) is preferred even when a comment spans multiple lines.",
+      "section": "A.3 Comments",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA061",
+      "strength": "DO NOT",
+      "text": "place comments at the end of a line unless the comment is very short.",
+      "section": "A.3 Comments",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA062",
+      "strength": "AVOID",
+      "text": "placing comments at the end of a line even when the comment is very short.",
+      "section": "A.3 Comments",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA063",
+      "strength": "AVOID",
+      "text": "writing “I” in comments.",
+      "section": "A.3 Comments",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA064",
+      "strength": "DO NOT",
+      "text": "have more than one public type in a source file, unless they differ only in the number of generic parameters or one is nested in the other.",
+      "section": "A.4 File Organization",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA065",
+      "strength": "DO",
+      "text": "name the source file with the name of the public type it contains.",
+      "section": "A.4 File Organization",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA066",
+      "strength": "DO",
+      "text": "name the source file for a `partial` type with the name of the primary file and a logical description of the contents of the file separated by a “.” (period), such as “JsonDocument.Parse.cs”.",
+      "section": "A.4 File Organization",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA067",
+      "strength": "DO",
+      "text": "organize the directory hierarchy just like the namespace hierarchy.",
+      "section": "A.4 File Organization",
+      "diagnostics": [
+        "IDE0130"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA068",
+      "strength": "DO",
+      "text": "group members into the following sections in the specified order:",
+      "section": "A.4 File Organization",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA069",
+      "strength": "CONSIDER",
+      "text": "grouping the remaining members into the following sections in the specified order:",
+      "section": "A.4 File Organization",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      }
+    },
+    {
+      "id": "FDGA070",
+      "strength": "DO",
+      "text": "place the using directives outside the namespace declaration.",
+      "section": "A.4 File Organization",
+      "diagnostics": [
+        "IDE0065"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    },
+    {
+      "id": "FDGA071",
+      "strength": "DO",
+      "text": "sort the using directives alphabetically, but place all System namespaces first.",
+      "section": "A.4 File Organization",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      }
+    }
+  ],
+  "registeredDiagnostics": [
+    "CA1507",
+    "CA1707",
+    "CA1708",
+    "CA1710",
+    "CA1711",
+    "CA1712",
+    "CA1713",
+    "CA1715",
+    "CA1716",
+    "CA1720",
+    "CA1721",
+    "CA1724",
+    "FDGA003",
+    "FDGA023",
+    "IDE0008",
+    "IDE0011",
+    "IDE0017",
+    "IDE0028",
+    "IDE0032",
+    "IDE0036",
+    "IDE0040",
+    "IDE0044",
+    "IDE0055",
+    "IDE0065",
+    "IDE0130",
+    "IDE1006",
+    "IDE2003"
+  ],
+  "breakingFixDiagnostics": [
+    "CA1707",
+    "IDE0130",
+    "IDE1006"
+  ]
+}
