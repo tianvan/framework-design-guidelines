@@ -19,7 +19,7 @@
 - MSBuild 属性名 `FrameworkDesignGuidelinesProfile`，取值 `library` / `application` / `test`。
 - 包 ID `FrameworkDesignGuidelines.Analyzers`（开发依赖，`PrivateAssets=all`）；工具包 ID `dotnet-fdg`，命令 `dotnet fdg`；插件名 `framework-design-guidelines`。三者版本号同为 `Directory.Build.props` 中的 `<Version>`，初始 `0.1.0`。
 - 严重级别默认映射：DO / DO NOT / AVOID → `warning`，CONSIDER → `suggestion`；从不使用 `error`。
-- globalconfig：`is_global = true`，`global_level = -100`（若 Task 5 的测试证明会被 SDK 自带配置压过，改为 `-1`，并更新设计文档 §5.2）。
+- globalconfig：`is_global = true`，`global_level = -1`（Task 5 实测：用户设置 AnalysisLevel/AnalysisMode 时 -100 会被压过）。
 - 自写分析器 `isEnabledByDefault: false`，只由 profile 的 globalconfig 打开；公开 API 改名永不自动修复。
 - 行宽：读取 `.editorconfig` 的标准键 `max_line_length`，未设置时为 120（我的决定）。
 - CLI 与包之间的协议版本 `FdgProtocolVersion = 1`。
