@@ -141,13 +141,13 @@ tests/
   - `rules/meta.yaml`：
 
 ```yaml
-repositoryUrl: https://github.com/OWNER/framework-design-guidelines
+repositoryUrl: https://github.com/tianvan/framework-design-guidelines
 chapters:
   - { token: "3", file: ch03.xhtml, rules: ch03-naming.yaml, title: Naming Guidelines }
   - { token: "A", file: app01.xhtml, rules: appA-coding-style.yaml, title: C# Coding Style Conventions }
 ```
 
-  其中 `OWNER` 在交付时向用户确认；生成器只读取这里的值。
+  生成器只读取这里的值。
 
 - [ ] **Step 2: 写手工样本 `tests/fixtures/book/sample.xhtml`**
   - 照原书标记写一个小章节：
