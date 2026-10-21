@@ -3,9 +3,11 @@
     <Project Path="src/Fdg.Generator/Fdg.Generator.csproj" />
     <Project Path="src/FrameworkDesignGuidelines.Analyzers/FrameworkDesignGuidelines.Analyzers.csproj" />
     <Project Path="src/FrameworkDesignGuidelines.CodeFixes/FrameworkDesignGuidelines.CodeFixes.csproj" />
+    <Project Path="src/FrameworkDesignGuidelines.Package/FrameworkDesignGuidelines.Package.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Fdg.Generator.Tests/Fdg.Generator.Tests.csproj" />
     <Project Path="tests/FrameworkDesignGuidelines.Analyzers.Tests/FrameworkDesignGuidelines.Analyzers.Tests.csproj" />
+    <Project Path="tests/Fdg.IntegrationTests/Fdg.IntegrationTests.csproj" />
   </Folder>
 </Solution>

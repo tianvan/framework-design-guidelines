@@ -1,0 +1,73 @@
+<Project>
+
+  <!--
+    FrameworkDesignGuidelines.Analyzers: imported after the project body, so the profile set in the project or in
+    Directory.Build.props is visible here. Profile names are case-insensitive and normalized to lower case.
+  -->
+  <PropertyGroup>
+    <_FdgProfile>$(FrameworkDesignGuidelinesProfile.Trim().ToLowerInvariant())</_FdgProfile>
+    <_FdgProfileIsValid Condition="'$(_FdgProfile)' == 'library' or '$(_FdgProfile)' == 'application' or '$(_FdgProfile)' == 'test'">true</_FdgProfileIsValid>
+    <ErrorLog Condition="'$(FdgSarifDir)' != ''">$(FdgSarifDir)/$(MSBuildProjectName)-$(TargetFramework).sarif,version=2.1</ErrorLog>
+  </PropertyGroup>
+
+  <!--
+    Roslyn's targets turn GlobalAnalyzerConfigFiles into EditorConfigFiles (what Csc receives) before package
+    targets are imported, so the profile's globalconfig is added to both: EditorConfigFiles makes it effective,
+    GlobalAnalyzerConfigFiles keeps it visible to tools that list global configs.
+  -->
+  <ItemGroup Condition="'$(_FdgProfileIsValid)' == 'true'">
+    <GlobalAnalyzerConfigFiles Include="$(MSBuildThisFileDirectory)globalconfigs/fdg.$(_FdgProfile).globalconfig" />
+    <EditorConfigFiles Include="$(MSBuildThisFileDirectory)globalconfigs/fdg.$(_FdgProfile).globalconfig" />
+  </ItemGroup>
+
+  <Target Name="FdgValidateProfile" BeforeTargets="CoreCompile">
+    <Warning
+      Condition="'$(_FdgProfile)' == ''"
+      Code="FDG0001"
+      Text="FrameworkDesignGuidelinesProfile is not set; FDG rules are inactive. Set it to library, application or test." />
+    <Warning
+      Condition="'$(_FdgProfile)' != '' and '$(_FdgProfileIsValid)' != 'true'"
+      Code="FDG0002"
+      Text="Unknown FrameworkDesignGuidelinesProfile '$(FrameworkDesignGuidelinesProfile)'. Use library, application or test." />
+    <MakeDir Condition="'$(FdgSarifDir)' != ''" Directories="$(FdgSarifDir)" />
+  </Target>
+
+  <!--
+    Writes obj/fdg/marker.json for dotnet-fdg: one JSON line, rewritten only when its content changes.
+    Multi-targeting projects get marker.<tfm>.json per target framework; marker.json is written only by the
+    first framework in TargetFrameworks, so parallel inner builds never race on it and its content is stable.
+  -->
+  <Target Name="FdgWriteMarker" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <_FdgMarkerDir>$(BaseIntermediateOutputPath)fdg/</_FdgMarkerDir>
+      <_FdgLangVersion>$(LangVersion)</_FdgLangVersion>
+      <_FdgLangVersion Condition="'$(_FdgLangVersion)' == ''">$(MaxSupportedLangVersion)</_FdgLangVersion>
+      <_FdgRulesPath>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', 'data', 'rules.json'))</_FdgRulesPath>
+      <_FdgTargetFrameworks>$(TargetFrameworks.Trim())</_FdgTargetFrameworks>
+      <_FdgFirstTargetFramework>$(_FdgTargetFrameworks)</_FdgFirstTargetFramework>
+      <_FdgFirstTargetFramework Condition="$(_FdgTargetFrameworks.IndexOf(';')) &gt;= 0">$(_FdgTargetFrameworks.Substring(0, $(_FdgTargetFrameworks.IndexOf(';'))))</_FdgFirstTargetFramework>
+      <_FdgWritesMarkerJson>true</_FdgWritesMarkerJson>
+      <_FdgWritesMarkerJson Condition="'$(_FdgTargetFrameworks)' != '' and '$(_FdgFirstTargetFramework.Trim())' != '$(TargetFramework)'">false</_FdgWritesMarkerJson>
+      <!-- JSON string escaping for values that may hold backslashes or quotes (paths, user-set properties). -->
+      <_FdgJsonProfile>$([System.String]::Copy('$(_FdgProfile)').Replace('\', '\\').Replace('&quot;', '\&quot;'))</_FdgJsonProfile>
+      <_FdgJsonLangVersion>$([System.String]::Copy('$(_FdgLangVersion)').Replace('\', '\\').Replace('&quot;', '\&quot;'))</_FdgJsonLangVersion>
+      <_FdgJsonRulesPath>$([System.String]::Copy('$(_FdgRulesPath)').Replace('\', '\\').Replace('&quot;', '\&quot;'))</_FdgJsonRulesPath>
+      <_FdgJsonProjectPath>$([System.String]::Copy('$(MSBuildProjectFullPath)').Replace('\', '\\').Replace('&quot;', '\&quot;'))</_FdgJsonProjectPath>
+      <_FdgMarkerJson>{ "protocol": $(FdgProtocolVersion), "packageVersion": "$(FdgPackageVersion)", "profile": "$(_FdgJsonProfile)", "langVersion": "$(_FdgJsonLangVersion)", "targetFramework": "$(TargetFramework)", "rulesPath": "$(_FdgJsonRulesPath)", "projectPath": "$(_FdgJsonProjectPath)" }</_FdgMarkerJson>
+    </PropertyGroup>
+    <MakeDir Directories="$(_FdgMarkerDir)" />
+    <WriteLinesToFile
+      Condition="'$(_FdgTargetFrameworks)' != ''"
+      File="$(_FdgMarkerDir)marker.$(TargetFramework).json"
+      Lines="$([MSBuild]::Escape($(_FdgMarkerJson)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile
+      Condition="'$(_FdgWritesMarkerJson)' == 'true'"
+      File="$(_FdgMarkerDir)marker.json"
+      Lines="$([MSBuild]::Escape($(_FdgMarkerJson)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+  </Target>
+
+</Project>

@@ -116,9 +116,11 @@
 - 只使用 .NET SDK 自带的 CA/IDE 规则加上我们自写的分析器。SDK 自带规则中**能对应到 FDG 准则的全部开启**；对应不上的一律不开。
 - SDK 自带规则的严重级别通过**分析器包内置的 globalconfig** 配置（每个 profile 一份），这和 SDK 的 `AnalysisLevel` 是同一种官方机制：
   - 不依赖 CA 或 IDE 规则包。依赖这些包只能锁定版本，无法替代配置，反而会抬高用户需要的最低工具链版本，还可能让 IDE 与构建的行为不一致；
-  - globalconfig 设置 `global_level = -100`（我的决定），让用户自己的 `.editorconfig` 和 globalconfig 优先生效；
+  - globalconfig 设置 `global_level = -1`（Task 5 实测后由 `-100` 改定，见 §8）：高于 SDK 的 `AnalysisLevel` 配置（`analysislevel_*` 为 `-100`，按类别的 `analysislevel<类别>_*` 为 `-99`），低于用户自己的 globalconfig（名为 `.globalconfig` 的默认 `100`，其余默认 `0`）；用户的 `.editorconfig` 不是全局配置，总是优先；
   - 用户的自定义覆盖写在他们自己的 `.editorconfig` 中，规则升级只需升级包版本。
 - **已实测确认**（临时 netstandard2.0、C# 7.3 项目，SDK 10.0.402）：通过 `GlobalAnalyzerConfigFiles` 引入的 globalconfig，其中的排版选项（`csharp_preserve_single_line_statements/blocks = false`）、命名规则（IDE1006）、IDE0011、IDE0055 严重级别，在 `dotnet build`（配合 `EnforceCodeStyleInBuild`）和 `dotnet format` 中都会生效。
+  - 补充（Task 5 实测，SDK 10.0.402）：包的 targets 在 Roslyn 的 `Microsoft.Managed.Core.targets` 之后才导入，而后者在求值阶段就把 `GlobalAnalyzerConfigFiles` 并入了 `EditorConfigFiles`（Csc 实际接收的项）。所以包里只加 `GlobalAnalyzerConfigFiles` 不会生效，targets 同时把 globalconfig 加进 `EditorConfigFiles`（与 SDK 的 NetAnalyzers 包相同的做法）。
+  - 补充：`dotnet format` 的代码风格（IDE）修复只看选项值后缀里的严重级别（如 `csharp_prefer_braces = true:warning`），忽略 globalconfig 中的 `dotnet_diagnostic.IDExxxx.severity`。所以生成器给代码风格选项（`dotnet_style_*`、`csharp_style_*`、`csharp_prefer_*`、`csharp_using_directive_placement`、`csharp_preferred_modifier_order`）追加其规则所映射 IDE 诊断的严重级别；排版选项（IDE0055）不加后缀。构建时两者都认，`dotnet_diagnostic` 优先。
 - props 文件负责打开 `EnableNETAnalyzers` 和 `EnforceCodeStyleInBuild`。
 - 包标记为开发依赖（`PrivateAssets=all`），规则不会传递给目标库的下游使用者。
 - 默认严重级别是 `warning`，不使用 `error`，否则老项目一引入就无法构建。是否在 CI 中把警告当作错误，由用户自己决定。
@@ -381,7 +383,9 @@ README 中如实写明：目前只有确定性层经过测试，尚无 AI 遵循
 
 - VS 和 Rider 的实时分析是否识别包内的 globalconfig。目前只验证了命令行。
 - globalconfig 的 `global_level` 与用户设置的 `AnalysisLevel` / `AnalysisMode` 之间的优先级关系。
+  - **已实测**（Task 5，SDK 10.0.402，netstandard2.0 / C# 7.3 临时项目，测试 `Profile_wins_over_sdk_AnalysisLevel_globalconfigs`）：netstandard2.0 项目不设 `AnalysisLevel` 时 SDK 不加任何 analysislevel 配置，`-100` 也能生效（`Build_reports_mapped_ca_rule` 通过）。但用户一旦设置 `AnalysisLevel`/`AnalysisMode`（net5+ 项目默认就有 `AnalysisLevel`），SDK 的 `analysislevel_*.globalconfig` 同为 `-100`，同一键冲突时 Roslyn 报 `MultipleGlobalAnalyzerKeys` 并把该键清空（如 `test` 档加 `latest-all` 时出现 24 条，`application` 档加 `latest-none` 时 CA1707 消失）；按类别的 `AnalysisMode<类别>` 配置为 `-99`，直接压过 `-100`（`AnalysisModeNaming=None` 时 CA1707 消失，`All` 时 `test` 档也报 CA1707）。改为 `-1` 后上述情况全部由 profile 决定，用户的 `.globalconfig` 和 `.editorconfig` 仍然优先（已测）。
 - 自写分析器的 FixAll 修复能否被 `dotnet format analyzers --include` 正确应用。
+  - **已实测**（Task 5）：可以。`dotnet format analyzers <proj> --no-restore --diagnostics FDGA003 FDGA023 --include <file>` 一次修复了同一文件中全部 8 处诊断（4 处单行 catch/finally、3 处长列表），再次构建无 FDGA 诊断。`dotnet format <proj>` 同时应用包内 CodeFix、IDE0011 加括号（依赖上面的选项后缀）和一行多语句拆分（测试 `Dotnet_format_fixes_package_codefixes`）。
 - 两端 SessionStart 在长会话压缩后是否会重新触发，以及 additionalContext 是否生效。
 - 两端 Stop 阻止结束时的实际行为，以及连续阻止次数的上限。
 - 全部规则开启后的构建和格式化耗时。

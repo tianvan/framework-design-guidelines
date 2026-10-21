@@ -94,6 +94,35 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Code_style_option_carries_the_severity_of_its_rules_diagnostics()
+    {
+        // dotnet format reads an IDE rule's severity from the option suffix, not from a globalconfig's dotnet_diagnostic.
+        GeneratorInput input = Edit(Input(), OnRule("FDG9010", m => m with
+        {
+            Check = m.Check with { Diagnostics = new[] { "IDE0011" } },
+            Config = new[] { "csharp_prefer_braces = true" },
+        }));
+
+        Assert.Contains("csharp_prefer_braces = true:warning", Lines(GlobalConfigEmitter.Emit(input, "library")));
+        Assert.Contains("dotnet_diagnostic.IDE0011.severity = warning", Lines(GlobalConfigEmitter.Emit(input, "library")));
+    }
+
+    [Fact]
+    public void Formatting_and_suffixed_options_are_written_as_is()
+    {
+        GeneratorInput input = Edit(Input(), OnRule("FDG9010", m => m with
+        {
+            Check = m.Check with { Diagnostics = new[] { "IDE0055", "IDE0065" } },
+            Config = new[] { "csharp_new_line_before_catch = true", "csharp_using_directive_placement = outside_namespace:silent" },
+        }));
+
+        string[] lines = Lines(GlobalConfigEmitter.Emit(input, "library"));
+
+        Assert.Contains("csharp_new_line_before_catch = true", lines);
+        Assert.Contains("csharp_using_directive_placement = outside_namespace:silent", lines);
+    }
+
+    [Fact]
     public void Globalconfig_starts_with_is_global_and_level()
     {
         foreach (string profile in new[] { "library", "application", "test" })
@@ -101,7 +130,7 @@ public sealed class EmitterTests : IDisposable
             string[] lines = Lines(GlobalConfigEmitter.Emit(Input(), profile));
 
             Assert.Equal("is_global = true", lines[0]);
-            Assert.Equal("global_level = -100", lines[1]);
+            Assert.Equal("global_level = -1", lines[1]);
         }
     }
 

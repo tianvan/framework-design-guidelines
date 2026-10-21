@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Packs FrameworkDesignGuidelines.Analyzers: both Roslyn assemblies under analyzers/dotnet/cs,
+    the props/targets and per-profile globalconfigs under build/, and the rules manifest under data/.
+    The package is a development dependency: no lib/ assets, no dependencies, no buildTransitive/.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>FrameworkDesignGuidelines.Analyzers</PackageId>
+    <Description>Roslyn analyzers and per-profile analyzer configuration distilled from Framework Design Guidelines, 3rd edition.</Description>
+    <PackageTags>analyzers;roslyn;framework-design-guidelines;coding-style</PackageTags>
+    <Authors>tianvan</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/tianvan/framework-design-guidelines</PackageProjectUrl>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <!-- NU5128: no lib/ or ref/ assets is intended for an analyzer-only package. -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);FdgAddPackageContent</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <!--
+    Built through the MSBuild task rather than ProjectReference: the analyzer project's own name equals this
+    PackageId, which restore rejects as ambiguous.
+  -->
+  <ItemGroup>
+    <FdgAnalyzerProject Include="..\FrameworkDesignGuidelines.Analyzers\FrameworkDesignGuidelines.Analyzers.csproj" />
+    <FdgAnalyzerProject Include="..\FrameworkDesignGuidelines.CodeFixes\FrameworkDesignGuidelines.CodeFixes.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="build\FrameworkDesignGuidelines.Analyzers.targets" Pack="true" PackagePath="build/" />
+    <None Include="build\globalconfigs\*.globalconfig" Pack="true" PackagePath="build/globalconfigs/" />
+    <None Include="data\rules.json" Pack="true" PackagePath="data/" />
+  </ItemGroup>
+
+  <!-- The props carry the package version, so the packed copy has its @FDG_PACKAGE_VERSION@ token replaced. -->
+  <Target Name="FdgAddPackageContent">
+    <MSBuild Projects="@(FdgAnalyzerProject)" Targets="Build" Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="_FdgAnalyzerAssembly" />
+    </MSBuild>
+    <PropertyGroup>
+      <FdgPreparedBuildDir>$(IntermediateOutputPath)fdgbuild/</FdgPreparedBuildDir>
+      <_FdgPropsText>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/build/FrameworkDesignGuidelines.Analyzers.props').Replace('@FDG_PACKAGE_VERSION@', '$(PackageVersion)'))</_FdgPropsText>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(FdgPreparedBuildDir)FrameworkDesignGuidelines.Analyzers.props" Lines="$([MSBuild]::Escape($(_FdgPropsText)))" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="@(_FdgAnalyzerAssembly)" PackagePath="analyzers/dotnet/cs/" />
+      <TfmSpecificPackageFile Include="$(FdgPreparedBuildDir)FrameworkDesignGuidelines.Analyzers.props" PackagePath="build/" />
+    </ItemGroup>
+    <Error Condition="'@(_FdgAnalyzerAssembly->Count())' != '2'" Text="Expected the analyzer and code fix assemblies, found: @(_FdgAnalyzerAssembly)" />
+  </Target>
+
+</Project>

@@ -1,0 +1,94 @@
+using System.Globalization;
+
+namespace Fdg.IntegrationTests;
+
+/// <summary>
+/// Packs FrameworkDesignGuidelines.Analyzers once per test run into a temporary feed, with a version that
+/// exists nowhere else. Restores go to a per-run packages folder, so the user's global cache never sees it.
+/// </summary>
+public sealed class PackageFixture : IDisposable
+{
+    public const string PackageId = "FrameworkDesignGuidelines.Analyzers";
+
+    public PackageFixture()
+    {
+        RepositoryRoot = FindRepositoryRoot();
+        string stamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+        Version = "0.1.0-test." + stamp;
+        Root = Path.Combine(Path.GetTempPath(), "fdg-it-" + stamp + "-" + Guid.NewGuid().ToString("N")[..6]);
+        FeedDirectory = Path.Combine(Root, "feed");
+        PackagesDirectory = Path.Combine(Root, "packages");
+        Directory.CreateDirectory(FeedDirectory);
+        Directory.CreateDirectory(PackagesDirectory);
+
+        try
+        {
+            PackagePath = Pack();
+        }
+        catch
+        {
+            // xunit does not dispose a fixture whose constructor throws.
+            Dispose();
+            throw;
+        }
+    }
+
+    public string RepositoryRoot { get; }
+
+    public string Version { get; }
+
+    public string Root { get; }
+
+    public string FeedDirectory { get; }
+
+    public string PackagesDirectory { get; }
+
+    public string PackagePath { get; }
+
+    /// <summary>Directory where restore extracts this run's package.</summary>
+    public string RestoredPackageDirectory =>
+        Path.Combine(PackagesDirectory, PackageId.ToLowerInvariant(), Version.ToLowerInvariant());
+
+    public void Dispose()
+    {
+        TempDirectory.Delete(Root);
+    }
+
+    private string Pack()
+    {
+        DotnetResult pack = Dotnet.Run(
+            RepositoryRoot,
+            packagesDirectory: null,
+            "pack",
+            Path.Combine(RepositoryRoot, "src", "FrameworkDesignGuidelines.Package"),
+            "-c",
+            "Release",
+            "-o",
+            FeedDirectory,
+            "-p:Version=" + Version,
+            "-tl:off",
+            "-nodeReuse:false");
+        if (pack.ExitCode != 0)
+        {
+            throw new InvalidOperationException("dotnet pack failed:\n" + pack.Output);
+        }
+
+        string path = Path.Combine(FeedDirectory, $"{PackageId}.{Version}.nupkg");
+        return File.Exists(path)
+            ? path
+            : throw new InvalidOperationException($"dotnet pack did not produce {path}:\n{pack.Output}");
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        for (DirectoryInfo? directory = new(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "FrameworkDesignGuidelines.slnx")))
+            {
+                return directory.FullName;
+            }
+        }
+
+        throw new InvalidOperationException("FrameworkDesignGuidelines.slnx not found above " + AppContext.BaseDirectory);
+    }
+}

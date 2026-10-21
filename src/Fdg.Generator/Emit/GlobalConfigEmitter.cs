@@ -8,6 +8,10 @@ public static class GlobalConfigEmitter
 {
     private const string NamingRulePrefix = "dotnet_naming_rule.";
 
+    private static readonly string[] CodeStylePrefixes = { "dotnet_style_", "csharp_style_", "csharp_prefer_" };
+
+    private static readonly string[] CodeStyleKeys = { "csharp_using_directive_placement", "csharp_preferred_modifier_order" };
+
     public static string Emit(GeneratorInput input, string profile)
     {
         if (!input.Profiles.TryGetValue(profile, out IReadOnlyList<string>? baseOptions))
@@ -23,9 +27,11 @@ public static class GlobalConfigEmitter
 
         var text = new StringBuilder();
         text.Append("is_global = true\n");
-        text.Append("global_level = -100\n");
+        // Above the SDK's AnalysisLevel globalconfigs (-100, per category -99), below any user globalconfig (0 or 100).
+        text.Append("global_level = -1\n");
         text.Append(Header.GlobalConfig).Append('\n');
 
+        IReadOnlyDictionary<string, SeverityLevel> severities = DiagnosticMap.Severities(input.Rules, profile);
         var written = new HashSet<string>(StringComparer.Ordinal);
         text.Append("\n# Profile options\n");
         foreach (ConfigLine line in baseLines)
@@ -38,7 +44,7 @@ public static class GlobalConfigEmitter
             var block = new StringBuilder();
             foreach (ConfigLine line in optionLines[rule.Id])
             {
-                AppendNew(block, written, line);
+                AppendNew(block, written, WithSeverity(line, rule, severities));
             }
 
             if (block.Length > 0)
@@ -49,7 +55,7 @@ public static class GlobalConfigEmitter
 
         // Written for every diagnostic, none included, so that an SDK default never applies to a rule that is off.
         text.Append("\n# Diagnostic severities\n");
-        foreach ((string id, SeverityLevel level) in DiagnosticMap.Severities(input.Rules, profile))
+        foreach ((string id, SeverityLevel level) in severities)
         {
             text.Append("dotnet_diagnostic.").Append(id).Append(".severity = ").Append(RuleText.Level(level)).Append('\n');
         }
@@ -87,6 +93,27 @@ public static class GlobalConfigEmitter
 
         lines.AddRange(namingRules.Select(name => new ConfigLine($"{NamingRulePrefix}{name}.severity", RuleText.Level(severity))));
         return lines;
+    }
+
+    /// <summary>
+    /// Appends <c>:severity</c> to a code style option, taken from the IDE diagnostics its rule maps. <c>dotnet format</c>
+    /// decides which IDE rules to fix from that suffix and ignores <c>dotnet_diagnostic</c> entries of a globalconfig;
+    /// the build honors either. Formatting options (IDE0055) take no suffix, and a suffix written in the data is kept.
+    /// </summary>
+    private static ConfigLine WithSeverity(ConfigLine line, Rule rule, IReadOnlyDictionary<string, SeverityLevel> severities)
+    {
+        bool isCodeStyle = CodeStylePrefixes.Any(p => line.Key.StartsWith(p, StringComparison.OrdinalIgnoreCase))
+            || CodeStyleKeys.Contains(line.Key, StringComparer.OrdinalIgnoreCase);
+        if (!isCodeStyle || line.Value.Contains(':', StringComparison.Ordinal))
+        {
+            return line;
+        }
+
+        SeverityLevel[] levels = rule.Mapping.Check.Diagnostics
+            .Where(id => id.StartsWith("IDE", StringComparison.Ordinal) && severities.ContainsKey(id))
+            .Select(id => severities[id])
+            .ToArray();
+        return levels.Length == 0 ? line : line with { Value = $"{line.Value}:{RuleText.Level(levels.Max())}" };
     }
 
     private static ConfigLine ParseLine(string text, string owner)

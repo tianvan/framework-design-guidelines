@@ -1,0 +1,18 @@
+<Project>
+
+  <!--
+    FrameworkDesignGuidelines.Analyzers: imported before the project body. Settings the user makes
+    explicitly (in Directory.Build.props or the project) win; the profile is read in the targets.
+  -->
+  <PropertyGroup>
+    <EnableNETAnalyzers Condition="'$(EnableNETAnalyzers)' == ''">true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
+    <FdgPackageVersion>@FDG_PACKAGE_VERSION@</FdgPackageVersion>
+    <FdgProtocolVersion>1</FdgProtocolVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="FrameworkDesignGuidelinesProfile" />
+  </ItemGroup>
+
+</Project>
