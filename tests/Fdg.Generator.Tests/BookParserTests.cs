@@ -127,6 +127,20 @@ public class BookParserTests
     }
 
     [Fact]
+    public void Prose_after_a_guideline_table_belongs_to_the_guideline_that_introduces_it()
+    {
+        BookChapter chapter = BookParser.Parse(Fixture("table-trailer.xhtml"), "9");
+
+        Assert.Equal(new[] { "FDG9001", "FDG9002", "FDG9003", "FDG9004" }, chapter.Rules.Select(r => r.Id));
+        Assert.Equal(
+            new[] { "These suffixes apply to the whole hierarchy.", "public class ElementStream : Object { ... }" },
+            chapter.Rules[0].Body.Select(b => b.Text));
+        Assert.Empty(chapter.Rules[1].Body);
+        Assert.Empty(chapter.Rules[2].Body);
+        Assert.Empty(chapter.Rules[3].Body);
+    }
+
+    [Fact]
     public void Inline_code_becomes_backticks()
     {
         Rule rule = ParseSample().Rules[0];

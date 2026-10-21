@@ -53,6 +53,9 @@ public static class BookParser
         private string? _anchor;
         private PendingRule? _current;
 
+        // The index of the guideline that introduced the last guideline table; blocks after the table belong to it.
+        private int? _tableOwner;
+
         public Walker(string chapterToken, bool isStyle)
         {
             _chapterToken = chapterToken;
@@ -107,6 +110,7 @@ public static class BookParser
         private void VisitHeading(IElement heading)
         {
             EndRule();
+            _tableOwner = null;
             string? id = heading.GetAttribute("id");
             string text = BlockRenderer.Inline(heading);
             if (!string.IsNullOrEmpty(id) && text.Length > 0)
@@ -171,10 +175,21 @@ public static class BookParser
         {
             if (table.QuerySelectorAll("img").Any(img => IconName(img) is not null))
             {
-                // A table of guidelines: each item is its own rule and has no body.
+                // A table of guidelines: each item is its own rule and has no body. The guideline before the
+                // table, if any, introduces it and keeps the blocks that follow the table.
+                // Cells without an icon are row context (see RowContext), not body.
+                int? owner = _current is null ? null : _rules.Count;
                 EndRule();
-                VisitChildren(table);
+                foreach (IElement cell in table.QuerySelectorAll("td, th"))
+                {
+                    if (cell.QuerySelectorAll("img").Any(img => IconName(img) is not null))
+                    {
+                        VisitChildren(cell);
+                    }
+                }
+
                 EndRule();
+                _tableOwner = owner;
             }
             else
             {
@@ -185,6 +200,7 @@ public static class BookParser
         private void StartRule(IElement paragraph, string iconName)
         {
             EndRule();
+            _tableOwner = null;
             string id = $"FDG{_chapterToken}{_rules.Count + 1:000}";
 
             if (_section is null || _anchor is null)
@@ -236,7 +252,15 @@ public static class BookParser
 
         private void AddBlock(Block block)
         {
-            _current?.Body.Add(block);
+            if (_current is not null)
+            {
+                _current.Body.Add(block);
+            }
+            else if (_tableOwner is int owner)
+            {
+                Rule rule = _rules[owner];
+                _rules[owner] = rule with { Body = rule.Body.Append(block).ToList() };
+            }
         }
 
         private void EndRule()

@@ -7,7 +7,7 @@
   body:
     - kind: paragraph
       text: For example, use `TextColor` rather than `Textcolor` or `Text_color`. Single words, such as `Button`, simply have initial capitals. Compound words that are always written as a single word, like endpoint, are treated as single words and have initial capitals only. More information on compound words is given in section 3.1.3.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -54,7 +54,7 @@
     - kind: annotation
       text: An early version of this table included a convention for instance field names. We later adopted the guideline that you should almost never use publicly exposed instance fields and should use properties instead. Thus, the guideline for publicly exposed instance fields was no longer needed. For the record, the convention was camelCasing.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -83,7 +83,7 @@
         System.IO
         System.Threading.IOCompletionCallback
         public void StartIO(Stream ioStream)
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -111,7 +111,7 @@
         System.Xml
         System.Xml.XmlNode
         public void ProcessHtmlTag(string htmlTag)
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -178,13 +178,14 @@
     - kind: annotation
       text: No matter how hard we try to follow all of these guidelines, sometimes we make mistakes. For example, `System.Text.UTF8Encoding` should really have been `System.Text.Utf8Encoding`. Now when we introduce new UTF8-related functionality, what do we do? Do we continue to use “UTF8” for consistency, or do we use “Utf8” for adherence to the guidelines? In general, we choose to not repeat the mistakes of the past, and newer types have used “Utf8”—for example, `System.Buffers.Text.Utf8Formatter`.
       author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - IDE1006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -193,7 +194,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: "planned-analyzer: acronym casing against the book's word lists."
+  notes: "IDE1006 reports camel-cased names that start with an uppercase acronym, such as 'IOStream', through the naming rules configured by FDGA056 and FDGA057. planned-analyzer: acronym casing against the book's word lists."
 - id: FDG3006
   strength: DO NOT
   text: capitalize each word in so-called closed-form compound words.
@@ -257,7 +258,7 @@
 
         That doesn’t mean you should immediately change all of your existing names. However, in types that don’t interact with the older forms, you are free (and encouraged) to accept the evolving nature of language when it comes to these terms.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -280,7 +281,7 @@
   section: 3.1.4 Case Sensitivity
   anchor: sec3_1_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -306,7 +307,7 @@
   body:
     - kind: paragraph
       text: For example, a property named `HorizontalAlignment` is more English-readable than `AlignmentHorizontal`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -329,7 +330,7 @@
   section: 3.2.1 Word Choice
   anchor: sec3_2_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -355,7 +356,7 @@
     - kind: annotation
       text: Several sets of naming conventions for unit tests appear to violate this guideline with method names like `TestSubjectName_NoMatch`. But, since most test libraries are not distributed as reusable components, the guidelines in this book don’t generally apply to test code.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -389,7 +390,7 @@
     - kind: annotation
       text: There have always been both positive and negative effects of using the Hungarian naming convention, and they still exist today. Positives include better readability (if used correctly). Negatives include cost of maintenance, confusion if maintenance was not done properly, and finally, Hungarian makes the API more cryptic (less approachable) to some developers. In the world of procedural languages (e.g., C) and the separation of the System APIs for advanced developers from framework libraries for a much wider developer group, the positives seemed to be greater than the negatives. Today, with System APIs designed to be approachable to more developers, and with object-oriented (OO) languages, the trade-off seems to be pulling in the other direction. OO encapsulation brings variable declaration and usage points closer together, OO style favors short, well-factored methods, and abstractions often make the exact type less important or even meaningless.
       author: Krzysztof Cwalina
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -417,7 +418,7 @@
     - kind: annotation
       text: When I was porting my Applied Microsoft .NET Framework Programming book from C# to Visual Basic, I ran into this situation a lot. For example, the class library has `Delegate`, `Module`, and `Assembly` classes, and Visual Basic uses these same terms for keywords. This problem is exacerbated by the fact that VB is a case-insensitive language. Visual Basic, like C#, has a way to escape the keywords to disambiguate the situation to the compiler (using square brackets), but I was surprised that the VB team selected keywords that conflict with so many class library names.
       author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -458,7 +459,7 @@
         | `Naïve` | `Naive` |
         | `Résumé` | `Resume` |
         | `Röntgen` | `Roentgen` |
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -483,7 +484,7 @@
   body:
     - kind: paragraph
       text: For example, use `GetWindow` rather than `GetWin`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -513,7 +514,7 @@
     - kind: annotation
       text: We continually debate about whether a given acronym is well known or not. A good divining rod is what I call the grep test. Simply use some search engine to grep the Web for the acronym. If the first few results returned are indeed the meaning you intend, it is likely that your acronym qualifies as well known; if you don’t get those search results, think harder about the name. If you fail the test, don’t just spell out the acronym but consider how you can be descriptive in the name.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -538,22 +539,23 @@
   body:
     - kind: paragraph
       text: For example, `GetLength` is a better name than `GetInt`.
-  status: draft
+  status: verified
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1720
+    coverage: partial
   autofix: no
   severity:
-    library: warning
-    application: warning
+    library: suggestion
+    application: suggestion
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1720 reports language-specific type names in member names, such as 'GetInt'. It is a suggestion because it also reports ordinary words such as 'Long' and 'Short'.
 - id: FDG3017
   strength: DO
   text: use a generic CLR type name, rather than a language-specific name, in the rare cases when an identifier has no semantic meaning beyond its type.
@@ -583,7 +585,7 @@
         | `char` | `Char` | `wchar_t` | `Char` |
         | `string` | `String` | `String` | `String` |
         | `object` | `Object` | `Object` | `Object` |
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -614,22 +616,23 @@
         void Write(double value);
         void Write(float value);
         void Write(short value);
-  status: draft
+  status: verified
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1720
+    coverage: partial
   autofix: no
   severity:
-    library: warning
-    application: warning
+    library: suggestion
+    application: suggestion
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1720 reports only identifiers that are language type names, such as 'int'; it does not see repeated type names such as 'stream'.
+  notes: CA1720 reports parameter names that are built-in or CLR type names, such as 'double' or 'int32'; it does not see names of other types, such as 'stream'.
 - id: FDG3019
   strength: DO
   text: use a name similar to the old API when creating new versions of an existing API.
@@ -650,7 +653,7 @@
         class AppDomainSetup {
            public string CachePath { get { ... }; set  { ... }; }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -679,7 +682,7 @@
 
         This naming practice will assist discovery when browsing documentation or using IntelliSense. The old version of the API will be organized close to the new APIs, because most browsers and IntelliSense show identifiers in alphabetical order.
       author: Vance Morrison
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -702,7 +705,7 @@
   section: 3.2.4 Naming New Versions of Existing APIs
   anchor: sec3_2_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -744,7 +747,7 @@
     - kind: annotation
       text: I think that `X509Certificate2` is successful as the type name of the more usable of the two X.509 certificate classes in part because it is so much more powerful than `X509Certificate` that there’s really no reason to use the former class. Compounded with there being very few APIs that provide or accept `X509Certificate`, it’s simply that `X509Certificate2` is the name of the certificate type in .NET. (That said, I’ll stand contrary to Krzysztof’s claim and say that I wish that the functionality had been added to `X509Certificate` without a new type being introduced.)
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -777,7 +780,7 @@
         public class CarNew     { ... } // the wrong way
         public class Car2       { ... } // an acceptable way
         public class Automobile { ... } // a better way
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -787,13 +790,13 @@
   autofix: no
   severity:
     library: warning
-    application: none
+    application: warning
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'CA1711 reports the Ex and New suffixes when a member or type without the suffix exists. Versioning guideline: applies to the library profile only.'
+  notes: CA1711 reports the Ex and New suffixes when a member or type without the suffix exists. Unlike the other versioning guidelines it applies to applications too, as a naming rule (CA1711 is shared with FDG3052, FDG3055, FDG3062, and FDG3063).
 - id: FDG3024
   strength: DO
   text: use the “64” suffix when introducing versions of APIs that operate on a 64-bit integer (a long integer) instead of a 32-bit integer. You only need to take this approach when the existing 32-bit API exists; don’t do it for brand-new APIs with only a 64-bit version.
@@ -817,7 +820,7 @@
     - kind: annotation
       text: Note that this guideline applies only to retrofitting APIs that have already shipped. When designing a brand-new API, use the most appropriate type and name for the API that will work on all platforms, and avoid using both “32” and “64” suffixes. Consider using overloading.
       author: KIT GEORGE
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -842,7 +845,7 @@
   body:
     - kind: paragraph
       text: Assembly, DLL, and package names don’t have to correspond to namespace names, but it is reasonable to follow the namespace name when naming assemblies. A good rule of thumb is to name the DLL based on the common prefix of the namespaces contained in the assembly. For example, an assembly with two namespaces, `MyCompany.MyTechnology.FirstFeature` and `MyCompany.MyTechnology.SecondFeature`, could be called `MyCompany.MyTechnology.dll`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -875,7 +878,7 @@
         Microsoft.VisualBasic.Vsa.dll
         Fabrikam.Security.dll
         Litware.Controls.dll
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -906,7 +909,7 @@
     - kind: annotation
       text: This means staying away from the latest cool and catchy name that the marketing folks have come up with. It is fine to tweak the branding of a product from release to release, but the namespace name will be burned into your client’s code forever. Therefore, choose something that is technically sound and not subject to the marketing whims of the day.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -932,7 +935,7 @@
     - kind: annotation
       text: We added a set of controls to ASP.NET late in the ship cycle for V1.0 of the .NET Framework that rendered for mobile devices. Because these controls came from a team in a different division, our immediate reaction was to put them in a different namespace (`System.Web.MobileControls`). Then, after a couple of reorganizations and .NET Framework versions, we realized a better engineering trade-off was to fold that functionality into the existing controls in `System.Web.Controls`. In retrospect, we let internal organizational differences affect the public exposure of the APIs, and we came to regret that later. Avoid this type of mistake in your designs.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -955,7 +958,7 @@
   section: 3.4 Names of Namespaces
   anchor: sec3_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -978,7 +981,7 @@
   section: 3.4 Names of Namespaces
   anchor: sec3_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1004,7 +1007,7 @@
   body:
     - kind: paragraph
       text: For example, use `System.Collections` instead of `System.Collection`. Brand names and acronyms are exceptions to this rule, however. For example, use `System.IO` instead of `System.IOs`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1031,7 +1034,7 @@
       text: For example, do not use `Debug` as a namespace name and then also provide a class named `Debug` in the same namespace. Several compilers require such types to be fully qualified.
     - kind: paragraph
       text: These guidelines cover general namespace naming guidelines, but the next section provides specific guidelines for certain special subnamespaces.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1065,7 +1068,7 @@
         - Infrastructure namespaces
         - Core namespaces
         - Technology namespace groups
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1090,7 +1093,7 @@
   body:
     - kind: paragraph
       text: For example, do not add a type named `Page` to the `System.Web.UI.Adapters` namespace, because the `System.Web.UI` namespace already contains a type named `Page`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1105,7 +1108,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Application model namespaces are groups rarely used with other application models, such as System.Windows* and System.Web.UI*.
 - id: FDG3035
   strength: DO NOT
   text: give types names that would conflict with any type in the core namespaces.
@@ -1117,7 +1120,7 @@
       text: For example, never use `Stream` as a type name. It would conflict with `System.IO.Stream`, a very commonly used type.
     - kind: paragraph
       text: By the same token, do not add a type named `EventLog` to the `System.Diagnostics.Events` namespace, because the `System.Diagnostics` namespace already contains a type named `EventLog`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1132,7 +1135,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Core namespaces are all System namespaces except application model namespaces and infrastructure namespaces (such as *.Design and *.Permissions), for example System, System.IO, System.Xml, and System.Net. CA1724 reports some of these conflicts (see FDG3032).
 - id: FDG3036
   strength: DO NOT
   text: assign type names that would conflict with other types within a single technology.
@@ -1140,7 +1143,7 @@
   section: 3.4.1.4 Technology Namespace Groups
   anchor: sec3_4_1_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1155,7 +1158,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: A technology namespace group is all namespaces with the same first two parts (<Company>.<Technology>*), such as Microsoft.Build.Utilities and Microsoft.Build.Tasks.
 - id: FDG3037
   strength: DO NOT
   text: introduce type name conflicts between types in technology namespaces and an application model namespace (unless the technology is not expected to be used with the application model).
@@ -1165,7 +1168,7 @@
   body:
     - kind: paragraph
       text: For example, you should not add a type named `Binding` to the `Microsoft.VisualBasic` namespace because the `System.Windows.Forms` namespace already contains that type name.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1180,7 +1183,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: A technology namespace group is all namespaces with the same first two parts (<Company>.<Technology>*), such as Microsoft.Build.Utilities and Microsoft.Build.Tasks. Application model namespaces are groups rarely used with other application models, such as System.Windows* and System.Web.UI*.
 - id: FDG3038
   strength: DO
   text: name classes and structs with nouns or noun phrases, using PascalCasing.
@@ -1190,7 +1193,7 @@
   body:
     - kind: paragraph
       text: This distinguishes type names from methods, which are named with verb phrases.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1215,7 +1218,7 @@
   body:
     - kind: paragraph
       text: Nouns and noun phrases should be used rarely. They might indicate that the type should be an abstract class, rather than an interface. See section 4.3 for details about deciding how to choose between abstract classes and interfaces.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1250,7 +1253,7 @@
     - kind: annotation
       text: 'Note: This is really another application of Hungarian notation (though one without the disadvantages of the notation’s use in variable names).'
       author: Brent Rector
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1279,7 +1282,7 @@
       text: |-
         public class FileStream : Stream {...}
         public class Button : Control {...}
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1304,7 +1307,7 @@
   body:
     - kind: paragraph
       text: For example, `IComponent` (descriptive noun), `ICustomAttributeProvider` (noun phrase), and `IPersistable` (adjective) are appropriate interface names. As with other type names, avoid abbreviations.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1334,7 +1337,7 @@
       text: |-
         public interface IComponent { ... }
         public class Component : IComponent { ... }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1363,7 +1366,7 @@
         public delegate TOutput Converter<TInput,TOutput>(TInput from);
         public struct Nullable<T> { ... }
         public class List<T> { ... }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1391,7 +1394,7 @@
         public int IComparer<T> { ... }
         public delegate bool Predicate<T>(T item);
         public struct Nullable<T> where T:struct { ... }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1419,7 +1422,7 @@
         public interface ISessionChannel<TSession> where TSession : ISession{
            TSession Session { get; }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1446,7 +1449,7 @@
   body:
     - kind: paragraph
       text: For example, a parameter constrained to `ISession` might be called `TSession`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1468,8 +1471,16 @@
   context: null
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
-  body: []
-  status: draft
+  body:
+    - kind: paragraph
+      text: These suffixing guidelines apply to the whole hierarchy of the specified base type. For example, it is not just types derived directly from `System.Exception` that need the suffixes, but also those derived from `Exception` subclasses.
+    - kind: paragraph
+      text: 'These suffixes should be reserved for the named types. Types derived from or implementing other types should not use these suffixes. For example, the following represent incorrect naming:'
+    - kind: code
+      text: |-
+        public class ElementStream : Object { ... }
+        public class WindowsAttribute : Control { ... }
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1493,10 +1504,8 @@
   context: System.Attribute
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
-  body:
-    - kind: paragraph
-      text: '`System.Delegate`'
-  status: draft
+  body: []
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1520,7 +1529,7 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1544,7 +1553,7 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1566,10 +1575,8 @@
   context: System.Delegate
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
-  body:
-    - kind: paragraph
-      text: '`System.EventArgs`'
-  status: draft
+  body: []
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1592,10 +1599,8 @@
   context: System.EventArgs
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
-  body:
-    - kind: paragraph
-      text: '`System.Enum`'
-  status: draft
+  body: []
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1619,7 +1624,7 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1641,10 +1646,8 @@
   context: System.Enum
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
-  body:
-    - kind: paragraph
-      text: '`System.Exception`'
-  status: draft
+  body: []
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1667,10 +1670,8 @@
   context: System.Exception
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
-  body:
-    - kind: paragraph
-      text: '`IDictionary IDictionary<TKey, TValue>`'
-  status: draft
+  body: []
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1693,10 +1694,8 @@
   context: IDictionary IDictionary<TKey, TValue>
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
-  body:
-    - kind: paragraph
-      text: '`IEnumerable ICollection IList IEnumerable<T> ICollection<T> IList<T>`'
-  status: draft
+  body: []
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1719,10 +1718,8 @@
   context: IEnumerable ICollection IList IEnumerable<T> ICollection<T> IList<T>
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
-  body:
-    - kind: paragraph
-      text: '`System.IO.Stream`'
-  status: draft
+  body: []
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1746,7 +1743,7 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1778,7 +1775,7 @@
           Cyan,
           ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1809,7 +1806,7 @@
           Control = 1 << 1,
           Shift = 1 << 2,
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1840,7 +1837,7 @@
         public enum ColorEnum {
           ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1873,7 +1870,7 @@
         public enum ColorFlags {
           ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1918,7 +1915,7 @@
     - kind: annotation
       text: Notice that this guideline is the exact opposite of common usage in C++ programming. It is important in C++ to fully qualify each enum member because they can be accessed outside of the scope of the enum name. However, in the managed world, enum members are only accessed through the scope of the enum name.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1949,7 +1946,7 @@
           public string[] Split(...);
           public string Trim();
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1977,7 +1974,7 @@
         public class String {
           public int Length { get; }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2006,7 +2003,7 @@
         public string GetTextWriter(int value) { ... }
     - kind: paragraph
       text: This pattern typically indicates that the property should really be a method. See section 5.1.3 for additional information.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2039,7 +2036,7 @@
           // bad naming
           public ItemCollection ItemCollection { get; }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2087,7 +2084,7 @@
         if(stream.IsSeekable
         ```
       author: Krzysztof Cwalina
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2118,7 +2115,7 @@
         public class Control {
           public Color Color { get; set; }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2143,7 +2140,7 @@
   body:
     - kind: paragraph
       text: Examples include `Clicked`, `Painting`, and `DroppedDown`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2168,7 +2165,7 @@
   body:
     - kind: paragraph
       text: For example, a close event that is raised before a window is closed would be called `Closing`, and one that is raised after the window is closed would be called `Closed`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2191,7 +2188,7 @@
   section: 3.6.3 Names of Events
   anchor: sec3_6_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2224,7 +2221,7 @@
     - kind: annotation
       text: Today, you would rarely need to define your own “EventHandler” delegate. Instead, you should use the `EventHandler<TEventArgs>` delegate type, where `TEventArgs` is either `EventArgs` or your own `EventArgs` derived class. This reduces type definitions in the system and ensures that your event follows the pattern described in the preceding bullet.
       author: Jason Clark
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2257,7 +2254,7 @@
       text: |-
         public delegate void <EventName>EventHandler(object sender,
                                                      <EventName>EventArgs e);
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2292,7 +2289,7 @@
           public int X { get { return x; } }
           public int Y { get { return y; } }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2324,7 +2321,7 @@
         public struct UInt32 {
            public const MinValue = 0;
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2340,7 +2337,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: IDE1006 checks the first letter through the visible-field naming rule configured by FDGA052.
+  notes: IDE1006 checks the first letter through the visible-field naming rule configured by FDGA052. The field-naming guidelines cover public and protected static fields; internal and private fields follow FDGA054 and FDGA055, and public or protected instance fields are not allowed (chapter 5).
 - id: FDG3078
   strength: DO
   text: name fields using a noun, noun phrase, or adjective.
@@ -2348,7 +2345,7 @@
   section: 3.6.4 Naming Fields
   anchor: sec3_6_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2363,7 +2360,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: The field-naming guidelines cover public and protected static fields; internal and private fields follow FDGA054 and FDGA055, and public or protected instance fields are not allowed (chapter 5).
 - id: FDG3079
   strength: DO NOT
   text: use a prefix for `public` or `protected` field names.
@@ -2376,7 +2373,7 @@
     - kind: annotation
       text: As with just about all the guidelines in this book, this guideline is meant to apply only to publicly exposed fields. In this case, it’s important that the names be clean and simple so the masses of consumers can easily understand them. As many have noted, there are very good reasons to use some sort of convention for private fields and local variables.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2393,7 +2390,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: Prefixes with an underscore or a lowercase letter are reported; other prefixes are not.
+  notes: Prefixes with an underscore or a lowercase letter are reported; other prefixes are not. The field-naming guidelines cover public and protected static fields; internal and private fields follow FDGA054 and FDGA055, and public or protected instance fields are not allowed (chapter 5).
 - id: FDG3080
   strength: DO
   text: use camelCasing in parameter names.
@@ -2407,7 +2404,7 @@
            public bool Contains(string value);
            public string Remove(int startIndex, int count);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2433,7 +2430,7 @@
   body:
     - kind: paragraph
       text: Parameter names should be descriptive enough to use with their types to determine their meaning in most scenarios.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2458,7 +2455,7 @@
   body:
     - kind: paragraph
       text: Development tools generally provide useful information about the type, so the parameter name can be put to better use describing semantics rather than the type. Occasional use of type-based parameter names is entirely appropriate—but it is not ever appropriate under these guidelines to revert to the Hungarian naming convention.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2487,7 +2484,7 @@
                                          DateTimeOffset right)
         public static bool operator==(DateTimeOffset left,
                                       DateTimeOffset right)
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2512,7 +2509,7 @@
   body:
     - kind: code
       text: public static BigInteger operator-(BigInteger value);
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2539,7 +2536,7 @@
       text: |-
         public static BigInteger Divide(BigInteger dividend,
                                         BigInteger divisor);
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2567,7 +2564,7 @@
         // incorrect parameter naming
         public static bool operator ==(DateTimeOffset d1,
                                        DateTimeOffset d2);
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2594,7 +2591,7 @@
       text: The types and members automatically generated by a resource editor should use the `internal` access modifier.
     - kind: paragraph
       text: When it does make sense to expose a resource via public API, use intentional type and member design.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment

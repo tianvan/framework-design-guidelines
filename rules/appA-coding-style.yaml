@@ -11,7 +11,7 @@
         {
             DoSomething();
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -42,7 +42,7 @@
         {
             DoSomething();
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -80,7 +80,7 @@
         {
             ...
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: fdg
@@ -127,7 +127,7 @@
         case 0:
            DoSomething();
            break;
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -144,7 +144,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: IDE0011 does not know the argument validation preamble exception (FDGA005).
+  notes: 'IDE0011 does not know the argument validation preamble exception (FDGA005). planned-analyzer: braces, exempting argument validation preambles.'
 - id: FDGA005
   strength: CONSIDER
   text: omitting braces in an argument validation preamble.
@@ -172,7 +172,7 @@
 
             ...
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -187,7 +187,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: FDGA004 (IDE0011) adds braces to the preamble too; omitting them is optional.
+  notes: 'IDE0011 (FDGA004) reports and adds braces in argument validation preambles too. The project accepts that conflict: braces everywhere is its readability goal.'
 - id: FDGA006
   strength: DO NOT
   text: use the braceless variant of the `using` (dispose) statement.
@@ -208,7 +208,7 @@
         Wrong:
         using Element element = GetElement();
         ...
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -252,7 +252,7 @@
         await using Element element1 = GetElement(1);
         await using Element element2 = GetElement(2);
         ...
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -277,7 +277,7 @@
   body:
     - kind: code
       text: public int Foo { get { return foo; } }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -305,7 +305,7 @@
       text: |-
         Right: public void Foo(char bar, int x, int y)
         Wrong: public void Foo(char bar,int x,int y)
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -335,7 +335,7 @@
       text: |-
         Right: Foo(myChar, 0, 1)
         Wrong: Foo(myChar,0,1)
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -365,7 +365,7 @@
       text: |-
         Right: Foo(myChar, 0, 1)
         Wrong: Foo( myChar, 0, 1 )
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -396,7 +396,7 @@
       text: |-
         Right: Foo()
         Wrong: Foo ()
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -426,7 +426,7 @@
       text: |-
         Right: x = dataArray[index];
         Wrong: x = dataArray[ index ];
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -456,7 +456,7 @@
       text: |-
         Right: while (x == y)
         Wrong: while(x == y)
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -485,7 +485,7 @@
       text: |-
         Right: if (x == y) { ... }
         Wrong: if (x==y) { ... }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -514,7 +514,7 @@
       text: |-
         Right: if (!y){ ... }
         Wrong: if (! y){ ... }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -538,7 +538,7 @@
   section: A.1.3 Indent Usage
   anchor: secA_1_3
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -564,7 +564,7 @@
   section: A.1.3 Indent Usage
   anchor: secA_1_3
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -595,7 +595,7 @@
         {
             DoSomething();
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -629,7 +629,7 @@
                 break;
             ...
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -673,7 +673,7 @@
 
             ...
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -708,7 +708,7 @@
             _table[index].Property.Method(methodParameter).
                 Method2(method2Parameter, method2Parameter2).
                 Property2;
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -754,7 +754,7 @@
     - kind: annotation
       text: We don’t have a set line length as part of our style guidelines. I set my IDE to give a guide line at 120 characters, which is generally narrow enough to avoid horizontal scrolling for most IDE configurations and web-based code viewers. However, I treat this as a “soft” limit and violate it when adding the line break makes the line too hard to read.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: true
   check:
     kind: fdg
@@ -780,7 +780,7 @@
   section: A.1.4 Vertical Whitespace
   anchor: secA_1_4
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -795,7 +795,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Example shared with FDGA025.
 - id: FDGA025
   strength: DO
   text: add a blank line after a closing brace, unless the next line is also a closing brace.
@@ -819,7 +819,7 @@
                 ...
             }
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -866,7 +866,7 @@
         ...
         ```
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -904,7 +904,7 @@
                 object _lockObject;
                 ...
             }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -933,7 +933,7 @@
       text: |-
         Right: protected abstract void Reset();
         Wrong: abstract protected void Reset();
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -962,7 +962,7 @@
       text: |-
         Right: private static readonly ConcurrentQueue<T> ...
         Wrong: private readonly static ConcurrentQueue<T> ...
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -991,7 +991,7 @@
       text: |-
         Right: private static extern IntPtr CreateFile(...);
         Wrong: private extern static IntPtr CreateFile(...);
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1020,7 +1020,7 @@
       text: |-
         Right: public static new SomeType Create(...)
         Wrong: public new static SomeType Create(...)
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1049,7 +1049,7 @@
       text: |-
         Right: private new readonly object _lockObject = new object();
         Wrong: private readonly new object _lockObject = new object();
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1078,7 +1078,7 @@
       text: |-
         Right: public readonly unsafe Matrix Multiply(...)
         Wrong: public unsafe readonly Matrix Multiply(...)
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1109,7 +1109,7 @@
       text: |-
         Right: private static volatile int s_instanceCount;
         Wrong: private volatile static int s_instanceCount;
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1138,7 +1138,7 @@
       text: |-
         Right: public readonly async Task CloseAsync(...)
         Wrong: public async readonly Task CloseAsync(...)
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1167,7 +1167,7 @@
       text: |-
         Right: protected internal void Reset()
         Wrong: internal protected void Reset()
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1196,7 +1196,7 @@
       text: |-
         Right: private protected void Reset()
         Wrong: protected private void Reset()
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1210,8 +1210,8 @@
     test: warning
   config:
     - csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,volatile,new,virtual,abstract,sealed,override,readonly,unsafe,required,async
-  minLanguage: null
-  alternative: null
+  minLanguage: "7.2"
+  alternative: Before C# 7.2 there is no 'private protected'; use 'internal' or 'protected'.
   analyzer: null
   notes: null
 - id: FDGA038
@@ -1221,7 +1221,7 @@
   section: A.1.6 Other
   anchor: secA_1_6
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -1236,7 +1236,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'planned-analyzer: missing trailing comma after the last enum member.'
+  notes: 'planned-analyzer: missing trailing comma after the last enum member. Explanation and example (SomeEnum) shared with FDGA039.'
 - id: FDGA039
   strength: DO
   text: add the optional trailing comma after a property assignment from an object initializer, or addition via a collection initializer, when the initializer spans multiple lines.
@@ -1263,7 +1263,7 @@
                 Second,
                 Third
             }
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -1288,7 +1288,7 @@
   body:
     - kind: paragraph
       text: If the private members are named correctly, a “`this.`” should not be required except to invoke an extension method. The use of the underscore prefix on fields already provides a distinction between field access and variable access.
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -1324,7 +1324,7 @@
         Wrong:
             String split = String.Split(message, Delimiters);
             Int32 count = split.Length;
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -1385,7 +1385,7 @@
             {
                 ...
             }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1404,7 +1404,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: IDE0008 also accepts 'var' for some factory methods whose type it considers apparent.
+  notes: IDE0008 also accepts 'var' for some factory methods whose type it considers apparent. It reports 'var' for casts to built-in types ('var n = (int)o;', 'var s = o as string;') and for 'await using var ignored = x.ConfigureAwait(false);' (FDGA007), which the book allows; suppress IDE0008 there. Casts to other types ('var b = (StringBuilder)o;') are not reported.
 - id: FDGA043
   strength: DO
   text: use object initializers where possible.
@@ -1438,7 +1438,7 @@
             someType.PropB = ...;
             someType.PropA = ...;
             someType.PropC = ...;
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1478,7 +1478,7 @@
             someColl.Add(first);
             someColl.Add(second);
             someColl.Add(third);
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1512,7 +1512,7 @@
             public override long Seek(long offset, SeekOrigin origin) =>
                  throw new NotSupportedException();
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -1525,7 +1525,7 @@
     test: suggestion
   config: []
   minLanguage: "6"
-  alternative: Use a block body.
+  alternative: Use a block body. Expression-bodied accessors and constructors, and throw expressions, need C# 7.0.
   analyzer: null
   notes: null
 - id: FDGA046
@@ -1542,7 +1542,7 @@
             internal long HitCount { get; private set; }
             internal long MissCount { get; private set; }
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1578,7 +1578,7 @@
 
         ...
         string nihongo = "\u65E5\u672C\u8A9E";
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -1605,7 +1605,7 @@
       text: |-
         Right: throw new ArgumentNullException(nameof(target));
         Wrong: throw new ArgumentNullException("target");
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1631,7 +1631,7 @@
   body:
     - kind: paragraph
       text: Be careful when applying the `readonly` modifier to fields where the field type is a `struct`. If the struct isn’t declared as `readonly`, then property and method invocations might make local copies of the value and create a performance problem.
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1679,7 +1679,7 @@
 
             ...
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -1703,7 +1703,7 @@
   section: A.2 Naming Conventions
   anchor: secA_2
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -1736,7 +1736,7 @@
                 ...
             }
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1783,7 +1783,7 @@
                 ...
             }
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1818,14 +1818,14 @@
   section: A.2 Naming Conventions
   anchor: secA_2
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
     diagnostics:
       - IDE1006
     coverage: partial
-  autofix: breaking
+  autofix: yes
   severity:
     library: warning
     application: warning
@@ -1834,7 +1834,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: Checked through the naming rules configured by FDGA055.
+  notes: Checked through the naming rules configured by FDGA055. The fix renames private and internal fields only; check reflection or serialization that uses field names.
 - id: FDGA055
   strength: DO
   text: use a prefix “_” (underscore) for private and internal instance fields, “s_” for private and internal static fields, and “t_” for private and internal thread-static fields.
@@ -1855,14 +1855,14 @@
 
             private int _instanceId;
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
     diagnostics:
       - IDE1006
     coverage: partial
-  autofix: breaking
+  autofix: yes
   severity:
     library: warning
     application: warning
@@ -1871,20 +1871,20 @@
     - dotnet_naming_rule.fdga055_private_fields.symbols = fdg_private_fields
     - dotnet_naming_rule.fdga055_private_fields.style = fdg_underscore_camel_case
     - dotnet_naming_symbols.fdg_private_fields.applicable_kinds = field
-    - dotnet_naming_symbols.fdg_private_fields.applicable_accessibilities = private, internal
+    - dotnet_naming_symbols.fdg_private_fields.applicable_accessibilities = private, internal, private_protected
     - dotnet_naming_style.fdg_underscore_camel_case.required_prefix = _
     - dotnet_naming_style.fdg_underscore_camel_case.capitalization = camel_case
     - dotnet_naming_rule.fdga055_private_static_fields.symbols = fdg_private_static_fields
     - dotnet_naming_rule.fdga055_private_static_fields.style = fdg_s_camel_case
     - dotnet_naming_symbols.fdg_private_static_fields.applicable_kinds = field
-    - dotnet_naming_symbols.fdg_private_static_fields.applicable_accessibilities = private, internal
+    - dotnet_naming_symbols.fdg_private_static_fields.applicable_accessibilities = private, internal, private_protected
     - dotnet_naming_symbols.fdg_private_static_fields.required_modifiers = static
     - dotnet_naming_style.fdg_s_camel_case.required_prefix = s_
     - dotnet_naming_style.fdg_s_camel_case.capitalization = camel_case
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: Naming rules cannot select [ThreadStatic] fields, so IDE1006 reports 't_' fields; suppress it there.
+  notes: Naming rules cannot select [ThreadStatic] fields, so IDE1006 reports 't_' fields; suppress it there. The fix renames private and internal fields only; check reflection or serialization that uses field names.
 - id: FDGA056
   strength: DO
   text: use camelCasing for local variables.
@@ -1892,7 +1892,7 @@
   section: A.2 Naming Conventions
   anchor: secA_2
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1921,7 +1921,7 @@
   section: A.2 Naming Conventions
   anchor: secA_2
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1950,7 +1950,7 @@
   section: A.2 Naming Conventions
   anchor: secA_2
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -1973,7 +1973,7 @@
   section: A.3 Comments
   anchor: secA_3
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -2008,7 +2008,7 @@
         {
             ...
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -2031,7 +2031,7 @@
   section: A.3 Comments
   anchor: secA_3
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -2046,7 +2046,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Example shared with FDGA062.
 - id: FDGA062
   strength: AVOID
   text: placing comments at the end of a line even when the comment is very short.
@@ -2061,7 +2061,7 @@
         {
             private int count; // -1 indicates uninitialized array
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -2092,7 +2092,7 @@
         - Use “we” to refer to the team or project, collectively. “We already checked for null, so ….”
         - Consider personifying the method: “This method wants a source and a destination; the destination needs to be at least twice as large as the source.”
         - Consider using passive voice where necessary: “The inputs were all validated to be monotonic and even, so now ….”
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -2117,7 +2117,7 @@
   body:
     - kind: paragraph
       text: Multiple internal types in one file are allowed, though there is a preference for “one (top-level) type per file.”
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -2142,7 +2142,7 @@
   body:
     - kind: paragraph
       text: For example, the `String` class should be in a file named “String.cs” and the `List<T>` class should be in a file named “List.cs”.
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -2165,7 +2165,7 @@
   section: A.4 File Organization
   anchor: secA_4
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -2192,7 +2192,7 @@
       text: For example, the source file for `System.Collections.Generic.List<T>` should be in the System\Collections\Generic directory.
     - kind: paragraph
       text: For assemblies that have a common namespace prefix for all types, removing empty top-level directories is a usual practice. Thus, a type named “SomeProject.BitManipulation.Simd” from an assembly with a common prefix of “SomeProject” would usually be found at <project root>\BitManipulation\Simd.cs.
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -2227,7 +2227,7 @@
         - All constructors
         - Remaining members
         - All nested types
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -2258,7 +2258,7 @@
         - All explicit interface implementations
         - Internal members
         - Private members
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
@@ -2289,7 +2289,7 @@
         {
             ...
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -2324,7 +2324,7 @@
         {
             ...
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: judgment
