@@ -12,11 +12,11 @@
 
 ## Global Constraints
 
-- 只修改工作区：任何工具、命令、实施步骤都不替用户提交，也不创建分支（试点仓库尤其如此，见 Task 12）。
+- 只修改工作树中的文件，不改动暂存区和提交历史：任何工具、命令、实施步骤都不执行 `git add`、`commit`、`stash`、`checkout`，也不创建分支（试点仓库尤其如此，见 Task 12）。术语和例外的写入位置（`.git/fdg/`、`obj/fdg/`）见设计文档 §3。
 - 原书 epub 与解析结果只放在被 git 忽略的 `private-sources/`；读取它们的任何 Python 都用 `python -I`，不执行其中任何内容。
 - 规则原文、解释段落、示例代码一律取原书原文，由抽取器确定性写入，AI 不得改写这些字段。
 - 规则编号格式（我的决定，满足 §6 要求）：`FDG` + 章号标记 + 三位序号，按书中出现顺序编号。第 2–9 章用数字（第 3 章为 `FDG3001`…`FDG3087`），附录用字母（附录 A 为 `FDGA001`…`FDGA071`，附录 D 为 `FDGD001`…），工具自身的诊断用 `FDG0001` 起。编号同时用作诊断编号，永不复用。
-- MSBuild 属性名 `FrameworkDesignGuidelinesProfile`，取值 `library` / `application` / `tests`。
+- MSBuild 属性名 `FrameworkDesignGuidelinesProfile`，取值 `library` / `application` / `test`。
 - 包 ID `FrameworkDesignGuidelines.Analyzers`（开发依赖，`PrivateAssets=all`）；工具包 ID `dotnet-fdg`，命令 `dotnet fdg`；插件名 `framework-design-guidelines`。三者版本号同为 `Directory.Build.props` 中的 `<Version>`，初始 `0.1.0`。
 - 严重级别默认映射：DO / DO NOT / AVOID → `warning`，CONSIDER → `suggestion`；从不使用 `error`。
 - globalconfig：`is_global = true`，`global_level = -100`（若 Task 5 的测试证明会被 SDK 自带配置压过，改为 `-1`，并更新设计文档 §5.2）。
@@ -64,7 +64,7 @@ src/
   FrameworkDesignGuidelines.CodeFixes/   ← CodeFix（引用 Workspaces）
   FrameworkDesignGuidelines.Package/     ← 打包项目，PackageId=FrameworkDesignGuidelines.Analyzers
     build/FrameworkDesignGuidelines.Analyzers.props|.targets
-    build/globalconfigs/fdg.{library,application,tests}.globalconfig   ← 生成
+    build/globalconfigs/fdg.{library,application,test}.globalconfig   ← 生成
     data/rules.json                                                    ← 生成
   Fdg.Cli/
     Program.cs  Commands/ (FixCommand, HookCommands)
@@ -124,7 +124,7 @@ tests/
     diagnostics: []          # 例如 [IDE1006] 或 [FDGA003]
     coverage: none           # full | partial | none
   autofix: no                # yes | no | breaking
-  severity: { library: warning, application: warning, tests: warning }   # none|silent|suggestion|warning
+  severity: { library: warning, application: warning, test: warning }   # none|silent|suggestion|warning
   config: []                 # 写入 globalconfig 的 editorconfig 行，见 Task 2
   minLanguage: null          # 例如 "C# 9"
   alternative: null          # 老版本下的替代写法
@@ -229,7 +229,7 @@ chapters:
 ```yaml
 library:     ["dotnet_code_quality.api_surface = public"]
 application: ["dotnet_code_quality.api_surface = all"]
-tests:       ["dotnet_code_quality.api_surface = all"]
+test:        ["dotnet_code_quality.api_surface = all"]
 ```
 
 - [ ] **Step 1: 写失败测试**
@@ -269,12 +269,12 @@ tests:       ["dotnet_code_quality.api_surface = all"]
     - 需要自写分析器时用 `fdg`，`diagnostics` 写自身编号。本切片只有 `FDGA003`（catch/finally 单行块）和 `FDGA023`（长参数列表折行）两条；
     - 其他情况用 `judgment`。可以写分析器但留到第 2 阶段的规则，在 `notes` 中写 `planned-analyzer`。
   - 排版类规则（A.1.1–A.1.4）：在 `config` 中写对应的 `csharp_*` 和 `dotnet_*` 选项，例如 `csharp_new_line_before_open_brace = all`、`csharp_preserve_single_line_statements = false`、`csharp_preserve_single_line_blocks = false`、`indent_size = 4`、`indent_style = space`，并映射到 `IDE0055`。
-  - 命名类规则：在 `config` 中写 `dotnet_naming_rule.<ruleid小写>_*`、`dotnet_naming_symbols.*`、`dotnet_naming_style.*`，命名规则名以 FDG 编号开头，并映射到 `IDE1006`。tests profile 的 `severity.tests` 放宽为 `none` 或 `suggestion`，依据是设计文档 §5.1。
+  - 命名类规则：在 `config` 中写 `dotnet_naming_rule.<ruleid小写>_*`、`dotnet_naming_symbols.*`、`dotnet_naming_style.*`，命名规则名以 FDG 编号开头，并映射到 `IDE1006`。test profile 的 `severity.test` 放宽为 `none` 或 `suggestion`，依据是设计文档 §5.1。
   - `autofix`：
     - SDK 规则有 CodeFix，且修复不改变公开签名或名字时为 `yes`；
     - 修复会改名或改签名时为 `breaking`（CLI 会排除这类修复）；
     - 其余为 `no`。
-  - `severity`：按 Global Constraints 中的默认映射。API 设计类规则在 tests 档为 `none`。
+  - `severity`：按 Global Constraints 中的默认映射。API 设计类规则在 test 档为 `none`。
   - `minLanguage` 和 `alternative`：依赖较新语法的规则才填，例如 A.1.1 的 `await using`、A.1.6 的 `nameof` 是 C# 6。
   - `style`：附录 A 的全部规则为 `true`。
 
@@ -301,7 +301,7 @@ tests:       ["dotnet_code_quality.api_surface = all"]
 - Create: `src/Fdg.Generator/Emit/*.cs`, `src/Fdg.Generator/Commands/GenerateCommand.cs`
 - Generates:
   - `src/FrameworkDesignGuidelines.Analyzers/Generated/FdgDescriptors.g.cs`
-  - `src/FrameworkDesignGuidelines.Package/build/globalconfigs/fdg.{library,application,tests}.globalconfig`
+  - `src/FrameworkDesignGuidelines.Package/build/globalconfigs/fdg.{library,application,test}.globalconfig`
   - `src/FrameworkDesignGuidelines.Package/data/rules.json`
   - `plugins/framework-design-guidelines/skills/fdg-write/references/{ch03-naming.md, appA-coding-style.md, examples/ch03-naming.md, examples/appA-coding-style.md}`
   - `docs/rules/<ID>.md`
@@ -327,7 +327,7 @@ tests:       ["dotnet_code_quality.api_surface = all"]
 { "protocol": 1, "version": "0.1.0",
   "rules": [ { "id": "FDG3001", "strength": "DO", "text": "...", "section": "3.1.1 ...",
                "diagnostics": ["IDE1006"], "autofix": "no",
-               "severity": { "library": "warning", "application": "warning", "tests": "none" } } ],
+               "severity": { "library": "warning", "application": "warning", "test": "none" } } ],
   "registeredDiagnostics": ["CA1707", "FDGA003", "IDE0055", "IDE1006"],
   "breakingFixDiagnostics": ["CA1710"] }
 ```
@@ -447,8 +447,8 @@ tests:       ["dotnet_code_quality.api_surface = all"]
     - `<CompilerVisibleProperty Include="FrameworkDesignGuidelinesProfile" />`。
   - targets 中：
     - profile 有效时，加入 `GlobalAnalyzerConfigFiles` `build/globalconfigs/fdg.$(FrameworkDesignGuidelinesProfile).globalconfig`；
-    - profile 为空时发出 `warning FDG0001: FrameworkDesignGuidelinesProfile is not set; FDG rules are inactive. Set it to library, application or tests.`；
-    - profile 非法时发出 `warning FDG0002: Unknown FrameworkDesignGuidelinesProfile '<值>'. Use library, application or tests.`；
+    - profile 为空时发出 `warning FDG0001: FrameworkDesignGuidelinesProfile is not set; FDG rules are inactive. Set it to library, application or test.`；
+    - profile 非法时发出 `warning FDG0002: Unknown FrameworkDesignGuidelinesProfile '<值>'. Use library, application or test.`；
     - `FdgSarifDir` 非空时，设置 `ErrorLog=$(FdgSarifDir)/$(MSBuildProjectName)-$(TargetFramework).sarif,version=2.1`。
   - 标记文件：target `FdgWriteMarker` 在 `BeforeTargets="CoreCompile"` 时写入 `$(BaseIntermediateOutputPath)fdg/marker.json`，内容不变时不重写：
 
@@ -691,7 +691,7 @@ src/Order/OrderService.cs:57 CS0103 The name 'x' does not exist in the current c
 
 ```
 This repository follows Framework Design Guidelines (3rd ed.).
-- Profiles: src/** = application, tests/** = tests. C# 7.3; targets net472, netstandard2.0. Do not use newer syntax or APIs.
+- Profiles: src/** = application, tests/** = test. C# 7.3; targets net472, netstandard2.0. Do not use newer syntax or APIs.
 - Write in .NET BCL style: Allman braces, one statement per line, long parameter/argument lists chopped before the first item, one per line.
 - Layout and machine-checkable rules are auto-fixed and checked at the end of each turn; only fix the FDG/CA/IDE issues reported to you.
 - Before designing or changing types, members, or public APIs, use the fdg-write skill; use fdg-review to review an API.
@@ -711,7 +711,7 @@ This repository follows Framework Design Guidelines (3rd ed.).
 
 ```csharp
 [Fact] public void No_package_reference_anywhere_returns_null()
-[Fact] public void Profiles_are_collapsed_by_directory()           // src/A, src/B = application; tests/T = tests → "src/** = application, tests/** = tests"
+[Fact] public void Profiles_are_collapsed_by_directory()           // src/A, src/B = application; tests/T = test → "src/** = application, tests/** = test"
 [Fact] public void Mixed_profiles_in_same_directory_are_listed_per_project()
 [Fact] public void Lang_version_and_frameworks_come_from_markers()
 [Fact] public void Missing_profile_adds_setup_issue_line()
@@ -758,7 +758,7 @@ This repository follows Framework Design Guidelines (3rd ed.).
 - **fdg-setup**：
   - frontmatter 加 `disable-model-invocation: true`，Codex 会忽略这个字段；
   - 按设计文档 §5.9 的四步执行，结尾提示 `dotnet tool install -g dotnet-fdg`；
-  - 明确写出：只修改工作区，绝不提交；修改前列出将要改动的文件，等用户确认后再改；
+  - 明确写出：只修改工作树中的文件，绝不执行 `git add` 或提交；修改前列出将要改动的文件，等用户确认后再改；
   - 中央包管理：存在 `Directory.Packages.props` 时，`PackageVersion` 写在其中，`PackageReference` 不带版本；
   - `PrivateAssets="all"`。
   - `library` 档询问是否启用 PublicApiAnalyzers，默认不启用。
@@ -894,7 +894,7 @@ This repository follows Framework Design Guidelines (3rd ed.).
   Expected: 克隆成功，`git status` 干净。
 - [ ] **Step 2: 在 Claude 会话中运行 `/fdg-setup`**
   - 本地包源通过克隆中 `Directory.Build.props` 的 `RestoreAdditionalProjectSources` 指向 `D:/Repos/framework-design-guidelines/artifacts/packages`。这是试点专用的临时设置，在验收记录中注明。
-  - 验收：`src/**` 为 application，`tests/**` 为 tests；`<legacy-dir>/` 下的老代码没有改动；构建成功，并出现预期的 FDG、CA、IDE 警告；`git status` 只显示配置文件的改动。
+  - 验收：`src/**` 为 application，`tests/**` 为 test；`<legacy-dir>/` 下的老代码没有改动；构建成功，并出现预期的 FDG、CA、IDE 警告；`git status` 只显示配置文件的未暂存改动。
 - [ ] **Step 3: 测量耗时**
   - 记录开启全部规则后，单文件 Stop 流程的耗时（format 加增量构建），预热后测 5 次，取中位数，记入验收记录；
   - 超过 30 秒时，在验收记录中提出常驻进程方案（设计文档 §5.4），不在本计划中实现。

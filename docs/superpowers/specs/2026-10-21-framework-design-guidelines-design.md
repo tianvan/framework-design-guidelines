@@ -50,7 +50,7 @@
 - 误报多、刷屏，干扰用户。
 - 未经用户确认就修改目标仓库的文件，例如安装插件时自动写入配置、自动改写 AGENTS.md 或 CLAUDE.md。
 - 自动修改已发布的公开 API（比如改名），破坏调用方。
-- 替用户提交代码或创建分支。工具、插件命令和实施过程都只修改工作区，由用户自己审阅和提交（用户决定）。
+- 替用户提交代码或创建分支。工具、插件命令和实施过程都**只修改工作树中的文件，不改动暂存区和提交历史**，由用户用 `git diff` 审阅后自己提交（用户决定）。术语见 §3。
 - 对外宣称没有测量过的效果，例如 AI 遵循率。
 
 ## 3. 约束
@@ -66,6 +66,15 @@
   - Codex 不会察觉文件被外部修改，patch 上下文对不上时直接失败；
   - 两端都支持 SessionStart、UserPromptSubmit、Stop 三个 hook 事件。
 - 规则提炼以第 3 版为准。第 2 版在线摘要和模型记忆都不能作为来源依据。
+
+**术语**（用户决定）：
+- **工作树**（working tree）：git 签出到磁盘上的文件。工具只修改这里的文件。
+- **暂存区**（index）：工具从不改动。不执行 `git add`、`commit`、`stash`、`checkout`，也不创建分支。
+- **工作目录**（current working directory）：进程当前所在的目录，例如 `dotnet fdg fix` 不带路径时的默认范围。
+- 工具还会写入两处，但都不属于需要用户审阅的改动：
+  - `.git/fdg/`：hook 的快照和状态，位于 git 目录内，不出现在 `git status` 中；
+  - `obj/fdg/marker.json`：构建产物，由分析器包写入。
+- 非 git 目录没有工作树，统称"磁盘上的文件"；这种目录下 Stop 检查停用。
 
 ## 4. 总体架构
 
@@ -89,18 +98,18 @@
 
 ### 5.1 Profile（代码类型配置档）
 
-- 共三种：
+- 共三种，取值均为单数名词，描述项目的类别（用户决定）：
   - `library`：对外发布的库，规则最严格；
   - `application`：应用内部代码，包括 DDD 各层，API 设计规则照常适用，但不做二进制兼容检查；
     - 与 `library` 的区别（我的决定）：`library` 使用 `api_surface = public`，并开启书中关于版本演进和兼容性的规则；可以选择配合 PublicApiAnalyzers。第一版不引入 ApiCompat 或 Package Validation。
-  - `tests`：测试代码，命名规则放宽（例如允许 `Method_WhenX_DoesY`），关闭 API 设计类规则。
+  - `test`：测试代码，命名规则放宽（例如允许 `Method_WhenX_DoesY`），关闭 API 设计类规则。
 - 通过 **MSBuild 项目属性** `FrameworkDesignGuidelinesProfile` 声明，通常写在目录级 `Directory.Build.props` 中，例如在 `src/` 和 `tests/` 下各放一份。不在仓库根目录添加插件专属文件。
 - 作用范围：**引用了分析器包、并且设置了该属性的项目**。没有引用分析器包的项目（例如试点仓库中 `<legacy-dir>/` 下的老代码）完全不受影响，hook 也会跳过这些项目中的文件。
 - 分析器包的 targets 根据该属性选择对应的 globalconfig；分析器通过 `CompilerVisibleProperty` 读取该属性。
 - 各 profile 中 CA 设计和命名规则的检查面：
   - `library` 使用 `dotnet_code_quality.api_surface = public`；
   - `application` 使用 `all`，这样内部层间契约同样受约束；
-  - `tests` 关闭 API 设计类规则。
+  - `test` 关闭 API 设计类规则。
 
 ### 5.2 分析器与配置
 
@@ -196,7 +205,7 @@ FDG3 明确说明附录 A 是建议，不是强制要求。因此附录 A 的规
 
 ```
 本仓库遵循 Framework Design Guidelines（第 3 版）。
-- src/** 为 application 档，tests/** 为 tests 档；C# 7.3，目标 net472/netstandard2.0，不要使用更新的语法或 API。
+- src/** 为 application 档，tests/** 为 test 档；C# 7.3，目标 net472/netstandard2.0，不要使用更新的语法或 API。
 - 按 .NET BCL 风格书写：Allman 大括号，一行一条语句，长参数列表在第一个参数前断行、每行一个。
 - 排版和可机检规则会在每轮结束时自动修复和检查，只需处理报告给你的 FDG/CA/IDE 问题。
 - 设计或修改类型、成员、公开接口前，先使用 fdg-write skill；评审 API 时使用 fdg-review。
@@ -263,7 +272,7 @@ FDG3 明确说明附录 A 是建议，不是强制要求。因此附录 A 的规
 
 ### 5.9 命令设计
 
-所有命令都遵守同一条原则：**只修改工作区，从不提交，也不创建分支**，用户用 `git diff` 自行审阅。
+所有命令都遵守同一条原则：**只修改工作树中的文件，不改动暂存区和提交历史，也不创建分支**，用户用 `git diff` 自行审阅。
 
 **CLI：只有一个面向用户的命令**（用户决定）
 
@@ -283,13 +292,13 @@ dotnet fdg fix [<路径>...]
 
 | 命令 | 用途 | 是否修改代码 |
 |---|---|---|
-| `/fdg-setup` | 为项目接入 FDG | 改配置，留在工作区 |
-| `/fdg-fix [<路径>...]` | 让指定代码通过所有工具检查 | 改代码，留在工作区 |
+| `/fdg-setup` | 为项目接入 FDG | 改配置，留在工作树 |
+| `/fdg-fix [<路径>...]` | 让指定代码通过所有工具检查 | 改代码，留在工作树 |
 | `/fdg-review [<路径>...]` | 判断类规则的设计审查 | 不改代码 |
 
 - **`/fdg-setup`**：由 AI 完成以下步骤：
   1. 识别仓库中的 SDK 风格项目，发现老式项目时说明不支持；
-  2. 询问用户各目录属于哪个 profile，并给出推荐，例如 `tests/` 推荐为 tests；`library` 档询问是否启用 PublicApiAnalyzers；
+  2. 询问用户各目录属于哪个 profile，并给出推荐，例如 `tests/` 推荐为 test；`library` 档询问是否启用 PublicApiAnalyzers；
   3. 添加分析器包引用（兼容中央包管理 `Directory.Packages.props`），在目录级 `Directory.Build.props` 中写入 profile；
   4. 构建一次，确认规则已经生效，并提示 CLI 的安装命令。
 - **`/fdg-fix [<路径>...]`**：
@@ -360,10 +369,10 @@ README 中如实写明：目前只有确定性层经过测试，尚无 AI 遵循
 
 1. **纵向切片**：用第 3 章打通整条链路，包括 YAML 加 Schema、生成器、分析器包（含 globalconfig 和首批自写分析器，例如两个排版分析器）、CLI（`fix` 和 hook 入口）、四个 skill、两端插件清单，并在试点仓库上实际跑通。根据切片暴露的问题调整规则格式和流程。
    - 试点仓库是 `<pilot-repo>`，`src/` 下有 SDK 风格项目的分支（2026-10-21 时为 `<pilot-branch>`）。注意 `<another-local-copy>` 是另一份副本，不是试点仓库。
-   - 实施过程**不在试点仓库中创建分支或提交**（用户决定）。需要的改动（包引用、`Directory.Build.props` 中的 profile）只留在工作区，交给用户审阅；或者在用户同意的本地副本中进行。具体做法在实施计划中与用户确认。
+   - 实施过程**不在试点仓库中创建分支或提交**（用户决定）。需要的改动（包引用、`Directory.Build.props` 中的 profile）只留在工作树中，交给用户审阅；或者在用户同意的本地副本中进行。具体做法在实施计划中与用户确认。
    - 验收标准（我的决定）：
      - 可确定性检查的部分：构建时出现预期的 FDG/CA/IDE 警告；`dotnet fdg fix` 对预先埋好的排版和风格违规能正确修复，并跳过不在范围内的项目；对预先埋好违规的改动，Stop 流程能完成自动修复并正确报告剩余问题；SessionStart 注入的内容正确。
-     - `/fdg-setup` 在试点仓库上生成的配置改动正确（只留在工作区）。
+     - `/fdg-setup` 在试点仓库上生成的配置改动正确（只留在工作树中）。
      - 两端各做一次真实 AI 会话的冒烟测试，只用来确认链路能跑通，不作为效果评测。
 2. **逐章扩展**：按 §5.8 的流程完成其余章节和附录，同时补充自写分析器。
 3. **发布准备**：同步版本号，编写 README（安装方式、前后对比、覆盖率、声明）和 NOTICE。
