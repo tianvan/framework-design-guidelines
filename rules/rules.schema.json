@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/tianvan/framework-design-guidelines/rules/rules.schema.json",
+  "title": "Framework Design Guidelines rule file",
+  "description": "A rule file is a list of rules. Book fields (strength, text, context, section, anchor, body) are written by the extractor and verified against the book; the remaining fields are the mapping.",
+  "type": "array",
+  "items": { "$ref": "#/$defs/rule" },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "strength", "text", "context", "section", "anchor", "body",
+        "status", "style", "check", "autofix", "severity", "config",
+        "minLanguage", "alternative", "analyzer", "notes"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^FDG[0-9A-Z][0-9]{3}$" },
+        "strength": { "enum": ["DO", "DO NOT", "AVOID", "CONSIDER"] },
+        "text": { "type": "string", "minLength": 1 },
+        "context": { "type": ["string", "null"] },
+        "section": { "type": "string", "minLength": 1 },
+        "anchor": { "type": "string", "minLength": 1 },
+        "body": { "type": "array", "items": { "$ref": "#/$defs/block" } },
+        "status": { "enum": ["draft", "verified"] },
+        "style": { "type": "boolean" },
+        "check": { "$ref": "#/$defs/check" },
+        "autofix": { "enum": ["yes", "no", "breaking"] },
+        "severity": { "$ref": "#/$defs/severity" },
+        "config": { "type": "array", "items": { "type": "string" } },
+        "minLanguage": { "type": ["string", "null"] },
+        "alternative": { "type": ["string", "null"] },
+        "analyzer": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/analyzer" }
+          ]
+        },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "text"],
+      "properties": {
+        "kind": { "enum": ["paragraph", "code", "annotation", "list", "table"] },
+        "text": { "type": "string" },
+        "author": { "type": "string" }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "diagnostics", "coverage"],
+      "properties": {
+        "kind": { "enum": ["judgment", "sdk", "fdg", "none"] },
+        "diagnostics": { "type": "array", "items": { "type": "string" } },
+        "coverage": { "enum": ["full", "partial", "none"] }
+      }
+    },
+    "severity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["library", "application", "test"],
+      "properties": {
+        "library": { "$ref": "#/$defs/level" },
+        "application": { "$ref": "#/$defs/level" },
+        "test": { "$ref": "#/$defs/level" }
+      }
+    },
+    "level": { "enum": ["none", "silent", "suggestion", "warning"] },
+    "analyzer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["message", "category"],
+      "properties": {
+        "message": { "type": "string", "minLength": 1 },
+        "category": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

@@ -1,0 +1,2191 @@
+- id: FDGA001
+  strength: DO
+  text: place the opening brace on the next line, indented to the same level as the block statement.
+  context: null
+  section: A.1.1 Brace Usage
+  anchor: secA_1_1
+  body:
+    - kind: code
+      text: |-
+        if (someExpression)
+        {
+            DoSomething();
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA002
+  strength: DO
+  text: align the closing brace with the opening brace.
+  context: null
+  section: A.1.1 Brace Usage
+  anchor: secA_1_1
+  body:
+    - kind: code
+      text: |-
+        if (someExpression)
+        {
+            DoSomething();
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA003
+  strength: DO
+  text: place the closing brace on its own line, except the end of a `do`..`while` statement.
+  context: null
+  section: A.1.1 Brace Usage
+  anchor: secA_1_1
+  body:
+    - kind: code
+      text: |-
+        if (someExpression)
+        {
+            do
+            {
+                DoSomething();
+            } while(someOtherCondition);
+        }
+        else if (someOtherExpression)
+        {
+            ...
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA004
+  strength: AVOID
+  text: omitting braces, even if the language allows it.
+  context: null
+  section: A.1.1 Brace Usage
+  anchor: secA_1_1
+  body:
+    - kind: paragraph
+      text: Braces should not be considered optional. Even for single-statement blocks, you should use braces. This increases code readability and maintainability.
+    - kind: code
+      text: |-
+        for (int i = 0; i < 100; i++)
+        {
+            DoSomething(i);
+        }
+    - kind: paragraph
+      text: One exception to the rule is braces in `case` statements. These braces can be omitted, because the `case` and `break` statements indicate the beginning and the end of the block.
+    - kind: code
+      text: |-
+        case 0:
+           DoSomething();
+           break;
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA005
+  strength: CONSIDER
+  text: omitting braces in an argument validation preamble.
+  context: null
+  section: A.1.1 Brace Usage
+  anchor: secA_1_1
+  body:
+    - kind: paragraph
+      text: For all parts of the method preamble that are of the form `if (single-LineExpression) { throw … }`, the braces and vertical whitespace can be eliminated. Once you add a blank line, or have code other than `if`…`throw`, you’ve left the preamble and braces become required again. Multi-line conditions should ideally be factored out into methods to maintain the visual flow of the preamble.
+    - kind: code
+      text: |-
+        public void DoSomething(SomeCollection coll, int start, int count)
+        {
+            if (coll is null)
+                throw new ArgumentNullException(nameof(coll));
+            if ((uint)start < (uint)coll.Count)
+                throw new ArgumentOutOfRangeException(nameof(start));
+            if (coll.Count – count > start)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            if (count == 0)
+            {
+                 return;
+            }
+
+            ...
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA006
+  strength: DO NOT
+  text: use the braceless variant of the `using` (dispose) statement.
+  context: null
+  section: A.1.1 Brace Usage
+  anchor: secA_1_1
+  body:
+    - kind: paragraph
+      text: The braced `using` statement provides a strong visual indicator of when the value is being released. Just as with locking, a disposable value should be disposed as soon as it is practical to do so. The braceless variant makes it too easy to add code that unnecessarily extends the scope of the disposable value, and changing the braceless version to the braced version adds unnecessary noise to a `diff` representation of a change.
+    - kind: code
+      text: |-
+        Right:
+        using (Element element = GetElement())
+        {
+            ...
+        }
+
+        Wrong:
+        using Element element = GetElement();
+        ...
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA007
+  strength: AVOID
+  text: using the braceless variant of the `await using` statement, except to simulate stacked `await using` statements with `ConfigureAwait`.
+  context: null
+  section: A.1.1 Brace Usage
+  anchor: secA_1_1
+  body:
+    - kind: paragraph
+      text: Until an addition to the C# language allows for simple stacked `await using` statements while also appropriately using `ConfigureAwait` (discussed in Chapter 9, sections 9.2.6.2 and 9.4.4.1), the braceless `await using` can be used to achieve the same level of conciseness, provided it is used only in a series of variable declarations and `await using` statements in a fresh scope.
+    - kind: paragraph
+      text: The braceless await using statement, as of C# 8.0, requires a variable declaration, but since the result of `ConfigureAwait`—a `Configured-AsyncDisposable` value—is never going to be directly used in your method, you can use “var ignored” as an exception to the normal restrictions on the use of the `var` keyword.
+    - kind: code
+      text: |-
+        Acceptable:
+        {
+            Element element1 = GetElement(1);
+            await using var ignored1 = element1.ConfigureAwait(false);
+            Element element2 = GetElement(2);
+            await using var ignored 2 = element2.ConfigureAwait(false);
+
+            ...
+        }
+
+        Wrong:
+        await using Element element1 = GetElement(1);
+        await using Element element2 = GetElement(2);
+        ...
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA008
+  strength: DO
+  text: use one space before and after the opening and closing braces when they share a line with other code. Do not add a trailing space before a line break.
+  context: null
+  section: A.1.2 Space Usage
+  anchor: secA_1_2
+  body:
+    - kind: code
+      text: public int Foo { get { return foo; } }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA009
+  strength: DO
+  text: use a single space after a comma between parameters.
+  context: null
+  section: A.1.2 Space Usage
+  anchor: secA_1_2
+  body:
+    - kind: code
+      text: |-
+        Right: public void Foo(char bar, int x, int y)
+        Wrong: public void Foo(char bar,int x,int y)
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA010
+  strength: DO
+  text: use a single space between arguments.
+  context: null
+  section: A.1.2 Space Usage
+  anchor: secA_1_2
+  body:
+    - kind: code
+      text: |-
+        Right: Foo(myChar, 0, 1)
+        Wrong: Foo(myChar,0,1)
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA011
+  strength: DO NOT
+  text: use spaces after the opening parenthesis or before the closing parenthesis.
+  context: null
+  section: A.1.2 Space Usage
+  anchor: secA_1_2
+  body:
+    - kind: code
+      text: |-
+        Right: Foo(myChar, 0, 1)
+        Wrong: Foo( myChar, 0, 1 )
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA012
+  strength: DO NOT
+  text: use spaces between a member name and an opening parenthesis.
+  context: null
+  section: A.1.2 Space Usage
+  anchor: secA_1_2
+  body:
+    - kind: code
+      text: |-
+        Right: Foo()
+        Wrong: Foo ()
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA013
+  strength: DO NOT
+  text: use spaces after or before square braces.
+  context: null
+  section: A.1.2 Space Usage
+  anchor: secA_1_2
+  body:
+    - kind: code
+      text: |-
+        Right: x = dataArray[index];
+        Wrong: x = dataArray[ index ];
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA014
+  strength: DO
+  text: use spaces between flow control keywords and the open parenthesis.
+  context: null
+  section: A.1.2 Space Usage
+  anchor: secA_1_2
+  body:
+    - kind: code
+      text: |-
+        Right: while (x == y)
+        Wrong: while(x == y)
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA015
+  strength: DO
+  text: use spaces before and after binary operators.
+  context: null
+  section: A.1.2 Space Usage
+  anchor: secA_1_2
+  body:
+    - kind: code
+      text: |-
+        Right: if (x == y) { ... }
+        Wrong: if (x==y) { ... }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA016
+  strength: DO NOT
+  text: use spaces before or after unary operators.
+  context: null
+  section: A.1.2 Space Usage
+  anchor: secA_1_2
+  body:
+    - kind: code
+      text: |-
+        Right: if (!y){ ... }
+        Wrong: if (! y){ ... }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA017
+  strength: DO
+  text: use four consecutive space characters for indents.
+  context: null
+  section: A.1.3 Indent Usage
+  anchor: secA_1_3
+  body: []
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA018
+  strength: DO NOT
+  text: use the tab character for indents.
+  context: null
+  section: A.1.3 Indent Usage
+  anchor: secA_1_3
+  body: []
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA019
+  strength: DO
+  text: indent contents of code blocks.
+  context: null
+  section: A.1.3 Indent Usage
+  anchor: secA_1_3
+  body:
+    - kind: code
+      text: |-
+        if (someExpression)
+        {
+            DoSomething();
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA020
+  strength: DO
+  text: indent `case` blocks even if not using braces.
+  context: null
+  section: A.1.3 Indent Usage
+  anchor: secA_1_3
+  body:
+    - kind: code
+      text: |-
+        switch (someExpression)
+        {
+            case 0:
+                DoSomething();
+                break;
+            ...
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA021
+  strength: DO
+  text: “outdent” `goto` labels one indentation level.
+  context: null
+  section: A.1.3 Indent Usage
+  anchor: secA_1_3
+  body:
+    - kind: code
+      text: |-
+        private void SomeMethod()
+        {
+            int iteration = 0;
+
+        start:
+            ...
+
+            if (...)
+            {
+            nested_label:
+                iteration++;
+                goto start;
+            }
+
+            ...
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA022
+  strength: DO
+  text: indent all continued lines of a single statement one indentation level.
+  context: null
+  section: A.1.3 Indent Usage
+  anchor: secA_1_3
+  body:
+    - kind: code
+      text: |-
+        bool firstResult = list.Count > 0 ?
+            list[list.Length – 1} > list[0] :
+            list.Capacity > 1000;
+
+        string complex =
+            _table[index].Property.Method(methodParameter).
+                Method2(method2Parameter, method2Parameter2).
+                Property2;
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA023
+  strength: DO
+  text: chop before the first argument or parameter, indent one indentation level, and include one argument or parameter per line when a method declaration or method invocation is exceedingly long.
+  context: null
+  section: A.1.3 Indent Usage
+  anchor: secA_1_3
+  body:
+    - kind: code
+      text: |-
+        private void SomeMethod(
+            int firstParameter,
+            string secondParameter,
+            bool thirdParameter,
+            string fourthParameter)
+        {
+
+            ...
+
+            SomeOtherMethod(
+                firstParameter * 100,
+                fourthParameter,
+                thirdParameter &&
+                    secondParameter.Length > fourthParameter.Length,
+                22);
+
+            ...
+        }
+    - kind: annotation
+      text: We don’t have a set line length as part of our style guidelines. I set my IDE to give a guide line at 120 characters, which is generally narrow enough to avoid horizontal scrolling for most IDE configurations and web-based code viewers. However, I treat this as a “soft” limit and violate it when adding the line break makes the line too hard to read.
+      author: Jeremy Barton
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA024
+  strength: DO
+  text: add a blank line before control flow statements.
+  context: null
+  section: A.1.4 Vertical Whitespace
+  anchor: secA_1_4
+  body: []
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA025
+  strength: DO
+  text: add a blank line after a closing brace, unless the next line is also a closing brace.
+  context: null
+  section: A.1.4 Vertical Whitespace
+  anchor: secA_1_4
+  body:
+    - kind: code
+      text: |-
+        while (!queue.IsEmpty)
+        {
+            Element toProcess = queue.Pop();
+
+            if (toProcess == null)
+            {
+                continue;
+            }
+
+            if (!toProcess.IsDone)
+            {
+                ...
+            }
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA026
+  strength: DO
+  text: add a blank line after “paragraphs” of code where it enhances readability.
+  context: null
+  section: A.1.4 Vertical Whitespace
+  anchor: secA_1_4
+  body:
+    - kind: code
+      text: |-
+        switch (someExpression)
+        {
+            case 0xs:
+                DoSomething();
+                break;
+            ...
+        }
+    - kind: annotation
+      text: |-
+        I add a blank line when the next statement is subjectively “less” related to the previous one than the one before.
+
+        ```
+        int size = value.BitCount;
+        size = (size + 7) / 8;
+
+        byte[] tmp = new byte[size];
+
+        ...
+        ```
+      author: Jeremy Barton
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA027
+  strength: DO
+  text: always explicitly specify visibility modifiers.
+  context: null
+  section: A.1.5 Member Modifiers
+  anchor: secA_1_5
+  body:
+    - kind: code
+      text: |-
+        Right:
+            internal class SomeClass
+            {
+                private object _lockObject;
+                ...
+            }
+
+        Wrong:
+            class SomeClass
+            {
+                object _lockObject;
+                ...
+            }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA028
+  strength: DO
+  text: specify the visibility modifier as the first modifier.
+  context: null
+  section: A.1.5 Member Modifiers
+  anchor: secA_1_5
+  body:
+    - kind: code
+      text: |-
+        Right: protected abstract void Reset();
+        Wrong: abstract protected void Reset();
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA029
+  strength: DO
+  text: specify the `static` modifier immediately after visibility, for static members or static classes.
+  context: null
+  section: A.1.5 Member Modifiers
+  anchor: secA_1_5
+  body:
+    - kind: code
+      text: |-
+        Right: private static readonly ConcurrentQueue<T> ...
+        Wrong: private readonly static ConcurrentQueue<T> ...
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA030
+  strength: DO
+  text: specify the `extern` method modifier immediately after the `static` modifier for an `extern` method.
+  context: null
+  section: A.1.5 Member Modifiers
+  anchor: secA_1_5
+  body:
+    - kind: code
+      text: |-
+        Right: private static extern IntPtr CreateFile(...);
+        Wrong: private extern static IntPtr CreateFile(...);
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA031
+  strength: DO
+  text: specify the member slot modifier (`new`, `virtual`, `abstract`, `sealed`, or `override`) immediately after the `static` modifier (if specified).
+  context: null
+  section: A.1.5 Member Modifiers
+  anchor: secA_1_5
+  body:
+    - kind: code
+      text: |-
+        Right: public static new SomeType Create(...)
+        Wrong: public new static SomeType Create(...)
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA032
+  strength: DO
+  text: specify the `readonly` modifier for fields or methods immediately after the member slot modifier (if specified).
+  context: null
+  section: A.1.5 Member Modifiers
+  anchor: secA_1_5
+  body:
+    - kind: code
+      text: |-
+        Right: private new readonly object _lockObject = new object();
+        Wrong: private readonly new object _lockObject = new object();
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA033
+  strength: DO
+  text: specify the `unsafe` modifier for methods immediately after the `readonly` modifier (if specified).
+  context: null
+  section: A.1.5 Member Modifiers
+  anchor: secA_1_5
+  body:
+    - kind: code
+      text: |-
+        Right: public readonly unsafe Matrix Multiply(...)
+        Wrong: public unsafe readonly Matrix Multiply(...)
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA034
+  strength: DO
+  text: specify the `volatile` modifier for fields immediately after the `static` modifier (if specified).
+  context: null
+  section: A.1.5 Member Modifiers
+  anchor: secA_1_5
+  body:
+    - kind: paragraph
+      text: This guideline skips the `readonly` modifier for fields since `volatile` and `readonly` are mutually exclusive modifiers.
+    - kind: code
+      text: |-
+        Right: private static volatile int s_instanceCount;
+        Wrong: private volatile static int s_instanceCount;
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA035
+  strength: DO
+  text: specify the `async` modifier as the last method modifier, when used.
+  context: null
+  section: A.1.5 Member Modifiers
+  anchor: secA_1_5
+  body:
+    - kind: code
+      text: |-
+        Right: public readonly async Task CloseAsync(...)
+        Wrong: public async readonly Task CloseAsync(...)
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA036
+  strength: DO
+  text: use “`protected internal`” instead of “`internal protected`” for a member that can be called by derived types or types in the same assembly.
+  context: null
+  section: A.1.5 Member Modifiers
+  anchor: secA_1_5
+  body:
+    - kind: code
+      text: |-
+        Right: protected internal void Reset()
+        Wrong: internal protected void Reset()
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA037
+  strength: DO
+  text: use “`private protected`” instead of “`protected private`” for a member that can be called by derived types within the same assembly.
+  context: null
+  section: A.1.5 Member Modifiers
+  anchor: secA_1_5
+  body:
+    - kind: code
+      text: |-
+        Right: private protected void Reset()
+        Wrong: protected private void Reset()
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA038
+  strength: DO
+  text: add the optional trailing comma after the last enum member.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body: []
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA039
+  strength: DO
+  text: add the optional trailing comma after a property assignment from an object initializer, or addition via a collection initializer, when the initializer spans multiple lines.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body:
+    - kind: paragraph
+      text: Providing the trailing comma avoids unnecessary lines in a `diff` view of a change, where the formerly last line gains a comma.
+    - kind: code
+      text: |-
+        Right:
+            public enum SomeEnum
+            {
+                First,
+                Second,
+                Third,
+            }
+
+        Wrong:
+            public enum SomeEnum
+            {
+                First,
+                Second,
+                Third
+            }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA040
+  strength: DO NOT
+  text: use `this.` unless absolutely necessary.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body:
+    - kind: paragraph
+      text: If the private members are named correctly, a “`this.`” should not be required except to invoke an extension method. The use of the underscore prefix on fields already provides a distinction between field access and variable access.
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA041
+  strength: DO
+  text: use language keywords (`string`, `int`, `double`, …) instead of BCL type names (`String`, `Int32`, `Double`, …), for both variable declarations and method invocation.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body:
+    - kind: code
+      text: |-
+        Right:
+            string[] split = string.Split(message, Delimiters);
+            int count = split.Length;
+
+        Wrong:
+            String split = String.Split(message, Delimiters);
+            Int32 count = split.Length;
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA042
+  strength: DO NOT
+  text: use the `var` keyword except to save the result of a `new`, `as`-cast or “hard” cast.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body:
+    - kind: paragraph
+      text: In the core .NET libraries, we only use `var` when the type name is already specified. We don’t use it when calling factory methods, calling methods for which “everyone knows” the return type (e.g., `String.IndexOf`), or receiving the result of a `TryParse` method. We also do not compel the use of `var` when using a `new`, `as`-cast, or “hard” cast; instead, we leave it as a judgment call on the part of the code author.
+    - kind: code
+      text: |-
+        Acceptable (no var):
+            StringBuilder builder = new StringBuilder();
+            List<int> list = collection as List<int>;
+            string built = ProcessList(list, builder);
+            SomeType fromCache = cache.Get<SomeType>();
+
+            if (int.TryParse(input, out int parsedValue)
+            {
+                ...
+            }
+
+        Acceptable (maximal use of var):
+            var builder = new StringBuilder();
+            var list = collection as List<int>;
+            string built = ProcessList(list, builder);
+            SomeType fromCache = cache.Get<SomeType>();
+
+            if (int.TryParse(input, out int parsedValue)
+            {
+                ...
+            }
+
+        Wrong (uses var in places that are not permitted):
+            var builder = new StringBuilder();
+            var list = collection as List<int>;
+            var built = ProcessList(list, builder);
+            var fromCache = cache.Get<SomeType>();
+
+            if (int.TryParse(input, out var parsedValue)
+            {
+                ...
+            }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA043
+  strength: DO
+  text: use object initializers where possible.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body:
+    - kind: paragraph
+      text: This rule can be ignored when working with a type that has a required order of property assignment. As with most exceptions to a rule, however, a comment should explain why the code should not be changed to use object initializers. The object initializer does respect the order the properties are assigned, but it doesn’t “feel” as ordered as multiple assignment statements.
+    - kind: code
+      text: |-
+        Right:
+            SomeType someType = new SomeType
+            {
+                PropA = ...,
+                PropB = ...,
+                PropC = ...,
+            }
+
+        Acceptable:
+            // PropB has to be set first
+            SomeType someType = new SomeType
+            {
+                PropB = ...,
+            };
+            someType.PropA = ...;
+            someType.PropC = ...;
+
+        Not preferred:
+            SomeType someType = new SomeType();
+            someType.PropB = ...;
+            someType.PropA = ...;
+            someType.PropC = ...;
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA044
+  strength: DO
+  text: use collection initializers where possible.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body:
+    - kind: code
+      text: |-
+        Right:
+             SomeCollection someColl = new SomeCollection
+             {
+                 first,
+                 second,
+                 third,
+             };
+
+        Not preferred:
+            SomeCollection someColl = new SomeCollection();
+            someColl.Add(first);
+            someColl.Add(second);
+            someColl.Add(third);
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA045
+  strength: CONSIDER
+  text: using expression-bodied members when the implementation of a property or method is unlikely to change.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body:
+    - kind: code
+      text: |-
+        public partial class UnseekableStream : Stream
+        {
+            public bool CanSeek => false;
+            public override long Seek(long offset, SeekOrigin origin) =>
+                 throw new NotSupportedException();
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA046
+  strength: DO
+  text: use auto-implemented properties when the implementation is unlikely to change.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body:
+    - kind: code
+      text: |-
+        internal partial class SomeCache
+        {
+            internal long HitCount { get; private set; }
+            internal long MissCount { get; private set; }
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA047
+  strength: DO
+  text: restrict code to ASCII characters, and use Unicode escape sequences (`\uXXXX`) when needed for non-ASCII values.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body:
+    - kind: paragraph
+      text: Following the naming rules from Chapter 3 means that a class representing a résumé (a one-sheet description of someone’s work and education history) would be named “Resume” (without the diacritical marks). If you still want to name it “Résumé,” the e-acute can be written as “`\u00E9`”.
+    - kind: code
+      text: |-
+        public partial class R\u00E9sum\u00E9
+        {
+             ...
+        }
+
+        ...
+        string nihongo = "\u65E5\u672C\u8A9E";
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA048
+  strength: DO
+  text: use the `nameof(...)` syntax, instead of a literal string, when referring to the name of a type, member, or parameter.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body:
+    - kind: code
+      text: |-
+        Right: throw new ArgumentNullException(nameof(target));
+        Wrong: throw new ArgumentNullException("target");
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA049
+  strength: DO
+  text: apply the `readonly` modifier to fields when possible.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body:
+    - kind: paragraph
+      text: Be careful when applying the `readonly` modifier to fields where the field type is a `struct`. If the struct isn’t declared as `readonly`, then property and method invocations might make local copies of the value and create a performance problem.
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA050
+  strength: DO
+  text: use `if`…`throw` instead of assignment–expression–throw for argument validation.
+  context: null
+  section: A.1.6 Other
+  anchor: secA_1_6
+  body:
+    - kind: paragraph
+      text: Using expression–throw in an assignment statement can lead to subtle bugs in finalizers where some fields are set but others aren’t. While finalizers aren’t common, always using `if`…`throw` generalizes without exception to types with and without finalizers, as well as to both methods and constructors.
+    - kind: code
+      text: |-
+        Right:
+        public SomeType(SomeOtherType target, ...)
+        {
+            if (target is null)
+                throw new ArgumentNullException(nameof(target));
+            ...
+
+            _target = target;
+            ...
+        }
+
+        Wrong:
+        public SomeType(SomeOtherType target, ...)
+        {
+            _target = target ??
+                throw new ArgumentNullException(nameof(target));
+
+            ...
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA051
+  strength: DO
+  text: follow the Framework Design Guidelines for naming identifiers, except for naming private and internal fields.
+  context: null
+  section: A.2 Naming Conventions
+  anchor: secA_2
+  body: []
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA052
+  strength: DO
+  text: use PascalCasing for namespace, type, and member names, except for internal and private fields.
+  context: null
+  section: A.2 Naming Conventions
+  anchor: secA_2
+  body:
+    - kind: code
+      text: |-
+        namespace Your.MultiWord.Namespace
+        {
+            public abstract class SomeClass
+            {
+                internal int SomeProperty { get; private set; }
+                ...
+            }
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA053
+  strength: DO
+  text: use PascalCasing for const locals and const fields except for interop code, where it should match the name from the called code exactly.
+  context: null
+  section: A.2 Naming Conventions
+  anchor: secA_2
+  body:
+    - kind: code
+      text: |-
+        internal class SomeClass
+        {
+            private const DefaultListSize = 32;
+
+            private bool Encode()
+            {
+                const int RetryCount = 3;
+                const int ERROR_MORE_DATA = 0xEA;
+
+                ...
+            }
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA054
+  strength: DO
+  text: use camelCasing for private and internal fields.
+  context: null
+  section: A.2 Naming Conventions
+  anchor: secA_2
+  body: []
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA055
+  strength: DO
+  text: use a prefix “_” (underscore) for private and internal instance fields, “s_” for private and internal static fields, and “t_” for private and internal thread-static fields.
+  context: null
+  section: A.2 Naming Conventions
+  anchor: secA_2
+  body:
+    - kind: paragraph
+      text: These prefixes are very valuable to a code reviewer. Reading from, or writing to, a field indicates why a method isn’t declared as `static`. Writes to a field indicate a persisted state. Reading from, or writing to, a static field indicates a shared persisted state and a potential thread-safety problem. Thread-static fields require even more attention, because they may lose their value after an `await`—or have never been initialized on this thread.
+    - kind: code
+      text: |-
+        internal partial class SomeClass
+        {
+            [ThreadStatic]
+            private static byte[] t_buffer;
+
+            private static int s_instanceCount;
+
+            private int _instanceId;
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA056
+  strength: DO
+  text: use camelCasing for local variables.
+  context: null
+  section: A.2 Naming Conventions
+  anchor: secA_2
+  body: []
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA057
+  strength: DO
+  text: use camelCasing for parameters.
+  context: null
+  section: A.2 Naming Conventions
+  anchor: secA_2
+  body: []
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA058
+  strength: DO NOT
+  text: use Hungarian notation (i.e., do not encode the type of a variable in its name).
+  context: null
+  section: A.2 Naming Conventions
+  anchor: secA_2
+  body: []
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA059
+  strength: DO NOT
+  text: use comments unless they describe something not obvious to someone other than the developer who wrote the code.
+  context: null
+  section: A.3 Comments
+  anchor: secA_3
+  body: []
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA060
+  strength: AVOID
+  text: multiline syntax (`/* ... */`) for comments. The single-line syntax (`// ...`) is preferred even when a comment spans multiple lines.
+  context: null
+  section: A.3 Comments
+  anchor: secA_3
+  body:
+    - kind: code
+      text: |-
+        // Implements a variable-size list that uses an array of objects
+        // to store the elements. A List has a capacity, which is the
+        // allocated length of the internal array. As elements are added
+        // to a List, the capacity of the List is automatically increased
+        // as required by reallocating the internal array.
+        //
+        public class List<T> : IList<T>, IList
+        {
+            ...
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA061
+  strength: DO NOT
+  text: place comments at the end of a line unless the comment is very short.
+  context: null
+  section: A.3 Comments
+  anchor: secA_3
+  body: []
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA062
+  strength: AVOID
+  text: placing comments at the end of a line even when the comment is very short.
+  context: null
+  section: A.3 Comments
+  anchor: secA_3
+  body:
+    - kind: code
+      text: |-
+        //Avoid
+        public class ArrayList
+        {
+            private int count; // -1 indicates uninitialized array
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA063
+  strength: AVOID
+  text: writing “I” in comments.
+  context: null
+  section: A.3 Comments
+  anchor: secA_3
+  body:
+    - kind: paragraph
+      text: Code ownership changes over time, particularly in long-lived software projects, which leaves “I” ambiguous when not consulting code history.
+    - kind: list
+      text: |-
+        - Rather than “I found that …,” say something like “Based on the 2019 aggregated TPS report ….”
+        - Use “we” to refer to the team or project, collectively. “We already checked for null, so ….”
+        - Consider personifying the method: “This method wants a source and a destination; the destination needs to be at least twice as large as the source.”
+        - Consider using passive voice where necessary: “The inputs were all validated to be monotonic and even, so now ….”
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA064
+  strength: DO NOT
+  text: have more than one public type in a source file, unless they differ only in the number of generic parameters or one is nested in the other.
+  context: null
+  section: A.4 File Organization
+  anchor: secA_4
+  body:
+    - kind: paragraph
+      text: Multiple internal types in one file are allowed, though there is a preference for “one (top-level) type per file.”
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA065
+  strength: DO
+  text: name the source file with the name of the public type it contains.
+  context: null
+  section: A.4 File Organization
+  anchor: secA_4
+  body:
+    - kind: paragraph
+      text: For example, the `String` class should be in a file named “String.cs” and the `List<T>` class should be in a file named “List.cs”.
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA066
+  strength: DO
+  text: name the source file for a `partial` type with the name of the primary file and a logical description of the contents of the file separated by a “.” (period), such as “JsonDocument.Parse.cs”.
+  context: null
+  section: A.4 File Organization
+  anchor: secA_4
+  body: []
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA067
+  strength: DO
+  text: organize the directory hierarchy just like the namespace hierarchy.
+  context: null
+  section: A.4 File Organization
+  anchor: secA_4
+  body:
+    - kind: paragraph
+      text: For example, the source file for `System.Collections.Generic.List<T>` should be in the System\Collections\Generic directory.
+    - kind: paragraph
+      text: For assemblies that have a common namespace prefix for all types, removing empty top-level directories is a usual practice. Thus, a type named “SomeProject.BitManipulation.Simd” from an assembly with a common prefix of “SomeProject” would usually be found at <project root>\BitManipulation\Simd.cs.
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA068
+  strength: DO
+  text: 'group members into the following sections in the specified order:'
+  context: null
+  section: A.4 File Organization
+  anchor: secA_4
+  body:
+    - kind: list
+      text: |-
+        - All const fields
+        - All static fields
+        - All instance fields
+        - All auto-implemented static properties
+        - All auto-implemented instance properties
+        - All constructors
+        - Remaining members
+        - All nested types
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA069
+  strength: CONSIDER
+  text: 'grouping the remaining members into the following sections in the specified order:'
+  context: null
+  section: A.4 File Organization
+  anchor: secA_4
+  body:
+    - kind: list
+      text: |-
+        - Public and protected properties
+        - Methods
+        - Events
+        - All explicit interface implementations
+        - Internal members
+        - Private members
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA070
+  strength: DO
+  text: place the using directives outside the namespace declaration.
+  context: null
+  section: A.4 File Organization
+  anchor: secA_4
+  body:
+    - kind: code
+      text: |-
+        using System;
+
+        namespace System.Collections
+        {
+            ...
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDGA071
+  strength: DO
+  text: sort the using directives alphabetically, but place all System namespaces first.
+  context: null
+  section: A.4 File Organization
+  anchor: secA_4
+  body:
+    - kind: code
+      text: |-
+        using System;
+        using System.Collections.Generic;
+        using Microsoft.Win32.SafeHandles;
+
+        namespace System.Diagnostics
+        {
+            ...
+        }
+  status: draft
+  style: true
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null

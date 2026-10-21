@@ -1,0 +1,4 @@
+repositoryUrl: https://github.com/tianvan/framework-design-guidelines
+chapters:
+  - { token: "3", file: ch03.xhtml, rules: ch03-naming.yaml, title: Naming Guidelines }
+  - { token: "A", file: app01.xhtml, rules: appA-coding-style.yaml, title: C# Coding Style Conventions }

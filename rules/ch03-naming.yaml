@@ -1,0 +1,2577 @@
+- id: FDG3001
+  strength: DO
+  text: use PascalCasing for the names of namespaces, types, members, and generic type parameters.
+  context: null
+  section: 3.1.1 Capitalization Rules for Identifiers
+  anchor: sec3_1_1
+  body:
+    - kind: paragraph
+      text: For example, use `TextColor` rather than `Textcolor` or `Text_color`. Single words, such as `Button`, simply have initial capitals. Compound words that are always written as a single word, like endpoint, are treated as single words and have initial capitals only. More information on compound words is given in section 3.1.3.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3002
+  strength: DO
+  text: use camelCasing for parameter names.
+  context: null
+  section: 3.1.1 Capitalization Rules for Identifiers
+  anchor: sec3_1_1
+  body:
+    - kind: paragraph
+      text: Table 3-1 describes the capitalization rules for different types of identifiers.
+    - kind: table
+      text: |-
+        **Table 3-1: Capitalization Rules for Different Types of Identifiers**
+
+        | Identifier | Casing | Example |
+        | --- | --- | --- |
+        | Namespace | Pascal | namespace System.Security { ... } |
+        | Type | Pascal | public class StreamReader { ... } |
+        | Interface | Pascal | public interface IEnumerable { ... } |
+        | Method | Pascal | public class Object { public virtual string ToString(); } |
+        | Property | Pascal | public class String { public int Length { get; } } |
+        | Event | Pascal | public class Process { public event EventHandler Exited; } |
+        | Field | Pascal | public class MessageQueue { public static readonly TimeSpan InfiniteTimeout; } public struct UInt32 { public const MinValue = 0; } |
+        | Enum value | Pascal | public enum FileMode { Append, ... } |
+        | Type parameter, generic method | Pascal | public partial class Enum { public static TEnum Parse<TEnum>( string value) { ... } } |
+        | Type parameter, generic type | Pascal | public class Task<TResult> { ... } |
+        | Tuple element | Pascal | public partial class Range { public (int Offset, int Length) GetOffsetAndLength( int length) { ... } } |
+        | Parameter | Camel | public class Convert { public static int ToInt32(string value); } |
+    - kind: annotation
+      text: An early version of this table included a convention for instance field names. We later adopted the guideline that you should almost never use publicly exposed instance fields and should use properties instead. Thus, the guideline for publicly exposed instance fields was no longer needed. For the record, the convention was camelCasing.
+      author: Brad Abrams
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3003
+  strength: DO
+  text: capitalize both characters of two-character acronyms, except the first word of a camel-cased identifier.
+  context: null
+  section: 3.1.2 Capitalizing Acronyms
+  anchor: sec3_1_2
+  body:
+    - kind: code
+      text: |-
+        System.IO
+        System.Threading.IOCompletionCallback
+        public void StartIO(Stream ioStream)
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3004
+  strength: DO
+  text: capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier.
+  context: null
+  section: 3.1.2 Capitalizing Acronyms
+  anchor: sec3_1_2
+  body:
+    - kind: code
+      text: |-
+        System.Xml
+        System.Xml.XmlNode
+        public void ProcessHtmlTag(string htmlTag)
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3005
+  strength: DO NOT
+  text: capitalize any of the characters of any acronyms, whatever their length, at the beginning of a camel-cased identifier.
+  context: null
+  section: 3.1.2 Capitalizing Acronyms
+  anchor: sec3_1_2
+  body:
+    - kind: annotation
+      text: In my time working on the .NET Framework, I have heard every possible excuse for violating these naming guidelines. Many teams feel that they have some special reason to use case differently in their identifiers than in the rest of the Framework. These excuses include consistency with other platforms (MFC, HTML, etc.), avoiding geopolitical issues (casing of some country names), honoring the dead (abbreviation names that came up with some crypto algorithm), and the list goes on and on. For the most part, our customers have seen the places in which we have diverged from these guidelines (for even the best excuse) as warts in the Framework. The only time I think it really makes sense to violate these guidelines is when using a trademark as an identifier. However, I suggest not using trademarks, because they tend to change faster than APIs do.
+      author: Brad Abrams
+    - kind: annotation
+      text: |-
+        There’s a mild misconception that because the types `RSA`, `DSA`, `DES`, and `HMAC` are all caps, there’s some sort of exception to the rule when it comes to cryptographic (or other) algorithm names. There isn’t; those names were just mistakes. Newer types are named correctly: Advanced Encryption Standard (AES) is `Aes`, Elliptic Curve Digital Signature Algorithm (ECDSA) is `ECDsa` (two-letter acronym followed by a three-letter acronym), and Elliptic Curve Diffie-Hellman (ECDH) is `ECDiffieHellman` (avoiding the four concurrent capital letters required by a two-letter acronym following a two-letter acronym).
+
+        For the record, the following types are named incorrectly and should not serve as examples to follow: `RSA`, `DSA`, `HMAC`, `HMACMD5`, `HMACSHA1`, `HMACSHA256`, `HMACSHA384`, `HMACSHA512`, `SHA1`, `SHA256`, `SHA384`, `SHA512`, `RIPEMD160`, `DES`, `TripleDES`, `MACTripleDES`. (There may be others, and there are certainly many parameter names in .NET Cryptography that violate different rules.)
+
+        For these specific, existing names, their casing is kept for consistency with types that interact with them, such as `RSASignaturePadding` and `HashAlgorithmNames.SHA256`.
+      author: Jeremy Barton
+    - kind: annotation
+      text: |-
+        Here is an example of putting these naming guidelines to the test. We have the class shown here in the Framework today. It successfully follows the guidelines for casing and uses `Argb` rather than `ARGB`. But we have actually gotten bug reports along the lines of “How do you convert a color from an ARGB value—all I see are methods to convert ‘from argument b’?”
+
+        ```
+        public struct Color {
+        ...
+           public static Color FromArgb(int alpha, Color baseColor);
+           public static Color FromArgb(int alpha, int red, int green,
+        int blue);
+           public static Color FromArgb(int argb);
+           public static Color FromArgb(int red, int green, int blue);
+        ...
+        }
+        ```
+
+        In retrospect, should this have been a place where we violated the guidelines and used `FromARGB`? I do not think so. It turns out that this is a case of over-abbreviation. RGB is a well-recognized acronym for red– green–blue values. An ARGB value is a relatively uncommon abbreviation that includes the alpha channel. It would have been clearer to name these `AlphaRgb` and would have been more consistent in naming with the rest of the Framework.
+
+        ```
+        public struct Color {
+        ...
+           public static Color FromAlphaRgb(int alpha, Color baseColor);
+           public static Color FromAlphaRgb(int alpha, int red, int green,
+        int blue);
+           public static Color FromAlphaRgb(int argb);
+           public static Color FromAlphaRgb(int red, int green, int blue);
+        ...
+        }
+        ```
+      author: Brad Abrams
+    - kind: annotation
+      text: No matter how hard we try to follow all of these guidelines, sometimes we make mistakes. For example, `System.Text.UTF8Encoding` should really have been `System.Text.Utf8Encoding`. Now when we introduce new UTF8-related functionality, what do we do? Do we continue to use “UTF8” for consistency, or do we use “Utf8” for adherence to the guidelines? In general, we choose to not repeat the mistakes of the past, and newer types have used “Utf8”—for example, `System.Buffers.Text.Utf8Formatter`.
+      author: Stephen Toub
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3006
+  strength: DO NOT
+  text: capitalize each word in so-called closed-form compound words.
+  context: null
+  section: 3.1.3 Capitalizing Compound Words and Common Terms
+  anchor: sec3_1_3
+  body:
+    - kind: paragraph
+      text: These are compound words written as a single word, such as endpoint. For the purpose of casing guidelines, treat a closed-form compound word as a single word. Use a current dictionary to determine if a compound word is written in closed form.
+    - kind: paragraph
+      text: Table 3-2 shows capitalization for some of the most commonly used compound words and common terms.
+    - kind: table
+      text: |-
+        **Table 3-2: Capitalization and Spelling for Common Compound Words and Common Terms**
+
+        | Pascal | Camel | Not |
+        | --- | --- | --- |
+        | `BitFlag` | `bitFlag` | `Bitflag` |
+        | `Callback` | `callback` | `CallBack` |
+        | `Canceled` | `canceled` | `Cancelled` |
+        | `DoNot` | `doNot` | `Don't` |
+        | `Email` | `email` | `EMail` |
+        | `Endpoint` | `endpoint` | `EndPoint` |
+        | `Filename` | `filename` | `FileName` |
+        | `Gridline` | `gridline` | `GridLine` |
+        | `Hashtable` | `hashtable` | `HashTable` |
+        | `Id` | `id` | `ID` |
+        | `Indexes` | `indexes` | `Indices` |
+        | `Logoff`1 | `logoff` | `LogOut` |
+        | `Logon`1 | `logon` | `LogIn`2 |
+        | `Metadata` | `metadata` | `MetaData, metaData` |
+        | `Multipanel` | `multipanel` | `MultiPanel` |
+        | `Multiview` | `multiview` | `MultiView` |
+        | `Namespace` | `namespace` | `NameSpace` |
+        | `Ok` | `ok` | `OK` |
+        | `Pi` | `pi` | `PI` |
+        | `Placeholder` | `placeholder` | `PlaceHolder` |
+        | `SignIn` | `signIn` | `SignOn` |
+        | `SignOut` | `signOut` | `SignOff` |
+        | `Timestamp` | `timestamp` | `TimeStamp` |
+        | `Username` | `username` | `UserName` |
+        | `WhiteSpace` | `whiteSpace` | `Whitespace` |
+        | `Writable` | `writable` | `Writeable` |
+    - kind: paragraph
+      text: 1. When used as a noun (properties, fields, parameters, types). As a verb (methods) it should be considered two words—for example, `LogOff`.
+    - kind: paragraph
+      text: 2. “Login” is now regarded as a closed-form noun, so a type with members named “Login” and “Password” would be OK, except in .NET we prefer “Logon” to “Login.” As a compound verb, “Log In” should be “Log On,” so “LogIn” is never used, and “LogOn” does not appear in this table.
+    - kind: paragraph
+      text: Two other terms that are in common usage are in a category by themselves, because they are common slang abbreviations. The two words Ok and Id (cased as shown here) are exceptions to the guideline that no abbreviations should be used in names.
+    - kind: paragraph
+      text: Table 3-2 and the rule about closed-form nouns are secondary to the general guideline of maintaining consistency. As of September 2019, “white space” is the dictionary entry, with some dictionaries having a note that computer science often uses it as a single word. If and when “whitespace” becomes an accepted closed-form noun, you should continue to use “WhiteSpace” in type hierarchies built with the older form of the word.
+    - kind: annotation
+      text: Table 3-2 presents specific examples found in the development of the .NET Framework. You might find it useful to create your own appendix to this table for compound words and other terms commonly used in your domain.
+      author: Brad Abrams
+    - kind: annotation
+      text: One abbreviation commonly used in COM interface names was Ex (for interfaces that were extended versions of previously existing interfaces). This abbreviation should be avoided in reusable libraries. Use instead a meaningful name that describes the new functionality. For example, rather than `IDispatchEx`, consider `IDynamicDispatch`.
+      author: Brad Abrams
+    - kind: annotation
+      text: |-
+        Several changes were made to Table 3-2 for the third edition of this book. The Oxford English Dictionary, as well as others, now considers “filename,” “logoff,” “logout,” “login,” “logon,” and “username” as closed-form nouns, enabling identifiers like `LogoffTime`. In the sense of an action, the OED still considers “log in,” “log on,” “log off,” or “log out” to be the only acceptable forms.
+
+        That doesn’t mean you should immediately change all of your existing names. However, in types that don’t interact with the older forms, you are free (and encouraged) to accept the evolving nature of language when it comes to these terms.
+      author: Jeremy Barton
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3007
+  strength: DO NOT
+  text: assume that all programming languages are case sensitive. They are not. Names cannot differ by case alone.
+  context: null
+  section: 3.1.4 Case Sensitivity
+  anchor: sec3_1_4
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3008
+  strength: DO
+  text: choose easily readable identifier names.
+  context: null
+  section: 3.2.1 Word Choice
+  anchor: sec3_2_1
+  body:
+    - kind: paragraph
+      text: For example, a property named `HorizontalAlignment` is more English-readable than `AlignmentHorizontal`.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3009
+  strength: DO
+  text: favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the X-axis).
+  context: null
+  section: 3.2.1 Word Choice
+  anchor: sec3_2_1
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3010
+  strength: DO NOT
+  text: use underscores, hyphens, or any other non-alphanumeric characters.
+  context: null
+  section: 3.2.1 Word Choice
+  anchor: sec3_2_1
+  body:
+    - kind: annotation
+      text: Several sets of naming conventions for unit tests appear to violate this guideline with method names like `TestSubjectName_NoMatch`. But, since most test libraries are not distributed as reusable components, the guidelines in this book don’t generally apply to test code.
+      author: Jeremy Barton
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3011
+  strength: DO NOT
+  text: use Hungarian notation.
+  context: null
+  section: 3.2.1 Word Choice
+  anchor: sec3_2_1
+  body:
+    - kind: annotation
+      text: |-
+        It might be useful here to define what Hungarian notation is. It is the convention of prefixing a variable name with some lowercase encoding of its data type. For example, the variable `uiCount` would be an unsigned integer. Another common convention also adds a prefix indicating the scope of the variable in addition to or in place of the type (see Jeffrey’s later example of static and member variable-scope prefixes).
+
+        One downside of Hungarian notation is that developers frequently change the type of variables during early coding, which requires the name of the variable to also change. Additionally, while commonly used fundamental data types (integers, characters, etc.) had well-recognized and standard prefixes, developers frequently fail to use a meaningful and consistent prefix for their custom data types.
+      author: Brent Rector
+    - kind: annotation
+      text: There have always been both positive and negative effects of using the Hungarian naming convention, and they still exist today. Positives include better readability (if used correctly). Negatives include cost of maintenance, confusion if maintenance was not done properly, and finally, Hungarian makes the API more cryptic (less approachable) to some developers. In the world of procedural languages (e.g., C) and the separation of the System APIs for advanced developers from framework libraries for a much wider developer group, the positives seemed to be greater than the negatives. Today, with System APIs designed to be approachable to more developers, and with object-oriented (OO) languages, the trade-off seems to be pulling in the other direction. OO encapsulation brings variable declaration and usage points closer together, OO style favors short, well-factored methods, and abstractions often make the exact type less important or even meaningless.
+      author: Krzysztof Cwalina
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3012
+  strength: AVOID
+  text: using identifiers that conflict with keywords of widely used programming languages.
+  context: null
+  section: 3.2.1 Word Choice
+  anchor: sec3_2_1
+  body:
+    - kind: paragraph
+      text: According to Rule 4 of the Common Language Specification (CLS), all compliant languages must provide a mechanism that allows access to named items that use a keyword of that language as an identifier. C#, for example, uses the @ sign as an escape mechanism in this case. However, it is still a good idea to avoid common keywords because it is much more difficult to use a method with the escape sequence than one without it.
+    - kind: annotation
+      text: When I was porting my Applied Microsoft .NET Framework Programming book from C# to Visual Basic, I ran into this situation a lot. For example, the class library has `Delegate`, `Module`, and `Assembly` classes, and Visual Basic uses these same terms for keywords. This problem is exacerbated by the fact that VB is a case-insensitive language. Visual Basic, like C#, has a way to escape the keywords to disambiguate the situation to the compiler (using square brackets), but I was surprised that the VB team selected keywords that conflict with so many class library names.
+      author: Jeffrey Richter
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3013
+  strength: DO
+  text: use only ASCII characters in identifier names.
+  context: null
+  section: 3.2.1 Word Choice
+  anchor: sec3_2_1
+  body:
+    - kind: paragraph
+      text: All of the identifiers in .NET use ASCII characters, so anyone working with .NET is capable of typing those characters and working with files or tools that understand those characters. But the developers who want to use your library may not have easy capability to type non-ASCII characters, or may use text editors (or other tools) that do not reliably preserve non-ASCII data.
+    - kind: paragraph
+      text: When basing an identifier on a word that properly requires diacritical marks, either use (or invent) the diacritical-free approximation or choose a different identifier.
+    - kind: paragraph
+      text: Table 3-3 describes some suggested replacement spellings to avoid diacritical marks. It is provided for clarity, but is neither authoritative nor exhaustive.
+    - kind: table
+      text: |-
+        **Table 3-3: Alternative Spellings to Avoid Diacritical Marks**
+
+        | Spelling with Diacritics | Spelling for an Identifier |
+        | --- | --- |
+        | `Edelweiß` | `Edelweiss` |
+        | `Mêlée` | `Melee` |
+        | `Naïve` | `Naive` |
+        | `Résumé` | `Resume` |
+        | `Röntgen` | `Roentgen` |
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3014
+  strength: DO NOT
+  text: use abbreviations or contractions as part of identifier names.
+  context: null
+  section: 3.2.2 Using Abbreviations and Acronyms
+  anchor: sec3_2_2
+  body:
+    - kind: paragraph
+      text: For example, use `GetWindow` rather than `GetWin`.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3015
+  strength: DO NOT
+  text: use any acronyms that are not widely accepted, and even if they are, only when necessary.
+  context: null
+  section: 3.2.2 Using Abbreviations and Acronyms
+  anchor: sec3_2_2
+  body:
+    - kind: paragraph
+      text: For example, UI is used for User Interface and HTML is used for HyperText Markup Language. Although many framework designers feel that some recent acronym will soon be widely accepted, it is bad practice to use it in framework identifiers.
+    - kind: paragraph
+      text: For acronym capitalization rules, see section 3.1.2.
+    - kind: annotation
+      text: We continually debate about whether a given acronym is well known or not. A good divining rod is what I call the grep test. Simply use some search engine to grep the Web for the acronym. If the first few results returned are indeed the meaning you intend, it is likely that your acronym qualifies as well known; if you don’t get those search results, think harder about the name. If you fail the test, don’t just spell out the acronym but consider how you can be descriptive in the name.
+      author: Brad Abrams
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3016
+  strength: DO
+  text: use semantically interesting names rather than language-specific keywords for type names.
+  context: null
+  section: 3.2.3 Avoiding Language-Specific Names
+  anchor: sec3_2_3
+  body:
+    - kind: paragraph
+      text: For example, `GetLength` is a better name than `GetInt`.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3017
+  strength: DO
+  text: use a generic CLR type name, rather than a language-specific name, in the rare cases when an identifier has no semantic meaning beyond its type.
+  context: null
+  section: 3.2.3 Avoiding Language-Specific Names
+  anchor: sec3_2_3
+  body:
+    - kind: paragraph
+      text: For example, a method converting to `System.Int64` should be named `ToInt64`, not `ToLong` (because `System.Int64` is a CLR name for the C#-specific alias `long`). Table 3-4 presents several base data types using the CLR type names (as well as the corresponding type names for C#, Visual Basic, and C++).
+    - kind: table
+      text: |-
+        **Table 3-4: CLR Type Names for Language-Specific Type Names**
+
+        | C# | Visual Basic | C++ | CLR |
+        | --- | --- | --- | --- |
+        | `Sbyte` | `SByte` | `char` | `SByte` |
+        | `Byte` | `Byte` | `unsigned char` | `Byte` |
+        | `short` | `Short` | `short` | `Int16` |
+        | `ushort` | `UInt16` | `unsigned short` | `UInt16` |
+        | `int` | `Integer` | `int` | `Int32` |
+        | `uint` | `UInt32` | `unsigned int` | `UInt32` |
+        | `long` | `Long` | `__int64` | `Int64` |
+        | `ulong` | `UInt64` | `unsigned __int64` | `UInt64` |
+        | `float` | `Single` | `float` | `Single` |
+        | `double` | `Double` | `double` | `Double` |
+        | `bool` | `Boolean` | `bool` | `Boolean` |
+        | `char` | `Char` | `wchar_t` | `Char` |
+        | `string` | `String` | `String` | `String` |
+        | `object` | `Object` | `Object` | `Object` |
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3018
+  strength: DO
+  text: use a common name, such as value or item, rather than repeating the type name, in the rare cases when an identifier has no semantic meaning and the type of the parameter is not important.
+  context: null
+  section: 3.2.3 Avoiding Language-Specific Names
+  anchor: sec3_2_3
+  body:
+    - kind: paragraph
+      text: 'The following is a good example of methods of a class that support writing a variety of data types into a stream:'
+    - kind: code
+      text: |-
+        void Write(double value);
+        void Write(float value);
+        void Write(short value);
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3019
+  strength: DO
+  text: use a name similar to the old API when creating new versions of an existing API.
+  context: null
+  section: 3.2.4 Naming New Versions of Existing APIs
+  anchor: sec3_2_4
+  body:
+    - kind: paragraph
+      text: This helps to highlight the relationship between the APIs.
+    - kind: code
+      text: |-
+        class AppDomain {
+           [Obsolete("AppDomain.SetCachePath has been deprecated. Please use
+        AppDomainSetup.CachePath instead.")]
+           public void SetCachePath(String path) { ... }
+        }
+
+        class AppDomainSetup {
+           public string CachePath { get { ... }; set  { ... }; }
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3020
+  strength: DO
+  text: prefer adding a suffix rather than a prefix to indicate a new version of an existing API.
+  context: null
+  section: 3.2.4 Naming New Versions of Existing APIs
+  anchor: sec3_2_4
+  body:
+    - kind: annotation
+      text: |-
+        We did exactly this when we added a faster (but not completely backward-compatible) version of `ReaderWriterLock`. We called it `ReaderWriterLockSlim`. There was debate whether we should call it `SlimReaderWriterLock` (following the guideline that you write it like you say it in English), but decided the discoverability (and the fact that lexical sorting would put them close to each other) was more important.
+
+        This naming practice will assist discovery when browsing documentation or using IntelliSense. The old version of the API will be organized close to the new APIs, because most browsers and IntelliSense show identifiers in alphabetical order.
+      author: Vance Morrison
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3021
+  strength: CONSIDER
+  text: using a brand-new, but meaningful, identifier, instead of adding a suffix or a prefix.
+  context: null
+  section: 3.2.4 Naming New Versions of Existing APIs
+  anchor: sec3_2_4
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3022
+  strength: DO
+  text: use a numeric suffix to indicate a new version of an existing API, particularly if the existing name of the API is the only name that makes sense (e.g., if it is an industry standard) and if adding any meaningful suffix (or changing the name) is not an appropriate option.
+  context: null
+  section: 3.2.4 Naming New Versions of Existing APIs
+  anchor: sec3_2_4
+  body:
+    - kind: code
+      text: |-
+        // old API
+        [Obsolete("This type is obsolete. Please use the new version of the same
+        class, X509Certificate2.")]
+        public class X509Certificate { ... }
+        // new API
+        public class X509Certificate2 { ... }
+    - kind: annotation
+      text: |-
+        I would use numeric suffixes as the very last resort. A much better approach is to use a new name or a meaningful suffix.
+
+        The BCL team shipped a new type named `TimeZone2` in one of the early prereleases of .NET Framework 3.5. The name immediately became the center of a controversy in the blogging community. After a set of lengthy discussions, the team decided to rename the type to `TimeZoneInfo`, which is not a great name but is much better than `TimeZone2`.
+
+        It’s interesting to note that nobody dislikes `X509Certificate2`. My interpretation of this fact is that programmers are more willing to accept the ugly numeric suffix on rarely used library types somewhere in the corner of the framework than on a core type in the `System` namespace.
+      author: Krzysztof Cwalina
+    - kind: annotation
+      text: I think that `X509Certificate2` is successful as the type name of the more usable of the two X.509 certificate classes in part because it is so much more powerful than `X509Certificate` that there’s really no reason to use the former class. Compounded with there being very few APIs that provide or accept `X509Certificate`, it’s simply that `X509Certificate2` is the name of the certificate type in .NET. (That said, I’ll stand contrary to Krzysztof’s claim and say that I wish that the functionality had been added to `X509Certificate` without a new type being introduced.)
+      author: Jeremy Barton
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3023
+  strength: DO NOT
+  text: use the “Ex” (or a similar) suffix for an identifier to distinguish it from an earlier version of the same API.
+  context: null
+  section: 3.2.4 Naming New Versions of Existing APIs
+  anchor: sec3_2_4
+  body:
+    - kind: code
+      text: |-
+        [Obsolete("This type is obsolete. ...")]
+        public class Car  { ... }
+
+        // new API
+        public class CarEx      { ... } // the wrong way
+        public class CarNew     { ... } // the wrong way
+        public class Car2       { ... } // an acceptable way
+        public class Automobile { ... } // a better way
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3024
+  strength: DO
+  text: use the “64” suffix when introducing versions of APIs that operate on a 64-bit integer (a long integer) instead of a 32-bit integer. You only need to take this approach when the existing 32-bit API exists; don’t do it for brand-new APIs with only a 64-bit version.
+  context: null
+  section: 3.2.4 Naming New Versions of Existing APIs
+  anchor: sec3_2_4
+  body:
+    - kind: paragraph
+      text: For example, various APIs on `System.Diagnostics.Process` return `Int32` values representing memory sizes, such as `PagedMemorySize` or `PeakWorkingSet`. To appropriately support these APIs on 64-bit systems, APIs have been added that have the same name but a “64” suffix.
+    - kind: code
+      text: |-
+        public class Process {
+           // old APIs
+           public int PeakWorkingSet { get; }
+           public int PagedMemorySize { get; }
+           // ...
+           // new APIs
+           public long PeakWorkingSet64 { get; }
+           public long PagedMemorySize64 { get; }
+        }
+    - kind: annotation
+      text: Note that this guideline applies only to retrofitting APIs that have already shipped. When designing a brand-new API, use the most appropriate type and name for the API that will work on all platforms, and avoid using both “32” and “64” suffixes. Consider using overloading.
+      author: KIT GEORGE
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3025
+  strength: DO
+  text: choose names for your assembly DLLs that suggest large chunks of functionality, such as `System.Data`.
+  context: null
+  section: 3.3 Names of Assemblies, DLLs, and Packages
+  anchor: sec3_3
+  body:
+    - kind: paragraph
+      text: Assembly, DLL, and package names don’t have to correspond to namespace names, but it is reasonable to follow the namespace name when naming assemblies. A good rule of thumb is to name the DLL based on the common prefix of the namespaces contained in the assembly. For example, an assembly with two namespaces, `MyCompany.MyTechnology.FirstFeature` and `MyCompany.MyTechnology.SecondFeature`, could be called `MyCompany.MyTechnology.dll`.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3026
+  strength: CONSIDER
+  text: 'naming DLLs according to the following pattern:'
+  context: null
+  section: 3.3 Names of Assemblies, DLLs, and Packages
+  anchor: sec3_3
+  body:
+    - kind: code
+      text: <Company>.<Component>.dll
+    - kind: paragraph
+      text: '`<Component>` can contain more than one dot-separated clauses. For example:'
+    - kind: code
+      text: |-
+        Microsoft.VisualBasic.dll
+        Microsoft.VisualBasic.Vsa.dll
+        Fabrikam.Security.dll
+        Litware.Controls.dll
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3027
+  strength: DO
+  text: prefix namespace names with a company name to prevent namespaces from different companies from having the same name.
+  context: null
+  section: 3.4 Names of Namespaces
+  anchor: sec3_4
+  body:
+    - kind: paragraph
+      text: For example, the Microsoft Office automation APIs provided by Microsoft should be in the namespace `Microsoft.Office`.
+    - kind: annotation
+      text: It is important to use the official name of your company or organization when choosing the first part of your namespace name to avoid possible conflicts. For example, if Microsoft had chosen to use MS as its root namespace, it might have been confusing to developers at other companies that use MS as an abbreviation.
+      author: Brad Abrams
+    - kind: annotation
+      text: This means staying away from the latest cool and catchy name that the marketing folks have come up with. It is fine to tweak the branding of a product from release to release, but the namespace name will be burned into your client’s code forever. Therefore, choose something that is technically sound and not subject to the marketing whims of the day.
+      author: Brad Abrams
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3028
+  strength: DO
+  text: use a stable, version-independent product name at the second level of a namespace name.
+  context: null
+  section: 3.4 Names of Namespaces
+  anchor: sec3_4
+  body:
+    - kind: annotation
+      text: We added a set of controls to ASP.NET late in the ship cycle for V1.0 of the .NET Framework that rendered for mobile devices. Because these controls came from a team in a different division, our immediate reaction was to put them in a different namespace (`System.Web.MobileControls`). Then, after a couple of reorganizations and .NET Framework versions, we realized a better engineering trade-off was to fold that functionality into the existing controls in `System.Web.Controls`. In retrospect, we let internal organizational differences affect the public exposure of the APIs, and we came to regret that later. Avoid this type of mistake in your designs.
+      author: Brad Abrams
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3029
+  strength: DO NOT
+  text: use organizational hierarchies as the basis for names in namespace hierarchies, because group names within corporations tend to be short-lived. Organize the hierarchy of namespaces around groups of related technologies.
+  context: null
+  section: 3.4 Names of Namespaces
+  anchor: sec3_4
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3030
+  strength: DO
+  text: use PascalCasing, and separate namespace components with periods (e.g., `Microsoft.Office.PowerPoint`). If your brand employs nontraditional casing, you should follow the casing defined by your brand, even if it deviates from normal namespace casing.
+  context: null
+  section: 3.4 Names of Namespaces
+  anchor: sec3_4
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3031
+  strength: CONSIDER
+  text: using plural namespace names where appropriate.
+  context: null
+  section: 3.4 Names of Namespaces
+  anchor: sec3_4
+  body:
+    - kind: paragraph
+      text: For example, use `System.Collections` instead of `System.Collection`. Brand names and acronyms are exceptions to this rule, however. For example, use `System.IO` instead of `System.IOs`.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3032
+  strength: DO NOT
+  text: use the same name for a namespace and a type in that namespace.
+  context: null
+  section: 3.4 Names of Namespaces
+  anchor: sec3_4
+  body:
+    - kind: paragraph
+      text: For example, do not use `Debug` as a namespace name and then also provide a class named `Debug` in the same namespace. Several compilers require such types to be fully qualified.
+    - kind: paragraph
+      text: These guidelines cover general namespace naming guidelines, but the next section provides specific guidelines for certain special subnamespaces.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3033
+  strength: DO NOT
+  text: introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`.
+  context: null
+  section: 3.4.1 Namespaces and Type Name Conf licts
+  anchor: sec3_4_1
+  body:
+    - kind: paragraph
+      text: There is a very high probability that doing so will lead to type name conflicts in common scenarios. You should qualify the general type names (e.g., `FormElement`, `XmlNode`, `EventLog`, `SoapMessage`).
+    - kind: paragraph
+      text: 'There are specific guidelines for avoiding type name conflicts for different categories of namespaces. Namespaces can be divided into the following categories:'
+    - kind: list
+      text: |-
+        - Application model namespaces
+        - Infrastructure namespaces
+        - Core namespaces
+        - Technology namespace groups
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3034
+  strength: DO NOT
+  text: give the same name to multiple types across namespaces within a single application model.
+  context: null
+  section: 3.4.1.1 Application Model Namespaces
+  anchor: sec3_4_1_1
+  body:
+    - kind: paragraph
+      text: For example, do not add a type named `Page` to the `System.Web.UI.Adapters` namespace, because the `System.Web.UI` namespace already contains a type named `Page`.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3035
+  strength: DO NOT
+  text: give types names that would conflict with any type in the core namespaces.
+  context: null
+  section: 3.4.1.3 Core Namespaces
+  anchor: sec3_4_1_3
+  body:
+    - kind: paragraph
+      text: For example, never use `Stream` as a type name. It would conflict with `System.IO.Stream`, a very commonly used type.
+    - kind: paragraph
+      text: By the same token, do not add a type named `EventLog` to the `System.Diagnostics.Events` namespace, because the `System.Diagnostics` namespace already contains a type named `EventLog`.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3036
+  strength: DO NOT
+  text: assign type names that would conflict with other types within a single technology.
+  context: null
+  section: 3.4.1.4 Technology Namespace Groups
+  anchor: sec3_4_1_4
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3037
+  strength: DO NOT
+  text: introduce type name conflicts between types in technology namespaces and an application model namespace (unless the technology is not expected to be used with the application model).
+  context: null
+  section: 3.4.1.4 Technology Namespace Groups
+  anchor: sec3_4_1_4
+  body:
+    - kind: paragraph
+      text: For example, you should not add a type named `Binding` to the `Microsoft.VisualBasic` namespace because the `System.Windows.Forms` namespace already contains that type name.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3038
+  strength: DO
+  text: name classes and structs with nouns or noun phrases, using PascalCasing.
+  context: null
+  section: 3.5 Names of Classes, Structs, and Interfaces
+  anchor: sec3_5
+  body:
+    - kind: paragraph
+      text: This distinguishes type names from methods, which are named with verb phrases.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3039
+  strength: DO
+  text: name interfaces with adjective phrases, or occasionally with nouns or noun phrases.
+  context: null
+  section: 3.5 Names of Classes, Structs, and Interfaces
+  anchor: sec3_5
+  body:
+    - kind: paragraph
+      text: Nouns and noun phrases should be used rarely. They might indicate that the type should be an abstract class, rather than an interface. See section 4.3 for details about deciding how to choose between abstract classes and interfaces.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3040
+  strength: DO NOT
+  text: give class names a prefix (e.g., “C”).
+  context: null
+  section: 3.5 Names of Classes, Structs, and Interfaces
+  anchor: sec3_5
+  body:
+    - kind: annotation
+      text: One of the few prefixes used is “I” for interfaces (as in `ICollection`), but that is for historical reasons. In retrospect, I think it would have been better to use regular type names. In a majority of the cases, developers don’t care that something is an interface and not an abstract class, for example.
+      author: Krzysztof Cwalina
+    - kind: annotation
+      text: The “I” prefix for interfaces is a clear recognition of the influence of COM (and Java) on the .NET Framework. COM popularized—even institutionalized—the notation that interfaces begin with “I.” Although we discussed diverging from this historical pattern, we decided to carry forward the pattern because so many of our users were already familiar with COM.
+      author: Brad Abrams
+    - kind: annotation
+      text: Personally, I like the “I” prefix, and I wish we had more stuff like this. Little one-character prefixes go a long way toward keeping code terse and yet descriptive. As I said earlier, I use prefixes for my private type fields because I find this very useful.
+      author: Jeffrey Richter
+    - kind: annotation
+      text: 'Note: This is really another application of Hungarian notation (though one without the disadvantages of the notation’s use in variable names).'
+      author: Brent Rector
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3041
+  strength: CONSIDER
+  text: ending the name of derived classes with the name of the base class.
+  context: null
+  section: 3.5 Names of Classes, Structs, and Interfaces
+  anchor: sec3_5
+  body:
+    - kind: paragraph
+      text: 'This is very readable and explains the relationship clearly. Two examples of this in code are `ArgumentOutOfRangeException`, which is a kind of `Exception`, and `SerializableAttribute`, which is a kind of `Attribute`. However, it is important to use reasonable judgment in applying this guideline; for example, the `Button` class is a kind of `Control`, although `Control` doesn’t appear in its name. The following are examples of correctly named classes:'
+    - kind: code
+      text: |-
+        public class FileStream : Stream {...}
+        public class Button : Control {...}
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3042
+  strength: DO
+  text: prefix interface names with the letter I, to indicate that the type is an interface.
+  context: null
+  section: 3.5 Names of Classes, Structs, and Interfaces
+  anchor: sec3_5
+  body:
+    - kind: paragraph
+      text: For example, `IComponent` (descriptive noun), `ICustomAttributeProvider` (noun phrase), and `IPersistable` (adjective) are appropriate interface names. As with other type names, avoid abbreviations.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3043
+  strength: DO
+  text: ensure that the names differ only by the “I” prefix on the interface name when you are defining a class–interface pair where the class is a standard implementation of the interface.
+  context: null
+  section: 3.5 Names of Classes, Structs, and Interfaces
+  anchor: sec3_5
+  body:
+    - kind: paragraph
+      text: 'The following example illustrates this guideline for the interface `IComponent` and its standard implementation, the class `Component`:'
+    - kind: code
+      text: |-
+        public interface IComponent { ... }
+        public class Component : IComponent { ... }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3044
+  strength: DO
+  text: name generic type parameters with descriptive names unless a single-letter name is completely self-explanatory and a descriptive name would not add value.
+  context: null
+  section: 3.5.1 Names of Generic Type Parameters
+  anchor: sec3_5_1
+  body:
+    - kind: code
+      text: |-
+        public interface ISessionChannel<TSession> { ... }
+        public delegate TOutput Converter<TInput,TOutput>(TInput from);
+        public struct Nullable<T> { ... }
+        public class List<T> { ... }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3045
+  strength: CONSIDER
+  text: using `T` as the type parameter name for types with one single-letter type parameter.
+  context: null
+  section: 3.5.1 Names of Generic Type Parameters
+  anchor: sec3_5_1
+  body:
+    - kind: code
+      text: |-
+        public int IComparer<T> { ... }
+        public delegate bool Predicate<T>(T item);
+        public struct Nullable<T> where T:struct { ... }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3046
+  strength: DO
+  text: prefix descriptive type parameter names with `T`.
+  context: null
+  section: 3.5.1 Names of Generic Type Parameters
+  anchor: sec3_5_1
+  body:
+    - kind: code
+      text: |-
+        public interface ISessionChannel<TSession> where TSession : ISession{
+           TSession Session { get; }
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3047
+  strength: CONSIDER
+  text: indicating constraints placed on a type parameter in the name of the parameter.
+  context: null
+  section: 3.5.1 Names of Generic Type Parameters
+  anchor: sec3_5_1
+  body:
+    - kind: paragraph
+      text: For example, a parameter constrained to `ISession` might be called `TSession`.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3048
+  strength: DO
+  text: follow the guidelines described in Table 3-5 when naming types derived from or implementing certain .NET types.
+  context: null
+  section: 3.5.2 Names of Common Types
+  anchor: sec3_5_2
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3049
+  strength: DO
+  text: add the suffix “Attribute” to names of custom attribute classes.
+  context: System.Attribute
+  section: 3.5.2 Names of Common Types
+  anchor: sec3_5_2
+  body:
+    - kind: paragraph
+      text: '`System.Delegate`'
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3050
+  strength: DO
+  text: add the suffix “EventHandler” to names of delegates that are used in events.
+  context: System.Delegate
+  section: 3.5.2 Names of Common Types
+  anchor: sec3_5_2
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3051
+  strength: DO
+  text: add the suffix “Callback” to names of delegates other than those used as event handlers.
+  context: System.Delegate
+  section: 3.5.2 Names of Common Types
+  anchor: sec3_5_2
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3052
+  strength: DO NOT
+  text: add the suffix “Delegate” to a delegate.
+  context: System.Delegate
+  section: 3.5.2 Names of Common Types
+  anchor: sec3_5_2
+  body:
+    - kind: paragraph
+      text: '`System.EventArgs`'
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3053
+  strength: DO
+  text: add the suffix “EventArgs.”
+  context: System.EventArgs
+  section: 3.5.2 Names of Common Types
+  anchor: sec3_5_2
+  body:
+    - kind: paragraph
+      text: '`System.Enum`'
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3054
+  strength: DO NOT
+  text: derive from this class; use the keyword supported by your language instead; for example, in C#, use the `enum` keyword.
+  context: System.Enum
+  section: 3.5.2 Names of Common Types
+  anchor: sec3_5_2
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3055
+  strength: DO NOT
+  text: add the suffix “Enum” or “Flag.”
+  context: System.Enum
+  section: 3.5.2 Names of Common Types
+  anchor: sec3_5_2
+  body:
+    - kind: paragraph
+      text: '`System.Exception`'
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3056
+  strength: DO
+  text: add the suffix “Exception.”
+  context: System.Exception
+  section: 3.5.2 Names of Common Types
+  anchor: sec3_5_2
+  body:
+    - kind: paragraph
+      text: '`IDictionary IDictionary<TKey, TValue>`'
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3057
+  strength: DO
+  text: add the suffix “Dictionary.” Note that `IDictionary` is a specific type of collection, but this guideline takes precedence over the more general collections guideline that follows.
+  context: IDictionary IDictionary<TKey, TValue>
+  section: 3.5.2 Names of Common Types
+  anchor: sec3_5_2
+  body:
+    - kind: paragraph
+      text: '`IEnumerable ICollection IList IEnumerable<T> ICollection<T> IList<T>`'
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3058
+  strength: DO
+  text: add the suffix “Collection,” except for reusable, specialized data types such as “Queue” and “HashSet.”
+  context: IEnumerable ICollection IList IEnumerable<T> ICollection<T> IList<T>
+  section: 3.5.2 Names of Common Types
+  anchor: sec3_5_2
+  body:
+    - kind: paragraph
+      text: '`System.IO.Stream`'
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3059
+  strength: DO
+  text: add the suffix “Stream.”
+  context: System.IO.Stream
+  section: 3.5.2 Names of Common Types
+  anchor: sec3_5_2
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3060
+  strength: DO
+  text: use a singular type name for an enumeration unless its values are bit fields.
+  context: null
+  section: 3.5.3 Naming Enumerations
+  anchor: sec3_5_3
+  body:
+    - kind: code
+      text: |-
+        public enum ConsoleColor {
+          Black,
+          Blue,
+          Cyan,
+          ...
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3061
+  strength: DO
+  text: use a plural type name for an enumeration with bit fields as values, also called flags enum.
+  context: null
+  section: 3.5.3 Naming Enumerations
+  anchor: sec3_5_3
+  body:
+    - kind: code
+      text: |-
+        [Flags]
+        public enum ConsoleModifiers {
+          Alt = 1 << 0,
+          Control = 1 << 1,
+          Shift = 1 << 2,
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3062
+  strength: DO NOT
+  text: use an “Enum” suffix in enum type names.
+  context: null
+  section: 3.5.3 Naming Enumerations
+  anchor: sec3_5_3
+  body:
+    - kind: paragraph
+      text: 'For example, the following enum is badly named:'
+    - kind: code
+      text: |-
+        // Bad naming
+        public enum ColorEnum {
+          ...
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3063
+  strength: DO NOT
+  text: use “Flag” or “Flags” suffixes in enum type names.
+  context: null
+  section: 3.5.3 Naming Enumerations
+  anchor: sec3_5_3
+  body:
+    - kind: paragraph
+      text: 'For example, the following enum is badly named:'
+    - kind: code
+      text: |-
+        // Bad naming
+        [Flags]
+        public enum ColorFlags {
+          ...
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3064
+  strength: DO NOT
+  text: use a prefix on enumeration value names (e.g., “ad” for ADO enums, “rtf” for rich text enums).
+  context: null
+  section: 3.5.3 Naming Enumerations
+  anchor: sec3_5_3
+  body:
+    - kind: code
+      text: |-
+        public enum ImageMode {
+          ImageModeBitmap = 0, // ImageMode prefix is not necessary
+          ImageModeGrayscale = 1,
+          ImageModeIndexed = 2,
+          ImageModeRgb = 3,
+        }
+    - kind: paragraph
+      text: 'The following naming scheme would be better:'
+    - kind: code
+      text: |-
+        public enum ImageMode {
+          Bitmap = 0,
+          Grayscale = 1,
+          Indexed = 2,
+          Rgb = 3,
+        }
+    - kind: annotation
+      text: Notice that this guideline is the exact opposite of common usage in C++ programming. It is important in C++ to fully qualify each enum member because they can be accessed outside of the scope of the enum name. However, in the managed world, enum members are only accessed through the scope of the enum name.
+      author: Brad Abrams
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3065
+  strength: DO
+  text: give methods names that are verbs or verb phrases.
+  context: null
+  section: 3.6.1 Names of Methods
+  anchor: sec3_6_1
+  body:
+    - kind: code
+      text: |-
+        public class String {
+          public int CompareTo(...);
+          public string[] Split(...);
+          public string Trim();
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3066
+  strength: DO
+  text: name properties using a noun, noun phrase, or adjective.
+  context: null
+  section: 3.6.2 Names of Properties
+  anchor: sec3_6_2
+  body:
+    - kind: code
+      text: |-
+        public class String {
+          public int Length { get; }
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3067
+  strength: DO NOT
+  text: have properties that match the name of “Get” methods, such as a property named `TextWriter` and a method named `GetTextWriter`.
+  context: null
+  section: 3.6.2 Names of Properties
+  anchor: sec3_6_2
+  body:
+    - kind: code
+      text: |-
+        public string TextWriter { get {...} set {...} }
+        public string GetTextWriter(int value) { ... }
+    - kind: paragraph
+      text: This pattern typically indicates that the property should really be a method. See section 5.1.3 for additional information.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3068
+  strength: DO
+  text: name collection properties with a plural phrase describing the items in the collection instead of using a singular phrase followed by “List” or “Collection.”
+  context: null
+  section: 3.6.2 Names of Properties
+  anchor: sec3_6_2
+  body:
+    - kind: code
+      text: |-
+        public class ListView {
+          // good naming
+          public ItemCollection Items { get; }
+
+          // bad naming
+          public ItemCollection ItemCollection { get; }
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3069
+  strength: DO
+  text: name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value.
+  context: null
+  section: 3.6.2 Names of Properties
+  anchor: sec3_6_2
+  body:
+    - kind: paragraph
+      text: For example, `CanRead` is more understandable than `Readable`. However, `Created` is actually more readable than `IsCreated`. Having the prefix is often too verbose and unnecessary, particularly in the face of IntelliSense in the code editors. It is just as clear to type `MyObject.Enabled =` and have IntelliSense give you the choice of true or false as it is to have `MyObject.IsEnabled =`, and the second approach is more verbose.
+    - kind: annotation
+      text: |-
+        In selecting names for Boolean properties and functions, consider testing out the common uses of the API in an if-statement. Such a usage test will highlight whether the word choices and grammar of the API name (e.g., active versus passive voice, singular versus plural) make sense as English phrases. For example, both of the following
+
+        ```
+        if(collection.Contains(item))
+        if(regularExpression.Matches(text))
+        ```
+
+        read more naturally than
+
+        ```
+        if(collection.IsContained(item))
+        if(regularExpression.Match(text))
+        ```
+
+        Also, all else being equal, you should prefer the active voice to the passive voice:
+
+        ```
+        if(stream.CanSeek) // better than ..
+        if(stream.IsSeekable
+        ```
+      author: Krzysztof Cwalina
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3070
+  strength: CONSIDER
+  text: giving a property the same name as its type.
+  context: null
+  section: 3.6.2 Names of Properties
+  anchor: sec3_6_2
+  body:
+    - kind: paragraph
+      text: 'For example, the following property correctly gets and sets an enum value named `Color`, so the property is named `Color`:'
+    - kind: code
+      text: |-
+        public enum Color {...}
+        public class Control {
+          public Color Color { get; set; }
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3071
+  strength: DO
+  text: name events with a verb or a verb phrase.
+  context: null
+  section: 3.6.3 Names of Events
+  anchor: sec3_6_3
+  body:
+    - kind: paragraph
+      text: Examples include `Clicked`, `Painting`, and `DroppedDown`.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3072
+  strength: DO
+  text: give events names with a concept of before and after, using the present and past tenses, such as `Closing` and `Closed`.
+  context: null
+  section: 3.6.3 Names of Events
+  anchor: sec3_6_3
+  body:
+    - kind: paragraph
+      text: For example, a close event that is raised before a window is closed would be called `Closing`, and one that is raised after the window is closed would be called `Closed`.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3073
+  strength: DO NOT
+  text: use “Before” or “After” prefixes or postfixes to indicate pre- and post-events. Use present and past tenses as just described.
+  context: null
+  section: 3.6.3 Names of Events
+  anchor: sec3_6_3
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3074
+  strength: DO
+  text: name event handlers (delegates used as types of events) with the “EventHandler” suffix, such as `ClickedEventHandler`.
+  context: null
+  section: 3.6.3 Names of Events
+  anchor: sec3_6_3
+  body:
+    - kind: code
+      text: |-
+        public delegate void ClickedEventHandler(object sender,
+          ClickedEventArgs e);
+    - kind: paragraph
+      text: Note that you should create custom event handlers very rarely. Instead, most APIs should simply use `EventHandler<T>`. Section 5.4.1 talks about event design in more detail.
+    - kind: annotation
+      text: Today, you would rarely need to define your own “EventHandler” delegate. Instead, you should use the `EventHandler<TEventArgs>` delegate type, where `TEventArgs` is either `EventArgs` or your own `EventArgs` derived class. This reduces type definitions in the system and ensures that your event follows the pattern described in the preceding bullet.
+      author: Jason Clark
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3075
+  strength: DO
+  text: use two parameters named sender and e in event handlers.
+  context: null
+  section: 3.6.3 Names of Events
+  anchor: sec3_6_3
+  body:
+    - kind: paragraph
+      text: The sender parameter represents the object that raised the event. The sender parameter is typically of type `object`, even if it is possible to employ a more specific type. The pattern is used consistently across .NET and is described in more detail in section 5.4.
+    - kind: annotation
+      text: The `object sender` parameter may be my least favorite guideline in .NET. But, for consistency, I have followed it in every event I’ve ever declared.
+      author: Jeremy Barton
+    - kind: code
+      text: |-
+        public delegate void <EventName>EventHandler(object sender,
+                                                     <EventName>EventArgs e);
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3076
+  strength: DO
+  text: 'name event argument classes with the “EventArgs” suffix, as shown in the following example:'
+  context: null
+  section: 3.6.3 Names of Events
+  anchor: sec3_6_3
+  body:
+    - kind: code
+      text: |-
+        public class ClickedEventArgs : EventArgs {
+          int x;
+          int y;
+          public ClickedEventArgs (int x, int y) {
+             this.x = x;
+             this.y = y;
+          }
+          public int X { get { return x; } }
+          public int Y { get { return y; } }
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3077
+  strength: DO
+  text: use PascalCasing in field names.
+  context: null
+  section: 3.6.4 Naming Fields
+  anchor: sec3_6_4
+  body:
+    - kind: code
+      text: |-
+        public class String {
+           public static readonly string Empty = "";
+        }
+        public struct UInt32 {
+           public const MinValue = 0;
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3078
+  strength: DO
+  text: name fields using a noun, noun phrase, or adjective.
+  context: null
+  section: 3.6.4 Naming Fields
+  anchor: sec3_6_4
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3079
+  strength: DO NOT
+  text: use a prefix for `public` or `protected` field names.
+  context: null
+  section: 3.6.4 Naming Fields
+  anchor: sec3_6_4
+  body:
+    - kind: paragraph
+      text: For example, do not use “g_” or “s_” to indicate static fields. Publicly accessible fields (the subject of this section) are very similar to properties from the API design point of view; therefore, they should follow the same naming conventions as properties.
+    - kind: annotation
+      text: As with just about all the guidelines in this book, this guideline is meant to apply only to publicly exposed fields. In this case, it’s important that the names be clean and simple so the masses of consumers can easily understand them. As many have noted, there are very good reasons to use some sort of convention for private fields and local variables.
+      author: Brad Abrams
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3080
+  strength: DO
+  text: use camelCasing in parameter names.
+  context: null
+  section: 3.7 Naming Parameters
+  anchor: sec3_7
+  body:
+    - kind: code
+      text: |-
+        public class String {
+           public bool Contains(string value);
+           public string Remove(int startIndex, int count);
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3081
+  strength: DO
+  text: use descriptive parameter names.
+  context: null
+  section: 3.7 Naming Parameters
+  anchor: sec3_7
+  body:
+    - kind: paragraph
+      text: Parameter names should be descriptive enough to use with their types to determine their meaning in most scenarios.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3082
+  strength: CONSIDER
+  text: using names based on a parameter’s meaning rather than the parameter’s type.
+  context: null
+  section: 3.7 Naming Parameters
+  anchor: sec3_7
+  body:
+    - kind: paragraph
+      text: Development tools generally provide useful information about the type, so the parameter name can be put to better use describing semantics rather than the type. Occasional use of type-based parameter names is entirely appropriate—but it is not ever appropriate under these guidelines to revert to the Hungarian naming convention.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3083
+  strength: DO
+  text: use left and right for binary operator overload parameter names if there is no meaning to the parameters.
+  context: null
+  section: 3.7.1 Naming Operator Overload Parameters
+  anchor: sec3_7_1
+  body:
+    - kind: code
+      text: |-
+        public static TimeSpan operator-(DateTimeOffset left,
+                                         DateTimeOffset right)
+        public static bool operator==(DateTimeOffset left,
+                                      DateTimeOffset right)
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3084
+  strength: DO
+  text: use value for unary operator overload parameter names if there is no meaning to the parameters.
+  context: null
+  section: 3.7.1 Naming Operator Overload Parameters
+  anchor: sec3_7_1
+  body:
+    - kind: code
+      text: public static BigInteger operator-(BigInteger value);
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3085
+  strength: CONSIDER
+  text: meaningful names for operator overload parameters if doing so adds significant value.
+  context: null
+  section: 3.7.1 Naming Operator Overload Parameters
+  anchor: sec3_7_1
+  body:
+    - kind: code
+      text: |-
+        public static BigInteger Divide(BigInteger dividend,
+                                        BigInteger divisor);
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3086
+  strength: DO NOT
+  text: use abbreviations or numeric indices for operator overload parameter names.
+  context: null
+  section: 3.7.1 Naming Operator Overload Parameters
+  anchor: sec3_7_1
+  body:
+    - kind: code
+      text: |-
+        // incorrect parameter naming
+        public static bool operator ==(DateTimeOffset d1,
+                                       DateTimeOffset d2);
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null
+- id: FDG3087
+  strength: DO NOT
+  text: directly expose localizable resources as public (or protected) members.
+  context: null
+  section: 3.8 Naming Resources
+  anchor: sec3_8
+  body:
+    - kind: paragraph
+      text: The types and members automatically generated by a resource editor should use the `internal` access modifier.
+    - kind: paragraph
+      text: When it does make sense to expose a resource via public API, use intentional type and member design.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: null

@@ -1,1 +1,5 @@
 private-sources/
+bin/
+obj/
+TestResults/
+.vs/

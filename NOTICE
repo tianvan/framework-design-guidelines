@@ -1,0 +1,16 @@
+Framework Design Guidelines Analyzers and Plugin
+
+This project is an independent effort. It is not affiliated with, endorsed by, or
+sponsored by the authors of "Framework Design Guidelines" (3rd edition), Microsoft,
+or Pearson.
+
+Excerpts from the book that appear in this repository (guideline wording, explanatory
+paragraphs, and example code) remain the property of their respective rights holders.
+They are reproduced here solely to make the guidelines usable by analyzers and coding
+agents.
+
+You are encouraged to read the book itself: "Framework Design Guidelines: Conventions,
+Idioms, and Patterns for Reusable .NET Libraries" by Krzysztof Cwalina, Jeremy Barton,
+and Brad Abrams.
+
+Code and content written for this project are licensed under the MIT License (see LICENSE).
