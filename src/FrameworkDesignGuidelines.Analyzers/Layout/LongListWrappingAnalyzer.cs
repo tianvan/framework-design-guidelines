@@ -100,7 +100,7 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
         SourceText text = tree.GetText(context.CancellationToken);
         TextLine line = text.Lines.GetLineFromPosition(shape.Open.SpanStart);
         int maxLength = LineLength.Get(context.Options.AnalyzerConfigOptionsProvider.GetOptions(tree));
-        if (line.Span.Length <= maxLength || IsChopped(text, shape) || HasOuterListOnLine(context.Node, line))
+        if (line.Span.Length <= maxLength || IsChopped(text, shape) || HasEarlierListOnLine(context.Node.SyntaxTree.GetRoot(context.CancellationToken), shape, line))
         {
             return;
         }
@@ -109,19 +109,20 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    /// Only the outermost list opening on a line is reported; inner lists are left for the next run.
-    /// An enclosing list that opens on the same line cannot be chopped, since a chopped list ends its line.
+    /// Only the leftmost list opening on a line is reported: the one enclosing the others, or the first link of a
+    /// fluent chain. The rest are left for the next run, which then indents them from their new line.
     /// </summary>
-    private static bool HasOuterListOnLine(SyntaxNode node, TextLine line)
+    private static bool HasEarlierListOnLine(SyntaxNode root, ListShape shape, TextLine line)
     {
-        foreach (SyntaxNode ancestor in node.Ancestors())
+        for (SyntaxToken token = root.FindToken(line.Start);
+            token.SpanStart < shape.Open.SpanStart && !token.IsKind(SyntaxKind.None);
+            token = token.GetNextToken())
         {
-            if (ancestor.SpanStart < line.Start)
-            {
-                return false;
-            }
-
-            if (TryGetList(ancestor, out ListShape outer) && outer.Open.SpanStart >= line.Start)
+            if (token.SpanStart >= line.Start
+                && (token.IsKind(SyntaxKind.OpenParenToken) || token.IsKind(SyntaxKind.OpenBracketToken))
+                && token.Parent is SyntaxNode list
+                && TryGetList(list, out ListShape earlier)
+                && earlier.Open == token)
             {
                 return true;
             }

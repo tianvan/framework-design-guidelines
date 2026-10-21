@@ -59,7 +59,10 @@ public sealed class LongListWrappingCodeFix : CodeFixProvider
             return document;
         }
 
-        string itemIndentation = LayoutText.GetLineIndentation(text, shape.Open.SpanStart) + LayoutText.IndentUnit;
+        string lineIndentation = LayoutText.GetLineIndentation(text, shape.Open.SpanStart);
+        string itemIndentation = lineIndentation + LayoutText.GetIndentUnit(lineIndentation);
+        bool useTabs = itemIndentation.IndexOf('\t') >= 0;
+        int itemWidth = LayoutText.GetWidth(itemIndentation);
         var edits = new TokenEdits(text);
         SyntaxToken previous = shape.Open;
         foreach (SyntaxNode item in shape.Items)
@@ -67,10 +70,15 @@ public sealed class LongListWrappingCodeFix : CodeFixProvider
             SyntaxToken first = item.GetFirstToken();
             SyntaxToken last = item.GetLastToken();
             edits.ForceBreakBetween(previous, first, itemIndentation);
+
+            // The lines of a multi-line item (an initializer, a lambda body) move with its first line.
+            int originalWidth = LayoutText.GetWidth(LayoutText.GetLineIndentation(text, first.SpanStart));
+            edits.ShiftContinuationLines(item, itemWidth - originalWidth, useTabs);
+
             previous = last.GetNextToken();
-            edits.Join(last, previous);
+            edits.Join(last, previous, itemIndentation);
         }
 
-        return document.WithSyntaxRoot(edits.Apply(root));
+        return await edits.ApplyAsync(document, root, cancellationToken).ConfigureAwait(false);
     }
 }

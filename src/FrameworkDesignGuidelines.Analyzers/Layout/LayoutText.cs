@@ -37,6 +37,23 @@ internal static class LayoutText
         return width;
     }
 
+    /// <summary>
+    /// Returns one indentation level in the style of <paramref name="lineIndentation"/>: a tab when that line is
+    /// indented with tabs, otherwise <see cref="IndentUnit"/>.
+    /// </summary>
+    public static string GetIndentUnit(string lineIndentation)
+    {
+        return lineIndentation.IndexOf('\t') >= 0 ? "\t" : IndentUnit;
+    }
+
+    /// <summary>Builds indentation of the given visual width, with tabs (then spaces) or with spaces only.</summary>
+    public static string CreateIndentation(int width, bool useTabs)
+    {
+        return useTabs
+            ? new string('\t', width / TabWidth) + new string(' ', width % TabWidth)
+            : new string(' ', width);
+    }
+
     public static int GetLineNumber(SourceText text, int position)
     {
         return text.Lines.GetLineFromPosition(position).LineNumber;

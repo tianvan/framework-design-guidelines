@@ -80,10 +80,9 @@ public sealed class SingleLineCatchFinallyCodeFix : CodeFixProvider
         }
 
         string ownerIndentation = LayoutText.GetLineIndentation(text, owner.SpanStart);
-        string braceIndentation = block.Parent is SwitchSectionSyntax
-            ? ownerIndentation + LayoutText.IndentUnit
-            : ownerIndentation;
-        string statementIndentation = braceIndentation + LayoutText.IndentUnit;
+        string unit = LayoutText.GetIndentUnit(ownerIndentation);
+        string braceIndentation = block.Parent is SwitchSectionSyntax ? ownerIndentation + unit : ownerIndentation;
+        string statementIndentation = braceIndentation + unit;
 
         var edits = new TokenEdits(text);
         SyntaxToken open = block.OpenBraceToken;
@@ -105,7 +104,7 @@ public sealed class SingleLineCatchFinallyCodeFix : CodeFixProvider
             edits.BreakBetween(close, next, GetNextTokenIndentation(text, next, ownerIndentation));
         }
 
-        return document.WithSyntaxRoot(edits.Apply(root));
+        return await edits.ApplyAsync(document, root, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

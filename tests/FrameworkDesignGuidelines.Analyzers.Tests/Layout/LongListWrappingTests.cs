@@ -424,6 +424,257 @@ public sealed class LongListWrappingTests
     }
 
     [Fact]
+    public Task Fluent_chain_reports_only_the_leftmost_list()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class B
+            {
+                public B Add(int first, int second)
+                {
+                    return this;
+                }
+            }
+
+            class C
+            {
+                void M()
+                {
+                    var b = new B().Add{|FDGA023:(|}1111111, 2222222).Add(3333333, 4444444).Add(5, 6);
+                }
+            }
+            """,
+            """
+            class B
+            {
+                public B Add(int first, int second)
+                {
+                    return this;
+                }
+            }
+
+            class C
+            {
+                void M()
+                {
+                    var b = new B().Add(
+                        1111111,
+                        2222222).Add(3333333, 4444444).Add(5, 6);
+                }
+            }
+            """,
+            extraEditorConfig: "max_line_length = 60\n");
+    }
+
+    [Fact]
+    public Task Fluent_chain_next_link_is_chopped_from_its_new_line()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class B
+            {
+                public B Add(int first, int second)
+                {
+                    return this;
+                }
+
+                public B Add(int first, int second, int third)
+                {
+                    return this;
+                }
+            }
+
+            class C
+            {
+                void M()
+                {
+                    var b = new B().Add{|FDGA023:(|}1111111, 2222222).Add(3333333, 4444444, 5555555).Add(5, 6);
+                }
+            }
+            """,
+            """
+            class B
+            {
+                public B Add(int first, int second)
+                {
+                    return this;
+                }
+
+                public B Add(int first, int second, int third)
+                {
+                    return this;
+                }
+            }
+
+            class C
+            {
+                void M()
+                {
+                    var b = new B().Add(
+                        1111111,
+                        2222222).Add(
+                            3333333,
+                            4444444,
+                            5555555).Add(5, 6);
+                }
+            }
+            """,
+            extraEditorConfig: "max_line_length = 60\n",
+            fixAllIterations: 2);
+    }
+
+    [Fact]
+    public Task Multiline_initializer_item_moves_with_its_first_line()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class Holder
+            {
+                public Holder(int a, Holder b, int c)
+                {
+                }
+
+                public int Count { get; set; }
+            }
+
+            class C
+            {
+                void M()
+                {
+                    var holder = new Holder{|FDGA023:(|}1, new Holder(2, null, 0)
+                    {
+                        Count = 1,
+                    }, 3);
+                }
+            }
+            """,
+            """
+            class Holder
+            {
+                public Holder(int a, Holder b, int c)
+                {
+                }
+
+                public int Count { get; set; }
+            }
+
+            class C
+            {
+                void M()
+                {
+                    var holder = new Holder(
+                        1,
+                        new Holder(2, null, 0)
+                        {
+                            Count = 1,
+                        },
+                        3);
+                }
+            }
+            """,
+            extraEditorConfig: "max_line_length = 50\n");
+    }
+
+    [Fact]
+    public Task Multiline_lambda_item_moves_with_its_first_line()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+
+            class C
+            {
+                void M()
+                {
+                    Run{|FDGA023:(|}1, () =>
+                    {
+                        M();
+                    }, 2);
+                }
+
+                static void Run(
+                    int a,
+                    Action b,
+                    int c)
+                {
+                }
+            }
+            """,
+            """
+            using System;
+
+            class C
+            {
+                void M()
+                {
+                    Run(
+                        1,
+                        () =>
+                        {
+                            M();
+                        },
+                        2);
+                }
+
+                static void Run(
+                    int a,
+                    Action b,
+                    int c)
+                {
+                }
+            }
+            """,
+            extraEditorConfig: "max_line_length = 16\n");
+    }
+
+    [Fact]
+    public Task Closing_paren_after_a_line_comment_is_indented_with_the_items()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M(string a, string b, string c)
+                {
+                    Report{|FDGA023:(|}a, b, c, "the last argument" // trailing note
+                    );
+                }
+
+                static void Report(
+                    string a,
+                    string b,
+                    string c,
+                    string d)
+                {
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M(string a, string b, string c)
+                {
+                    Report(
+                        a,
+                        b,
+                        c,
+                        "the last argument" // trailing note
+                        );
+                }
+
+                static void Report(
+                    string a,
+                    string b,
+                    string c,
+                    string d)
+                {
+                }
+            }
+            """,
+            extraEditorConfig: "max_line_length = 50\n");
+    }
+
+    [Fact]
     public Task Inner_list_is_indented_from_its_own_line()
     {
         return Verifier.VerifyAsync(
