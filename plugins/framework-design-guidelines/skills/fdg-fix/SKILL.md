@@ -2,8 +2,8 @@
 name: fdg-fix
 description: >-
   Make the given C# code pass every Framework Design Guidelines tool check: run dotnet fdg fix, build, then fix the
-  remaining FDG, CA and IDE diagnostics and compiler errors project by project. Use when the user runs /fdg-fix or
-  asks to clean up a directory, project or file with FDG.
+  remaining FDG, CA and IDE diagnostics and compiler errors project by project. Use when the user runs /fdg-fix (or
+  `$fdg-fix` on Codex) or asks to clean up a directory, project or file with FDG.
 disable-model-invocation: true
 argument-hint: "[<path>...]"
 ---
@@ -42,19 +42,25 @@ suggest `/fdg-setup`.
 The projects to check are the onboarded SDK-style projects the paths cover (the project that contains a `.cs` file).
 For each one:
 
-1. Read `obj/fdg/marker.json` in the project directory. Its `rulesPath` is the package's `rules.json`; from that file
-   take `registeredDiagnostics` (the diagnostic ids FDG reports), `breakingFixDiagnostics` (ids whose fix renames or
-   moves a symbol), and `rules` (each rule's `id`, `strength`, `text` and the `diagnostics` that check it).
-2. Build the project with a fresh, empty temporary directory and the project's full path:
+1. Read `obj/fdg/marker.json` in the project directory. If it is missing, the project has not been built since it
+   was onboarded: build it once (`dotnet build <the .csproj>`) and read it again; if it is still missing, the project
+   is not onboarded, so report it and suggest `/fdg-setup`. The marker's `projectPath` is the project's full path as
+   MSBuild sees it, and its `rulesPath` is the package's `rules.json`. From that file take `registeredDiagnostics`
+   (the diagnostic ids FDG reports), `breakingFixDiagnostics` (ids whose fix renames or moves a symbol), and `rules`
+   (each rule's `id`, `strength`, `text` and the `diagnostics` that check it).
+2. Create a new, empty directory under the system temporary directory (`$TMPDIR`, `$TEMP` or `/tmp`), never inside
+   the repository, and build with the marker's `projectPath`, quoted, as both the project and `FdgSarifProject`:
 
    ```
-   dotnet build <full path of the .csproj> --no-restore -p:FdgSarifDir=<temp dir> -p:FdgSarifProject=<full path of the .csproj>
+   dotnet build <projectPath> --no-restore -p:FdgSarifDir=<temp dir> -p:FdgSarifProject=<projectPath>
    ```
 
-   Both properties are needed: only the project whose full path equals `FdgSarifProject` writes its log, as
-   `<temp dir>/<target framework>.sarif` (one per target framework). If the build fails because the project is not
-   restored, run `dotnet restore` on it and build again. If the build succeeds but writes no `.sarif` file, the
-   compiler was skipped as up to date; build again with `--no-incremental` added.
+   Only the project named by `FdgSarifProject` writes its log, as `<temp dir>/<target framework>.sarif` (one per
+   target framework); projects it references do not. If the build fails because the project is not restored, run
+   `dotnet restore` on it and build again. If the build succeeds but writes no `.sarif` file, the compiler was
+   skipped as up to date; build again with `--no-incremental` added. If there is still no `.sarif` file, tell the
+   user "<project>: diagnostics could not be checked (no SARIF log)", list it again in the summary, and never treat
+   the project as clean. Delete the temporary directory once you have read the logs.
 3. Read every `.sarif` file. Keep a result when it is not suppressed (no `suppressions`) and either its `ruleId` is
    in `registeredDiagnostics` with `level` `warning` or `error`, or it is a compiler error (`ruleId` starting with
    `CS`, `level` `error`). Ignore everything else, such as other analyzers' warnings and nullable warnings. The
@@ -65,7 +71,7 @@ For each one:
 
 ## Step 3: Fix project by project
 
-Fix one project at a time, then rebuild it with the command from step 2 into a new temporary directory and check
+Fix one project at a time, then rebuild it as in step 2, into a new temporary directory, and check
 that its issues are gone before you move on. This keeps the context small. Fix compiler errors first.
 
 ## Step 4: Renames and public API changes
@@ -84,6 +90,7 @@ Run `dotnet fdg fix <paths>` and the builds from step 2 once more. Then report b
 - what the CLI fixed automatically (the files it changed, from `git diff --stat`);
 - what you changed by hand, by project;
 - what is left for the user to decide: unconfirmed public API changes and issues you could not fix, each as
-  `<file>:<line> — <diagnostic id> <rule strength and text>`.
+  `<file>:<line> — <diagnostic id> <rule strength and text>`;
+- the projects whose diagnostics could not be checked (no SARIF log), if any.
 
 Remind the user that all changes are in the working tree for them to review with `git diff`.

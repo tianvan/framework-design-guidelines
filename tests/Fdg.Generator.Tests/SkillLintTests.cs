@@ -35,6 +35,12 @@ public sealed class SkillLintTests
     private static readonly Regex RuleLine = new(
         @"(?:\*\*(?<id>FDG[1-9A-Z]\d{3})\*\* |— (?<id>FDG[1-9A-Z]\d{3}) (?=(?:DO|AVOID|CONSIDER) ))(?<rest>.+)$");
 
+    /// <summary>
+    /// Any line where a rule id is followed by a strength word, in any case and after any punctuation, such as
+    /// <c>`FDG3014` Do not</c> or <c>**FDG3014**: DO</c>. Such a line must be a <see cref="RuleLine"/>.
+    /// </summary>
+    private static readonly Regex LooseRuleLine = new(@"(?<id>FDG[1-9A-Z]\d{3})\W{0,4}(?i:DO NOT|DO|AVOID|CONSIDER)\b");
+
     /// <summary>A path into a skill's references, as a markdown link target or in code.</summary>
     private static readonly Regex ReferencePath =
         new(@"(?<![\w/.-])(?<path>(?:\.\./[\w-]+/)?references/[^\s)\]`'""#]+)");
@@ -178,6 +184,13 @@ public sealed class SkillLintTests
             foreach (string line in Read(file).Lines)
             {
                 Match match = RuleLine.Match(line);
+                foreach (Match loose in LooseRuleLine.Matches(line))
+                {
+                    Assert.True(
+                        match.Success && match.Groups["id"].Value == loose.Groups["id"].Value,
+                        $"{Relative(file)}: the {loose.Groups["id"].Value} line is not in the rule line format:\n{line}");
+                }
+
                 if (!match.Success)
                 {
                     continue;
@@ -246,6 +259,51 @@ public sealed class SkillLintTests
         Assert.Equal(groups.Order(), groups);
     }
 
+    /// <summary>
+    /// fdg-write triggers on every .cs file, so it must say first that its rules apply only to onboarded projects
+    /// and that other code keeps its existing style.
+    /// </summary>
+    [Fact]
+    public void Fdg_write_states_its_scope_before_the_rules()
+    {
+        string[] lines = Read(SkillPath("fdg-write")).Lines;
+        int firstRule = Array.FindIndex(lines, l => RuleLine.IsMatch(l));
+        string opening = string.Join("\n", lines.Take(firstRule));
+
+        Assert.Contains("FrameworkDesignGuidelinesProfile", opening);
+        Assert.Contains("SDK-style", opening);
+        Assert.Contains("obj/fdg/marker.json", opening);
+        Assert.Contains("existing style", opening);
+        Assert.Contains("/fdg-setup", opening);
+    }
+
+    /// <summary>
+    /// fdg-fix builds with the marker's <c>projectPath</c>, the exact string the package compares with
+    /// <c>FdgSarifProject</c>, and never treats a project without a SARIF log as clean.
+    /// </summary>
+    [Fact]
+    public void Fdg_fix_builds_the_marker_project_path_and_reports_missing_sarif()
+    {
+        string body = Read(SkillPath("fdg-fix")).Body;
+
+        Assert.Contains("projectPath", body);
+        Assert.Contains("-p:FdgSarifProject=<projectPath>", body);
+        Assert.Contains("dotnet build <projectPath>", body);
+        Assert.Contains("diagnostics could not be checked (no SARIF log)", body);
+        Assert.Contains("system temporary directory", body);
+    }
+
+    [Fact]
+    public void Command_skill_descriptions_name_codex_invocation()
+    {
+        foreach (string name in CommandSkillNames)
+        {
+            string description = Read(SkillPath(name)).Frontmatter.GetValueOrDefault("description") ?? string.Empty;
+            Assert.Contains($"/{name}", description);
+            Assert.Contains($"${name}", description);
+        }
+    }
+
     [Fact]
     public void Command_skills_disable_model_invocation()
     {
@@ -267,6 +325,10 @@ public sealed class SkillLintTests
 
     private static string Statement(Rule rule) => $"{rule.Strength.ToText()} {rule.Text}";
 
+    /// <summary>
+    /// Mirrors <c>SkillReferenceEmitter.Line</c> (through <c>RuleText.Statement</c> and <c>RuleText.LanguageTag</c>,
+    /// which are internal) without the examples link; keep the two in step when the reference format changes.
+    /// </summary>
     private static string QuotedLine(Rule rule)
     {
         string line = Statement(rule);

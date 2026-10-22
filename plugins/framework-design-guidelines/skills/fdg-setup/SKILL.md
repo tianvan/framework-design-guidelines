@@ -3,7 +3,8 @@ name: fdg-setup
 description: >-
   Set up Framework Design Guidelines checks in this repository: add the FrameworkDesignGuidelines.Analyzers package,
   choose a profile (library, application or test) for each directory, build once to confirm the rules are active,
-  and install the dotnet fdg CLI. Use when the user runs /fdg-setup or asks to set up or repair FDG.
+  and install the dotnet fdg CLI. Use when the user runs /fdg-setup (or `$fdg-setup` on Codex) or asks to set up or
+  repair FDG.
 disable-model-invocation: true
 ---
 
@@ -37,20 +38,22 @@ The MSBuild property `FrameworkDesignGuidelinesProfile` selects the rule set:
 |---|---|---|
 | `library` | Libraries published for others to use | Strictest: API design rules for the public surface, plus versioning and compatibility rules |
 | `application` | Application code, including every DDD layer | API design rules for all types and members, no binary compatibility checks |
-| `test` | Test projects | Naming rules relaxed (`Method_WhenX_DoesY` is fine), API design rules off |
+| `test` | Test projects | Chapter 3 rules are off (`Method_WhenX_DoesY` is fine), API design rules off |
 
 Recommend a profile per directory and ask the user to confirm or change it:
 
 - `tests/`, and projects named `*.Tests` or referencing a test framework: `test`.
-- Projects that are packed and published (`IsPackable`, `PackageId`, published to a feed): `library`.
+- Projects published as packages for others (an explicit `PackageId`, or pushed to a feed): `library`. Do not go
+  by `IsPackable`; SDK class libraries are packable by default.
 - Everything else: `application`.
 
 The recommended layout is one `Directory.Build.props` per directory, for example `src/Directory.Build.props` with
 `application` (or `library`) and `tests/Directory.Build.props` with `test`. A project that differs from its directory
 sets the property in its own `.csproj`.
 
-For each `library` directory, also ask whether to enable PublicApiAnalyzers (`Microsoft.CodeAnalysis.PublicApiAnalyzers`),
-which tracks public API changes in `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt`. The default is no.
+For each `library` directory, also ask whether to enable PublicApiAnalyzers
+(`Microsoft.CodeAnalysis.PublicApiAnalyzers`), which tracks public API changes in `PublicAPI.Shipped.txt` and
+`PublicAPI.Unshipped.txt`. The default is no.
 
 ## Step 3: Add the package and the profiles
 
@@ -79,12 +82,14 @@ First show the user the list of files you will change, then wait for confirmatio
 
 3. Write the profile and the reference into each directory's `Directory.Build.props`. Add to an existing file and
    keep its content. A new file must import the next `Directory.Build.props` above it, if there is one, because
-   MSBuild stops at the first one it finds:
+   MSBuild stops at the first one it finds. With central package management:
 
    ```xml
    <Project>
-     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"
-             Condition="'$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))' != ''" />
+     <PropertyGroup>
+       <ParentDirectoryBuildProps>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))</ParentDirectoryBuildProps>
+     </PropertyGroup>
+     <Import Project="$(ParentDirectoryBuildProps)" Condition="'$(ParentDirectoryBuildProps)' != ''" />
 
      <PropertyGroup>
        <FrameworkDesignGuidelinesProfile>application</FrameworkDesignGuidelinesProfile>
@@ -94,6 +99,12 @@ First show the user the list of files you will change, then wait for confirmatio
        <PackageReference Include="FrameworkDesignGuidelines.Analyzers" PrivateAssets="all" />
      </ItemGroup>
    </Project>
+   ```
+
+   Without central package management, the same file with the version on the reference:
+
+   ```xml
+       <PackageReference Include="FrameworkDesignGuidelines.Analyzers" Version="X.Y.Z" PrivateAssets="all" />
    ```
 
    If a directory also holds legacy projects, put the `PackageReference` in each SDK-style `.csproj` instead: legacy

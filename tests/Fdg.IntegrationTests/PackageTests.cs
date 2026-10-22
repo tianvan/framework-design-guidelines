@@ -312,6 +312,23 @@ public sealed class PackageTests : IClassFixture<PackageFixture>
     }
 
     [Fact]
+    public void Sarif_is_written_when_FdgSarifProject_uses_forward_slashes()
+    {
+        using var workspace = new SampleWorkspace(_fixture, "sarif-slashes");
+        string project = workspace.AddProject("Sample", "application", LayoutAndNamingSource);
+        string sarifDirectory = Path.Combine(workspace.DirectoryPath, "sarif out");
+
+        // Git Bash and other POSIX shells on Windows hand MSBuild paths such as D:/Repos/x/Sample.csproj.
+        AssertSucceeded(workspace.Build(
+            project,
+            "-p:FdgSarifDir=" + sarifDirectory,
+            "-p:FdgSarifProject=" + project.Replace('\\', '/')));
+
+        string sarifPath = Path.Combine(sarifDirectory, "netstandard2.0.sarif");
+        Assert.True(File.Exists(sarifPath), sarifPath);
+    }
+
+    [Fact]
     public void Package_does_not_flow_to_consumers()
     {
         using var workspace = new SampleWorkspace(_fixture, "flow");

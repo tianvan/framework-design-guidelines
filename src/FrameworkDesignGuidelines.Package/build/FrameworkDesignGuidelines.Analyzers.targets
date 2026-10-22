@@ -10,8 +10,11 @@
     <!--
       dotnet-fdg passes a directory per project, so the log is named by target framework only. Global properties
       flow to referenced projects, so only the project named by FdgSarifProject (the one dotnet-fdg builds) writes.
+      Both paths are normalized, so a path with forward slashes (Git Bash on Windows) or ".." still matches.
     -->
-    <_FdgWritesSarif Condition="'$(FdgSarifDir)' != '' and '$(MSBuildProjectFullPath)' == '$(FdgSarifProject)'">true</_FdgWritesSarif>
+    <_FdgSarifProjectPath Condition="'$(FdgSarifProject)' != ''">$([MSBuild]::NormalizePath('$(FdgSarifProject)'))</_FdgSarifProjectPath>
+    <_FdgProjectPath>$([MSBuild]::NormalizePath('$(MSBuildProjectFullPath)'))</_FdgProjectPath>
+    <_FdgWritesSarif Condition="'$(FdgSarifDir)' != '' and '$(_FdgSarifProjectPath)' == '$(_FdgProjectPath)'">true</_FdgWritesSarif>
     <_FdgSarifName>$(TargetFramework)</_FdgSarifName>
     <_FdgSarifName Condition="'$(_FdgSarifName)' == ''">single</_FdgSarifName>
     <ErrorLog Condition="'$(_FdgWritesSarif)' == 'true'">$(FdgSarifDir)/$(_FdgSarifName).sarif,version=2.1</ErrorLog>

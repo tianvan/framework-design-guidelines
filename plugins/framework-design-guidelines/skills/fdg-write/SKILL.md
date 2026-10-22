@@ -10,10 +10,15 @@ paths: "**/*.cs"
 
 # Writing C# by the Framework Design Guidelines
 
-Apply these rules while you write or change C# code, not afterwards. Analyzers, `dotnet format` and the end-of-turn
-check already fix layout and check casing, modifiers and the other mechanical rules; the rules here are the ones
-only you can apply. Each rule is quoted from the book with its id. DO is a rule to always follow, CONSIDER one to
-generally follow, AVOID one to generally not follow, and DO NOT one to almost never break.
+Scope: these rules apply to SDK-style projects that set `FrameworkDesignGuidelinesProfile` (library, application or
+test). The session context names them; without it, look for the property in the project file or a
+`Directory.Build.props` above it, or for the project's `obj/fdg/marker.json`. In any other project, follow the
+surrounding code's existing style instead, and you may suggest `/fdg-setup` to the user once.
+
+Inside that scope, apply these rules while you write or change C# code, not afterwards. There, analyzers,
+`dotnet format` and the end-of-turn check fix layout and check casing, modifiers and the other mechanical rules; the
+rules here are the ones only you can apply. Each rule is quoted from the book with its id. DO is a rule to always
+follow, CONSIDER one to generally follow, AVOID one to generally not follow, and DO NOT one to almost never break.
 
 A public name cannot change later without breaking callers, so choose names carefully before you write the member.
 In `test` projects the Chapter 3 rules are off (test names such as `Method_WhenX_DoesY` are fine); Appendix A applies.
@@ -32,7 +37,6 @@ In `test` projects the Chapter 3 rules are off (test names such as `Method_WhenX
 - **FDG3043** DO ensure that the names differ only by the “I” prefix on the interface name when you are defining a class–interface pair where the class is a standard implementation of the interface.
 - **FDG3041** CONSIDER ending the name of derived classes with the name of the base class.
 - **FDG3044** DO name generic type parameters with descriptive names unless a single-letter name is completely self-explanatory and a descriptive name would not add value.
-- **FDG3045** CONSIDER using `T` as the type parameter name for types with one single-letter type parameter.
 - **FDG3060** DO use a singular type name for an enumeration unless its values are bit fields.
 - **FDG3061** DO use a plural type name for an enumeration with bit fields as values, also called flags enum.
 - **FDG3065** DO give methods names that are verbs or verb phrases.
@@ -68,6 +72,7 @@ Casing that analyzers cannot see (they check only the first letter):
 - **FDGA059** DO NOT use comments unless they describe something not obvious to someone other than the developer who wrote the code.
 - **FDGA062** AVOID placing comments at the end of a line even when the comment is very short.
 - **FDGA064** DO NOT have more than one public type in a source file, unless they differ only in the number of generic parameters or one is nested in the other.
+- **FDGA065** DO name the source file with the name of the public type it contains.
 - **FDGA024** DO add a blank line before control flow statements.
 
 Appendix A is the .NET BCL team's style; the book calls it a set of suggestions, not requirements. Follow it unless
@@ -77,8 +82,8 @@ the repository's own `.editorconfig` says otherwise.
 
 | When you are about to | Read |
 |---|---|
-| Name or rename anything: an assembly, namespace, type, member, parameter, generic type parameter, event, enum, operator parameter, resource, or a new version of an existing API | [references/ch03-naming.md](references/ch03-naming.md) |
-| Write braces, indentation, blank lines, comments, file layout, member order or using directives | [references/appA-coding-style.md](references/appA-coding-style.md) |
+| Name an assembly, a namespace or a resource, add a new version of an existing API, name operator overload parameters, or name anything the rules above do not cover | [references/ch03-naming.md](references/ch03-naming.md) |
+| Write comments, organize a source file, order members or sort using directives | [references/appA-coding-style.md](references/appA-coding-style.md) |
 
 Each reference lists, by section, every rule of its chapter that tools do not enforce. When a rule's wording is not
 enough, follow the `examples:` link at the end of its line to the book's explanation and code.
@@ -86,6 +91,8 @@ enough, follow the `examples:` link at the end of its line to the book's explana
 ## Language version
 
 The project's C# language version and target frameworks are given in the session context; take them as the truth.
-If they are missing, read `LangVersion` and `TargetFramework(s)` from the project file. A rule tagged `[C# N+]`
-needs C# N or later: when the project's version is lower, write the `(alt: ...)` form instead. Never raise the
-language version and never add polyfills to follow a rule.
+If they are missing, read `langVersion` and `targetFramework` from the project's `obj/fdg/marker.json`, which also
+resolves the default version when the project sets none (C# 7.3 for .NET Framework and .NET Standard 2.0); without a
+marker, read `LangVersion` and `TargetFramework(s)` from the project file. A rule tagged `[C# N+]` needs C# N or
+later: when the project's version is lower, write the `(alt: ...)` form instead. Never raise the language version
+and never add polyfills to follow a rule.

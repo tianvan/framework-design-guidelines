@@ -3,7 +3,7 @@ name: fdg-review
 description: >-
   Review C# code against the Framework Design Guidelines rules that tools cannot check (naming, API design, coding
   style), quoting each rule verbatim with its FDG id. Gives findings only and changes no code. Use when the user runs
-  /fdg-review or asks for an FDG or API design review.
+  /fdg-review (or `$fdg-review` on Codex) or asks for an FDG or API design review.
 disable-model-invocation: true
 argument-hint: "[<path>...]"
 ---
@@ -14,7 +14,8 @@ Paths to review: $ARGUMENTS
 
 If the line above is empty or still shows a placeholder (Codex does not substitute it), take the paths from the
 user's message. With no paths, review the current changes: `git diff HEAD` (staged and unstaged) plus the untracked
-`.cs` files (`git ls-files --others --exclude-standard -- "*.cs"`). Review only `.cs` files.
+`.cs` files (`git ls-files --others --exclude-standard -- "*.cs"`). In a repository with no commits yet
+(`git rev-parse --verify HEAD` fails), review every tracked and untracked `.cs` file instead. Review only `.cs` files.
 
 This is a review: give findings and change no files.
 
@@ -38,8 +39,9 @@ This is a review: give findings and change no files.
    the rules tools do not enforce; follow a rule's `examples:` link when its wording is not enough.
 4. Check every declaration in scope against those rules. Report a finding only when a specific rule clearly applies
    to a specific line. Do not invent advice the rules do not support, and do not report what analyzers and
-   `dotnet format` already fix or report (layout, casing, modifiers). A rule tagged `[C# N+]` applies only when the
-   project's language version is at least N; below it, its `(alt: ...)` is the expectation.
+   `dotnet format` already fix or report (layout, modifiers, and the casing of an identifier's first letter). A rule
+   tagged `[C# N+]` applies only when the project's language version is at least N; below it, its `(alt: ...)` is the
+   expectation.
 
 ## Output
 
