@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using System.Text;
 using Fdg.Cli.Projects;
 
 namespace Fdg.Cli.Hooks;
@@ -9,6 +8,9 @@ namespace Fdg.Cli.Hooks;
 /// <param name="Head">The commit HEAD pointed to, or <see langword="null"/> in a repository without commits.</param>
 /// <param name="DirtyFiles">Candidate files that differed from HEAD, with the SHA-256 of their content.</param>
 public sealed record TurnSnapshot(int Turn, string? Head, IReadOnlyDictionary<string, string> DirtyFiles);
+
+/// <summary>What <see cref="Snapshot.FindChangesAsync"/> found: changed candidate files and deleted candidate paths.</summary>
+public sealed record TurnChanges(IReadOnlyList<string> Changed, IReadOnlyList<string> Deleted);
 
 /// <summary>
 /// Turn snapshots from <c>git status</c>. A file changed in a turn is a candidate file that is dirty now and was
@@ -42,10 +44,22 @@ public static class Snapshot
     public static async Task<IReadOnlyList<string>> FindChangedFilesAsync(
         GitRepository git,
         TurnSnapshot snapshot,
+        CancellationToken cancellationToken) =>
+        (await FindChangesAsync(git, snapshot, cancellationToken).ConfigureAwait(false)).Changed;
+
+    /// <summary>
+    /// From one <c>git status</c>: the candidate files whose content differs from the start of the turn, and the
+    /// candidate paths gone from the working tree (deleted, or moved away, since HEAD or since the turn started),
+    /// each in ordinal order.
+    /// </summary>
+    public static async Task<TurnChanges> FindChangesAsync(
+        GitRepository git,
+        TurnSnapshot snapshot,
         CancellationToken cancellationToken)
     {
+        IReadOnlyList<GitStatusEntry> entries = await git.StatusAsync(cancellationToken).ConfigureAwait(false);
         var changed = new List<string>();
-        foreach (string path in await CandidatesAsync(git, cancellationToken).ConfigureAwait(false))
+        foreach (string path in Candidates(git, entries))
         {
             if (!snapshot.DirtyFiles.TryGetValue(path, out string? hash) ||
                 hash != Hash(await File.ReadAllBytesAsync(FullPath(git, path), cancellationToken).ConfigureAwait(false)))
@@ -54,17 +68,7 @@ public static class Snapshot
             }
         }
 
-        return changed;
-    }
-
-    /// <summary>Candidate paths that are gone from the working tree: deleted, or moved away, since HEAD or since the turn started.</summary>
-    public static async Task<IReadOnlyList<string>> FindDeletedFilesAsync(
-        GitRepository git,
-        TurnSnapshot snapshot,
-        CancellationToken cancellationToken)
-    {
-        IReadOnlyList<GitStatusEntry> entries = await git.StatusAsync(cancellationToken).ConfigureAwait(false);
-        return entries
+        string[] deleted = entries
             .Select(e => e.Path)
             .Concat(snapshot.DirtyFiles.Keys)
             .Where(IsCandidatePath)
@@ -72,31 +76,31 @@ public static class Snapshot
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)
             .ToArray();
+        return new TurnChanges(changed, deleted);
     }
 
-    /// <inheritdoc cref="WriteBaselineAsync(GitRepository, StateStore, TurnSnapshot, string, IReadOnlyList{string}, CancellationToken)"/>
+    /// <inheritdoc cref="WriteBaselineAsync(GitRepository, StateStore, TurnSnapshot, string, MoveSources?, CancellationToken)"/>
     public static Task<string> WriteBaselineAsync(
         GitRepository git,
         StateStore state,
         TurnSnapshot snapshot,
         string relativePath,
         CancellationToken cancellationToken) =>
-        WriteBaselineAsync(git, state, snapshot, relativePath, [], cancellationToken);
+        WriteBaselineAsync(git, state, snapshot, relativePath, null, cancellationToken);
 
     /// <summary>
     /// Writes the start-of-turn content of a changed file to the state directory, if it is not there yet: a dirty
     /// file was copied at the start; a clean one is HEAD's content as a checkout would write it. A new file takes
-    /// the start-of-turn content of the deleted file it was moved from: the one most of its lines come from, if
-    /// that is more than half. Any other new file, or any file in a repository without commits, is empty.
+    /// the start-of-turn content of the deleted file it was moved from (<see cref="MoveSources.FindAsync"/>). Any
+    /// other new file, or any file in a repository without commits, is empty.
     /// </summary>
-    /// <param name="deletedFiles">From <see cref="FindDeletedFilesAsync"/>.</param>
     /// <returns>The baseline file's path.</returns>
     public static async Task<string> WriteBaselineAsync(
         GitRepository git,
         StateStore state,
         TurnSnapshot snapshot,
         string relativePath,
-        IReadOnlyList<string> deletedFiles,
+        MoveSources? moveSources,
         CancellationToken cancellationToken)
     {
         string baseline = state.BaselinePath(relativePath);
@@ -105,15 +109,20 @@ public static class Snapshot
             return baseline;
         }
 
-        byte[] content = await ReadCommittedAsync(git, snapshot, relativePath, cancellationToken).ConfigureAwait(false)
-            ?? await FindMovedFromAsync(git, state, snapshot, relativePath, deletedFiles, cancellationToken).ConfigureAwait(false)
-            ?? [];
+        byte[]? content = await ReadCommittedAsync(git, snapshot, relativePath, cancellationToken).ConfigureAwait(false);
+        if (content is null && moveSources is not null)
+        {
+            byte[] current = await File.ReadAllBytesAsync(FullPath(git, relativePath), cancellationToken).ConfigureAwait(false);
+            content = await moveSources.FindAsync(current, cancellationToken).ConfigureAwait(false);
+        }
+
         Directory.CreateDirectory(Path.GetDirectoryName(baseline)!);
-        await File.WriteAllBytesAsync(baseline, content, cancellationToken).ConfigureAwait(false);
+        await File.WriteAllBytesAsync(baseline, content ?? [], cancellationToken).ConfigureAwait(false);
         return baseline;
     }
 
-    private static async Task<byte[]?> ReadCommittedAsync(
+    /// <returns>The file's content at the turn's HEAD, or <see langword="null"/> without commits or such a file.</returns>
+    internal static async Task<byte[]?> ReadCommittedAsync(
         GitRepository git,
         TurnSnapshot snapshot,
         string relativePath,
@@ -121,53 +130,6 @@ public static class Snapshot
         snapshot.Head is null
             ? null
             : await git.ReadCommittedFileAsync(snapshot.Head, relativePath, cancellationToken).ConfigureAwait(false);
-
-    /// <returns>The start-of-turn content of the best-matching deleted file, or <see langword="null"/>.</returns>
-    private static async Task<byte[]?> FindMovedFromAsync(
-        GitRepository git,
-        StateStore state,
-        TurnSnapshot snapshot,
-        string relativePath,
-        IReadOnlyList<string> deletedFiles,
-        CancellationToken cancellationToken)
-    {
-        if (deletedFiles.Count == 0)
-        {
-            return null;
-        }
-
-        HashSet<string> lines = LineSet(await File.ReadAllBytesAsync(FullPath(git, relativePath), cancellationToken).ConfigureAwait(false));
-        byte[]? best = null;
-        double bestOverlap = 0.5;
-        foreach (string deleted in deletedFiles)
-        {
-            string copy = state.BaselinePath(deleted);
-            byte[]? content = snapshot.DirtyFiles.ContainsKey(deleted) && File.Exists(copy)
-                ? await File.ReadAllBytesAsync(copy, cancellationToken).ConfigureAwait(false)
-                : await ReadCommittedAsync(git, snapshot, deleted, cancellationToken).ConfigureAwait(false);
-            if (content is null || lines.Count == 0)
-            {
-                continue;
-            }
-
-            double overlap = lines.Count(LineSet(content).Contains) / (double)lines.Count;
-            if (overlap > bestOverlap)
-            {
-                best = content;
-                bestOverlap = overlap;
-            }
-        }
-
-        return best;
-    }
-
-    /// <summary>The distinct trimmed lines that hold a letter or digit, so braces and blank lines match nothing.</summary>
-    private static HashSet<string> LineSet(byte[] content) =>
-        Encoding.UTF8.GetString(content)
-            .Split('\n')
-            .Select(l => l.Trim())
-            .Where(l => l.Any(char.IsLetterOrDigit))
-            .ToHashSet(StringComparer.Ordinal);
 
     public static string FullPath(GitRepository git, string relativePath) =>
         Path.GetFullPath(Path.Combine(git.TopLevel, relativePath));
@@ -184,10 +146,11 @@ public static class Snapshot
         return !segments[..^1].Any(ProjectFiles.IsSkippedDirectory);
     }
 
-    private static async Task<IReadOnlyList<string>> CandidatesAsync(GitRepository git, CancellationToken cancellationToken)
-    {
-        IReadOnlyList<GitStatusEntry> entries = await git.StatusAsync(cancellationToken).ConfigureAwait(false);
-        return entries
+    private static async Task<IReadOnlyList<string>> CandidatesAsync(GitRepository git, CancellationToken cancellationToken) =>
+        Candidates(git, await git.StatusAsync(cancellationToken).ConfigureAwait(false));
+
+    private static IReadOnlyList<string> Candidates(GitRepository git, IReadOnlyList<GitStatusEntry> entries) =>
+        entries
             .Select(e => e.Path)
             .Where(IsCandidatePath)
             .Where(p => File.Exists(FullPath(git, p)))
@@ -195,7 +158,6 @@ public static class Snapshot
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)
             .ToArray();
-    }
 
     private static string Hash(byte[] content) => Convert.ToHexString(SHA256.HashData(content));
 }

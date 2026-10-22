@@ -6,8 +6,11 @@ namespace Fdg.Cli.Hooks;
 /// <param name="EventName"><c>hook_event_name</c>: SessionStart, UserPromptSubmit or Stop.</param>
 public sealed record HookInput(HostKind Host, string SessionId, string Cwd, string EventName)
 {
-    /// <summary><c>stop_hook_active</c>: the host is continuing because a Stop hook blocked.</summary>
-    public bool StopHookActive { get; init; }
+    /// <summary>
+    /// <c>stop_hook_active</c>: the host is continuing because a Stop hook blocked; <see langword="null"/> when the
+    /// payload does not say.
+    /// </summary>
+    public bool? StopHookActive { get; init; }
 
     public static HookInput Parse(string json) => Parse(json, Environment.GetEnvironmentVariable);
 
@@ -36,8 +39,10 @@ public sealed record HookInput(HostKind Host, string SessionId, string Cwd, stri
             string sessionId = RequiredString(root, "session_id");
             string cwd = RequiredString(root, "cwd");
             string eventName = RequiredString(root, "hook_event_name");
-            bool stopHookActive = root.TryGetProperty("stop_hook_active", out JsonElement active) &&
-                active.ValueKind == JsonValueKind.True;
+            bool? stopHookActive = root.TryGetProperty("stop_hook_active", out JsonElement active) &&
+                active.ValueKind is JsonValueKind.True or JsonValueKind.False
+                ? active.GetBoolean()
+                : null;
             return new HookInput(DetectHost(root, environment), sessionId, cwd, eventName)
             {
                 StopHookActive = stopHookActive,

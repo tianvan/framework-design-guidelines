@@ -168,6 +168,89 @@ public sealed class StopHookTests : IDisposable
         Assert.DoesNotContain("IDE1006", reason);
     }
 
+    [Fact]
+    public async Task Later_stop_does_not_count_earlier_formatting_as_the_AIs_lines()
+    {
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (5, "if (x) return;")));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (5, "if (x) return;"), (8, "int Bad_Name;")));
+        // Every format adds braces to the old line 5, which moves the AI's line 8 to 11.
+        _formatter.OnFormat = _ => File.WriteAllText(
+            order,
+            File.ReadAllText(order).Replace("if (x) return;\n", "if (x)\n{\n    return;\n}\n", StringComparison.Ordinal));
+        _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "Remove the underscores", order, 11)];
+        Assert.Equal("block", Json(await TurnStopAsync(), "decision"));
+
+        // The AI changes only line 2 of the formatted file; the braces from the first Stop stay the formatter's.
+        File.WriteAllText(order, File.ReadAllText(order).Replace("// line 2\n", "int Other_Name;\n", StringComparison.Ordinal));
+        _builder.Sarif = _ => [
+            new SarifResult("CA1707", "warning", "Remove the underscores", order, 2),
+            new SarifResult("IDE1006", "warning", "Naming rule violation on the old line", order, 6),
+            new SarifResult("CA1707", "warning", "Remove the underscores", order, 11),
+        ];
+
+        string reason = Json(await TurnStopAsync(stopHookActive: true), "reason")!;
+
+        Assert.StartsWith("FDG found 2 issue(s)", reason);
+        Assert.Contains("Order.cs:2 CA1707", reason);
+        Assert.Contains("Order.cs:11 CA1707", reason);
+        Assert.DoesNotContain("IDE1006", reason);
+    }
+
+    [Fact]
+    public async Task Turn_start_clears_the_formatted_copies_and_AI_lines_of_the_last_turn()
+    {
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        await TurnStopAsync();
+        StateStore state = await StateAsync();
+        Assert.Equal([4], state.ReadAiLines()["src/中文 App/Order.cs"]);
+        Assert.True(File.Exists(state.FormattedPath("src/中文 App/Order.cs")));
+
+        await TurnStartAsync();
+
+        Assert.Empty(state.ReadAiLines());
+        Assert.False(File.Exists(state.FormattedPath("src/中文 App/Order.cs")));
+    }
+
+    [Fact]
+    public async Task Stop_without_the_stop_hook_active_field_keeps_the_block_count()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int Bad_Name;")));
+        _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "Remove the underscores", order, 4)];
+        await TurnStopAsync(stopHookActive: null);
+        await TurnStopAsync(stopHookActive: null);
+
+        string third = await TurnStopAsync(stopHookActive: null);
+
+        Assert.Null(Json(third, "decision"));
+        Assert.StartsWith("FDG found 1 issue(s)", Json(third, "systemMessage")!);
+    }
+
+    [Fact]
+    public async Task Files_moved_from_several_deleted_files_each_find_their_own()
+    {
+        _repo.Write("src/中文 App/A.cs", Lines(10, (4, "int A_Old;")).Replace("// line", "// a", StringComparison.Ordinal));
+        _repo.Write("src/中文 App/B.cs", Lines(10, (4, "int B_Old;")).Replace("// line", "// b", StringComparison.Ordinal));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        foreach (string name in (string[])["A", "B"])
+        {
+            File.Move(_repo.Path($"src/中文 App/{name}.cs"), _repo.Path($"src/中文 App/{name}Moved.cs"));
+        }
+
+        string a = _repo.Path("src/中文 App/AMoved.cs");
+        string b = _repo.Path("src/中文 App/BMoved.cs");
+        _builder.Sarif = _ => [
+            new SarifResult("CA1707", "warning", "Remove the underscores", a, 4),
+            new SarifResult("CA1707", "warning", "Remove the underscores", b, 4),
+        ];
+
+        Assert.Equal(string.Empty, await TurnStopAsync());
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -602,7 +685,7 @@ public sealed class StopHookTests : IDisposable
     private Task<string> TurnStartAsync(HostKind host = HostKind.Claude) =>
         CreateRunner().TurnStartAsync(new HookInput(host, Session, _repo.Root, "UserPromptSubmit"), CancellationToken.None);
 
-    private Task<string> TurnStopAsync(bool stopHookActive = false) =>
+    private Task<string> TurnStopAsync(bool? stopHookActive = false) =>
         CreateRunner().TurnStopAsync(
             new HookInput(HostKind.Claude, Session, _repo.Root, "Stop") { StopHookActive = stopHookActive },
             CancellationToken.None);

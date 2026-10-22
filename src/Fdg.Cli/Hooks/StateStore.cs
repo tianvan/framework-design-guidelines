@@ -7,8 +7,9 @@ namespace Fdg.Cli.Hooks;
 
 /// <summary>
 /// Per-session hook state under <c>&lt;git-dir&gt;/fdg/&lt;session_id&gt;/</c>, which git never shows as a change:
-/// <c>snapshot.json</c>, <c>baseline/&lt;sha1(path)&gt;</c>, <c>ai/&lt;sha1(path)&gt;</c>, <c>blocks.txt</c>,
-/// <c>autofix.json</c> and <c>sarif/&lt;turn&gt;/</c>. Paths are relative to the repository root with forward slashes.
+/// <c>snapshot.json</c>, <c>baseline/&lt;sha1(path)&gt;</c>, <c>ai/&lt;sha1(path)&gt;</c>,
+/// <c>formatted/&lt;sha1(path)&gt;</c>, <c>ai-lines.json</c>, <c>blocks.txt</c>, <c>autofix.json</c> and
+/// <c>sarif/&lt;turn&gt;/</c>. Paths are relative to the repository root with forward slashes.
 /// </summary>
 public sealed class StateStore
 {
@@ -47,6 +48,9 @@ public sealed class StateStore
     /// <summary>The file as the AI left it, copied before the Stop hook formats it.</summary>
     public string AiVersionPath(string relativePath) => Path.Combine(Directory, "ai", Sha1(relativePath));
 
+    /// <summary>The file as the last Stop of this turn left it, after formatting.</summary>
+    public string FormattedPath(string relativePath) => Path.Combine(Directory, "formatted", Sha1(relativePath));
+
     /// <summary>A directory of its own per project, since the package names SARIF logs only by target framework.</summary>
     public string SarifDirectory(int turn, string projectPath) =>
         Path.Combine(Directory, "sarif", turn.ToString(CultureInfo.InvariantCulture), Sha1(projectPath)[..12]);
@@ -59,7 +63,7 @@ public sealed class StateStore
     public void ResetTurn()
     {
         Delete("snapshot.json");
-        foreach (string name in (string[])["baseline", "ai", "sarif"])
+        foreach (string name in (string[])["baseline", "ai", "formatted", "sarif"])
         {
             string path = Path.Combine(Directory, name);
             if (System.IO.Directory.Exists(path))
@@ -68,8 +72,17 @@ public sealed class StateStore
             }
         }
 
+        Delete("ai-lines.json");
         Delete("blocks.txt");
     }
+
+    /// <summary>
+    /// Per file, the lines the AI changed this turn as of the last Stop, numbered as in <see cref="FormattedPath"/>.
+    /// </summary>
+    public IReadOnlyDictionary<string, int[]> ReadAiLines() =>
+        ReadJson<Dictionary<string, int[]>>("ai-lines.json") ?? [];
+
+    public void WriteAiLines(IReadOnlyDictionary<string, int[]> lines) => WriteJson("ai-lines.json", lines);
 
     public TurnSnapshot? ReadSnapshot() => ReadJson<TurnSnapshot>("snapshot.json");
 

@@ -43,9 +43,40 @@ public static class ChangedLines
         CancellationToken cancellationToken)
     {
         IReadOnlySet<int> changed = await ComputeAsync(git, baselinePath, aiPath, cancellationToken).ConfigureAwait(false);
+        return await MapThroughFormattingAsync(git, changed, aiPath, formattedPath, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Like <see cref="ComputeAsync(GitRepository, string, string, string, CancellationToken)"/> for a later Stop of
+    /// the turn, whose file already holds the earlier Stops' formatting: the AI's lines are those it changed since
+    /// <paramref name="previousFormattedPath"/>, plus <paramref name="previousLines"/> carried through those changes.
+    /// </summary>
+    /// <param name="previousLines">The AI's lines in <paramref name="previousFormattedPath"/>.</param>
+    public static async Task<IReadOnlySet<int>> ComputeSinceAsync(
+        GitRepository git,
+        string previousFormattedPath,
+        IReadOnlySet<int> previousLines,
+        string aiPath,
+        string formattedPath,
+        CancellationToken cancellationToken)
+    {
+        string diff = await git.DiffFilesAsync(previousFormattedPath, aiPath, ignoreWhitespace: true, cancellationToken)
+            .ConfigureAwait(false);
+        var changed = new HashSet<int>(Lines(ParseHunks(diff)));
+        changed.UnionWith(MapThrough(previousLines, ParseHunkHeaders(diff)));
+        return await MapThroughFormattingAsync(git, changed, aiPath, formattedPath, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<IReadOnlySet<int>> MapThroughFormattingAsync(
+        GitRepository git,
+        IReadOnlySet<int> aiLines,
+        string aiPath,
+        string formattedPath,
+        CancellationToken cancellationToken)
+    {
         string formatting = await git.DiffFilesAsync(aiPath, formattedPath, ignoreWhitespace: true, cancellationToken)
             .ConfigureAwait(false);
-        return MapThrough(changed, ParseHunkHeaders(formatting));
+        return MapThrough(aiLines, ParseHunkHeaders(formatting));
     }
 
     /// <summary>

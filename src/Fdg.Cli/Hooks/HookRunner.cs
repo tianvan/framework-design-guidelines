@@ -134,9 +134,9 @@ public sealed class HookRunner
         CancellationToken cancellationToken)
     {
         // 1. The turn's changed files, in scope only, grouped by project.
-        IReadOnlyList<string> changed = await Snapshot.FindChangedFilesAsync(git, snapshot, cancellationToken).ConfigureAwait(false);
+        TurnChanges changes = await Snapshot.FindChangesAsync(git, snapshot, cancellationToken).ConfigureAwait(false);
         var notes = new List<string>();
-        IReadOnlyList<ProjectWork> projects = GroupByProject(git, changed, notes);
+        IReadOnlyList<ProjectWork> projects = GroupByProject(git, changes.Changed, notes);
         if (projects.Count == 0)
         {
             state.WriteAutofix(null);
@@ -192,16 +192,8 @@ public sealed class HookRunner
         AutofixRecord? autofix = await RecordAutofixAsync(git, state, snapshot.Turn, projects, cancellationToken).ConfigureAwait(false);
 
         // 4-5. Filter on the lines the AI changed since the turn started, then report.
-        IReadOnlyList<string> deleted = await Snapshot.FindDeletedFilesAsync(git, snapshot, cancellationToken).ConfigureAwait(false);
-        var changedLines = new Dictionary<string, IReadOnlySet<int>>(ProjectFiles.PathComparer);
-        foreach (string path in projects.SelectMany(p => p.Files).Distinct(StringComparer.Ordinal))
-        {
-            string baseline = await Snapshot.WriteBaselineAsync(git, state, snapshot, path, deleted, cancellationToken)
-                .ConfigureAwait(false);
-            string current = Snapshot.FullPath(git, path);
-            changedLines[current] = await ChangedLines.ComputeAsync(git, baseline, state.AiVersionPath(path), current, cancellationToken)
-                .ConfigureAwait(false);
-        }
+        IReadOnlyDictionary<string, IReadOnlySet<int>> changedLines = await ComputeChangedLinesAsync(
+            git, state, snapshot, new MoveSources(git, state, snapshot, changes.Deleted), projects, cancellationToken).ConfigureAwait(false);
 
         var registered = new Dictionary<RulesManifest, IReadOnlySet<string>>(ReferenceEqualityComparer.Instance);
         foreach (RulesManifest manifest in projects.Select(p => p.Manifest))
@@ -223,9 +215,9 @@ public sealed class HookRunner
             return Finish(notes, []);
         }
 
-        // Without stop_hook_active the host is not continuing after a block, so this is a new turn even if
-        // UserPromptSubmit never reset the count.
-        int blocks = input.StopHookActive ? state.ReadBlocks() : 0;
+        // stop_hook_active false means the host is not continuing after a block, so this is a new turn even if
+        // UserPromptSubmit never reset the count. A payload without the field keeps the count, so the limit holds.
+        int blocks = input.StopHookActive == false ? 0 : state.ReadBlocks();
         string count = $"FDG found {issues.Count} issue(s) in lines you changed this turn.";
         if (blocks < settings.MaxBlocks)
         {
@@ -243,6 +235,49 @@ public sealed class HookRunner
         return Finish(
             notes,
             [StopReport.Format(issues, $"{count} Not blocking again this turn (FDG_HOOK_MAX_BLOCKS={settings.MaxBlocks}).")]);
+    }
+
+    /// <summary>
+    /// The lines the AI changed this turn per full file path, in the formatted files. The first Stop of a turn
+    /// compares with the baseline; a later one continues from the formatted copy and lines the previous Stop kept,
+    /// so formatting done by an earlier Stop never counts as the AI's.
+    /// </summary>
+    private static async Task<IReadOnlyDictionary<string, IReadOnlySet<int>>> ComputeChangedLinesAsync(
+        GitRepository git,
+        StateStore state,
+        TurnSnapshot snapshot,
+        MoveSources moveSources,
+        IReadOnlyList<ProjectWork> projects,
+        CancellationToken cancellationToken)
+    {
+        var aiLines = new Dictionary<string, int[]>(state.ReadAiLines(), StringComparer.Ordinal);
+        var changedLines = new Dictionary<string, IReadOnlySet<int>>(ProjectFiles.PathComparer);
+        foreach (string path in projects.SelectMany(p => p.Files).Distinct(StringComparer.Ordinal))
+        {
+            string current = Snapshot.FullPath(git, path);
+            string aiVersion = state.AiVersionPath(path);
+            string previous = state.FormattedPath(path);
+            IReadOnlySet<int> lines;
+            if (aiLines.TryGetValue(path, out int[]? previousLines) && File.Exists(previous))
+            {
+                lines = await ChangedLines.ComputeSinceAsync(
+                    git, previous, previousLines.ToHashSet(), aiVersion, current, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                string baseline = await Snapshot.WriteBaselineAsync(git, state, snapshot, path, moveSources, cancellationToken)
+                    .ConfigureAwait(false);
+                lines = await ChangedLines.ComputeAsync(git, baseline, aiVersion, current, cancellationToken).ConfigureAwait(false);
+            }
+
+            changedLines[current] = lines;
+            aiLines[path] = lines.Order().ToArray();
+            Directory.CreateDirectory(Path.GetDirectoryName(previous)!);
+            File.Copy(current, previous, overwrite: true);
+        }
+
+        state.WriteAiLines(aiLines);
+        return changedLines;
     }
 
     private static string Finish(IReadOnlyList<string> notes, IReadOnlyList<string> report)

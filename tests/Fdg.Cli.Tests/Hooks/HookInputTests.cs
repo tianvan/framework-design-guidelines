@@ -28,7 +28,8 @@ public sealed class HookInputTests
             Assert.Equal(eventName, input.EventName);
             Assert.Equal(@"C:\Users\user\source\sample", input.Cwd);
             Assert.False(string.IsNullOrEmpty(input.SessionId));
-            Assert.Equal(file == "stop-after-block.json", input.StopHookActive);
+            // Only Stop payloads carry stop_hook_active; elsewhere it is absent, not false.
+            Assert.Equal(eventName == "Stop" ? file == "stop-after-block.json" : null, input.StopHookActive);
         }
     }
 
