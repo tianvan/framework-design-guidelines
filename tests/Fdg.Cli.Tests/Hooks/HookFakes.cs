@@ -61,7 +61,12 @@ public sealed record HookBuildCall(string ProjectPath, string SarifDirectory, bo
 /// <summary>Stands in for dotnet build: writes the SARIF log <see cref="Sarif"/> returns for the call, if any.</summary>
 public sealed class FakeHookBuilder : IBuildRunner
 {
+    private int _running;
+
     public List<HookBuildCall> Calls { get; } = [];
+
+    /// <summary>The most builds that ran at the same time.</summary>
+    public int MaxConcurrent { get; private set; }
 
     /// <summary>The results to log for a call, or <see langword="null"/> to write no SARIF file.</summary>
     public Func<HookBuildCall, IReadOnlyList<SarifResult>?> Sarif { get; set; } = _ => [];
@@ -77,10 +82,25 @@ public sealed class FakeHookBuilder : IBuildRunner
         CancellationToken cancellationToken)
     {
         var call = new HookBuildCall(projectPath, sarifDirectory, noIncremental);
-        Calls.Add(call);
-        if (Delay > TimeSpan.Zero)
+        lock (Calls)
         {
-            await Task.Delay(Delay, cancellationToken);
+            Calls.Add(call);
+            MaxConcurrent = Math.Max(MaxConcurrent, ++_running);
+        }
+
+        try
+        {
+            if (Delay > TimeSpan.Zero)
+            {
+                await Task.Delay(Delay, cancellationToken);
+            }
+        }
+        finally
+        {
+            lock (Calls)
+            {
+                _running--;
+            }
         }
 
         IReadOnlyList<SarifResult>? results = Sarif(call);

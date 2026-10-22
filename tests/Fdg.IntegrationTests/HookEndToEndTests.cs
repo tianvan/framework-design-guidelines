@@ -64,10 +64,7 @@ public sealed class HookEndToEndTests : IClassFixture<PackageFixture>
         string project = workspace.AddProject("Sample", "application", CleanSource);
         DotnetResult warmUp = workspace.Build(project);
         Assert.True(warmUp.ExitCode == 0, warmUp.Output);
-        workspace.Write(".gitignore", "bin/\nobj/\n");
-        Git(workspace, "init", "-q");
-        Git(workspace, "add", "-A");
-        Git(workspace, "-c", "user.name=FDG Test", "-c", "user.email=fdg@example.invalid", "commit", "-q", "-m", "init");
+        InitRepository(workspace);
         string json = JsonSerializer.Serialize(new { session_id = "e2e", cwd = workspace.DirectoryPath, hook_event_name = "UserPromptSubmit" });
 
         DotnetResult turnStart = workspace.FdgHook("turn-start", json, Environment);
@@ -100,6 +97,75 @@ public sealed class HookEndToEndTests : IClassFixture<PackageFixture>
 
         // Nothing staged or committed.
         Assert.Equal(" M Sample/Sample.cs", Git(workspace, "status", "--porcelain").TrimEnd());
+    }
+
+    [Fact]
+    public void Up_to_date_project_whose_reference_recompiles_is_still_checked()
+    {
+        // Review experiment 2: App references Lib. With reference assemblies, a change to a Lib method body leaves
+        // App's CoreCompile skipped while Lib recompiles; only App's own log may count for App.
+        using var workspace = new SampleWorkspace(_fixture, "reference");
+        const string ReferenceAssembly = "<ProduceReferenceAssembly>true</ProduceReferenceAssembly>";
+        workspace.AddProject("Lib", "application", LibSource(1), ReferenceAssembly);
+        string app = workspace.AddProjectFromXml(
+            "App",
+            $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>netstandard2.0</TargetFramework>
+                <LangVersion>7.3</LangVersion>
+                <FrameworkDesignGuidelinesProfile>application</FrameworkDesignGuidelinesProfile>
+                {ReferenceAssembly}
+              </PropertyGroup>
+              <ItemGroup>
+                {workspace.PackageReference}
+                <ProjectReference Include="../Lib/Lib.csproj" />
+              </ItemGroup>
+            </Project>
+            """,
+            CleanSource);
+        DotnetResult warmUp = workspace.Build(app);
+        Assert.True(warmUp.ExitCode == 0, warmUp.Output);
+        InitRepository(workspace);
+        string json = JsonSerializer.Serialize(new { session_id = "e2e", cwd = workspace.DirectoryPath, hook_event_name = "UserPromptSubmit" });
+        DotnetResult turnStart = workspace.FdgHook("turn-start", json, Environment);
+        Assert.True(turnStart.ExitCode == 0 && turnStart.Output.Trim().Length == 0, turnStart.Output);
+
+        // The AI changes App, builds it itself, then changes only a method body in Lib.
+        workspace.Write(Path.Combine("App", "App.cs"), ChangedSource.Replace("catch { }", "catch\n            {\n            }"));
+        DotnetResult aiBuild = workspace.Build(app);
+        Assert.True(aiBuild.ExitCode == 0, aiBuild.Output);
+        workspace.Write(Path.Combine("Lib", "Lib.cs"), LibSource(2));
+        DotnetResult stop = workspace.FdgHook("turn-stop", json.Replace("UserPromptSubmit", "Stop"), Environment);
+        _log.WriteLine($"turn-stop (exit {stop.ExitCode}):\n{stop.Output}");
+
+        Assert.Equal(0, stop.ExitCode);
+        using JsonDocument output = JsonDocument.Parse(stop.Output);
+        Assert.Equal("block", output.RootElement.GetProperty("decision").GetString());
+        Assert.Contains("App/App.cs:5 IDE1006", output.RootElement.GetProperty("reason").GetString()!);
+    }
+
+    private static string LibSource(int value) =>
+        $$"""
+        namespace Lib
+        {
+            public class Helper
+            {
+                public int Get()
+                {
+                    return {{value}};
+                }
+            }
+        }
+
+        """;
+
+    private static void InitRepository(SampleWorkspace workspace)
+    {
+        workspace.Write(".gitignore", "bin/\nobj/\n");
+        Git(workspace, "init", "-q");
+        Git(workspace, "add", "-A");
+        Git(workspace, "-c", "user.name=FDG Test", "-c", "user.email=fdg@example.invalid", "commit", "-q", "-m", "init");
     }
 
     private static string Git(SampleWorkspace workspace, params string[] arguments)

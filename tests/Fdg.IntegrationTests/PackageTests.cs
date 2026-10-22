@@ -297,7 +297,7 @@ public sealed class PackageTests : IClassFixture<PackageFixture>
         string project = workspace.AddProject("Sample", "application", LayoutAndNamingSource);
         string sarifDirectory = Path.Combine(workspace.DirectoryPath, "sarif out");
 
-        AssertSucceeded(workspace.Build(project, "-p:FdgSarifDir=" + sarifDirectory));
+        AssertSucceeded(workspace.Build(project, "-p:FdgSarifDir=" + sarifDirectory, "-p:FdgSarifProject=" + project));
 
         // dotnet-fdg passes a directory per project, so the log is named by target framework only.
         string sarifPath = Path.Combine(sarifDirectory, "netstandard2.0.sarif");

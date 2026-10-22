@@ -1,8 +1,10 @@
 namespace Fdg.Cli.Tooling;
 
 /// <summary>
-/// Runs <c>dotnet build &lt;proj&gt; --no-restore -p:FdgSarifDir=&lt;dir&gt;</c> in the project directory. A forced
-/// rebuild adds <c>--no-incremental --no-dependencies</c>, so only the project itself is recompiled.
+/// Runs <c>dotnet build &lt;proj&gt; --no-restore -p:FdgSarifDir=&lt;dir&gt; -p:FdgSarifProject=&lt;proj&gt;</c> in the
+/// project directory. Global properties flow to referenced projects, so <c>FdgSarifProject</c> tells the package
+/// which project writes the log. A forced rebuild adds <c>--no-incremental --no-dependencies</c>, so only the project
+/// itself is recompiled.
 /// </summary>
 public sealed class DotnetBuildRunner : IBuildRunner
 {
@@ -21,7 +23,14 @@ public sealed class DotnetBuildRunner : IBuildRunner
         bool noIncremental,
         CancellationToken cancellationToken)
     {
-        List<string> arguments = ["build", projectPath, "--no-restore", "-p:FdgSarifDir=" + sarifDirectory];
+        List<string> arguments =
+        [
+            "build",
+            projectPath,
+            "--no-restore",
+            "-p:FdgSarifDir=" + sarifDirectory,
+            "-p:FdgSarifProject=" + projectPath,
+        ];
         if (noIncremental)
         {
             arguments.Add("--no-incremental");

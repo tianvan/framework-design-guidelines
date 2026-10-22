@@ -10,6 +10,10 @@ public sealed class PackageFixture : IDisposable
 {
     public const string PackageId = "FrameworkDesignGuidelines.Analyzers";
 
+    // Each test class has its own fixture and xunit runs classes in parallel; packs of the same project would
+    // write the same obj/ files at once (CS2012).
+    private static readonly object PackLock = new();
+
     private readonly Lazy<string> _fdgTool;
 
     public PackageFixture()
@@ -63,12 +67,18 @@ public sealed class PackageFixture : IDisposable
         TempDirectory.Delete(Root);
     }
 
+    private static DotnetResult PackSerialized(string repositoryRoot, params string[] arguments)
+    {
+        lock (PackLock)
+        {
+            return Dotnet.Run(repositoryRoot, packagesDirectory: null, ["pack", .. arguments]);
+        }
+    }
+
     private string Pack()
     {
-        DotnetResult pack = Dotnet.Run(
+        DotnetResult pack = PackSerialized(
             RepositoryRoot,
-            packagesDirectory: null,
-            "pack",
             Path.Combine(RepositoryRoot, "src", "FrameworkDesignGuidelines.Package"),
             "-c",
             "Release",
@@ -92,10 +102,8 @@ public sealed class PackageFixture : IDisposable
     {
         string toolFeed = Path.Combine(Root, "tool-feed");
         string toolDirectory = Path.Combine(Root, "tools");
-        DotnetResult pack = Dotnet.Run(
+        DotnetResult pack = PackSerialized(
             RepositoryRoot,
-            packagesDirectory: null,
-            "pack",
             Path.Combine(RepositoryRoot, "src", "Fdg.Cli"),
             "-c",
             "Release",

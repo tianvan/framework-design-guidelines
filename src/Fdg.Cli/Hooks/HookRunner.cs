@@ -131,22 +131,39 @@ public sealed class HookRunner
             File.Copy(Snapshot.FullPath(git, path), aiVersion, overwrite: true);
         }
 
-        // 2-4. Per project, in parallel: format, build, read the SARIF logs.
-        var diagnostics = new ConcurrentBag<(ProjectWork Project, SarifDiagnostic Diagnostic)>();
-        var projectNotes = new ConcurrentDictionary<int, string>();
+        // 2. Per project, in parallel: format.
+        var formatNotes = new ConcurrentDictionary<int, string>();
         await Parallel.ForEachAsync(
             projects.Select((project, index) => (Project: project, Index: index)),
             cancellationToken,
             async (item, token) =>
             {
-                string? note = await CheckProjectAsync(git, state, snapshot.Turn, settings, item.Project, diagnostics, token)
-                    .ConfigureAwait(false);
-                if (note is not null)
+                if (await FormatProjectAsync(git, item.Project, token).ConfigureAwait(false) is string note)
                 {
-                    projectNotes[item.Index] = note;
+                    formatNotes[item.Index] = note;
                 }
             }).ConfigureAwait(false);
-        notes.AddRange(projectNotes.OrderBy(n => n.Key).Select(n => n.Value));
+
+        // 3-4. One project at a time, since builds of projects that reference each other would compile the shared
+        // ones at once: build, read the SARIF logs.
+        var diagnostics = new List<(ProjectWork Project, SarifDiagnostic Diagnostic)>();
+        var builds = new Dictionary<ProjectWork, ToolResult>();
+        for (int i = 0; i < projects.Count; i++)
+        {
+            string? note = formatNotes.GetValueOrDefault(i);
+            if (settings.Build)
+            {
+                (ToolResult build, string? buildNote) = await BuildProjectAsync(
+                    git, state, snapshot.Turn, projects[i], diagnostics, cancellationToken).ConfigureAwait(false);
+                builds.Add(projects[i], build);
+                note ??= buildNote;
+            }
+
+            if (note is not null)
+            {
+                notes.Add(note);
+            }
+        }
 
         // 6. What formatting changed, for the next turn (and for Codex when blocking now).
         AutofixRecord? autofix = await RecordAutofixAsync(git, state, snapshot.Turn, projects, cancellationToken).ConfigureAwait(false);
@@ -257,15 +274,8 @@ public sealed class HookRunner
         return info;
     }
 
-    /// <returns>A one-line note when the project could not be checked completely.</returns>
-    private async Task<string?> CheckProjectAsync(
-        GitRepository git,
-        StateStore state,
-        int turn,
-        HookSettings settings,
-        ProjectWork project,
-        ConcurrentBag<(ProjectWork, SarifDiagnostic)> diagnostics,
-        CancellationToken cancellationToken)
+    /// <returns>A one-line note when formatting failed.</returns>
+    private async Task<string?> FormatProjectAsync(GitRepository git, ProjectWork project, CancellationToken cancellationToken)
     {
         string projectPath = project.Info.ProjectPath;
         string[] files = project.Files.Select(f => Snapshot.FullPath(git, f)).ToArray();
@@ -276,45 +286,79 @@ public sealed class HookRunner
             project.Manifest.BreakingFixDiagnostics,
             () => HashFiles(files),
             cancellationToken).ConfigureAwait(false);
-        string? note = format.Succeeded ? null : Failure(git, "dotnet format", projectPath, format);
-        if (!settings.Build)
-        {
-            return note;
-        }
+        return format.Succeeded ? null : Failure(git, "dotnet format", projectPath, format);
+    }
 
+    /// <returns>The build result, and a one-line note when the project's diagnostics could not be read.</returns>
+    private async Task<(ToolResult Build, string? Note)> BuildProjectAsync(
+        GitRepository git,
+        StateStore state,
+        int turn,
+        ProjectWork project,
+        List<(ProjectWork, SarifDiagnostic)> diagnostics,
+        CancellationToken cancellationToken)
+    {
+        string projectPath = project.Info.ProjectPath;
         string sarifDirectory = state.SarifDirectory(turn, projectPath);
         (ToolResult build, IReadOnlyList<string> logs) = await BuildAsync(projectPath, sarifDirectory, noIncremental: false, cancellationToken)
             .ConfigureAwait(false);
-        if (logs.Count == 0 && build.Succeeded)
+        (IReadOnlyList<SarifDiagnostic> found, bool unreadable) = ReadLogs(logs, projectPath);
+        if (build.Succeeded && (logs.Count == 0 || IsForeign(found, projectPath)))
         {
-            // Up to date: CoreCompile was skipped and wrote no log. That is not "no issues".
+            // Up to date: CoreCompile was skipped and wrote no log, or only a referenced project wrote one (a
+            // package without FdgSarifProject support). That is not "no issues".
             (build, logs) = await BuildAsync(projectPath, sarifDirectory, noIncremental: true, cancellationToken).ConfigureAwait(false);
+            (found, unreadable) = ReadLogs(logs, projectPath);
         }
 
         if (logs.Count == 0)
         {
-            return note ?? (build.Succeeded
+            return (build, build.Succeeded
                 ? $"FDG: dotnet build wrote no SARIF log for {Display(git, projectPath)}; its diagnostics were not checked."
                 : Failure(git, "dotnet build", projectPath, build));
         }
 
-        string projectDirectory = Path.GetDirectoryName(projectPath)!;
+        diagnostics.AddRange(found.Select(d => (project, d)));
+        return (build, unreadable
+            ? $"FDG: cannot read the SARIF log of {Display(git, projectPath)}; its diagnostics were not checked."
+            : null);
+    }
+
+    private static (IReadOnlyList<SarifDiagnostic> Diagnostics, bool Unreadable) ReadLogs(IReadOnlyList<string> logs, string projectPath)
+    {
+        var diagnostics = new List<SarifDiagnostic>();
+        bool unreadable = false;
         foreach (string log in logs)
         {
             try
             {
-                foreach (SarifDiagnostic diagnostic in SarifReader.Read(log, projectDirectory))
-                {
-                    diagnostics.Add((project, diagnostic));
-                }
+                diagnostics.AddRange(SarifReader.Read(log, Path.GetDirectoryName(projectPath)!));
             }
             catch (JsonException)
             {
-                note ??= $"FDG: cannot read the SARIF log of {Display(git, projectPath)}; its diagnostics were not checked.";
+                unreadable = true;
             }
         }
 
-        return note;
+        return (diagnostics, unreadable);
+    }
+
+    /// <summary>A log with results, none of them in a file of the project, is a referenced project's.</summary>
+    private static bool IsForeign(IReadOnlyList<SarifDiagnostic> diagnostics, string projectPath)
+    {
+        var owners = new Dictionary<string, bool>(ProjectFiles.PathComparer);
+        return diagnostics.Count > 0 && !diagnostics.Any(d =>
+        {
+            string directory = Path.GetDirectoryName(d.FilePath) ?? string.Empty;
+            if (!owners.TryGetValue(directory, out bool owned))
+            {
+                owned = Directory.Exists(directory) &&
+                    ProjectFiles.FindOwningProjects(directory).Contains(projectPath, ProjectFiles.PathComparer);
+                owners.Add(directory, owned);
+            }
+
+            return owned;
+        });
     }
 
     /// <returns>The build result and the SARIF logs it wrote, one per target framework.</returns>

@@ -199,6 +199,43 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Referenced_project_log_in_the_project_directory_triggers_no_incremental_rebuild()
+    {
+        string lib = _repo.Write("src/Lib/Lib.csproj", Project);
+        string libFile = _repo.Write("src/Lib/L.cs", Lines(5));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int Bad_Name;")));
+        // The up-to-date entry project skipped CoreCompile; the log in its directory is the referenced project's.
+        _builder.Sarif = call => call.NoIncremental
+            ? [new SarifResult("CA1707", "warning", "Remove the underscores", order, 4)]
+            : [new SarifResult("CA1707", "warning", "In the referenced project", libFile, 2)];
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal([(_project, false), (_project, true)], _builder.Calls.Select(c => (c.ProjectPath, c.NoIncremental)));
+        Assert.Contains("Order.cs:4 CA1707", Json(output, "reason")!);
+        Assert.DoesNotContain(lib, _builder.Calls.Select(c => c.ProjectPath));
+    }
+
+    [Fact]
+    public async Task Projects_are_built_one_at_a_time()
+    {
+        string lib = _repo.Write("src/Lib/Lib.csproj", Project);
+        _projects.Add(lib, ProjectState.InScope);
+        _repo.CommitAll();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        _repo.Write("src/Lib/L.cs", Lines(5));
+        _builder.Delay = TimeSpan.FromMilliseconds(300);
+
+        await TurnStopAsync();
+
+        Assert.Equal(2, _builder.Calls.Count);
+        Assert.Equal(1, _builder.MaxConcurrent);
+    }
+
+    [Fact]
     public async Task Sarif_uri_percent_encoding_is_decoded()
     {
         await TurnStartAsync();
