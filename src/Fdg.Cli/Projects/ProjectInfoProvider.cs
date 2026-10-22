@@ -36,10 +36,12 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
     private static readonly JsonSerializerOptions MarkerOptions = new() { PropertyNameCaseInsensitive = true };
 
     private readonly IProcessRunner _runner;
+    private readonly ILanguageVersionSource _languageVersions;
 
-    public ProjectInfoProvider(IProcessRunner runner)
+    public ProjectInfoProvider(IProcessRunner runner, ILanguageVersionSource languageVersions)
     {
         _runner = runner;
+        _languageVersions = languageVersions;
     }
 
     public ProjectInfo Get(string csprojPath)
@@ -94,11 +96,10 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
             protocol = marker.Protocol;
             targetFramework = marker.TargetFramework;
             rulesPath = marker.RulesPath;
-            langVersion = ConcreteLangVersion(marker.LangVersion);
-            if (langVersion is null && !string.IsNullOrWhiteSpace(marker.LangVersion))
-            {
-                langVersion = QueryLangVersion(csprojPath, targetFramework);
-            }
+            langVersion = ResolveLangVersion(
+                csprojPath,
+                marker.LangVersion,
+                () => QueryMaxSupportedLangVersion(csprojPath, targetFramework));
         }
         else
         {
@@ -116,14 +117,15 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
                 targetFramework = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)[0];
             }
 
-            langVersion = ConcreteLangVersion(Property(properties, "LangVersion"));
-            if (langVersion is null)
-            {
+            string? firstFramework = targetFramework;
+            IReadOnlyDictionary<string, string> evaluated = properties;
+            langVersion = ResolveLangVersion(
+                csprojPath,
+                Property(properties, "LangVersion"),
                 // MaxSupportedLangVersion depends on the framework, so a multi-targeting project is asked per framework.
-                langVersion = outerBuild
-                    ? QueryLangVersion(csprojPath, targetFramework)
-                    : ConcreteLangVersion(Property(properties, "MaxSupportedLangVersion"));
-            }
+                () => outerBuild
+                    ? QueryMaxSupportedLangVersion(csprojPath, firstFramework)
+                    : ConcreteLangVersion(Property(evaluated, "MaxSupportedLangVersion")));
 
             string packageRoot = Property(properties, "NuGetPackageRoot");
             rulesPath = packageRoot.Length > 0 && packageVersion.Length > 0
@@ -142,6 +144,30 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
             Normalize(targetFramework),
             Normalize(rulesPath),
             state);
+    }
+
+    /// <summary>
+    /// A concrete LangVersion is normalized. An empty one means the framework's default, MaxSupportedLangVersion
+    /// (the marker has already substituted it). A symbolic one is what the SDK's compiler maps it to, which does not
+    /// depend on the framework: netstandard2.0 with <c>latest</c> compiles with the compiler's latest version. When
+    /// the compiler cannot tell, the symbolic value is kept rather than guessed.
+    /// </summary>
+    private string? ResolveLangVersion(string csprojPath, string? value, Func<string?> maxSupportedLangVersion)
+    {
+        string trimmed = value?.Trim() ?? string.Empty;
+        if (trimmed.Length == 0)
+        {
+            return maxSupportedLangVersion();
+        }
+
+        if (ConcreteLangVersion(trimmed) is string concrete)
+        {
+            return concrete;
+        }
+
+        return SymbolicLangVersions.Contains(trimmed.ToLowerInvariant())
+            ? _languageVersions.Resolve(Path.GetDirectoryName(csprojPath)!, trimmed) ?? trimmed
+            : trimmed;
     }
 
     /// <summary><c>9</c> becomes <c>9.0</c>; symbolic and unrecognized values give <see langword="null"/>.</summary>
@@ -213,12 +239,12 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
         return null;
     }
 
-    private string? QueryLangVersion(string csprojPath, string? targetFramework)
+    private string? QueryMaxSupportedLangVersion(string csprojPath, string? targetFramework)
     {
+        // Two properties, so that MSBuild answers in JSON.
         IReadOnlyDictionary<string, string> properties =
-            Query(csprojPath, ["LangVersion", "MaxSupportedLangVersion"], targetFramework);
-        return ConcreteLangVersion(Property(properties, "LangVersion")) ??
-            ConcreteLangVersion(Property(properties, "MaxSupportedLangVersion"));
+            Query(csprojPath, ["MaxSupportedLangVersion", "TargetFramework"], targetFramework);
+        return ConcreteLangVersion(Property(properties, "MaxSupportedLangVersion"));
     }
 
     private IReadOnlyDictionary<string, string> Query(
@@ -237,8 +263,9 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
             .RunAsync("dotnet", arguments, Path.GetDirectoryName(csprojPath)!, QueryTimeout, CancellationToken.None)
             .GetAwaiter()
             .GetResult();
-        int start = result.Output.IndexOf('{');
-        if (result.Succeeded && start >= 0)
+        // Evaluation warnings may precede the JSON; it starts on a line of its own.
+        int start = result.Output.StartsWith('{') ? 0 : result.Output.IndexOf("\n{", StringComparison.Ordinal) + 1;
+        if (result.Succeeded && (start > 0 || result.Output.StartsWith('{')))
         {
             try
             {

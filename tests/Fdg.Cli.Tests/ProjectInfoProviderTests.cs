@@ -9,6 +9,8 @@ public sealed class ProjectInfoProviderTests : IDisposable
 
     private const string AssetsWithoutPackage = """{ "version": 3, "libraries": {} }""";
 
+    private static readonly ILanguageVersionSource NoCompiler = new FakeLanguageVersions(null);
+
     private readonly TempTree _tree = new();
 
     public void Dispose()
@@ -46,7 +48,7 @@ public sealed class ProjectInfoProviderTests : IDisposable
         string legacy = _tree.Write("Legacy/Legacy.csproj", "<Project ToolsVersion=\"15.0\" />");
         var runner = new FakeProcessRunner();
 
-        ProjectInfo info = new ProjectInfoProvider(runner).Get(legacy);
+        ProjectInfo info = new ProjectInfoProvider(runner, NoCompiler).Get(legacy);
 
         Assert.Equal(ProjectState.NotSdkStyle, info.State);
         Assert.Empty(runner.Calls);
@@ -64,7 +66,7 @@ public sealed class ProjectInfoProviderTests : IDisposable
             ["FdgProtocolVersion"] = "9",
         });
 
-        ProjectInfo info = new ProjectInfoProvider(runner).Get(project);
+        ProjectInfo info = new ProjectInfoProvider(runner, NoCompiler).Get(project);
 
         Assert.Equal(
             new ProjectInfo(
@@ -86,7 +88,7 @@ public sealed class ProjectInfoProviderTests : IDisposable
         string project = WriteRestoredProject();
         _tree.Write("A/obj/fdg/marker.net8.0.json", Marker("application", "12.0", "net8.0"));
 
-        ProjectInfo info = new ProjectInfoProvider(new FakeProcessRunner()).Get(project);
+        ProjectInfo info = new ProjectInfoProvider(new FakeProcessRunner(), NoCompiler).Get(project);
 
         Assert.Equal(ProjectState.InScope, info.State);
         Assert.Equal("net8.0", info.TargetFramework);
@@ -95,25 +97,59 @@ public sealed class ProjectInfoProviderTests : IDisposable
     }
 
     [Theory]
-    [InlineData("latest")]
-    [InlineData("latestMajor")]
-    [InlineData("default")]
-    [InlineData("preview")]
-    public void Symbolic_lang_version_in_marker_is_resolved_with_msbuild(string symbolic)
+    [InlineData("latest", "14.0")]
+    [InlineData("latestMajor", "14.0")]
+    [InlineData("default", "14.0")]
+    [InlineData("preview", "15.0")]
+    public void Symbolic_lang_version_is_resolved_from_the_compiler_not_the_framework(string symbolic, string expected)
     {
+        // netstandard2.0 defaults to 7.3, but LangVersion=latest compiles with the SDK compiler's latest version.
         string project = WriteRestoredProject();
-        _tree.Write("A/obj/fdg/marker.json", Marker("test", symbolic, "net10.0"));
+        _tree.Write("A/obj/fdg/marker.json", Marker("test", symbolic, "netstandard2.0"));
         var runner = new FakeProcessRunner().RespondToMSBuild(new Dictionary<string, string>
         {
             ["LangVersion"] = symbolic,
-            ["MaxSupportedLangVersion"] = "14.0",
+            ["MaxSupportedLangVersion"] = "7.3",
         });
+        var compiler = new FakeLanguageVersions(new SupportedLanguageVersions("14.0", "14.0", "15.0"));
 
-        ProjectInfo info = new ProjectInfoProvider(runner).Get(project);
+        ProjectInfo info = new ProjectInfoProvider(runner, compiler).Get(project);
+
+        Assert.Equal(expected, info.LangVersion);
+        Assert.Equal([(_tree.Path("A"), symbolic)], compiler.Calls);
+        Assert.Empty(runner.Calls);
+    }
+
+    [Fact]
+    public void Symbolic_lang_version_without_marker_is_resolved_from_the_compiler()
+    {
+        string project = WriteRestoredProject();
+        var runner = new FakeProcessRunner().RespondToMSBuild(new Dictionary<string, string>
+        {
+            ["ProjectAssetsFile"] = _tree.Path("A/obj/project.assets.json"),
+            ["FrameworkDesignGuidelinesProfile"] = "library",
+            ["FdgPackageVersion"] = "0.1.0",
+            ["FdgProtocolVersion"] = "1",
+            ["LangVersion"] = "latest",
+            ["MaxSupportedLangVersion"] = "7.3",
+            ["TargetFramework"] = "netstandard2.0",
+        });
+        var compiler = new FakeLanguageVersions(new SupportedLanguageVersions("14.0", "14.0", "14.0"));
+
+        ProjectInfo info = new ProjectInfoProvider(runner, compiler).Get(project);
 
         Assert.Equal("14.0", info.LangVersion);
-        IReadOnlyList<string> call = Assert.Single(runner.Calls);
-        Assert.Contains("-p:TargetFramework=net10.0", call);
+    }
+
+    [Fact]
+    public void Symbolic_lang_version_is_kept_when_the_compiler_cannot_tell()
+    {
+        string project = WriteRestoredProject();
+        _tree.Write("A/obj/fdg/marker.json", Marker("test", "latest", "netstandard2.0"));
+
+        ProjectInfo info = new ProjectInfoProvider(new FakeProcessRunner(), new FakeLanguageVersions(null)).Get(project);
+
+        Assert.Equal("latest", info.LangVersion);
     }
 
     [Fact]
@@ -122,7 +158,7 @@ public sealed class ProjectInfoProviderTests : IDisposable
         string project = WriteRestoredProject();
         _tree.Write("A/obj/fdg/marker.json", Marker("test", "9", "net8.0"));
 
-        ProjectInfo info = new ProjectInfoProvider(new FakeProcessRunner()).Get(project);
+        ProjectInfo info = new ProjectInfoProvider(new FakeProcessRunner(), NoCompiler).Get(project);
 
         Assert.Equal("9.0", info.LangVersion);
     }
@@ -137,7 +173,7 @@ public sealed class ProjectInfoProviderTests : IDisposable
             ["BaseIntermediateOutputPath"] = "obj\\",
         });
 
-        ProjectInfo info = new ProjectInfoProvider(runner).Get(project);
+        ProjectInfo info = new ProjectInfoProvider(runner, NoCompiler).Get(project);
 
         Assert.Equal(ProjectState.NotRestored, info.State);
     }
@@ -160,7 +196,7 @@ public sealed class ProjectInfoProviderTests : IDisposable
             ["NuGetPackageRoot"] = "",
         });
 
-        ProjectInfo info = new ProjectInfoProvider(runner).Get(project);
+        ProjectInfo info = new ProjectInfoProvider(runner, NoCompiler).Get(project);
 
         Assert.Equal(
             new ProjectInfo(project, "application", "0.1.0", 1, "7.3", "netstandard2.0", null, ProjectState.InScope),
@@ -179,7 +215,7 @@ public sealed class ProjectInfoProviderTests : IDisposable
             ["BaseIntermediateOutputPath"] = "..\\artifacts\\A\\",
         });
 
-        ProjectInfo info = new ProjectInfoProvider(runner).Get(project);
+        ProjectInfo info = new ProjectInfoProvider(runner, NoCompiler).Get(project);
 
         Assert.Equal(ProjectState.InScope, info.State);
         Assert.Equal("library", info.Profile);
@@ -192,7 +228,7 @@ public sealed class ProjectInfoProviderTests : IDisposable
         string project = WriteRestoredProject(AssetsWithoutPackage);
         _tree.Write("A/obj/fdg/marker.json", Marker("library", "7.3", "netstandard2.0"));
 
-        ProjectInfo info = new ProjectInfoProvider(new FakeProcessRunner()).Get(project);
+        ProjectInfo info = new ProjectInfoProvider(new FakeProcessRunner(), NoCompiler).Get(project);
 
         Assert.Equal(ProjectState.NoPackage, info.State);
     }
@@ -205,10 +241,33 @@ public sealed class ProjectInfoProviderTests : IDisposable
         string project = WriteRestoredProject();
         _tree.Write("A/obj/fdg/marker.json", Marker(profile, "7.3", "netstandard2.0"));
 
-        ProjectInfo info = new ProjectInfoProvider(new FakeProcessRunner()).Get(project);
+        ProjectInfo info = new ProjectInfoProvider(new FakeProcessRunner(), NoCompiler).Get(project);
 
         Assert.Equal(ProjectState.NoProfile, info.State);
         Assert.Equal(profile.Length == 0 ? null : profile, info.Profile);
+    }
+
+    [Fact]
+    public void Msbuild_warnings_before_the_json_are_ignored()
+    {
+        string project = WriteRestoredProject();
+        string json = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            Properties = new Dictionary<string, string>
+            {
+                ["FrameworkDesignGuidelinesProfile"] = "test",
+                ["FdgPackageVersion"] = "0.1.0",
+                ["LangVersion"] = "8.0",
+            },
+        });
+        var runner = new FakeProcessRunner().Respond(
+            _ => true,
+            new Cli.Tooling.ToolResult(0, "warning MSB4011: \"{x}\" cannot be imported again.\n" + json + "\n", false));
+
+        ProjectInfo info = new ProjectInfoProvider(runner, NoCompiler).Get(project);
+
+        Assert.Equal(ProjectState.InScope, info.State);
+        Assert.Equal("8.0", info.LangVersion);
     }
 
     [Fact]
@@ -218,9 +277,20 @@ public sealed class ProjectInfoProviderTests : IDisposable
         var runner = new FakeProcessRunner()
             .Respond(_ => true, new Cli.Tooling.ToolResult(1, "error MSB4025: The project file could not be loaded.", false));
 
-        var exception = Assert.Throws<ProjectEvaluationException>(() => new ProjectInfoProvider(runner).Get(project));
+        var exception = Assert.Throws<ProjectEvaluationException>(() => new ProjectInfoProvider(runner, NoCompiler).Get(project));
 
         Assert.Contains("MSB4025", exception.Output);
+    }
+
+    private sealed class FakeLanguageVersions(SupportedLanguageVersions? versions) : ILanguageVersionSource
+    {
+        public List<(string ProjectDirectory, string Symbolic)> Calls { get; } = [];
+
+        public string? Resolve(string projectDirectory, string symbolicLangVersion)
+        {
+            Calls.Add((projectDirectory, symbolicLangVersion));
+            return versions?.Resolve(symbolicLangVersion);
+        }
     }
 
     private static string Marker(string profile, string langVersion, string targetFramework, string rulesPath = "") =>

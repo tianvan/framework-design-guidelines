@@ -41,6 +41,26 @@ public sealed class PathResolverTests : IDisposable
     }
 
     [Fact]
+    public void Directory_inside_project_with_nested_project_includes_the_outer_files_and_the_nested_project()
+    {
+        string outer = _tree.Write("A/A.csproj", TempTree.SdkProject);
+        string direct = _tree.Write("A/Tools/Direct.cs");
+        string deep = _tree.Write("A/Tools/Sub/Deep.cs");
+        string nested = _tree.Write("A/Tools/Gen/Gen.csproj", TempTree.SdkProject);
+        _tree.Write("A/Tools/Gen/Generated.cs");
+        _tree.Write("A/Tools/obj/Ignored.cs");
+
+        IReadOnlyList<FixTarget> targets = PathResolver.Resolve(["A/Tools"], _tree.Root);
+
+        Assert.Equal(2, targets.Count);
+        Assert.Equal(nested, targets[0].ProjectPath);
+        Assert.Null(targets[0].IncludeFiles);
+        // The outer project's own files below the directory, without the nested project's directory.
+        Assert.Equal(outer, targets[1].ProjectPath);
+        Assert.Equal([direct, deep], targets[1].IncludeFiles);
+    }
+
+    [Fact]
     public void Cs_file_resolves_to_nearest_project_with_include()
     {
         _tree.Write("Outer.csproj", TempTree.SdkProject);

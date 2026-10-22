@@ -44,7 +44,7 @@ public static class FdgCli
             {
                 var runner = new ProcessRunner();
                 var command = new FixCommand(
-                    new ProjectInfoProvider(runner),
+                    new ProjectInfoProvider(runner, new CompilerLanguageVersions(runner)),
                     new DotnetRestoreRunner(runner, RestoreTimeout),
                     new DotnetFormatRunner(runner, FormatTimeout),
                     output,

@@ -53,19 +53,38 @@ public static class PathResolver
 
     private static void ResolveDirectory(string directory, Action<string, string?> add)
     {
-        bool any = false;
-        foreach (string project in ProjectFiles.Enumerate(directory, "*.csproj"))
+        string[] nested = ProjectFiles.Enumerate(directory, "*.csproj").ToArray();
+        foreach (string project in nested)
         {
             add(project, null);
-            any = true;
         }
 
-        if (!any)
+        if (Directory.EnumerateFiles(directory, "*.csproj").Any())
         {
-            // A directory inside a project: fix only that directory.
-            foreach (string project in ProjectFiles.FindOwningProjects(directory))
+            return;
+        }
+
+        // A directory inside a project: fix only that directory. Projects nested below it own their directories, so
+        // the outer project then gets its own files under the directory instead.
+        IReadOnlyList<string> owners = ProjectFiles.FindOwningProjects(directory);
+        if (owners.Count == 0)
+        {
+            return;
+        }
+
+        string[] nestedDirectories = nested
+            .Select(p => Path.GetDirectoryName(p)! + Path.DirectorySeparatorChar)
+            .ToArray();
+        IReadOnlyList<string> includes = nested.Length == 0
+            ? [directory]
+            : ProjectFiles.Enumerate(directory, "*.cs")
+                .Where(f => !nestedDirectories.Any(d => f.StartsWith(d, StringComparison.OrdinalIgnoreCase)))
+                .ToArray();
+        foreach (string owner in owners)
+        {
+            foreach (string include in includes)
             {
-                add(project, directory);
+                add(owner, include);
             }
         }
     }

@@ -71,6 +71,13 @@ public sealed class FixCommand
     private async Task<bool> FixAsync(FixTarget target, string cwd, CancellationToken cancellationToken)
     {
         string display = DisplayPath(target.ProjectPath, cwd);
+        if (!File.Exists(target.ProjectPath))
+        {
+            // A solution can list a project that has since been deleted or moved.
+            _output.WriteLine($"skipped {display}: project file not found");
+            return false;
+        }
+
         ProjectInfo info;
         try
         {
@@ -90,6 +97,11 @@ public sealed class FixCommand
         catch (ProjectEvaluationException e)
         {
             Report("skipped", display, e.Message, new ToolResult(1, e.Output, false));
+            return false;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            _output.WriteLine($"skipped {display}: cannot read the project file: {e.Message}");
             return false;
         }
 

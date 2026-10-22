@@ -121,6 +121,27 @@ public sealed class FixEndToEndTests : IClassFixture<PackageFixture>
     }
 
     [Fact]
+    public void Missing_solution_project_is_skipped_as_a_failure()
+    {
+        using var workspace = new SampleWorkspace(_fixture, "missing");
+        workspace.AddProject("Gone", "application", "namespace Gone { }\n");
+        AddPlainProject(workspace);
+        CreateSolution(workspace, "Sample.slnx", "slnx");
+        TempDirectory.Delete(Path.Combine(workspace.DirectoryPath, "Gone"));
+
+        DotnetResult fix = workspace.Fdg("fix", "Sample.slnx");
+
+        Assert.True(fix.ExitCode == 1, $"dotnet fdg exited with {fix.ExitCode}:\n{fix.Output}");
+        string[] output = fix.Output.ReplaceLineEndings("\n").Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(
+            [
+                "skipped Gone/Gone.csproj: project file not found",
+                "skipped Plain/Plain.csproj: FrameworkDesignGuidelines.Analyzers is not referenced",
+            ],
+            output.Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
     public void Version_prints_the_package_version()
     {
         using var workspace = new SampleWorkspace(_fixture, "version");

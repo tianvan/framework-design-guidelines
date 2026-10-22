@@ -67,6 +67,42 @@ public sealed class FixCommandTests : IDisposable
     }
 
     [Fact]
+    public async Task Unreadable_project_is_skipped_as_a_failure_and_the_others_are_fixed()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string locked = _tree.Write("B/B.csproj", TempTree.SdkProject);
+        _projects.Throw(locked, new UnauthorizedAccessException("Access to the path is denied."));
+
+        int exitCode = await RunAsync();
+
+        Assert.Equal(1, exitCode);
+        Assert.Equal(
+            "fixed A/A.csproj\n"
+            + "skipped B/B.csproj: cannot read the project file: Access to the path is denied.\n",
+            Output);
+    }
+
+    [Fact]
+    public async Task Unreadable_project_with_the_real_provider_is_skipped()
+    {
+        string project = _tree.Write("A/A.csproj", TempTree.SdkProject);
+        var command = new FixCommand(
+            new ProjectInfoProvider(new FakeProcessRunner(), new CompilerLanguageVersions(new FakeProcessRunner())),
+            _restorer,
+            _formatter,
+            _output,
+            _output);
+        int exitCode;
+        using (new FileStream(project, FileMode.Open, FileAccess.Read, FileShare.None))
+        {
+            exitCode = await command.RunAsync([], _tree.Root, CancellationToken.None);
+        }
+
+        Assert.Equal(1, exitCode);
+        Assert.StartsWith("skipped A/A.csproj: cannot read the project file: ", Output);
+    }
+
+    [Fact]
     public async Task Newer_package_protocol_is_skipped_as_a_failure()
     {
         AddProject("A/A.csproj", ProjectState.InScope, protocol: 2);
@@ -273,8 +309,20 @@ public sealed class FixCommandTests : IDisposable
             queue.Enqueue(info);
         }
 
+        private readonly Dictionary<string, Exception> _failures = new(StringComparer.OrdinalIgnoreCase);
+
+        public void Throw(string path, Exception exception)
+        {
+            _failures.Add(path, exception);
+        }
+
         public ProjectInfo Get(string csprojPath)
         {
+            if (_failures.TryGetValue(csprojPath, out Exception? failure))
+            {
+                throw failure;
+            }
+
             Queue<ProjectInfo> queue = _infos[csprojPath];
             return queue.Count > 1 ? queue.Dequeue() : queue.Peek();
         }
