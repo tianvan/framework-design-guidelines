@@ -1,0 +1,9 @@
+{
+  "session_id": "01a1616b-fcc4-7073-a2de-36a2b73e38c0",
+  "transcript_path": null,
+  "cwd": "C:\\Users\\user\\source\\sample",
+  "hook_event_name": "SessionStart",
+  "model": "gpt-6.1-sol",
+  "permission_mode": "bypassPermissions",
+  "source": "startup"
+}

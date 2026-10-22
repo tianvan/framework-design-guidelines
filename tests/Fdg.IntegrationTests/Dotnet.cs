@@ -20,7 +20,18 @@ public static class Dotnet
         string fileName,
         string workingDirectory,
         string? packagesDirectory,
-        params string[] arguments)
+        params string[] arguments) =>
+        RunProgram(fileName, workingDirectory, packagesDirectory, standardInput: null, new Dictionary<string, string>(), arguments);
+
+    /// <param name="standardInput">Written to the process's stdin as UTF-8, then stdin is closed.</param>
+    /// <param name="environment">Extra environment variables; MSBuild also reads them as properties.</param>
+    public static DotnetResult RunProgram(
+        string fileName,
+        string workingDirectory,
+        string? packagesDirectory,
+        string? standardInput,
+        IReadOnlyDictionary<string, string> environment,
+        IReadOnlyList<string> arguments)
     {
         var startInfo = new ProcessStartInfo(fileName)
         {
@@ -57,11 +68,25 @@ public static class Dotnet
             startInfo.Environment["NUGET_PACKAGES"] = packagesDirectory;
         }
 
+        foreach ((string name, string value) in environment)
+        {
+            startInfo.Environment[name] = value;
+        }
+
+        startInfo.RedirectStandardInput = standardInput is not null;
         var output = new StringBuilder();
         using var process = new Process { StartInfo = startInfo };
         process.OutputDataReceived += (_, e) => Append(output, e.Data);
         process.ErrorDataReceived += (_, e) => Append(output, e.Data);
         process.Start();
+        if (standardInput is not null)
+        {
+            using (var stdin = new StreamWriter(process.StandardInput.BaseStream, new UTF8Encoding(false)))
+            {
+                stdin.Write(standardInput);
+            }
+        }
+
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
         if (!process.WaitForExit(Timeout))

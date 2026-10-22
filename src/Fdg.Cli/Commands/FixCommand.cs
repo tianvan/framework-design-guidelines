@@ -14,9 +14,6 @@ public sealed class FixCommand
     /// <summary>The newest marker and rules.json protocol this CLI understands.</summary>
     public const int SupportedProtocol = 1;
 
-    /// <summary>A FixAll pass cannot fix nested occurrences, such as single-line blocks inside each other.</summary>
-    private const int MaxFormatPasses = 3;
-
     private const int MaxDetailLines = 20;
 
     private readonly IProjectInfoProvider _projects;
@@ -123,28 +120,16 @@ public sealed class FixCommand
         IReadOnlyList<string>? includes = target.IncludeFiles is null
             ? null
             : FormatIncludes.ToProjectRelative(target.ProjectPath, target.IncludeFiles);
-        string before = HashSources(target);
-        for (int pass = 1; pass <= MaxFormatPasses; pass++)
+        ToolResult format = await FormatPasses
+            .RunAsync(_formatter, target.ProjectPath, includes, excluded, () => HashSources(target), cancellationToken)
+            .ConfigureAwait(false);
+        if (!format.Succeeded)
         {
-            ToolResult format = await _formatter
-                .FormatAsync(target.ProjectPath, includes, excluded, cancellationToken)
-                .ConfigureAwait(false);
-            if (!format.Succeeded)
-            {
-                string reason = format.TimedOut
-                    ? "dotnet format timed out"
-                    : $"dotnet format exited with code {format.ExitCode}";
-                Report("failed", display, reason, format);
-                return false;
-            }
-
-            string after = HashSources(target);
-            if (after == before)
-            {
-                break;
-            }
-
-            before = after;
+            string reason = format.TimedOut
+                ? "dotnet format timed out"
+                : $"dotnet format exited with code {format.ExitCode}";
+            Report("failed", display, reason, format);
+            return false;
         }
 
         _output.WriteLine("fixed " + display);

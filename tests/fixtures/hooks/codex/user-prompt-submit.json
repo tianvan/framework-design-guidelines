@@ -1,0 +1,10 @@
+{
+  "session_id": "01a1616b-fcc4-7073-a2de-36a2b73e38c0",
+  "turn_id": "01a1616b-fd63-72e1-b32f-9dfba83b4ea2",
+  "transcript_path": null,
+  "cwd": "C:\\Users\\user\\source\\sample",
+  "hook_event_name": "UserPromptSubmit",
+  "model": "gpt-6.1-sol",
+  "permission_mode": "bypassPermissions",
+  "prompt": "Reply with the single word: hello"
+}

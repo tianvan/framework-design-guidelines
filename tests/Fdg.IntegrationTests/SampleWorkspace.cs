@@ -93,6 +93,16 @@ public sealed class SampleWorkspace : IDisposable
     public DotnetResult Fdg(params string[] arguments) =>
         IntegrationTests.Dotnet.RunProgram(_fixture.FdgToolPath, DirectoryPath, _fixture.PackagesDirectory, arguments);
 
+    /// <summary>Runs a <c>dotnet fdg hook</c> entry point with the given JSON on stdin.</summary>
+    public DotnetResult FdgHook(string hookEvent, string json, IReadOnlyDictionary<string, string> environment) =>
+        IntegrationTests.Dotnet.RunProgram(
+            _fixture.FdgToolPath,
+            DirectoryPath,
+            _fixture.PackagesDirectory,
+            json,
+            environment,
+            ["hook", hookEvent]);
+
     /// <summary>Builds without the compiler server, so no process keeps the package's analyzers locked.</summary>
     public DotnetResult Build(string projectPath, params string[] extraArguments) =>
         Dotnet(["build", projectPath, "-tl:off", "-nodeReuse:false", "-p:UseSharedCompilation=false", .. extraArguments]);

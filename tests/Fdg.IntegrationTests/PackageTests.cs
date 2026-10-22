@@ -299,7 +299,8 @@ public sealed class PackageTests : IClassFixture<PackageFixture>
 
         AssertSucceeded(workspace.Build(project, "-p:FdgSarifDir=" + sarifDirectory));
 
-        string sarifPath = Path.Combine(sarifDirectory, "Sample-netstandard2.0.sarif");
+        // dotnet-fdg passes a directory per project, so the log is named by target framework only.
+        string sarifPath = Path.Combine(sarifDirectory, "netstandard2.0.sarif");
         Assert.True(File.Exists(sarifPath), sarifPath);
         using JsonDocument sarif = JsonDocument.Parse(File.ReadAllText(sarifPath));
         Assert.Equal("2.1.0", sarif.RootElement.GetProperty("version").GetString());

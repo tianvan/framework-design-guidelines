@@ -1,5 +1,7 @@
 using System.Reflection;
+using System.Text;
 using Fdg.Cli.Commands;
+using Fdg.Cli.Hooks;
 using Fdg.Cli.Projects;
 using Fdg.Cli.Tooling;
 
@@ -34,6 +36,20 @@ public static class FdgCli
         {
             output.WriteLine(Usage);
             return 0;
+        }
+
+        if (args.Count == 2 && args[0] == "hook" && HookCommands.Events.Contains(args[1]))
+        {
+            var runner = new ProcessRunner();
+            var hooks = new HookRunner(
+                new ProjectInfoProvider(runner, new CompilerLanguageVersions(runner)),
+                // The Stop hook's own timeout (FDG_HOOK_TIMEOUT_SECONDS) bounds formatting and building.
+                new DotnetFormatRunner(runner, Timeout.InfiniteTimeSpan),
+                new DotnetBuildRunner(runner, Timeout.InfiniteTimeSpan),
+                Environment.GetEnvironmentVariable);
+            // Hosts write UTF-8 JSON whatever the console code page is.
+            using var input = new StreamReader(Console.OpenStandardInput(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            return await HookCommands.RunAsync(args[1], input, output, error, hooks, cancellationToken).ConfigureAwait(false);
         }
 
         if (args.Count > 0 && args[0] == "fix")

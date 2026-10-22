@@ -7,7 +7,10 @@
   <PropertyGroup>
     <_FdgProfile>$(FrameworkDesignGuidelinesProfile.Trim().ToLowerInvariant())</_FdgProfile>
     <_FdgProfileIsValid Condition="'$(_FdgProfile)' == 'library' or '$(_FdgProfile)' == 'application' or '$(_FdgProfile)' == 'test'">true</_FdgProfileIsValid>
-    <ErrorLog Condition="'$(FdgSarifDir)' != ''">$(FdgSarifDir)/$(MSBuildProjectName)-$(TargetFramework).sarif,version=2.1</ErrorLog>
+    <!-- dotnet-fdg passes a directory per project, so the log is named by target framework only. -->
+    <_FdgSarifName>$(TargetFramework)</_FdgSarifName>
+    <_FdgSarifName Condition="'$(_FdgSarifName)' == ''">single</_FdgSarifName>
+    <ErrorLog Condition="'$(FdgSarifDir)' != ''">$(FdgSarifDir)/$(_FdgSarifName).sarif,version=2.1</ErrorLog>
   </PropertyGroup>
 
   <!--
