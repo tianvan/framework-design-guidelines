@@ -123,6 +123,62 @@ public sealed class SingleLineCatchFinallyTests
             fixAllIterations: 2);
     }
 
+    [Theory]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public Task Nested_try_in_single_line_catch_keeps_its_brace_on_the_next_line(string endOfLine)
+    {
+        // The statement's first token (try) is reformatted; the gap after it must not become an empty line.
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M()
+                {
+                    try
+                    {
+                        Log(null);
+                    }
+                    {|FDGA003:catch|} (System.Exception ex) { {|FDGA003:try|} { Log(ex); } {|FDGA003:catch|} { } }
+                }
+
+                static void Log(System.Exception ex)
+                {
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M()
+                {
+                    try
+                    {
+                        Log(null);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        try
+                        {
+                            Log(ex);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+
+                static void Log(System.Exception ex)
+                {
+                }
+            }
+            """,
+            extraEditorConfig: "csharp_preserve_single_line_statements = false\n",
+            endOfLine: endOfLine,
+            // One incremental fix per block; a batch FixAll needs up to two passes. Negative means "at most".
+            fixAllIterations: -3);
+    }
+
     [Fact]
     public Task Trailing_comment_stays_after_the_closing_brace()
     {

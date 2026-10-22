@@ -12,14 +12,18 @@ namespace FrameworkDesignGuidelines.CodeFixes.Layout;
 /// so that a token touched by several edits (for example a one-token statement) gets all of them.
 /// </summary>
 /// <remarks>
-/// The token after each edited gap is formatted (with <see cref="Formatter.Annotation"/>); the token before it is
-/// not, because formatting that token would also reformat the gap in front of it, which a sibling fix in the same
-/// FixAll batch may be editing. <see cref="ApplyAsync"/> runs that formatting itself with the document's own line
-/// ending and then removes the annotation, so the code action's cleanup cannot insert
+/// Only the edited gaps are formatted, as text spans, never the tokens around them: formatting a token also
+/// reformats the gaps on both sides of it, which sibling fixes in the same FixAll batch may be editing (a
+/// <c>try</c> starting an expanded block would get its own <c>{</c> moved by both fixes, leaving an empty line).
+/// <see cref="ApplyAsync"/> formats with the document's own line ending and leaves no
+/// <see cref="Formatter.Annotation"/>, so the code action's cleanup cannot insert
 /// <see cref="Environment.NewLine"/> into a file that uses the other line ending.
 /// </remarks>
 internal sealed class TokenEdits
 {
+    /// <summary>Marks the token after each edited gap.</summary>
+    private static readonly SyntaxAnnotation GapAnnotation = new("FrameworkDesignGuidelines.EditedGap");
+
     private readonly Dictionary<SyntaxToken, SyntaxToken> _replacements = new();
     private readonly SourceText _text;
     private readonly string _endOfLineText;
@@ -106,7 +110,7 @@ internal sealed class TokenEdits
 
     /// <summary>
     /// Applies the edits, formats the edited gaps with the document's options and line ending, and removes the
-    /// formatter annotation again.
+    /// gap annotation again.
     /// </summary>
     public async Task<Document> ApplyAsync(Document document, SyntaxNode root, CancellationToken cancellationToken)
     {
@@ -114,7 +118,10 @@ internal sealed class TokenEdits
         Document editedDocument = document.WithSyntaxRoot(edited);
         OptionSet options = (await editedDocument.GetOptionsAsync(cancellationToken).ConfigureAwait(false))
             .WithChangedOption(FormattingOptions.NewLine, LanguageNames.CSharp, _endOfLineText);
-        Document formatted = await Formatter.FormatAsync(editedDocument, Formatter.Annotation, options, cancellationToken)
+        TextSpan[] gaps = edited.GetAnnotatedTokens(GapAnnotation)
+            .Select(token => TextSpan.FromBounds(token.GetPreviousToken().Span.End, token.SpanStart))
+            .ToArray();
+        Document formatted = await Formatter.FormatAsync(editedDocument, gaps, options, cancellationToken)
             .ConfigureAwait(false);
         SyntaxNode? formattedRoot = await formatted.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
         if (formattedRoot is null)
@@ -122,10 +129,10 @@ internal sealed class TokenEdits
             return formatted;
         }
 
-        IEnumerable<SyntaxToken> annotated = formattedRoot.GetAnnotatedTokens(Formatter.Annotation);
+        IEnumerable<SyntaxToken> annotated = formattedRoot.GetAnnotatedTokens(GapAnnotation);
         return formatted.WithSyntaxRoot(formattedRoot.ReplaceTokens(
             annotated,
-            (_, rewritten) => rewritten.WithoutAnnotations(Formatter.Annotation)));
+            (_, rewritten) => rewritten.WithoutAnnotations(GapAnnotation)));
     }
 
     private static string DetectEndOfLine(SourceText text)
@@ -252,8 +259,8 @@ internal sealed class TokenEdits
     {
         SyntaxToken current = _replacements.TryGetValue(original, out SyntaxToken replaced) ? replaced : original;
         SyntaxToken edited = edit(current);
-        _replacements[original] = annotate && !edited.HasAnnotation(Formatter.Annotation)
-            ? edited.WithAdditionalAnnotations(Formatter.Annotation)
+        _replacements[original] = annotate && !edited.HasAnnotation(GapAnnotation)
+            ? edited.WithAdditionalAnnotations(GapAnnotation)
             : edited;
     }
 }

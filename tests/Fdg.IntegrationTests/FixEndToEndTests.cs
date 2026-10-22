@@ -6,8 +6,8 @@ namespace Fdg.IntegrationTests;
 [Trait("Category", "Integration")]
 public sealed class FixEndToEndTests : IClassFixture<PackageFixture>
 {
-    // One line with two statements, a single-line catch, a 138-column call, a braceless if, and a camelCase type
-    // name whose fix (IDE1006, a rename) is breaking.
+    // One line with two statements, single-line blocks nested in a single-line catch, a 138-column call, a braceless
+    // if, and a camelCase type name whose fix (IDE1006, a rename) is breaking.
     private const string ViolatingSource =
         """
         namespace Sample
@@ -21,7 +21,7 @@ public sealed class FixEndToEndTests : IClassFixture<PackageFixture>
                     {
                         Failed(firstValue, secondValue, null, thirdValue, fourthValue, fifthValue, sixthValue, seventhValue, "a ninth argument.");
                     }
-                    catch (System.Exception ex) { Log(ex); }
+                    catch (System.Exception ex) { try { Log(ex); } catch { } }
 
                     int first = 1; int second = 2;
                     if (first > second)
@@ -167,8 +167,8 @@ public sealed class FixEndToEndTests : IClassFixture<PackageFixture>
         string[] trimmed = lines.Select(l => l.Trim()).ToArray();
         // The breaking rename (IDE1006) is excluded.
         Assert.Contains($"public class {typeName}", trimmed);
-        // FDGA003: the single-line catch is expanded.
-        AssertSequence(trimmed, "catch (System.Exception ex)", "{", "Log(ex);", "}");
+        // FDGA003: the nested single-line blocks are all expanded, the inner catch in a second format pass.
+        AssertSequence(trimmed, "catch (System.Exception ex)", "{", "try", "{", "Log(ex);", "}", "catch", "{", "}", "}");
         // FDGA023: the long call is chopped, one argument per line.
         AssertSequence(trimmed, "Failed(", "firstValue,", "secondValue,", "null,", "thirdValue,");
         // One statement per line.
