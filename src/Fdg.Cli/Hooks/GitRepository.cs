@@ -109,7 +109,9 @@ public sealed class GitRepository
         bool ignoreWhitespace,
         CancellationToken cancellationToken)
     {
-        List<string> arguments = ["diff", "--no-index", "--no-color", "--no-ext-diff", "--no-textconv", "-U0"];
+        // --inter-hunk-context=0 overrides diff.interHunkContext, which would merge hunks over unchanged lines.
+        List<string> arguments =
+            ["diff", "--no-index", "--no-color", "--no-ext-diff", "--no-textconv", "-U0", "--inter-hunk-context=0"];
         if (ignoreWhitespace)
         {
             arguments.Add("--ignore-all-space");

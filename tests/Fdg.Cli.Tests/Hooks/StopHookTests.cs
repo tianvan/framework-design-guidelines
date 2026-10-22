@@ -119,11 +119,160 @@ public sealed class StopHookTests : IDisposable
 
         string output = await TurnStopAsync();
 
+        // The error in the unchanged file is not reported, but the failed build is not passed over either.
         Assert.Equal(
             "FDG found 1 issue(s) in lines you changed this turn. Fix them before finishing.\n"
             + "src/中文 App/Order.cs:9 CS0103 The name 'x' does not exist in the current context\n"
-            + "    // line 9\n",
+            + "    // line 9\n"
+            + "FDG: dotnet build failed for src/中文 App/App.csproj (exit code 1): 1 compile error(s) in files not "
+            + "changed this turn, first: src/中文 App/Other.cs:1 CS0246 In a file the AI did not change\n",
             Json(output, "reason")!);
+    }
+
+    [Fact]
+    public async Task Build_failure_without_compile_errors_reports_one_line()
+    {
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        _builder.Result = new ToolResult(1, "CSC : error CS2012: Cannot open 'App.dll' for writing\n", false);
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal(
+            "FDG: dotnet build failed for src/中文 App/App.csproj (exit code 1): CSC : error CS2012: Cannot open 'App.dll' for writing",
+            Json(output, "systemMessage")!);
+    }
+
+    [Fact]
+    public async Task Formatter_changes_on_lines_the_AI_did_not_touch_are_not_changed_lines()
+    {
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (5, "if (x) return;")));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (3, "int A_1; int B_2;"), (5, "if (x) return;"), (8, "int C_3;")));
+        // The whole file is formatted: the AI's line 3 is split, the old line 5 gets braces, the AI's line 8 moves to 12.
+        _formatter.OnFormat = _ => File.WriteAllText(
+            order,
+            Lines(10, (3, "int A_1;\nint B_2;"), (5, "if (x)\n{\n    return;\n}"), (8, "int C_3;")));
+        _builder.Sarif = _ => [
+            new SarifResult("CA1707", "warning", "Remove the underscores B", order, 4),
+            new SarifResult("IDE1006", "warning", "Naming rule violation on the old line", order, 6),
+            new SarifResult("CA1707", "warning", "Remove the underscores C", order, 12),
+        ];
+
+        string reason = Json(await TurnStopAsync(), "reason")!;
+
+        Assert.StartsWith("FDG found 2 issue(s)", reason);
+        Assert.Contains("Order.cs:4 CA1707", reason);
+        Assert.Contains("Order.cs:12 CA1707", reason);
+        Assert.DoesNotContain("IDE1006", reason);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Moved_file_takes_the_deleted_file_as_baseline(bool gitMv)
+    {
+        _repo.Write("src/中文 App/Old.cs", Lines(10, (4, "int Old_Name;")));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        Directory.CreateDirectory(_repo.Path("src/中文 App/Moved"));
+        if (gitMv)
+        {
+            _repo.Git("mv", "src/中文 App/Old.cs", "src/中文 App/Moved/New.cs");
+        }
+        else
+        {
+            File.Move(_repo.Path("src/中文 App/Old.cs"), _repo.Path("src/中文 App/Moved/New.cs"));
+        }
+
+        string moved = _repo.Write("src/中文 App/Moved/New.cs", Lines(10, (4, "int Old_Name;"), (9, "int New_Name;")));
+        _builder.Sarif = _ => [
+            new SarifResult("CA1707", "warning", "Remove the underscores", moved, 4),
+            new SarifResult("CA1707", "warning", "Remove the underscores", moved, 9),
+        ];
+
+        string reason = Json(await TurnStopAsync(), "reason")!;
+
+        Assert.StartsWith("FDG found 1 issue(s)", reason);
+        Assert.Contains("src/中文 App/Moved/New.cs:9 CA1707", reason);
+    }
+
+    [Fact]
+    public async Task Stop_without_stop_hook_active_starts_a_new_block_count()
+    {
+        // The host continues after a block with stop_hook_active; without it, the user prompted again even if
+        // UserPromptSubmit never reset the count.
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int Bad_Name;")));
+        _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "Remove the underscores", order, 4)];
+        await TurnStopAsync();
+        await TurnStopAsync(stopHookActive: true);
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal("block", Json(output, "decision"));
+    }
+
+    [Fact]
+    public async Task Turn_reset_removes_the_old_snapshot_first()
+    {
+        await TurnStartAsync();
+        StateStore state = await StateAsync();
+
+        state.ResetTurn();
+
+        Assert.Null(state.ReadSnapshot());
+    }
+
+    [Fact]
+    public async Task Session_start_outside_git_looks_two_levels_deep_only()
+    {
+        using var tree = new TempTree();
+        var input = new HookInput(HostKind.Claude, Session, tree.Root, "SessionStart");
+        tree.Write("a/b/c/Deep.csproj", Project);
+        tree.Write("a/bin/Built.csproj", Project);
+
+        Assert.Equal(string.Empty, await CreateRunner().SessionStartAsync(input, CancellationToken.None));
+        tree.Write("a/b/Shallow.csproj", Project);
+        Assert.NotNull(Json(await CreateRunner().SessionStartAsync(input, CancellationToken.None), "systemMessage"));
+    }
+
+    [Fact]
+    public async Task Session_start_outside_git_does_not_follow_junctions()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        using var tree = new TempTree();
+        using var target = new TempTree();
+        target.Write("App/App.csproj", Project);
+        // Like "Application Data" in a user profile: a junction, often one that denies listing.
+        string link = tree.Path("Application Data");
+        var startInfo = new System.Diagnostics.ProcessStartInfo("cmd") { RedirectStandardOutput = true, UseShellExecute = false };
+        foreach (string argument in (string[])["/c", "mklink", "/J", link, target.Root])
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        using (System.Diagnostics.Process mklink = System.Diagnostics.Process.Start(startInfo)!)
+        {
+            await mklink.WaitForExitAsync();
+        }
+
+        Assert.True(File.Exists(Path.Combine(link, "App", "App.csproj")));
+        var input = new HookInput(HostKind.Claude, Session, tree.Root, "SessionStart");
+
+        try
+        {
+            Assert.Equal(string.Empty, await CreateRunner().SessionStartAsync(input, CancellationToken.None));
+        }
+        finally
+        {
+            Directory.Delete(link);
+        }
     }
 
     [Fact]
@@ -171,8 +320,8 @@ public sealed class StopHookTests : IDisposable
         _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "Remove the underscores", order, 4)];
 
         string first = await TurnStopAsync();
-        string second = await TurnStopAsync();
-        string third = await TurnStopAsync();
+        string second = await TurnStopAsync(stopHookActive: true);
+        string third = await TurnStopAsync(stopHookActive: true);
 
         Assert.Equal("block", Json(first, "decision"));
         Assert.Equal("block", Json(second, "decision"));
@@ -279,7 +428,8 @@ public sealed class StopHookTests : IDisposable
 
         Assert.True(watch.Elapsed < TimeSpan.FromSeconds(4), watch.Elapsed.ToString());
         Assert.Equal(
-            "FDG: the Stop check timed out after 1 s (FDG_HOOK_TIMEOUT_SECONDS); this turn was not checked.",
+            "FDG: the Stop check timed out after 1 s (FDG_HOOK_TIMEOUT_SECONDS); this turn was not checked, "
+            + "and files may have been partially reformatted.",
             Json(output, "systemMessage")!);
     }
 
@@ -368,12 +518,12 @@ public sealed class StopHookTests : IDisposable
         string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int Bad_Name;")));
         _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "Remove the underscores", order, 4)];
         await TurnStopAsync();
-        await TurnStopAsync();
+        await TurnStopAsync(stopHookActive: true);
 
         await TurnStartAsync();
         _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int Bad_Name;"), (5, "int Other_Name;")));
         _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "Remove the underscores", order, 5)];
-        string output = await TurnStopAsync();
+        string output = await TurnStopAsync(stopHookActive: true);
 
         Assert.Equal("block", Json(output, "decision"));
     }
@@ -452,8 +602,10 @@ public sealed class StopHookTests : IDisposable
     private Task<string> TurnStartAsync(HostKind host = HostKind.Claude) =>
         CreateRunner().TurnStartAsync(new HookInput(host, Session, _repo.Root, "UserPromptSubmit"), CancellationToken.None);
 
-    private Task<string> TurnStopAsync() =>
-        CreateRunner().TurnStopAsync(new HookInput(HostKind.Claude, Session, _repo.Root, "Stop"), CancellationToken.None);
+    private Task<string> TurnStopAsync(bool stopHookActive = false) =>
+        CreateRunner().TurnStopAsync(
+            new HookInput(HostKind.Claude, Session, _repo.Root, "Stop") { StopHookActive = stopHookActive },
+            CancellationToken.None);
 
     private async Task<StateStore> StateAsync() =>
         StateStore.For((await GitRepository.OpenAsync(_repo.Root, CancellationToken.None))!, Session);

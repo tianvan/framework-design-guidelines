@@ -120,6 +120,19 @@ public sealed class SnapshotTests : IDisposable
         Assert.Equal([4], lines.Order());
     }
 
+    [Fact]
+    public async Task Changed_lines_ignore_user_inter_hunk_context()
+    {
+        _repo.Git("config", "diff.interHunkContext", "10");
+        (GitRepository git, _) = await OpenAsync();
+        string before = _repo.Write("before.cs", "a\nb\nc\nd\ne\nf\n");
+        string after = _repo.Write("after.cs", "a\nB\nc\nd\ne\nF\n");
+
+        IReadOnlySet<int> lines = await ChangedLines.ComputeAsync(git, before, after, CancellationToken.None);
+
+        Assert.Equal([2, 6], lines.Order());
+    }
+
     [Theory]
     [InlineData("@@ -3 +3 @@\n-a\n+b\n", "3")]
     [InlineData("@@ -3,0 +4,2 @@\n+a\n+b\n@@ -10,2 +12,0 @@\n-c\n-d\n", "4,5")]

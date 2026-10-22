@@ -51,9 +51,14 @@ public sealed class StateStore
     public string SarifDirectory(int turn, string projectPath) =>
         Path.Combine(Directory, "sarif", turn.ToString(CultureInfo.InvariantCulture), Sha1(projectPath)[..12]);
 
-    /// <summary>Removes the files of the previous turn and the block count; the autofix record is kept.</summary>
+    /// <summary>
+    /// Removes the files of the previous turn and the block count; the autofix record is kept. The snapshot goes
+    /// first: if the host kills the hook before the new one is written, Stop finds none and says so, rather than
+    /// using the old snapshot with its baselines gone.
+    /// </summary>
     public void ResetTurn()
     {
+        Delete("snapshot.json");
         foreach (string name in (string[])["baseline", "ai", "sarif"])
         {
             string path = Path.Combine(Directory, name);

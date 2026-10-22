@@ -18,14 +18,19 @@ public static class DiagnosticFilter
             return false;
         }
 
-        bool isError = diagnostic.Level == "error";
-        if (isError && diagnostic.RuleId.StartsWith("CS", StringComparison.Ordinal))
+        if (IsCompileError(diagnostic))
         {
             return true;
         }
 
-        return (isError || diagnostic.Level == "warning") &&
+        return (diagnostic.Level == "error" || diagnostic.Level == "warning") &&
             registeredDiagnostics.Contains(diagnostic.RuleId) &&
             lines.Contains(diagnostic.Line);
     }
+
+    /// <summary>A compiler error (<c>CS</c>) not suppressed in source.</summary>
+    public static bool IsCompileError(SarifDiagnostic diagnostic) =>
+        !diagnostic.Suppressed &&
+        diagnostic.Level == "error" &&
+        diagnostic.RuleId.StartsWith("CS", StringComparison.Ordinal);
 }

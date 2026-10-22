@@ -44,10 +44,29 @@ public sealed class HookRunner
             return HookOutput.None;
         }
 
-        bool hasProjects = Directory.Exists(input.Cwd) && ProjectFiles.Enumerate(input.Cwd, "*.csproj").Any();
+        bool hasProjects = Directory.Exists(input.Cwd) && HasNearbyProjects(input.Cwd);
         return hasProjects
             ? HookOutput.SystemMessage("FDG: not a git repository, so the end-of-turn checks are disabled.")
             : HookOutput.None;
+    }
+
+    /// <summary>
+    /// Looks two directory levels down only: the hooks run in sessions started anywhere, such as a home directory,
+    /// where a full walk is slow and meets junctions that deny listing.
+    /// </summary>
+    private static bool HasNearbyProjects(string directory)
+    {
+        var options = new EnumerationOptions
+        {
+            RecurseSubdirectories = true,
+            MaxRecursionDepth = 2,
+            IgnoreInaccessible = true,
+            AttributesToSkip = FileAttributes.ReparsePoint,
+        };
+        return Directory.EnumerateFiles(directory, "*.csproj", options).Any(file =>
+            !Path.GetRelativePath(directory, Path.GetDirectoryName(file)!)
+                .Split(Path.DirectorySeparatorChar)
+                .Any(segment => segment != "." && ProjectFiles.IsSkippedDirectory(segment)));
     }
 
     /// <summary>
@@ -102,7 +121,7 @@ public sealed class HookRunner
             await Task.WhenAny(work, Task.Delay(CleanupGrace, CancellationToken.None)).ConfigureAwait(false);
             return HookOutput.SystemMessage(
                 $"FDG: the Stop check timed out after {settings.Timeout.TotalSeconds:0} s (FDG_HOOK_TIMEOUT_SECONDS); " +
-                "this turn was not checked.");
+                "this turn was not checked, and files may have been partially reformatted.");
         }
     }
 
@@ -147,15 +166,19 @@ public sealed class HookRunner
         // 3-4. One project at a time, since builds of projects that reference each other would compile the shared
         // ones at once: build, read the SARIF logs.
         var diagnostics = new List<(ProjectWork Project, SarifDiagnostic Diagnostic)>();
-        var builds = new Dictionary<ProjectWork, ToolResult>();
+        var failedBuilds = new List<(ProjectWork Project, ToolResult Build)>();
         for (int i = 0; i < projects.Count; i++)
         {
             string? note = formatNotes.GetValueOrDefault(i);
             if (settings.Build)
             {
-                (ToolResult build, string? buildNote) = await BuildProjectAsync(
+                (ToolResult build, bool hasLogs, string? buildNote) = await BuildProjectAsync(
                     git, state, snapshot.Turn, projects[i], diagnostics, cancellationToken).ConfigureAwait(false);
-                builds.Add(projects[i], build);
+                if (!build.Succeeded && hasLogs)
+                {
+                    failedBuilds.Add((projects[i], build));
+                }
+
                 note ??= buildNote;
             }
 
@@ -168,22 +191,41 @@ public sealed class HookRunner
         // 6. What formatting changed, for the next turn (and for Codex when blocking now).
         AutofixRecord? autofix = await RecordAutofixAsync(git, state, snapshot.Turn, projects, cancellationToken).ConfigureAwait(false);
 
-        // 4-5. Filter on the lines changed since the turn started, then report.
+        // 4-5. Filter on the lines the AI changed since the turn started, then report.
+        IReadOnlyList<string> deleted = await Snapshot.FindDeletedFilesAsync(git, snapshot, cancellationToken).ConfigureAwait(false);
         var changedLines = new Dictionary<string, IReadOnlySet<int>>(ProjectFiles.PathComparer);
         foreach (string path in projects.SelectMany(p => p.Files).Distinct(StringComparer.Ordinal))
         {
-            string baseline = await Snapshot.WriteBaselineAsync(git, state, snapshot, path, cancellationToken).ConfigureAwait(false);
+            string baseline = await Snapshot.WriteBaselineAsync(git, state, snapshot, path, deleted, cancellationToken)
+                .ConfigureAwait(false);
             string current = Snapshot.FullPath(git, path);
-            changedLines[current] = await ChangedLines.ComputeAsync(git, baseline, current, cancellationToken).ConfigureAwait(false);
+            changedLines[current] = await ChangedLines.ComputeAsync(git, baseline, state.AiVersionPath(path), current, cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        List<ReportedIssue> issues = ToIssues(git, diagnostics, changedLines);
+        var registered = new Dictionary<RulesManifest, IReadOnlySet<string>>(ReferenceEqualityComparer.Instance);
+        foreach (RulesManifest manifest in projects.Select(p => p.Manifest))
+        {
+            registered.TryAdd(manifest, manifest.RegisteredDiagnostics.ToHashSet(StringComparer.Ordinal));
+        }
+
+        foreach ((ProjectWork project, ToolResult build) in failedBuilds)
+        {
+            if (BuildFailure(git, project, build, diagnostics, changedLines, registered[project.Manifest]) is string note)
+            {
+                notes.Add(note);
+            }
+        }
+
+        List<ReportedIssue> issues = ToIssues(git, diagnostics, changedLines, registered);
         if (issues.Count == 0)
         {
             return Finish(notes, []);
         }
 
-        int blocks = state.ReadBlocks();
+        // Without stop_hook_active the host is not continuing after a block, so this is a new turn even if
+        // UserPromptSubmit never reset the count.
+        int blocks = input.StopHookActive ? state.ReadBlocks() : 0;
         string count = $"FDG found {issues.Count} issue(s) in lines you changed this turn.";
         if (blocks < settings.MaxBlocks)
         {
@@ -289,8 +331,11 @@ public sealed class HookRunner
         return format.Succeeded ? null : Failure(git, "dotnet format", projectPath, format);
     }
 
-    /// <returns>The build result, and a one-line note when the project's diagnostics could not be read.</returns>
-    private async Task<(ToolResult Build, string? Note)> BuildProjectAsync(
+    /// <returns>
+    /// The build result, whether it wrote SARIF logs, and a one-line note when the project's diagnostics could not
+    /// be read.
+    /// </returns>
+    private async Task<(ToolResult Build, bool HasLogs, string? Note)> BuildProjectAsync(
         GitRepository git,
         StateStore state,
         int turn,
@@ -313,13 +358,13 @@ public sealed class HookRunner
 
         if (logs.Count == 0)
         {
-            return (build, build.Succeeded
+            return (build, false, build.Succeeded
                 ? $"FDG: dotnet build wrote no SARIF log for {Display(git, projectPath)}; its diagnostics were not checked."
                 : Failure(git, "dotnet build", projectPath, build));
         }
 
         diagnostics.AddRange(found.Select(d => (project, d)));
-        return (build, unreadable
+        return (build, true, unreadable
             ? $"FDG: cannot read the SARIF log of {Display(git, projectPath)}; its diagnostics were not checked."
             : null);
     }
@@ -384,15 +429,15 @@ public sealed class HookRunner
     private static List<ReportedIssue> ToIssues(
         GitRepository git,
         IEnumerable<(ProjectWork Project, SarifDiagnostic Diagnostic)> diagnostics,
-        IReadOnlyDictionary<string, IReadOnlySet<int>> changedLines)
+        IReadOnlyDictionary<string, IReadOnlySet<int>> changedLines,
+        IReadOnlyDictionary<RulesManifest, IReadOnlySet<string>> registered)
     {
         var sourceLines = new Dictionary<string, string[]>(ProjectFiles.PathComparer);
         var seen = new HashSet<(string, int, string, string)>();
         var issues = new List<ReportedIssue>();
         foreach ((ProjectWork project, SarifDiagnostic diagnostic) in diagnostics)
         {
-            var registered = project.Manifest.RegisteredDiagnostics.ToHashSet(StringComparer.Ordinal);
-            if (!DiagnosticFilter.IsReported(diagnostic, changedLines, registered))
+            if (!DiagnosticFilter.IsReported(diagnostic, changedLines, registered[project.Manifest]))
             {
                 continue;
             }
@@ -421,6 +466,39 @@ public sealed class HookRunner
         }
 
         return StopReport.Sort(issues).ToList();
+    }
+
+    /// <summary>
+    /// A failed build is never passed over: unless the report holds a compile error of the project and none were
+    /// left out, one line says so, naming the first compile error in a file not changed this turn if there is one.
+    /// </summary>
+    private static string? BuildFailure(
+        GitRepository git,
+        ProjectWork project,
+        ToolResult build,
+        IEnumerable<(ProjectWork Project, SarifDiagnostic Diagnostic)> diagnostics,
+        IReadOnlyDictionary<string, IReadOnlySet<int>> changedLines,
+        IReadOnlySet<string> registered)
+    {
+        SarifDiagnostic[] errors = diagnostics
+            .Where(d => d.Project == project && DiagnosticFilter.IsCompileError(d.Diagnostic))
+            .Select(d => d.Diagnostic)
+            .Distinct()
+            .ToArray();
+        SarifDiagnostic[] unreported = errors
+            .Where(d => !DiagnosticFilter.IsReported(d, changedLines, registered))
+            .OrderBy(d => d.FilePath, StringComparer.Ordinal)
+            .ThenBy(d => d.Line)
+            .ToArray();
+        if (unreported.Length == 0)
+        {
+            return errors.Length > 0 ? null : Failure(git, "dotnet build", project.Info.ProjectPath, build);
+        }
+
+        SarifDiagnostic first = unreported[0];
+        return $"FDG: dotnet build failed for {Display(git, project.Info.ProjectPath)} (exit code {build.ExitCode}): " +
+            $"{unreported.Length} compile error(s) in files not changed this turn, first: " +
+            $"{Display(git, first.FilePath)}:{first.Line} {first.RuleId} {first.Message}";
     }
 
     /// <summary>Diffs the AI's version of each file with the formatted one and stores the changed ranges.</summary>
