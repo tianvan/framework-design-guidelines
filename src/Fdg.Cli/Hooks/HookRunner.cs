@@ -19,54 +19,40 @@ public sealed class HookRunner
     private readonly IProjectInfoProvider _projects;
     private readonly IFormatRunner _formatter;
     private readonly IBuildRunner _builder;
+    private readonly SessionContext _session;
     private readonly Func<string, string?> _environment;
 
     public HookRunner(
         IProjectInfoProvider projects,
         IFormatRunner formatter,
         IBuildRunner builder,
+        SessionContext session,
         Func<string, string?> environment)
     {
         _projects = projects;
         _formatter = formatter;
         _builder = builder;
+        _session = session;
         _environment = environment;
     }
 
     /// <summary>
-    /// Outside a git repository the turn hooks are off; says so once per session when C# projects are in sight.
-    /// The rest of SessionStart (context injection, self-check) is not part of this hook core yet.
+    /// SessionStart: adds the FDG context and the self-check's setup issues to the AI's context, and shows the issues
+    /// to the user. Outside a git repository the session's directory stands in for the repository root.
     /// </summary>
     public async Task<string> SessionStartAsync(HookInput input, CancellationToken cancellationToken)
     {
-        if (await GitRepository.OpenAsync(input.Cwd, cancellationToken).ConfigureAwait(false) is not null)
+        GitRepository? git = await GitRepository.OpenAsync(input.Cwd, cancellationToken).ConfigureAwait(false);
+        SessionReport? report = _session.Inspect(git?.TopLevel ?? input.Cwd);
+        if (report is null)
         {
             return HookOutput.None;
         }
 
-        bool hasProjects = Directory.Exists(input.Cwd) && HasNearbyProjects(input.Cwd);
-        return hasProjects
-            ? HookOutput.SystemMessage("FDG: not a git repository, so the end-of-turn checks are disabled.")
-            : HookOutput.None;
-    }
-
-    /// <summary>
-    /// Looks two directory levels down only: the hooks run in sessions started anywhere, such as a home directory,
-    /// where a full walk is slow and meets junctions that deny listing.
-    /// </summary>
-    private static bool HasNearbyProjects(string directory)
-    {
-        var options = new EnumerationOptions
-        {
-            RecurseSubdirectories = true,
-            MaxRecursionDepth = 2,
-            IgnoreInaccessible = true,
-            AttributesToSkip = FileAttributes.ReparsePoint,
-        };
-        return Directory.EnumerateFiles(directory, "*.csproj", options).Any(file =>
-            !Path.GetRelativePath(directory, Path.GetDirectoryName(file)!)
-                .Split(Path.DirectorySeparatorChar)
-                .Any(segment => segment != "." && ProjectFiles.IsSkippedDirectory(segment)));
+        return HookOutput.Context(
+            input.EventName,
+            report.Text,
+            report.Issues.Count == 0 ? null : string.Join("\n", report.Issues));
     }
 
     /// <summary>

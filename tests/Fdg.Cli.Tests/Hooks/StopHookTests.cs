@@ -10,6 +10,15 @@ public sealed class StopHookTests : IDisposable
 {
     private const string Project = "<Project Sdk=\"Microsoft.NET.Sdk\" />\n";
 
+    private const string OnboardedProject =
+        "<Project Sdk=\"Microsoft.NET.Sdk\">\n" +
+        "  <ItemGroup>\n" +
+        "    <PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" PrivateAssets=\"all\" />\n" +
+        "  </ItemGroup>\n" +
+        "</Project>\n";
+
+    private const string ChecksDisabled = "Not a git repository: end-of-turn checks are disabled.";
+
     private const string Session = "session/with:odd*chars";
 
     private readonly GitTestRepo _repo = new();
@@ -313,12 +322,12 @@ public sealed class StopHookTests : IDisposable
     {
         using var tree = new TempTree();
         var input = new HookInput(HostKind.Claude, Session, tree.Root, "SessionStart");
-        tree.Write("a/b/c/Deep.csproj", Project);
-        tree.Write("a/bin/Built.csproj", Project);
+        tree.Write("a/b/c/Deep.csproj", OnboardedProject);
+        tree.Write("a/bin/Built.csproj", OnboardedProject);
 
         Assert.Equal(string.Empty, await CreateRunner().SessionStartAsync(input, CancellationToken.None));
-        tree.Write("a/b/Shallow.csproj", Project);
-        Assert.NotNull(Json(await CreateRunner().SessionStartAsync(input, CancellationToken.None), "systemMessage"));
+        tree.Write("a/b/Shallow.csproj", OnboardedProject);
+        Assert.Contains(ChecksDisabled, Json(await CreateRunner().SessionStartAsync(input, CancellationToken.None), "systemMessage"));
     }
 
     [Fact]
@@ -331,7 +340,7 @@ public sealed class StopHookTests : IDisposable
 
         using var tree = new TempTree();
         using var target = new TempTree();
-        target.Write("App/App.csproj", Project);
+        target.Write("App/App.csproj", OnboardedProject);
         // Like "Application Data" in a user profile: a junction, often one that denies listing.
         string link = tree.Path("Application Data");
         var startInfo = new System.Diagnostics.ProcessStartInfo("cmd") { RedirectStandardOutput = true, UseShellExecute = false };
@@ -547,7 +556,7 @@ public sealed class StopHookTests : IDisposable
         Assert.Equal("src/中文 App/Order.cs", file.Path);
         Assert.Equal([new LineRange(8, 8)], file.Ranges);
         Assert.Equal(
-            "FDG reformatted files after your last turn; re-read them before editing: src/中文 App/Order.cs (line 8).",
+            "FDG auto-formatted at the end of the last turn: src/中文 App/Order.cs (line 8). Re-read those regions before editing them.",
             JsonDocument.Parse(next).RootElement.GetProperty("hookSpecificOutput").GetProperty("additionalContext").GetString());
         Assert.Null(state.ReadAutofix());
     }
@@ -579,15 +588,16 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
-    public async Task Session_start_outside_git_with_projects_says_checks_are_disabled()
+    public async Task Session_start_outside_git_says_checks_are_disabled_for_onboarded_projects_only()
     {
         using var tree = new TempTree();
         var input = new HookInput(HostKind.Codex, Session, tree.Root, "SessionStart");
 
-        Assert.Equal(string.Empty, await CreateRunner().SessionStartAsync(input, CancellationToken.None));
         tree.Write("App/App.csproj", Project);
-        Assert.Equal(
-            "FDG: not a git repository, so the end-of-turn checks are disabled.",
+        Assert.Equal(string.Empty, await CreateRunner().SessionStartAsync(input, CancellationToken.None));
+        tree.Write("Lib/Lib.csproj", OnboardedProject);
+        Assert.Contains(
+            "FDG setup issue: " + ChecksDisabled,
             Json(await CreateRunner().SessionStartAsync(input, CancellationToken.None), "systemMessage"));
         Assert.Equal(
             string.Empty,
@@ -680,7 +690,12 @@ public sealed class StopHookTests : IDisposable
     }
 
     private HookRunner CreateRunner() =>
-        new(_projects, _formatter, _builder, name => _environment.GetValueOrDefault(name));
+        new(
+            _projects,
+            _formatter,
+            _builder,
+            new SessionContext(new FakeProcessRunner().Respond(args => args is ["--version"], new ToolResult(0, "10.0.100\n", false))),
+            name => _environment.GetValueOrDefault(name));
 
     private Task<string> TurnStartAsync(HostKind host = HostKind.Claude) =>
         CreateRunner().TurnStartAsync(new HookInput(host, Session, _repo.Root, "UserPromptSubmit"), CancellationToken.None);

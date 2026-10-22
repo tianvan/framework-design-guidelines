@@ -9,7 +9,10 @@ public sealed record AutofixFile(string Path, IReadOnlyList<LineRange> Ranges);
 /// <summary>What the last Stop hook of a turn changed, told to the AI when the next turn starts.</summary>
 public sealed record AutofixRecord(int Turn, IReadOnlyList<AutofixFile> Files)
 {
-    /// <summary>One line, for example <c>... re-read them before editing: src/A.cs (lines 3-5, 8).</c></summary>
+    /// <summary>
+    /// One line, for example <c>FDG auto-formatted at the end of the last turn: src/A.cs (lines 12-30, 41-44);
+    /// src/B.cs (line 3). Re-read those regions before editing them.</c>
+    /// </summary>
     public string Summary()
     {
         IEnumerable<string> files = Files.Select(f =>
@@ -20,6 +23,7 @@ public sealed record AutofixRecord(int Turn, IReadOnlyList<AutofixFile> Files)
             bool single = f.Ranges.Count == 1 && f.Ranges[0].Start == f.Ranges[0].End;
             return $"{f.Path} ({(single ? "line" : "lines")} {ranges})";
         });
-        return "FDG reformatted files after your last turn; re-read them before editing: " + string.Join("; ", files) + ".";
+        return "FDG auto-formatted at the end of the last turn: " + string.Join("; ", files) +
+            ". Re-read those regions before editing them.";
     }
 }

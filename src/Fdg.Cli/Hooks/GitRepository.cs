@@ -87,6 +87,26 @@ public sealed class GitRepository
     }
 
     /// <summary>
+    /// Tracked and untracked, not ignored files matching <paramref name="pathspecs"/>
+    /// (<c>git ls-files -co --exclude-standard</c>), each once.
+    /// </summary>
+    /// <returns>Paths relative to <see cref="TopLevel"/>, with forward slashes.</returns>
+    public async Task<IReadOnlyList<string>> ListFilesAsync(IReadOnlyList<string> pathspecs, CancellationToken cancellationToken)
+    {
+        GitResult result = await RunAsync(
+            TopLevel,
+            ["ls-files", "-co", "--exclude-standard", "-z", "--", .. pathspecs],
+            cancellationToken).ConfigureAwait(false);
+        if (result.ExitCode != 0)
+        {
+            throw new InvalidOperationException("git ls-files failed: " + result.Error.Trim());
+        }
+
+        // An unmerged file is listed once per stage.
+        return result.Text.Split('\0', StringSplitOptions.RemoveEmptyEntries).Distinct(StringComparer.Ordinal).ToArray();
+    }
+
+    /// <summary>
     /// The file as a checkout would write it (<c>git cat-file --filters</c>), so <c>core.autocrlf</c> and
     /// <c>.gitattributes</c> conversions match the working tree.
     /// </summary>

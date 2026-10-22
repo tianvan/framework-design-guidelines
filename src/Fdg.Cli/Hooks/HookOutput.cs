@@ -20,13 +20,20 @@ public static class HookOutput
         JsonSerializer.Serialize(new Dictionary<string, string> { ["systemMessage"] = message });
 
     /// <summary>Adds text to the AI's context: <c>{"hookSpecificOutput":{"hookEventName":...,"additionalContext":...}}</c>.</summary>
-    public static string Context(string eventName, string additionalContext) =>
-        JsonSerializer.Serialize(new Dictionary<string, Dictionary<string, string>>
+    /// <param name="systemMessage">Also shown to the user, as a top-level <c>systemMessage</c>, when not <see langword="null"/>.</param>
+    public static string Context(string eventName, string additionalContext, string? systemMessage = null)
+    {
+        var output = new Dictionary<string, object>();
+        if (systemMessage is not null)
         {
-            ["hookSpecificOutput"] = new()
-            {
-                ["hookEventName"] = eventName,
-                ["additionalContext"] = additionalContext,
-            },
-        });
+            output["systemMessage"] = systemMessage;
+        }
+
+        output["hookSpecificOutput"] = new Dictionary<string, string>
+        {
+            ["hookEventName"] = eventName,
+            ["additionalContext"] = additionalContext,
+        };
+        return JsonSerializer.Serialize(output);
+    }
 }

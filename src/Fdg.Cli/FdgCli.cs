@@ -46,6 +46,7 @@ public static class FdgCli
                 // The Stop hook's own timeout (FDG_HOOK_TIMEOUT_SECONDS) bounds formatting and building.
                 new DotnetFormatRunner(runner, Timeout.InfiniteTimeSpan),
                 new DotnetBuildRunner(runner, Timeout.InfiniteTimeSpan),
+                new SessionContext(runner),
                 Environment.GetEnvironmentVariable);
             // Hosts write UTF-8 JSON whatever the console code page is.
             using var input = new StreamReader(Console.OpenStandardInput(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));

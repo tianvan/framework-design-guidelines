@@ -33,8 +33,6 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
         "NuGetPackageRoot",
     ];
 
-    private static readonly JsonSerializerOptions MarkerOptions = new() { PropertyNameCaseInsensitive = true };
-
     private readonly IProcessRunner _runner;
     private readonly ILanguageVersionSource _languageVersions;
 
@@ -82,7 +80,7 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
             return Unknown(csprojPath, ProjectState.NoPackage);
         }
 
-        Marker? marker = ReadMarker(Path.Combine(intermediateDirectory, "fdg"));
+        ProjectMarker? marker = ProjectMarker.ReadAll(Path.Combine(intermediateDirectory, "fdg")).FirstOrDefault();
         string? profile;
         string? packageVersion;
         int? protocol;
@@ -211,34 +209,6 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
         }
     }
 
-    private static Marker? ReadMarker(string markerDirectory)
-    {
-        if (!Directory.Exists(markerDirectory))
-        {
-            return null;
-        }
-
-        IEnumerable<string> candidates = Directory.EnumerateFiles(markerDirectory, "marker.*.json")
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .Prepend(Path.Combine(markerDirectory, "marker.json"));
-        foreach (string path in candidates)
-        {
-            try
-            {
-                Marker? marker = JsonSerializer.Deserialize<Marker>(File.ReadAllText(path), MarkerOptions);
-                if (marker is not null)
-                {
-                    return marker;
-                }
-            }
-            catch (Exception e) when (e is IOException or JsonException or UnauthorizedAccessException)
-            {
-            }
-        }
-
-        return null;
-    }
-
     private string? QueryMaxSupportedLangVersion(string csprojPath, string? targetFramework)
     {
         // Two properties, so that MSBuild answers in JSON.
@@ -284,12 +254,4 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
             result.TimedOut ? "project evaluation timed out" : "project evaluation failed",
             result.Output);
     }
-
-    private sealed record Marker(
-        int? Protocol,
-        string? PackageVersion,
-        string? Profile,
-        string? LangVersion,
-        string? TargetFramework,
-        string? RulesPath);
 }
