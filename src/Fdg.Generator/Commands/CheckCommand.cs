@@ -1,3 +1,4 @@
+using Fdg.Generator.Plugin;
 using Fdg.Generator.Rules;
 using Fdg.Generator.Sdk;
 using YamlDotNet.Core;
@@ -7,7 +8,8 @@ namespace Fdg.Generator.Commands;
 /// <summary>
 /// <c>check [--book &lt;OEBPS dir&gt;]</c>: validates every rule file against the schema and the mapping
 /// conventions, and every referenced CA/IDE diagnostic against the installed SDK. With <c>--book</c> it also
-/// runs <c>verify-source</c>.
+/// runs <c>verify-source</c>. It also checks that the plugin manifests carry the version of
+/// <c>Directory.Build.props</c> in the parent of the rules directory.
 /// </summary>
 public static class CheckCommand
 {
@@ -59,7 +61,10 @@ public static class CheckCommand
         return exitCode;
     }
 
-    /// <summary>Collects every problem in the rules directory; files that fail the schema skip the mapping checks.</summary>
+    /// <summary>
+    /// Collects every problem in the rules directory, and in the plugin manifest versions of the repository that
+    /// contains it; files that fail the schema skip the mapping checks.
+    /// </summary>
     public static IReadOnlyList<CheckError> Check(string rulesDir, IReadOnlyDictionary<string, SdkDiagnostic> catalog)
     {
         var errors = new List<CheckError>();
@@ -116,6 +121,7 @@ public static class CheckCommand
         }
 
         errors.AddRange(MappingValidator.Validate(chapters, profiles, catalog));
+        errors.AddRange(ManifestVersionValidator.Validate(Path.GetDirectoryName(Path.GetFullPath(rulesDir))!));
         return errors;
     }
 }

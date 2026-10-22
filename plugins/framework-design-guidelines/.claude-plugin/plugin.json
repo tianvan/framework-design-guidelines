@@ -1,0 +1,11 @@
+{
+  "name": "framework-design-guidelines",
+  "version": "0.1.0",
+  "description": "Keeps the C# that the AI writes in line with the Framework Design Guidelines: writing and review skills, a reviewer agent, and hooks that format and check the changed lines with dotnet fdg.",
+  "author": {
+    "name": "tianvan"
+  },
+  "repository": "https://github.com/tianvan/framework-design-guidelines",
+  "license": "MIT",
+  "keywords": ["csharp", "dotnet", "framework-design-guidelines", "api-design", "roslyn-analyzers", "code-review"]
+}

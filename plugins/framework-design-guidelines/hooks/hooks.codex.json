@@ -1,0 +1,40 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${PLUGIN_ROOT}/hooks/fdg-hook.sh\" session-start",
+            "commandWindows": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"${PLUGIN_ROOT}/hooks/fdg-hook.ps1\" session-start",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${PLUGIN_ROOT}/hooks/fdg-hook.sh\" turn-start",
+            "commandWindows": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"${PLUGIN_ROOT}/hooks/fdg-hook.ps1\" turn-start",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${PLUGIN_ROOT}/hooks/fdg-hook.sh\" turn-stop",
+            "commandWindows": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"${PLUGIN_ROOT}/hooks/fdg-hook.ps1\" turn-stop",
+            "timeout": 90
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -19,6 +19,7 @@
   <ItemGroup>
     <Content Include="fixtures\*.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\fixtures\hooks\**\*.json" LinkBase="fixtures\hooks" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\plugins\framework-design-guidelines\hooks\*" LinkBase="plugin\hooks" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

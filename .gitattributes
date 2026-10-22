@@ -1,0 +1,2 @@
+# The hook wrapper runs under bash, which rejects CRLF line endings, also on Windows checkouts.
+*.sh text eol=lf

@@ -1,0 +1,17 @@
+{
+  "name": "framework-design-guidelines",
+  "owner": {
+    "name": "tianvan"
+  },
+  "description": "The framework-design-guidelines plugin for Claude Code and Codex.",
+  "version": "0.1.0",
+  "plugins": [
+    {
+      "name": "framework-design-guidelines",
+      "source": "./plugins/framework-design-guidelines",
+      "description": "Keeps the C# that the AI writes in line with the Framework Design Guidelines.",
+      "version": "0.1.0",
+      "category": "development"
+    }
+  ]
+}
