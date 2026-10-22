@@ -34,19 +34,23 @@ public sealed record ProjectMarker(
             .Prepend(Path.Combine(markerDirectory, "marker.json"));
         foreach (string path in candidates)
         {
-            ProjectMarker? marker = null;
-            try
-            {
-                marker = JsonSerializer.Deserialize<ProjectMarker>(File.ReadAllText(path), Options);
-            }
-            catch (Exception e) when (e is IOException or JsonException or UnauthorizedAccessException)
-            {
-            }
-
-            if (marker is not null)
+            if (Read(path) is ProjectMarker marker)
             {
                 yield return marker;
             }
+        }
+    }
+
+    /// <returns><see langword="null"/> when the file is missing or unreadable.</returns>
+    public static ProjectMarker? Read(string path)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<ProjectMarker>(File.ReadAllText(path), Options);
+        }
+        catch (Exception e) when (e is IOException or JsonException or UnauthorizedAccessException)
+        {
+            return null;
         }
     }
 }

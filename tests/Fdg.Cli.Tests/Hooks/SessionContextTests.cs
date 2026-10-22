@@ -23,7 +23,7 @@ public sealed class SessionContextTests : IDisposable
         "</Project>\n";
 
     private const string DisabledLine =
-        "FDG setup issue: Not a git repository: end-of-turn checks are disabled. Run /fdg-setup to fix.";
+        "FDG setup issue: Not a git repository: end-of-turn checks are disabled.";
 
     private readonly GitTestRepo _repo = new();
 
@@ -159,6 +159,8 @@ public sealed class SessionContextTests : IDisposable
     public void Protocol_mismatch_suggests_tool_update()
     {
         Project("src/A/A.csproj", "application", protocol: 2);
+        // An older protocol is compatible: not an issue.
+        Project("src/B/B.csproj", "application", protocol: 0);
 
         Assert.Equal(
             [
@@ -182,7 +184,7 @@ public sealed class SessionContextTests : IDisposable
         string context = Build()!;
 
         Assert.Equal(
-            ["FDG setup issue: 3 legacy (non-SDK) projects are not supported and are ignored. Run /fdg-setup to fix."],
+            ["FDG setup issue: 3 legacy (non-SDK) projects are not supported and are ignored."],
             Issues(context));
         Assert.Equal(
             "- Profiles: src/** = application. C# 7.3; targets netstandard2.0. Do not use newer syntax or APIs.",
@@ -192,7 +194,7 @@ public sealed class SessionContextTests : IDisposable
         File.Delete(_repo.Path("legacy/One/One.csproj"));
         File.Delete(_repo.Path("legacy/Two/Two.csproj"));
         Assert.Equal(
-            ["FDG setup issue: 1 legacy (non-SDK) project is not supported and is ignored. Run /fdg-setup to fix."],
+            ["FDG setup issue: 1 legacy (non-SDK) project is not supported and is ignored."],
             Issues(Build()!));
     }
 
@@ -314,6 +316,107 @@ public sealed class SessionContextTests : IDisposable
             HookOutput.Context("SessionStart", "text"));
     }
 
+    [Fact]
+    public void Dotnet_that_cannot_start_adds_setup_issue_line()
+    {
+        Project("src/A/A.csproj", "application");
+
+        Assert.Equal(
+            ["FDG setup issue: dotnet --version failed here; FDG needs .NET SDK 8.0.100 or later. Run /fdg-setup to fix."],
+            Issues(new SessionContext(new UnstartableRunner()).Build(_repo.Root)!));
+    }
+
+    [Fact]
+    public void Per_framework_markers_left_from_multi_targeting_are_ignored()
+    {
+        string project = _repo.Write("src/A/A.csproj", Onboarded);
+        string directory = _repo.Tree.Directory("src/A/obj/fdg");
+        // Now single-target net8.0 without a profile; the per-framework markers are from before.
+        File.WriteAllText(Path.Combine(directory, "marker.json"), MarkerJson(project, string.Empty, "12.0", 1, "net8.0"));
+        File.WriteAllText(Path.Combine(directory, "marker.net472.json"), MarkerJson(project, "application", "7.3", 1, "net472"));
+        File.WriteAllText(Path.Combine(directory, "marker.netstandard2.0.json"), MarkerJson(project, "application", "7.3", 1, "netstandard2.0"));
+
+        string context = Build()!;
+
+        Assert.Equal("- Profiles: none set yet. C# 12.0; targets net8.0. Do not use newer syntax or APIs.", ProfilesLine(context));
+        Assert.Equal(
+            ["FDG setup issue: FrameworkDesignGuidelinesProfile is not library, application or test in src/A/A.csproj. Run /fdg-setup to fix."],
+            Issues(context));
+    }
+
+    [Fact]
+    public void Profile_comes_from_marker_json_or_else_the_first_per_framework_marker()
+    {
+        string a = _repo.Write("src/A/A.csproj", Onboarded);
+        string aMarkers = _repo.Tree.Directory("src/A/obj/fdg");
+        File.WriteAllText(Path.Combine(aMarkers, "marker.json"), MarkerJson(a, string.Empty, "7.3", 1, "net472"));
+        File.WriteAllText(Path.Combine(aMarkers, "marker.net472.json"), MarkerJson(a, string.Empty, "7.3", 1, "net472"));
+        File.WriteAllText(Path.Combine(aMarkers, "marker.netstandard2.0.json"), MarkerJson(a, "library", "7.3", 1, "netstandard2.0"));
+        string b = _repo.Write("src/B/B.csproj", Onboarded);
+        string bMarkers = _repo.Tree.Directory("src/B/obj/fdg");
+        File.WriteAllText(Path.Combine(bMarkers, "marker.net472.json"), MarkerJson(b, "test", "7.3", 1, "net472"));
+        File.WriteAllText(Path.Combine(bMarkers, "marker.netstandard2.0.json"), MarkerJson(b, "library", "7.3", 1, "netstandard2.0"));
+
+        string context = Build()!;
+
+        Assert.Equal(
+            "- Profiles: src/B/** = test. C# 7.3; targets net472, netstandard2.0. Do not use newer syntax or APIs.",
+            ProfilesLine(context));
+        Assert.Equal(
+            ["FDG setup issue: FrameworkDesignGuidelinesProfile is not library, application or test in src/A/A.csproj. Run /fdg-setup to fix."],
+            Issues(context));
+    }
+
+    [Fact]
+    public void Markers_in_the_artifacts_layout_are_found()
+    {
+        _repo.Write(
+            "Directory.Build.props",
+            "<Project><PropertyGroup><UseArtifactsOutput>true</UseArtifactsOutput></PropertyGroup>" +
+            "<ItemGroup><PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" /></ItemGroup></Project>\n");
+        string project = _repo.Write("src/中文 A/App.csproj", Plain);
+        string directory = _repo.Tree.Directory("artifacts/obj/App/fdg");
+        File.WriteAllText(Path.Combine(directory, "marker.json"), MarkerJson(project, "application", "7.3", 1, "net8.0"));
+
+        string context = Build()!;
+
+        Assert.Equal(
+            "- Profiles: src/中文 A/** = application. C# 7.3; targets net8.0. Do not use newer syntax or APIs.",
+            ProfilesLine(context));
+        Assert.Empty(Issues(context));
+    }
+
+    [Fact]
+    public async Task Only_legacy_projects_onboarded_reports_the_issue_lines_only()
+    {
+        _repo.Write("legacy/One/One.csproj", Legacy);
+        _repo.Write("src/A/A.csproj", Plain);
+        const string Line = "FDG setup issue: 1 legacy (non-SDK) project is not supported and is ignored.";
+
+        Assert.Equal(Line, Build());
+
+        var input = new HookInput(HostKind.Codex, "s", _repo.Root, "SessionStart");
+        using JsonDocument output = JsonDocument.Parse(await CreateRunner().SessionStartAsync(input, CancellationToken.None));
+        Assert.Equal(Line, output.RootElement.GetProperty("systemMessage").GetString());
+        Assert.Equal(Line, output.RootElement.GetProperty("hookSpecificOutput").GetProperty("additionalContext").GetString());
+    }
+
+    [Fact]
+    public void Non_git_directory_finds_Directory_Build_props()
+    {
+        using var tree = new TempTree();
+        tree.Write(
+            "Directory.Build.props",
+            "<Project><ItemGroup><PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" /></ItemGroup></Project>\n");
+        WriteMarker(tree.Write("Lib/Lib.csproj", Plain), "library", "7.3", 1, ["netstandard2.0"]);
+        tree.Write("Lib/notes.txt", "not a project");
+
+        string context = new SessionContext(DotnetRunner()).Build(tree.Root)!;
+
+        Assert.Equal("- Profiles: Lib/** = library. C# 7.3; targets netstandard2.0. Do not use newer syntax or APIs.", ProfilesLine(context));
+        Assert.Equal([DisabledLine], Issues(context));
+    }
+
     private string? Build() => new SessionContext(DotnetRunner()).Build(_repo.Root);
 
     private FakeProcessRunner DotnetRunner() =>
@@ -347,7 +450,20 @@ public sealed class SessionContextTests : IDisposable
     {
         string directory = Path.Combine(Path.GetDirectoryName(projectPath)!, "obj", "fdg");
         Directory.CreateDirectory(directory);
-        string Marker(string framework) => JsonSerializer.Serialize(new
+        File.WriteAllText(Path.Combine(directory, "marker.json"), MarkerJson(projectPath, profile, langVersion, protocol, frameworks[0]));
+        if (frameworks.Length > 1)
+        {
+            foreach (string framework in frameworks)
+            {
+                File.WriteAllText(
+                    Path.Combine(directory, $"marker.{framework}.json"),
+                    MarkerJson(projectPath, profile, langVersion, protocol, framework));
+            }
+        }
+    }
+
+    private static string MarkerJson(string projectPath, string profile, string langVersion, int protocol, string framework) =>
+        JsonSerializer.Serialize(new
         {
             protocol,
             packageVersion = "0.1.0",
@@ -357,15 +473,6 @@ public sealed class SessionContextTests : IDisposable
             rulesPath = "C:\\nuget\\frameworkdesignguidelines.analyzers\\0.1.0\\data\\rules.json",
             projectPath,
         });
-        File.WriteAllText(Path.Combine(directory, "marker.json"), Marker(frameworks[0]));
-        if (frameworks.Length > 1)
-        {
-            foreach (string framework in frameworks)
-            {
-                File.WriteAllText(Path.Combine(directory, $"marker.{framework}.json"), Marker(framework));
-            }
-        }
-    }
 
     private static string ProfilesLine(string? context)
     {
@@ -375,4 +482,16 @@ public sealed class SessionContextTests : IDisposable
 
     private static string[] Issues(string context) =>
         context.Split('\n').Where(l => l.StartsWith("FDG setup issue:", StringComparison.Ordinal)).ToArray();
+
+    /// <summary>Like <see cref="ProcessRunner"/> when the executable is not on PATH.</summary>
+    private sealed class UnstartableRunner : IProcessRunner
+    {
+        public Task<ToolResult> RunAsync(
+            string fileName,
+            IReadOnlyList<string> arguments,
+            string workingDirectory,
+            TimeSpan timeout,
+            CancellationToken cancellationToken) =>
+            throw new System.ComponentModel.Win32Exception(2, "An error occurred trying to start process 'dotnet'.");
+    }
 }

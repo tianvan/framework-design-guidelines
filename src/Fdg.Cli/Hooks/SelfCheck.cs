@@ -7,18 +7,19 @@ namespace Fdg.Cli.Hooks;
 /// <param name="NoProfile">Onboarded projects whose marker has no valid profile, relative to the repository root.</param>
 /// <param name="NeverBuilt">Onboarded projects without a marker.</param>
 /// <param name="NewerProtocol">Projects whose marker has a protocol newer than this CLI supports.</param>
-/// <param name="OlderProtocol">Projects whose marker has a protocol older than this CLI supports.</param>
 /// <param name="LegacyProjects">How many non-SDK projects were found, onboarded or not.</param>
 public sealed record SetupFacts(
     string? DotnetVersion,
     IReadOnlyList<string> NoProfile,
     IReadOnlyList<string> NeverBuilt,
     IReadOnlyList<string> NewerProtocol,
-    IReadOnlyList<string> OlderProtocol,
     int LegacyProjects,
     bool IsGitRepository);
 
-/// <summary>Turns <see cref="SetupFacts"/> into one <c>FDG setup issue:</c> line per problem.</summary>
+/// <summary>
+/// Turns <see cref="SetupFacts"/> into one <c>FDG setup issue:</c> line per problem. Lines for what /fdg-setup cannot
+/// change (legacy projects, no git repository) do not point to it.
+/// </summary>
 public static class SelfCheck
 {
     public const string IssuePrefix = "FDG setup issue: ";
@@ -64,23 +65,16 @@ public static class SelfCheck
                 $"{Names(facts.NewerProtocol)}. Update it with: dotnet tool update -g dotnet-fdg");
         }
 
-        if (facts.OlderProtocol.Count > 0)
-        {
-            issues.Add(IssuePrefix +
-                $"FDG package protocol older than this dotnet-fdg supports ({FixCommand.SupportedProtocol}): " +
-                $"{Names(facts.OlderProtocol)}. Update FrameworkDesignGuidelines.Analyzers." + RunSetup);
-        }
-
         if (facts.LegacyProjects > 0)
         {
             issues.Add(IssuePrefix + (facts.LegacyProjects == 1
                 ? "1 legacy (non-SDK) project is not supported and is ignored."
-                : $"{facts.LegacyProjects} legacy (non-SDK) projects are not supported and are ignored.") + RunSetup);
+                : $"{facts.LegacyProjects} legacy (non-SDK) projects are not supported and are ignored."));
         }
 
         if (!facts.IsGitRepository)
         {
-            issues.Add(IssuePrefix + "Not a git repository: end-of-turn checks are disabled." + RunSetup);
+            issues.Add(IssuePrefix + "Not a git repository: end-of-turn checks are disabled.");
         }
 
         return issues;

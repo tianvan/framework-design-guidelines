@@ -40,19 +40,19 @@ public sealed class HookRunner
     /// SessionStart: adds the FDG context and the self-check's setup issues to the AI's context, and shows the issues
     /// to the user. Outside a git repository the session's directory stands in for the repository root.
     /// </summary>
-    public async Task<string> SessionStartAsync(HookInput input, CancellationToken cancellationToken)
+    public Task<string> SessionStartAsync(HookInput input, CancellationToken cancellationToken)
     {
-        GitRepository? git = await GitRepository.OpenAsync(input.Cwd, cancellationToken).ConfigureAwait(false);
-        SessionReport? report = _session.Inspect(git?.TopLevel ?? input.Cwd);
+        // Inspect finds the repository root itself.
+        SessionReport? report = _session.Inspect(input.Cwd);
         if (report is null)
         {
-            return HookOutput.None;
+            return Task.FromResult(HookOutput.None);
         }
 
-        return HookOutput.Context(
+        return Task.FromResult(HookOutput.Context(
             input.EventName,
             report.Text,
-            report.Issues.Count == 0 ? null : string.Join("\n", report.Issues));
+            report.Issues.Count == 0 ? null : string.Join("\n", report.Issues)));
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Text;
 using Fdg.Cli.Commands;
 using Fdg.Cli.Projects;
@@ -5,15 +6,19 @@ using Fdg.Cli.Tooling;
 
 namespace Fdg.Cli.Hooks;
 
-/// <summary>What SessionStart tells the AI: the context lines, then one line per setup issue.</summary>
+/// <summary>
+/// What SessionStart tells the AI: the context lines, then one line per setup issue. The context is empty when only
+/// legacy projects use the analyzers.
+/// </summary>
 public sealed record SessionReport(string Context, IReadOnlyList<string> Issues)
 {
-    public string Text => Issues.Count == 0 ? Context : Context + "\n" + string.Join("\n", Issues);
+    public string Text => string.Join("\n", Issues.Prepend(Context).Where(l => l.Length > 0));
 }
 
 /// <summary>
 /// The SessionStart context (design §5.5) and self-check. Facts come from the files only: project files, the
-/// Directory.Build.props above them and the analyzer package's <c>obj/fdg/marker*.json</c>; MSBuild is never run.
+/// Directory.Build.props above them and the analyzer package's <c>fdg/marker*.json</c> in the intermediate
+/// directory; MSBuild is never run.
 /// </summary>
 public sealed class SessionContext
 {
@@ -31,11 +36,13 @@ public sealed class SessionContext
         "- Before designing or changing types, members, or public APIs, use the fdg-write skill; use fdg-review to review " +
         "an API.";
 
+    private const string BuildProps = "Directory.Build.props";
+
     private static readonly TimeSpan VersionTimeout = TimeSpan.FromSeconds(30);
 
     private static readonly string[] Profiles = ["library", "application", "test"];
 
-    private static readonly string[] Pathspecs = [":(glob,icase)**/*.csproj", ":(glob,icase)**/Directory.Build.props"];
+    private static readonly string[] Pathspecs = [":(glob,icase)**/*.csproj", ":(glob,icase)**/" + BuildProps];
 
     private readonly IProcessRunner _runner;
 
@@ -45,7 +52,9 @@ public sealed class SessionContext
         _runner = runner;
     }
 
-    /// <param name="repoRoot">The git top level; outside git, the session's directory.</param>
+    /// <param name="repoRoot">
+    /// A directory in the repository, whose git top level is used; outside git, the session's directory.
+    /// </param>
     /// <returns>The text to add to the AI's context, or <see langword="null"/> when no project uses the analyzers.</returns>
     public string? Build(string repoRoot) => Inspect(repoRoot)?.Text;
 
@@ -64,28 +73,34 @@ public sealed class SessionContext
             : git.ListFilesAsync(Pathspecs, CancellationToken.None).GetAwaiter().GetResult();
 
         List<Project> projects = Discover(root, files);
-        var onboarded = projects.Where(p => p.SdkStyle && p.Onboarded).ToList();
-        if (onboarded.Count == 0)
+        if (!projects.Any(p => p.Onboarded))
         {
             return null;
+        }
+
+        // Parsed only now: most sessions are in repositories that do not use the analyzers.
+        foreach (Project project in projects)
+        {
+            project.SdkStyle = IsSdkStyle(Path.Combine(root, project.RelativePath));
         }
 
         var noProfile = new List<string>();
         var neverBuilt = new List<string>();
         var newerProtocol = new List<string>();
-        var olderProtocol = new List<string>();
         var langVersions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var onboarded = projects.Where(p => p.SdkStyle && p.Onboarded).ToList();
         foreach (Project project in onboarded)
         {
-            ProjectMarker[] markers = OwnMarkers(root, project.RelativePath);
-            if (markers.Length == 0)
+            IReadOnlyList<ProjectMarker> markers = CurrentMarkers(root, project);
+            if (markers.Count == 0)
             {
                 neverBuilt.Add(project.RelativePath);
                 continue;
             }
 
-            string? profile = markers.Select(m => m.Profile?.Trim().ToLowerInvariant()).FirstOrDefault(p => !string.IsNullOrEmpty(p));
+            // marker.json comes first and holds the profile; a per-framework one stands in only without it.
+            string? profile = markers[0].Profile?.Trim().ToLowerInvariant();
             if (profile is not null && Profiles.Contains(profile))
             {
                 project.Profile = profile;
@@ -98,10 +113,6 @@ public sealed class SessionContext
             if (markers.Any(m => m.Protocol > FixCommand.SupportedProtocol))
             {
                 newerProtocol.Add(project.RelativePath);
-            }
-            else if (markers.Any(m => m.Protocol < FixCommand.SupportedProtocol))
-            {
-                olderProtocol.Add(project.RelativePath);
             }
 
             foreach (ProjectMarker marker in markers)
@@ -119,32 +130,81 @@ public sealed class SessionContext
         }
 
         var context = new StringBuilder();
-        context.Append(Header).Append('\n');
-        context.Append(ProfilesLine(projects, langVersions, frameworks)).Append('\n');
-        context.Append(StyleLine).Append('\n');
-        context.Append(AutofixLine).Append('\n');
-        context.Append(SkillsLine);
+        if (onboarded.Count > 0)
+        {
+            context.Append(Header).Append('\n');
+            context.Append(ProfilesLine(projects, langVersions, frameworks)).Append('\n');
+            context.Append(StyleLine).Append('\n');
+            context.Append(AutofixLine).Append('\n');
+            context.Append(SkillsLine);
+        }
+
         var facts = new SetupFacts(
             DotnetVersion(root),
             noProfile,
             neverBuilt,
             newerProtocol,
-            olderProtocol,
             projects.Count(p => !p.SdkStyle),
             git is not null);
         return new SessionReport(context.ToString(), SelfCheck.Issues(facts));
     }
 
-    /// <summary>The project's markers; one written by another project in the same directory is not its own.</summary>
-    private static ProjectMarker[] OwnMarkers(string root, string relativePath)
+    /// <summary>
+    /// The project's markers, <c>marker.json</c> first, from <c>obj/fdg/</c> or else the artifacts layout
+    /// (<c>UseArtifactsOutput</c>: <c>&lt;Directory.Build.props directory&gt;/artifacts/obj/&lt;project name&gt;/fdg/</c>).
+    /// </summary>
+    private static IReadOnlyList<ProjectMarker> CurrentMarkers(string root, Project project)
     {
-        string projectDirectory = Path.GetDirectoryName(Path.Combine(root, relativePath))!;
+        string fullPath = Path.Combine(root, project.RelativePath);
+        string name = Path.GetFileNameWithoutExtension(fullPath);
+        IEnumerable<string> artifactRoots = new[] { project.BuildPropsDirectory, string.Empty }
+            .OfType<string>()
+            .Distinct(ProjectFiles.PathComparer)
+            .Select(d => Path.Combine(root, d, "artifacts", "obj", name));
+        foreach (string directory in artifactRoots.Prepend(Path.Combine(Path.GetDirectoryName(fullPath)!, "obj")))
+        {
+            IReadOnlyList<ProjectMarker> markers = CurrentMarkers(Path.Combine(directory, "fdg"), Path.GetFileName(fullPath));
+            if (markers.Count > 0)
+            {
+                return markers;
+            }
+        }
+
+        return [];
+    }
+
+    /// <summary>
+    /// The package writes markers but never deletes them. A project that targets one framework now, whose
+    /// <c>marker.json</c> framework has no <c>marker.&lt;tfm&gt;.json</c>, keeps only <c>marker.json</c>; the others are
+    /// left over from when it targeted several. A marker written by another project in the same directory is skipped.
+    /// </summary>
+    private static IReadOnlyList<ProjectMarker> CurrentMarkers(string markerDirectory, string projectFileName)
+    {
+        if (!Directory.Exists(markerDirectory))
+        {
+            return [];
+        }
+
         // By file name, so markers stay valid when the repository moves.
-        string fileName = Path.GetFileName(relativePath);
-        return ProjectMarker.ReadAll(Path.Combine(projectDirectory, "obj", "fdg"))
-            .Where(m => string.IsNullOrEmpty(m.ProjectPath) ||
-                ProjectFiles.PathComparer.Equals(Path.GetFileName(m.ProjectPath.Replace('\\', '/')), fileName))
+        bool Own(ProjectMarker marker) =>
+            string.IsNullOrEmpty(marker.ProjectPath) ||
+            ProjectFiles.PathComparer.Equals(Path.GetFileName(marker.ProjectPath.Replace('\\', '/')), projectFileName);
+
+        ProjectMarker? main = ProjectMarker.Read(Path.Combine(markerDirectory, "marker.json")) is { } read && Own(read) ? read : null;
+        ProjectMarker[] perFramework = Directory.EnumerateFiles(markerDirectory, "marker.*.json")
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .Select(ProjectMarker.Read)
+            .OfType<ProjectMarker>()
+            .Where(Own)
             .ToArray();
+        if (main is null)
+        {
+            return perFramework;
+        }
+
+        bool multiTargeting = perFramework.Any(m =>
+            string.Equals(m.TargetFramework?.Trim(), main.TargetFramework?.Trim(), StringComparison.OrdinalIgnoreCase));
+        return multiTargeting ? [main, .. perFramework] : [main];
     }
 
     /// <summary>
@@ -160,12 +220,13 @@ public sealed class SessionContext
             IgnoreInaccessible = true,
             AttributesToSkip = FileAttributes.ReparsePoint,
         };
-        return Directory.EnumerateFiles(root, "*", options)
-            .Where(f => IsProjectFile(f) || IsBuildProps(f))
+        return Directory.EnumerateFiles(root, "*.csproj", options)
+            .Concat(Directory.EnumerateFiles(root, BuildProps, options))
             .Select(f => Path.GetRelativePath(root, f).Replace('\\', '/'))
             .ToArray();
     }
 
+    /// <summary>The projects and whether they use the analyzers; whether they are SDK-style is left for later.</summary>
     /// <param name="files">Paths relative to <paramref name="root"/>, with forward slashes.</param>
     private static List<Project> Discover(string root, IReadOnlyList<string> files)
     {
@@ -190,8 +251,9 @@ public sealed class SessionContext
                 continue;
             }
 
-            bool onboarded = MentionsPackage(fullPath) || Ancestors(relativePath).Any(d => buildProps.GetValueOrDefault(d));
-            projects.Add(new Project(relativePath, IsSdkStyle(fullPath), onboarded));
+            string[] ancestors = Ancestors(relativePath).ToArray();
+            bool onboarded = MentionsPackage(fullPath) || ancestors.Any(d => buildProps.GetValueOrDefault(d));
+            projects.Add(new Project(relativePath, onboarded, ancestors.FirstOrDefault(buildProps.ContainsKey)));
         }
 
         return projects;
@@ -295,8 +357,7 @@ public sealed class SessionContext
 
     private static bool IsProjectFile(string path) => path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase);
 
-    private static bool IsBuildProps(string path) =>
-        Path.GetFileName(path).Equals("Directory.Build.props", StringComparison.OrdinalIgnoreCase);
+    private static bool IsBuildProps(string path) => Path.GetFileName(path).Equals(BuildProps, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// A PackageReference in the project or a Directory.Build.props. Directory.Packages.props only pins versions, so
@@ -339,23 +400,37 @@ public sealed class SessionContext
     }
 
     /// <summary>Runs in the repository, so its global.json selects the SDK.</summary>
+    /// <returns><see langword="null"/> when it fails or <c>dotnet</c> cannot be started.</returns>
     private string? DotnetVersion(string root)
     {
-        ToolResult result = _runner
-            .RunAsync("dotnet", ["--version"], root, VersionTimeout, CancellationToken.None)
-            .GetAwaiter()
-            .GetResult();
+        ToolResult result;
+        try
+        {
+            result = _runner
+                .RunAsync("dotnet", ["--version"], root, VersionTimeout, CancellationToken.None)
+                .GetAwaiter()
+                .GetResult();
+        }
+        catch (Win32Exception)
+        {
+            return null;
+        }
+
         return result.Succeeded ? result.FirstLines(1).FirstOrDefault()?.Trim() : null;
     }
 
-    private sealed class Project(string relativePath, bool sdkStyle, bool onboarded)
+    private sealed class Project(string relativePath, bool onboarded, string? buildPropsDirectory)
     {
         /// <summary>Relative to the root, with forward slashes.</summary>
         public string RelativePath { get; } = relativePath;
 
-        public bool SdkStyle { get; } = sdkStyle;
-
         public bool Onboarded { get; } = onboarded;
+
+        /// <summary>The nearest directory at or above the project's with a Directory.Build.props, if any.</summary>
+        public string? BuildPropsDirectory { get; } = buildPropsDirectory;
+
+        /// <summary>Set once some project is onboarded.</summary>
+        public bool SdkStyle { get; set; }
 
         /// <summary>A valid profile from the project's marker, or <see langword="null"/>.</summary>
         public string? Profile { get; set; }
