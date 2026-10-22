@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    dotnet-fdg: the .NET tool behind `dotnet fdg fix` and the plugin hooks. It targets net8.0 and rolls forward to
+    any newer runtime, so it runs wherever a supported SDK is installed.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RollForward>Major</RollForward>
+    <AssemblyName>dotnet-fdg</AssemblyName>
+    <RootNamespace>Fdg.Cli</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dotnet-fdg</ToolCommandName>
+    <PackageId>dotnet-fdg</PackageId>
+    <Description>Applies the Framework Design Guidelines analyzers' automatic fixes to C# projects: dotnet fdg fix.</Description>
+    <PackageTags>analyzers;dotnet-format;framework-design-guidelines;coding-style</PackageTags>
+    <Authors>tianvan</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/tianvan/framework-design-guidelines</PackageProjectUrl>
+  </PropertyGroup>
+
+  <!-- Fallback manifest for projects whose package copy of rules.json cannot be read. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\FrameworkDesignGuidelines.Package\data\rules.json" Link="Rules\rules.json" LogicalName="Fdg.Cli.Rules.rules.json" />
+  </ItemGroup>
+
+</Project>

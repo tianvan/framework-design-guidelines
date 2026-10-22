@@ -89,6 +89,10 @@ public sealed class SampleWorkspace : IDisposable
     public DotnetResult Dotnet(params string[] arguments) =>
         IntegrationTests.Dotnet.Run(DirectoryPath, _fixture.PackagesDirectory, arguments);
 
+    /// <summary>Runs the installed <c>dotnet-fdg</c> tool in the workspace directory.</summary>
+    public DotnetResult Fdg(params string[] arguments) =>
+        IntegrationTests.Dotnet.RunProgram(_fixture.FdgToolPath, DirectoryPath, _fixture.PackagesDirectory, arguments);
+
     /// <summary>Builds without the compiler server, so no process keeps the package's analyzers locked.</summary>
     public DotnetResult Build(string projectPath, params string[] extraArguments) =>
         Dotnet(["build", projectPath, "-tl:off", "-nodeReuse:false", "-p:UseSharedCompilation=false", .. extraArguments]);

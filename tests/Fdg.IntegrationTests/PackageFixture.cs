@@ -10,6 +10,8 @@ public sealed class PackageFixture : IDisposable
 {
     public const string PackageId = "FrameworkDesignGuidelines.Analyzers";
 
+    private readonly Lazy<string> _fdgTool;
+
     public PackageFixture()
     {
         RepositoryRoot = FindRepositoryRoot();
@@ -20,6 +22,7 @@ public sealed class PackageFixture : IDisposable
         PackagesDirectory = Path.Combine(Root, "packages");
         Directory.CreateDirectory(FeedDirectory);
         Directory.CreateDirectory(PackagesDirectory);
+        _fdgTool = new Lazy<string>(InstallFdgTool);
 
         try
         {
@@ -49,6 +52,12 @@ public sealed class PackageFixture : IDisposable
     public string RestoredPackageDirectory =>
         Path.Combine(PackagesDirectory, PackageId.ToLowerInvariant(), Version.ToLowerInvariant());
 
+    /// <summary>
+    /// The dotnet-fdg executable, packed as a tool with this run's version and installed into a tool path under
+    /// <see cref="Root"/> on first use.
+    /// </summary>
+    public string FdgToolPath => _fdgTool.Value;
+
     public void Dispose()
     {
         TempDirectory.Delete(Root);
@@ -77,6 +86,50 @@ public sealed class PackageFixture : IDisposable
         return File.Exists(path)
             ? path
             : throw new InvalidOperationException($"dotnet pack did not produce {path}:\n{pack.Output}");
+    }
+
+    private string InstallFdgTool()
+    {
+        string toolFeed = Path.Combine(Root, "tool-feed");
+        string toolDirectory = Path.Combine(Root, "tools");
+        DotnetResult pack = Dotnet.Run(
+            RepositoryRoot,
+            packagesDirectory: null,
+            "pack",
+            Path.Combine(RepositoryRoot, "src", "Fdg.Cli"),
+            "-c",
+            "Release",
+            "-o",
+            toolFeed,
+            "-p:Version=" + Version,
+            "-tl:off",
+            "-nodeReuse:false");
+        if (pack.ExitCode != 0)
+        {
+            throw new InvalidOperationException("dotnet pack of dotnet-fdg failed:\n" + pack.Output);
+        }
+
+        DotnetResult install = Dotnet.Run(
+            Root,
+            PackagesDirectory,
+            "tool",
+            "install",
+            "dotnet-fdg",
+            "--tool-path",
+            toolDirectory,
+            "--version",
+            Version,
+            "--add-source",
+            toolFeed);
+        if (install.ExitCode != 0)
+        {
+            throw new InvalidOperationException("dotnet tool install of dotnet-fdg failed:\n" + install.Output);
+        }
+
+        string executable = Path.Combine(toolDirectory, OperatingSystem.IsWindows() ? "dotnet-fdg.exe" : "dotnet-fdg");
+        return File.Exists(executable)
+            ? executable
+            : throw new InvalidOperationException($"{executable} was not installed:\n{install.Output}");
     }
 
     private static string FindRepositoryRoot()

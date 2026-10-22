@@ -12,9 +12,17 @@ public static class Dotnet
     private static readonly TimeSpan Timeout = TimeSpan.FromMinutes(5);
 
     /// <param name="packagesDirectory">NuGet packages folder for the child, or <see langword="null"/> to keep the user's.</param>
-    public static DotnetResult Run(string workingDirectory, string? packagesDirectory, params string[] arguments)
+    public static DotnetResult Run(string workingDirectory, string? packagesDirectory, params string[] arguments) =>
+        RunProgram("dotnet", workingDirectory, packagesDirectory, arguments);
+
+    /// <summary>Runs another executable, such as an installed tool, in the same clean environment.</summary>
+    public static DotnetResult RunProgram(
+        string fileName,
+        string workingDirectory,
+        string? packagesDirectory,
+        params string[] arguments)
     {
-        var startInfo = new ProcessStartInfo("dotnet")
+        var startInfo = new ProcessStartInfo(fileName)
         {
             WorkingDirectory = workingDirectory,
             RedirectStandardOutput = true,
@@ -59,7 +67,7 @@ public static class Dotnet
         if (!process.WaitForExit(Timeout))
         {
             process.Kill(entireProcessTree: true);
-            throw new TimeoutException($"dotnet {string.Join(' ', arguments)} did not finish in {Timeout}.\n{output}");
+            throw new TimeoutException($"{fileName} {string.Join(' ', arguments)} did not finish in {Timeout}.\n{output}");
         }
 
         process.WaitForExit();
