@@ -7,7 +7,7 @@ on:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -43,21 +43,21 @@ jobs:
       - name: Build
         run: dotnet build -c Release
 
-      # Includes the Integration tests, which pack the package and the CLI into temporary feeds.
-      - name: Test
-        run: dotnet test -c Release --no-build --logger trx --results-directory TestResults
-
       # The generated files are committed. Regenerating them must not change anything.
       - name: Generated files are up to date
         run: |
           dotnet run -c Release --no-build --project src/Fdg.Generator -- generate
           git diff --exit-code
-          untracked="$(git status --porcelain)"
-          if [ -n "$untracked" ]; then
-            echo "::error::Generation produced files that are not committed:"
-            echo "$untracked"
+          dirty="$(git status --porcelain)"
+          if [ -n "$dirty" ]; then
+            echo "::error::Generation left uncommitted changes:"
+            echo "$dirty"
             exit 1
           fi
+
+      # Includes the Integration tests, which pack the package and the CLI into temporary feeds.
+      - name: Test
+        run: dotnet test -c Release --no-build --logger trx --results-directory TestResults
 
       # There is no book in CI, so this validates the rule mappings against the installed SDK only.
       - name: Check rule mappings
