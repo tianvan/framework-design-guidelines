@@ -15,8 +15,12 @@ the `dotnet-fdg` .NET tool that the hooks run. Both are needed.
 dotnet tool install -g dotnet-fdg
 ```
 
+Restart Claude Code or Codex after the first install: a host started before it does not have the global tools
+directory (`~/.dotnet/tools`) on its PATH. The hooks also look there, but the skills run `dotnet fdg`, which needs it on the PATH.
+
 Update it with `dotnet tool update -g dotnet-fdg`. Without the tool, every hook shows
-`FDG: dotnet-fdg is not installed. Run: dotnet tool install -g dotnet-fdg`.
+`FDG: dotnet-fdg is not installed. Run: dotnet tool install -g dotnet-fdg`; when it is installed but does not
+start, they show `FDG: dotnet-fdg failed to start: ...` with the first line of its error.
 
 ## 2. Install the plugin
 
@@ -46,7 +50,8 @@ them; until then the old approval does not apply and the hooks do nothing.
 In the repository, run the setup skill:
 
 - Claude Code: `/framework-design-guidelines:fdg-setup` (or `/fdg-setup` when no other command has that name)
-- Codex: `$fdg-setup`
+- Codex: the skill is `framework-design-guidelines:fdg-setup`; `$fdg-setup` should work when no other skill has
+  that name (to be confirmed in the pilot)
 
 It adds the `FrameworkDesignGuidelines.Analyzers` package, gives each project a profile (`library`, `application`
 or `test`) and builds once. It changes only working-tree files; review them with `git diff` and commit them yourself.
@@ -61,5 +66,7 @@ or `test`) and builds once. It changes only working-tree files; review them with
   file, so it is formatted and checked as new code.
 - **An explicit `ArtifactsPath` or a custom `BaseIntermediateOutputPath`**: SessionStart looks for the build marker
   in the project's `obj/fdg/`, so it reports such a project as never built.
+- **A `global.json` that pins an SDK that is not installed** breaks the checks: the builds that Stop and setup run
+  fail before any analyzer runs. Install that SDK or relax the pin (`rollForward`).
 - **Stop time grows with the number of projects touched** in the turn, since each is built in turn; the Stop check
   gives up after 60 seconds (`FDG_HOOK_TIMEOUT_SECONDS`).

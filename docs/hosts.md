@@ -105,7 +105,7 @@ One plugin directory, `plugins/framework-design-guidelines/`, serves both hosts:
 | `hooks/hooks.codex.json` | Codex only, through the `hooks` field of `.codex-plugin/plugin.json` |
 | `hooks/fdg-hook.sh` | Claude Code on every OS, Codex on macOS and Linux |
 | `hooks/fdg-hook.ps1` | Codex on Windows |
-| `.claude-plugin/marketplace.json` (repository root) | the marketplace commands of both hosts |
+| `.claude-plugin/marketplace.json` (repository root) | the marketplace commands of both hosts (Codex: see "Codex plugin install" below) |
 
 ### Why Codex gets its own hooks file
 
@@ -141,11 +141,20 @@ unsigned script. It needs PowerShell 7 (`pwsh`) on the PATH.
 
 ### The wrappers
 
-Both wrappers print `{"systemMessage":"FDG: dotnet-fdg is not installed. Run: dotnet tool install -g dotnet-fdg"}`
-and exit 0 when `dotnet` is not on the PATH or `dotnet fdg --version` fails. Otherwise they run
-`dotnet fdg hook <event>` with the hook payload as its stdin, byte for byte, and return its exit code; dotnet's
-stdout reaches the host unchanged. `fdg-hook.sh` `exec`s dotnet. `fdg-hook.ps1` cannot pipe the payload through
-PowerShell, which would re-encode it and append a line break, so it copies the raw stdin stream to the child.
+Both wrappers run the tool's own executable, `dotnet-fdg`, not `dotnet fdg`: the `dotnet` muxer first resolves an
+SDK from the `global.json` of the current directory, so `dotnet fdg` fails where that file pins an SDK that is not
+installed (measured by the Task 10 review: exit 155), and it costs about 0.3 s against 0.07 s per call. They look
+for `dotnet-fdg` on the PATH, then in `~/.dotnet/tools` (`%USERPROFILE%\.dotnet\tools` on Windows), which covers a
+host whose PATH predates the first `dotnet tool install -g`.
+
+- Neither found: they print
+  `{"systemMessage":"FDG: dotnet-fdg is not installed. Run: dotnet tool install -g dotnet-fdg"}` and exit 0.
+- Found, but `dotnet-fdg --version` fails: they print
+  `{"systemMessage":"FDG: dotnet-fdg failed to start: <first line of its stderr>"}` and exit 0.
+- Otherwise they run `dotnet-fdg hook <event>` with the hook payload as its stdin, byte for byte, and return its
+  exit code; its stdout reaches the host unchanged. `fdg-hook.sh` `exec`s the tool. `fdg-hook.ps1` cannot pipe the
+  payload through PowerShell, which would re-encode it and append a line break, so it copies the raw stdin stream
+  to the child.
 
 `.gitattributes` keeps `*.sh` at LF line endings: with `core.autocrlf=true`, the Git for Windows default, a CRLF
 checkout fails in bash with `command not found` on `$'\r'`, and Claude Code installs marketplace plugins with git.
@@ -201,13 +210,27 @@ written out: `-c` hooks are not plugin hooks, so `${PLUGIN_ROOT}` is not substit
 - In both runs the model expanded the catch clause itself, following the context and the skill, so a Codex Stop
   auto-fix was not observed: the Stop's `ai/` and `formatted/` copies were equal.
 
+### Codex plugin install (Task 10 review)
+
+The Task 10 review installed the plugin into an isolated `CODEX_HOME` under %TEMP% (deleted afterwards; `~/.codex`
+untouched), with Codex CLI 0.163.0:
+
+- `codex plugin marketplace add <repository>` worked, and `codex plugin marketplace list` and `codex plugin list`
+  showed that Codex read the repository's `.claude-plugin/marketplace.json`.
+- `codex plugin add framework-design-guidelines@framework-design-guidelines` installed the plugin to
+  `plugins/cache/.../0.1.0` under `CODEX_HOME`; `codex plugin list` reported it `installed, enabled 0.1.0`.
+- The `skills` path of `.codex-plugin/plugin.json` works: `codex debug prompt-input` listed the skills as
+  `framework-design-guidelines:fdg-fix`, `...:fdg-review`, `...:fdg-setup` and `...:fdg-write`.
+
 ## Still to confirm (pilot, Task 12)
 
-- **Codex plugin install**: `codex plugin marketplace add` and `codex plugin add`, then approving the hooks in
-  `/hooks`. Not done here, because it writes `~/.codex/config.toml` and the hook trust state. Until then the
-  `${PLUGIN_ROOT}` substitution in `hooks.codex.json`, the `skills` and `hooks` paths of `.codex-plugin/plugin.json`
-  and the skill mention form are known from the source only. By the source, plugin skills are qualified as
-  `framework-design-guidelines:fdg-fix` (`codex-rs/ext/skills/src/loader/namespace.rs`) and mentioned with `$`.
+- **Codex hooks from the plugin**: that Codex loads `hooks.codex.json` through the `hooks` field of
+  `.codex-plugin/plugin.json`, and that it substitutes `${PLUGIN_ROOT}` in those commands. Both are known from the
+  source only, since `-c` hooks are not plugin hooks.
+- **Codex `/hooks` approval** of the plugin's hooks, after install and after an update that changes them. Not done
+  here, because it writes the user's hook trust state.
+- **Codex skill mention form**: whether `$fdg-setup` resolves, or only the qualified
+  `framework-design-guidelines:fdg-setup`.
 - **Claude marketplace install**: `claude plugin marketplace add` and `claude plugin install`, deferred because
   they change the user's settings; `--plugin-dir` loaded the same directory.
 - **Codex and compaction**: whether SessionStart runs with `source: "compact"` after a Codex compaction. The schema

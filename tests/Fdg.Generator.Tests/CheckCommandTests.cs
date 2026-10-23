@@ -447,6 +447,19 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
     }
 
     [Fact]
+    public void Check_command_accepts_rules_directory_with_trailing_separator()
+    {
+        // Shell completion writes `--rules rules/`; the repository root must still be the rules directory's parent.
+        Assert.True(RulesDirectory.TryResolve(_rulesDir + "/", out string resolved, out _));
+        Assert.Equal(_rulesDir, resolved);
+
+        var result = Run("check", "--rules", _rulesDir + "/", "--sdk", _sdk.Directory);
+
+        Assert.Equal(string.Empty, result.Error);
+        Assert.Equal(0, result.ExitCode);
+    }
+
+    [Fact]
     public void Catalog_loads_netanalyzers_and_codestyle_from_installed_sdk()
     {
         IReadOnlyDictionary<string, SdkDiagnostic> catalog = _sdk.Catalog;

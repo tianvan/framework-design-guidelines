@@ -121,7 +121,7 @@ public static class CheckCommand
         }
 
         errors.AddRange(MappingValidator.Validate(chapters, profiles, catalog));
-        errors.AddRange(ManifestVersionValidator.Validate(Path.GetDirectoryName(Path.GetFullPath(rulesDir))!));
+        errors.AddRange(ManifestVersionValidator.Validate(Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(Path.GetFullPath(rulesDir)))!));
         return errors;
     }
 }

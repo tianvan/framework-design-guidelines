@@ -6,12 +6,19 @@ namespace Fdg.Cli.Tests;
 
 /// <summary>
 /// Runs the plugin's hook wrappers (<c>hooks/fdg-hook.sh</c> and <c>hooks/fdg-hook.ps1</c>) with a restricted
-/// <c>PATH</c> and a fake <c>dotnet</c>, from a plugin root whose path contains a space and CJK characters.
+/// <c>PATH</c>, a temporary home directory and a fake <c>dotnet-fdg</c>, from a plugin root whose path contains a
+/// space and CJK characters.
 /// </summary>
 public sealed class HookShellTests : IDisposable
 {
     private const string InstallHint =
         "{\"systemMessage\":\"FDG: dotnet-fdg is not installed. Run: dotnet tool install -g dotnet-fdg\"}";
+
+    // What the fake tool writes to stderr when --version fails: quotes, backslashes and a tab need JSON escaping.
+    private const string VersionError = "A \"quoted\" C:\\sdk\\6.0.999 path\twith a tab";
+
+    // Where `dotnet tool install -g` puts the tool, under the home directory the wrappers are given.
+    private static readonly string DotnetToolsDir = Path.Combine("home", ".dotnet", "tools");
 
     private static readonly string HooksDir = Path.Combine(AppContext.BaseDirectory, "plugin", "hooks");
 
@@ -33,20 +40,23 @@ public sealed class HookShellTests : IDisposable
     }
 
     [BashFact]
-    public void Failing_version_check_prints_install_hint()
+    public void Tool_that_fails_to_start_reports_its_first_error_line()
     {
-        AssertInstallHint(RunBash(WriteFakeDotnet(versionExitCode: 1, forPwsh: false)));
+        AssertFailedToStart(RunBash(WriteFakeTool("fake-tool", versionExitCode: 155, forPwsh: false)));
     }
 
     [BashFact]
     public void Stdin_is_forwarded_to_dotnet_fdg()
     {
-        string fakeDir = WriteFakeDotnet(versionExitCode: 0, forPwsh: false);
+        AssertForwarded(RunBash(BashPath(WriteFakeTool("fake-tool", versionExitCode: 0, forPwsh: false))));
+    }
 
-        // The fake's cat comes from bash's own directory (Git for Windows' usr/bin, or /usr/bin).
-        var result = RunBash(fakeDir + Path.PathSeparator + Path.GetDirectoryName(Shells.Bash));
+    [BashFact]
+    public void Tool_in_dotnet_tools_is_used_when_path_is_stale()
+    {
+        WriteFakeTool(DotnetToolsDir, versionExitCode: 0, forPwsh: false);
 
-        AssertForwarded(result);
+        AssertForwarded(RunBash(BashPath(_tree.Directory("empty-path"))));
     }
 
     [PwshFact]
@@ -56,20 +66,23 @@ public sealed class HookShellTests : IDisposable
     }
 
     [PwshFact]
-    public void Pwsh_failing_version_check_prints_install_hint()
+    public void Pwsh_tool_that_fails_to_start_reports_its_first_error_line()
     {
-        AssertInstallHint(RunPwsh(WriteFakeDotnet(versionExitCode: 1, forPwsh: true)));
+        AssertFailedToStart(RunPwsh(WriteFakeTool("fake-tool", versionExitCode: 155, forPwsh: true)));
     }
 
     [PwshFact]
     public void Pwsh_stdin_is_forwarded_to_dotnet_fdg()
     {
-        string fakeDir = WriteFakeDotnet(versionExitCode: 0, forPwsh: true);
-        string path = OperatingSystem.IsWindows()
-            ? fakeDir
-            : fakeDir + Path.PathSeparator + Path.GetDirectoryName(Shells.Bash);
+        AssertForwarded(RunPwsh(PwshPath(WriteFakeTool("fake-tool", versionExitCode: 0, forPwsh: true))));
+    }
 
-        AssertForwarded(RunPwsh(path));
+    [PwshFact]
+    public void Pwsh_tool_in_dotnet_tools_is_used_when_path_is_stale()
+    {
+        WriteFakeTool(DotnetToolsDir, versionExitCode: 0, forPwsh: true);
+
+        AssertForwarded(RunPwsh(PwshPath(_tree.Directory("empty-path"))));
     }
 
     [Fact]
@@ -135,12 +148,33 @@ public sealed class HookShellTests : IDisposable
         Assert.Equal(InstallHint, Encoding.UTF8.GetString(result.Output).TrimEnd('\r', '\n'));
     }
 
+    private static void AssertFailedToStart((int ExitCode, byte[] Output, string Error) result)
+    {
+        Assert.Equal(0, result.ExitCode);
+        string output = Encoding.UTF8.GetString(result.Output).TrimEnd('\r', '\n');
+        Assert.DoesNotContain('\n', output);
+        JsonObject json = JsonNode.Parse(output)!.AsObject();
+        Assert.Equal(new[] { "systemMessage" }, json.Select(p => p.Key));
+        Assert.Equal("FDG: dotnet-fdg failed to start: " + VersionError, json["systemMessage"]!.GetValue<string>());
+    }
+
     private static void AssertForwarded((int ExitCode, byte[] Output, string Error) result)
     {
-        // The fake prints its arguments, then echoes stdin, and exits 1 like `dotnet fdg hook` on a bad payload.
-        byte[] expected = Encoding.UTF8.GetBytes("fdg hook session-start\n").Concat(Payload).ToArray();
+        // The fake prints its arguments, then echoes stdin, and exits 1 like `dotnet-fdg hook` on a bad payload.
+        byte[] expected = Encoding.UTF8.GetBytes("hook session-start\n").Concat(Payload).ToArray();
         Assert.True(expected.SequenceEqual(result.Output), $"Output was: {Encoding.UTF8.GetString(result.Output)}\n{result.Error}");
         Assert.Equal(1, result.ExitCode);
+    }
+
+    // The fake's cat comes from bash's own directory (Git for Windows' usr/bin, or /usr/bin).
+    private static string BashPath(string directory)
+    {
+        return directory + Path.PathSeparator + Path.GetDirectoryName(Shells.Bash);
+    }
+
+    private static string PwshPath(string directory)
+    {
+        return OperatingSystem.IsWindows() ? directory : BashPath(directory);
     }
 
     private (int ExitCode, byte[] Output, string Error) RunBash(string path)
@@ -163,50 +197,61 @@ public sealed class HookShellTests : IDisposable
     }
 
     /// <summary>
-    /// Writes a fake <c>dotnet</c> that answers <c>fdg --version</c> with <paramref name="versionExitCode"/>; for
-    /// anything else it prints its arguments, echoes stdin byte for byte and exits 1. Returns its directory.
+    /// Writes a fake <c>dotnet-fdg</c> into <paramref name="relativeDir"/>. On <c>--version</c> it prints a version
+    /// and exits 0, or prints <see cref="VersionError"/> and a second line to stderr and exits
+    /// <paramref name="versionExitCode"/>; for anything else it prints its arguments, echoes stdin byte for byte and
+    /// exits 1. Returns its directory.
     /// </summary>
-    private string WriteFakeDotnet(int versionExitCode, bool forPwsh)
+    private string WriteFakeTool(string relativeDir, int versionExitCode, bool forPwsh)
     {
+        string dir = _tree.Directory(relativeDir);
         if (forPwsh && OperatingSystem.IsWindows())
         {
             // PowerShell only runs PATHEXT commands on Windows: a batch file hands over to an echo script. cmd.exe
             // reads batch files in the OEM code page, so the CJK path is only reached through %~dp0.
             _tree.Write(
-                Path.Combine("fake-dotnet", "echo.ps1"),
+                Path.Combine(relativeDir, "echo.ps1"),
                 "$out = [Console]::OpenStandardOutput()\n" +
                 "$header = [Text.Encoding]::UTF8.GetBytes(($args -join ' ') + \"`n\")\n" +
                 "$out.Write($header, 0, $header.Length)\n" +
                 "[Console]::OpenStandardInput().CopyTo($out)\n" +
                 "$out.Flush()\n" +
                 "exit 1\n");
+            string failure = versionExitCode == 0
+                ? "echo 0.1.0\r\n"
+                : $">&2 echo {VersionError}\r\n>&2 echo second line\r\n";
             _tree.Write(
-                Path.Combine("fake-dotnet", "dotnet.cmd"),
+                Path.Combine(relativeDir, "dotnet-fdg.cmd"),
                 "@echo off\r\n" +
-                $"if \"%~1 %~2\"==\"fdg --version\" exit /b {versionExitCode}\r\n" +
+                "if not \"%~1\"==\"--version\" goto run\r\n" +
+                failure +
+                $"exit /b {versionExitCode}\r\n" +
+                ":run\r\n" +
                 $"\"{Shells.Pwsh}\" -NoProfile -ExecutionPolicy Bypass -File \"%~dp0echo.ps1\" %*\r\n");
-            return _tree.Path("fake-dotnet");
+            return dir;
         }
 
-        string dir = _tree.Directory("fake-dotnet");
+        string version = versionExitCode == 0
+            ? "printf '0.1.0\\n'"
+            : $"printf '%s\\n' '{VersionError}' 'second line' >&2";
         _tree.Write(
-            Path.Combine("fake-dotnet", "dotnet"),
+            Path.Combine(relativeDir, "dotnet-fdg"),
             "#!/bin/sh\n" +
-            $"if [ \"$1 $2\" = \"fdg --version\" ]; then exit {versionExitCode}; fi\n" +
+            $"if [ \"$1\" = \"--version\" ]; then {version}; exit {versionExitCode}; fi\n" +
             "printf '%s\\n' \"$*\"\n" +
             "cat\n" +
             "exit 1\n");
         if (!OperatingSystem.IsWindows())
         {
             File.SetUnixFileMode(
-                Path.Combine(dir, "dotnet"),
+                Path.Combine(dir, "dotnet-fdg"),
                 UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         }
 
         return dir;
     }
 
-    private static (int ExitCode, byte[] Output, string Error) Run(string fileName, IEnumerable<string> arguments, string path)
+    private (int ExitCode, byte[] Output, string Error) Run(string fileName, IEnumerable<string> arguments, string path)
     {
         var startInfo = new ProcessStartInfo(fileName)
         {
@@ -221,6 +266,8 @@ public sealed class HookShellTests : IDisposable
         }
 
         startInfo.Environment["PATH"] = path;
+        startInfo.Environment["HOME"] = _tree.Directory("home");
+        startInfo.Environment["USERPROFILE"] = _tree.Directory("home");
 
         using Process process = Process.Start(startInfo)!;
         Task<string> error = process.StandardError.ReadToEndAsync();

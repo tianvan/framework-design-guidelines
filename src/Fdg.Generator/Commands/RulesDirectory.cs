@@ -11,7 +11,8 @@ public static class RulesDirectory
         error = string.Empty;
         if (explicitPath is not null)
         {
-            rulesDir = Path.GetFullPath(explicitPath);
+            // Drops the trailing separator of `--rules rules/`, so that the parent is the repository root.
+            rulesDir = Path.TrimEndingDirectorySeparator(Path.GetFullPath(explicitPath));
             if (!File.Exists(Path.Combine(rulesDir, "meta.yaml")))
             {
                 error = $"{Path.Combine(rulesDir, "meta.yaml")} was not found.";
