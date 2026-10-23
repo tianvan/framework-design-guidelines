@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Fdg.Cli.Projects;
 
 namespace Fdg.Cli.Hooks;
 
@@ -40,6 +41,38 @@ public sealed class StateStore
 
         string sanitized = builder.Length > 100 ? builder.ToString(0, 100) : builder.ToString();
         return sanitized.Length == 0 ? "unknown" : sanitized;
+    }
+
+    /// <summary>
+    /// Deletes the state directories of other sessions last changed before <paramref name="cutoffUtc"/>. Every turn
+    /// rewrites a session's <c>snapshot.json</c>, which changes its directory. The current session's state is kept.
+    /// </summary>
+    public static void DeleteOtherSessions(GitRepository git, string currentSessionId, DateTime cutoffUtc)
+    {
+        string root = Path.Combine(git.GitDirectory, "fdg");
+        if (!System.IO.Directory.Exists(root))
+        {
+            return;
+        }
+
+        string current = SanitizeSessionId(currentSessionId);
+        foreach (string directory in System.IO.Directory.EnumerateDirectories(root))
+        {
+            if (ProjectFiles.PathComparer.Equals(Path.GetFileName(directory), current) ||
+                System.IO.Directory.GetLastWriteTimeUtc(directory) >= cutoffUtc)
+            {
+                continue;
+            }
+
+            try
+            {
+                System.IO.Directory.Delete(directory, recursive: true);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                // In use; the next session tries again.
+            }
+        }
     }
 
     /// <summary>The file's content at the start of the turn.</summary>

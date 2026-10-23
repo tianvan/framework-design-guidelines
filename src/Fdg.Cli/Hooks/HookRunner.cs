@@ -16,6 +16,8 @@ public sealed class HookRunner
 {
     private static readonly TimeSpan CleanupGrace = TimeSpan.FromSeconds(2);
 
+    private static readonly TimeSpan StaleSessionAge = TimeSpan.FromDays(7);
+
     private readonly IProjectInfoProvider _projects;
     private readonly IFormatRunner _formatter;
     private readonly IBuildRunner _builder;
@@ -38,31 +40,38 @@ public sealed class HookRunner
 
     /// <summary>
     /// SessionStart: adds the FDG context and the self-check's setup issues to the AI's context, and shows the issues
-    /// to the user. Outside a git repository the session's directory stands in for the repository root.
+    /// to the user. Outside a git repository the session's directory stands in for the repository root. In an
+    /// onboarded repository, also removes the state other sessions left more than <see cref="StaleSessionAge"/> ago.
     /// </summary>
-    public Task<string> SessionStartAsync(HookInput input, CancellationToken cancellationToken)
+    public async Task<string> SessionStartAsync(HookInput input, CancellationToken cancellationToken)
     {
         // Inspect finds the repository root itself.
         SessionReport? report = _session.Inspect(input.Cwd);
         if (report is null)
         {
-            return Task.FromResult(HookOutput.None);
+            return HookOutput.None;
         }
 
-        return Task.FromResult(HookOutput.Context(
+        if (await GitRepository.OpenAsync(input.Cwd, cancellationToken).ConfigureAwait(false) is GitRepository git)
+        {
+            StateStore.DeleteOtherSessions(git, input.SessionId, DateTime.UtcNow - StaleSessionAge);
+        }
+
+        return HookOutput.Context(
             input.EventName,
             report.Text,
-            report.Issues.Count == 0 ? null : string.Join("\n", report.Issues)));
+            report.Issues.Count == 0 ? null : string.Join("\n", report.Issues));
     }
 
     /// <summary>
     /// UserPromptSubmit: snapshots the working tree and resets the block count. On Codex, which does not notice
-    /// files changed behind its back, also tells the AI what the last Stop hook reformatted.
+    /// files changed behind its back, also tells the AI what the last Stop hook reformatted. Does nothing in a
+    /// repository without onboarded projects.
     /// </summary>
     public async Task<string> TurnStartAsync(HookInput input, CancellationToken cancellationToken)
     {
         GitRepository? git = await GitRepository.OpenAsync(input.Cwd, cancellationToken).ConfigureAwait(false);
-        if (git is null)
+        if (git is null || !await Onboarding.IsRepositoryOnboardedAsync(git, cancellationToken).ConfigureAwait(false))
         {
             return HookOutput.None;
         }
@@ -76,11 +85,14 @@ public sealed class HookRunner
             : HookOutput.None;
     }
 
-    /// <summary>Stop: formats, builds and reports the turn's changes (design §5.4), within the configured timeout.</summary>
+    /// <summary>
+    /// Stop: formats, builds and reports the turn's changes (design §5.4), within the configured timeout. Does
+    /// nothing in a repository without onboarded projects.
+    /// </summary>
     public async Task<string> TurnStopAsync(HookInput input, CancellationToken cancellationToken)
     {
         GitRepository? git = await GitRepository.OpenAsync(input.Cwd, cancellationToken).ConfigureAwait(false);
-        if (git is null)
+        if (git is null || !await Onboarding.IsRepositoryOnboardedAsync(git, cancellationToken).ConfigureAwait(false))
         {
             return HookOutput.None;
         }

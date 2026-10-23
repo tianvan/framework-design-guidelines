@@ -11,6 +11,9 @@ public sealed class TurnStartSummaryTests : IDisposable
 
     public TurnStartSummaryTests()
     {
+        _repo.Write(
+            "src/App.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\"><ItemGroup><PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" /></ItemGroup></Project>\n");
         _repo.Write("src/A.cs", "class A { }\n");
         _repo.Write("src/B.cs", "class B { }\n");
         _repo.CommitAll();

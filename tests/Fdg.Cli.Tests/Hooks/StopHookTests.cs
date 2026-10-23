@@ -30,7 +30,7 @@ public sealed class StopHookTests : IDisposable
 
     public StopHookTests()
     {
-        _project = _repo.Write("src/中文 App/App.csproj", Project);
+        _project = _repo.Write("src/中文 App/App.csproj", OnboardedProject);
         _projects.Add(_project, ProjectState.InScope);
         _repo.Write("src/中文 App/Order.cs", Lines(10));
         _repo.CommitAll();
@@ -462,7 +462,7 @@ public sealed class StopHookTests : IDisposable
     [Fact]
     public async Task Projects_are_built_one_at_a_time()
     {
-        string lib = _repo.Write("src/Lib/Lib.csproj", Project);
+        string lib = _repo.Write("src/Lib/Lib.csproj", OnboardedProject);
         _projects.Add(lib, ProjectState.InScope);
         _repo.CommitAll();
         await TurnStartAsync();
@@ -587,6 +587,52 @@ public sealed class StopHookTests : IDisposable
         Assert.Empty(_formatter.Calls);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData(Project)]
+    public async Task Turn_hooks_do_nothing_in_a_repository_without_onboarded_projects(string? projectXml)
+    {
+        using var repo = new GitTestRepo();
+        repo.Write("README.md", "Uses FrameworkDesignGuidelines.Analyzers? Not yet.\n");
+        if (projectXml is not null)
+        {
+            _projects.Add(repo.Write("App/App.csproj", projectXml), ProjectState.InScope);
+            repo.Write("App/A.cs", "class A { }\n");
+        }
+
+        repo.CommitAll();
+        repo.Write("App/A.cs", "class A { int x; }\n");
+        HookRunner runner = CreateRunner();
+        var input = new HookInput(HostKind.Claude, Session, repo.Root, "UserPromptSubmit");
+
+        Assert.Equal(string.Empty, await runner.TurnStartAsync(input, CancellationToken.None));
+        repo.Write("App/A.cs", "class A { int y; }\n");
+        // Turn-start took no snapshot, and Stop does not say so.
+        Assert.Equal(string.Empty, await runner.TurnStopAsync(input with { EventName = "Stop" }, CancellationToken.None));
+        Assert.False(Directory.Exists(repo.Path(".git/fdg")));
+        Assert.Empty(_formatter.Calls);
+        Assert.Empty(_builder.Calls);
+    }
+
+    [Fact]
+    public async Task Session_start_removes_state_of_sessions_older_than_7_days_but_never_the_current_one()
+    {
+        string fdg = _repo.Path(".git/fdg");
+        string old = Directory.CreateDirectory(Path.Combine(fdg, "old-session")).FullName;
+        File.WriteAllText(Path.Combine(old, "snapshot.json"), "{}");
+        string recent = Directory.CreateDirectory(Path.Combine(fdg, "recent-session")).FullName;
+        string current = Directory.CreateDirectory(Path.Combine(fdg, StateStore.SanitizeSessionId(Session))).FullName;
+        Directory.SetLastWriteTimeUtc(old, DateTime.UtcNow.AddDays(-8));
+        Directory.SetLastWriteTimeUtc(recent, DateTime.UtcNow.AddDays(-6));
+        Directory.SetLastWriteTimeUtc(current, DateTime.UtcNow.AddDays(-30));
+
+        await CreateRunner().SessionStartAsync(new HookInput(HostKind.Claude, Session, _repo.Root, "SessionStart"), CancellationToken.None);
+
+        Assert.False(Directory.Exists(old));
+        Assert.True(Directory.Exists(recent));
+        Assert.True(Directory.Exists(current));
+    }
+
     [Fact]
     public async Task Session_start_outside_git_says_checks_are_disabled_for_onboarded_projects_only()
     {
@@ -599,8 +645,8 @@ public sealed class StopHookTests : IDisposable
         Assert.Contains(
             "FDG setup issue: " + ChecksDisabled,
             Json(await CreateRunner().SessionStartAsync(input, CancellationToken.None), "systemMessage"));
-        Assert.Equal(
-            string.Empty,
+        Assert.DoesNotContain(
+            ChecksDisabled,
             await CreateRunner().SessionStartAsync(input with { Cwd = _repo.Root }, CancellationToken.None));
     }
 
