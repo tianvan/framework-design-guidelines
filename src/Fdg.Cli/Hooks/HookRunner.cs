@@ -105,6 +105,12 @@ public sealed partial class HookRunner
         TurnSnapshot? snapshot = state.ReadSnapshot();
         if (snapshot is null)
         {
+            // No state at all: the repository was not onboarded when the turn started, as in the turn that set it up.
+            if (!Directory.Exists(state.Directory))
+            {
+                return HookOutput.None;
+            }
+
             return HookOutput.SystemMessage("FDG: no snapshot from the start of this turn; the Stop check was skipped.");
         }
 

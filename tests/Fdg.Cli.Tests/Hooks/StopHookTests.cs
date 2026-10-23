@@ -877,6 +877,9 @@ public sealed class StopHookTests : IDisposable
     [Fact]
     public async Task Missing_snapshot_reports_one_line()
     {
+        // As when the host ends turn-start between removing the old snapshot and writing the new one.
+        await TurnStartAsync();
+        File.Delete(Path.Combine((await StateAsync()).Directory, "snapshot.json"));
         _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
 
         string output = await TurnStopAsync();
@@ -884,6 +887,16 @@ public sealed class StopHookTests : IDisposable
         Assert.Equal(
             "FDG: no snapshot from the start of this turn; the Stop check was skipped.",
             Json(output, "systemMessage")!);
+    }
+
+    [Fact]
+    public async Task Stop_of_a_session_without_state_says_nothing()
+    {
+        // The turn that ran /fdg-setup: the repository was not onboarded when the turn started.
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+
+        Assert.Equal(string.Empty, await TurnStopAsync());
+        Assert.Empty(_formatter.Calls);
     }
 
     [Fact]
