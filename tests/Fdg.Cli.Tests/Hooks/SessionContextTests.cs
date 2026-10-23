@@ -59,7 +59,7 @@ public sealed class SessionContextTests : IDisposable
         Assert.Equal(
             "This repository follows Framework Design Guidelines (3rd ed.).\n" +
             "- Profiles: src/** = application, tests/** = test. C# 7.3; targets net472, netstandard2.0. Do not use newer syntax or APIs.\n" +
-            "- Write in .NET BCL style: Allman braces, one statement per line, long parameter/argument lists chopped before the first item, one per line.\n" +
+            "- Write in .NET BCL style: Allman braces, one statement per line, parameter/argument lists that exceed the line limit chopped before the first item, one per line.\n" +
             "- Layout and machine-checkable rules are auto-fixed and checked at the end of each turn; only fix the FDG/CA/IDE issues reported to you.\n" +
             "- Before designing or changing types, members, or public APIs, use the fdg-write skill; use fdg-review to review an API.",
             Build());
@@ -362,6 +362,17 @@ public sealed class SessionContextTests : IDisposable
         Assert.Equal(
             """{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"text"}}""",
             HookOutput.Context("SessionStart", "text"));
+    }
+
+    [Fact]
+    public void Dotnet_version_gives_up_well_within_the_hosts_15_second_session_start_timeout()
+    {
+        Project("src/A/A.csproj", "application");
+        FakeProcessRunner runner = DotnetRunner();
+
+        new SessionContext(runner).Build(_repo.Root);
+
+        Assert.Equal([TimeSpan.FromSeconds(5)], runner.Timeouts);
     }
 
     [Fact]

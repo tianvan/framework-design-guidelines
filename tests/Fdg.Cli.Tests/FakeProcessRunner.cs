@@ -10,6 +10,9 @@ public sealed class FakeProcessRunner : IProcessRunner
 
     public List<IReadOnlyList<string>> Calls { get; } = [];
 
+    /// <summary>The timeout of each call, in the order of <see cref="Calls"/>.</summary>
+    public List<TimeSpan> Timeouts { get; } = [];
+
     public FakeProcessRunner Respond(Func<IReadOnlyList<string>, bool> match, ToolResult result)
     {
         _responses.Add((match, result));
@@ -31,6 +34,7 @@ public sealed class FakeProcessRunner : IProcessRunner
         CancellationToken cancellationToken)
     {
         Calls.Add(arguments);
+        Timeouts.Add(timeout);
         foreach ((Func<IReadOnlyList<string>, bool> match, ToolResult result) in _responses)
         {
             if (match(arguments))

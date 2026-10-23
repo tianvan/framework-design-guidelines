@@ -25,8 +25,8 @@ public sealed class SessionContext
     private const string Header = "This repository follows Framework Design Guidelines (3rd ed.).";
 
     private const string StyleLine =
-        "- Write in .NET BCL style: Allman braces, one statement per line, long parameter/argument lists chopped before " +
-        "the first item, one per line.";
+        "- Write in .NET BCL style: Allman braces, one statement per line, parameter/argument lists that exceed the line " +
+        "limit chopped before the first item, one per line.";
 
     private const string AutofixLine =
         "- Layout and machine-checkable rules are auto-fixed and checked at the end of each turn; only fix the FDG/CA/IDE " +
@@ -38,7 +38,8 @@ public sealed class SessionContext
 
     private const string BuildProps = "Directory.Build.props";
 
-    private static readonly TimeSpan VersionTimeout = TimeSpan.FromSeconds(30);
+    // Well within the hosts' 15-second SessionStart timeout, which would drop the whole context.
+    private static readonly TimeSpan VersionTimeout = TimeSpan.FromSeconds(5);
 
     private static readonly string[] Profiles = ["library", "application", "test"];
 
