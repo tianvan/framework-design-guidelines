@@ -10,7 +10,8 @@ namespace Fdg.Cli.Hooks;
 /// A project is onboarded when a <c>PackageReference</c> or <c>GlobalPackageReference</c> whose <c>Include</c> or
 /// <c>Update</c> is the package id appears in the project file, or in the nearest <c>Directory.Build.props</c>,
 /// <c>Directory.Build.targets</c> or <c>Directory.Packages.props</c> at or above it, or in a file one of those imports
-/// explicitly (<c>GetPathOfFileAbove</c> or a relative path). Comments never count. When the project has an
+/// explicitly (<c>GetPathOfFileAbove</c> or a relative path, possibly through a property set in the importing file).
+/// Comments never count. When the project has an
 /// <c>obj/project.assets.json</c>, it decides whether such a reference took effect. A package brought in only by
 /// other imports is not seen.
 /// </summary>
@@ -23,7 +24,13 @@ public sealed partial class Onboarding
     private readonly string _root;
     private readonly Dictionary<string, FileFacts> _files = new(ProjectFiles.PathComparer);
 
-    /// <param name="root">The repository root; files above it are not read.</param>
+    // Per directory and file name (combined as a path), the nearest such file at or above it.
+    private readonly Dictionary<string, string?> _nearest = new(ProjectFiles.PathComparer);
+
+    /// <param name="root">
+    /// The repository root, where the search for the nearest <c>Directory.Build.props</c> and the like stops. An
+    /// import's <c>GetPathOfFileAbove</c> that starts above the root searches up to the drive root, as MSBuild does.
+    /// </param>
     public Onboarding(string root)
     {
         _root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
@@ -82,12 +89,21 @@ public sealed partial class Onboarding
     /// <summary>The nearest file named <paramref name="name"/> at or above <paramref name="directory"/>, up to the root.</summary>
     private string? FindAbove(string directory, string name)
     {
+        var searched = new List<string>();
+        string? found = null;
         for (DirectoryInfo? current = new(directory); current is not null; current = current.Parent)
         {
             string candidate = Path.Combine(current.FullName, name);
+            if (_nearest.TryGetValue(candidate, out found))
+            {
+                break;
+            }
+
+            searched.Add(candidate);
             if (File.Exists(candidate))
             {
-                return candidate;
+                found = candidate;
+                break;
             }
 
             if (ProjectFiles.PathComparer.Equals(Path.TrimEndingDirectorySeparator(current.FullName), _root))
@@ -96,7 +112,12 @@ public sealed partial class Onboarding
             }
         }
 
-        return null;
+        foreach (string candidate in searched)
+        {
+            _nearest[candidate] = found;
+        }
+
+        return found;
     }
 
     private FileFacts Facts(string file, bool followImports)
@@ -137,30 +158,47 @@ public sealed partial class Onboarding
             .OfType<string>()
             .SelectMany(v => v.Split(';', StringSplitOptions.TrimEntries))
             .Any(v => v.Equals(ProjectInfoProvider.PackageId, StringComparison.OrdinalIgnoreCase));
-        string[] imports = followImports
-            ? document.Descendants()
+        string[] imports = [];
+        if (followImports)
+        {
+            // The last value each property gets in the file, whatever its condition.
+            var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (XElement property in document.Descendants().Where(e => e.Parent?.Name.LocalName == "PropertyGroup"))
+            {
+                properties[property.Name.LocalName] = property.Value.Trim();
+            }
+
+            imports = document.Descendants()
                 .Where(e => e.Name.LocalName == "Import" && e.Attribute("Sdk") is null)
-                .Select(e => ResolveImport(e.Attribute("Project")?.Value, Path.GetDirectoryName(file)!))
+                .Select(e => ResolveImport(e.Attribute("Project")?.Value, file, properties))
                 .OfType<string>()
-                .ToArray()
-            : [];
+                .ToArray();
+        }
+
         return new FileFacts(references, imports);
     }
 
     /// <summary>
     /// <c>$([MSBuild]::GetPathOfFileAbove('name', '$(MSBuildThisFileDirectory)../'))</c> or a path relative to the
-    /// importing file; anything else that needs MSBuild to evaluate gives <see langword="null"/>.
+    /// importing file, either of them possibly in a property the file sets: one level of <c>$(Name)</c> is
+    /// substituted, and <c>$(MSBuildThisFile)</c> and <c>$(MSBuildThisFileDirectory)</c>. Anything else that needs
+    /// MSBuild to evaluate gives <see langword="null"/>.
     /// </summary>
-    private string? ResolveImport(string? project, string directory)
+    private string? ResolveImport(string? project, string file, IReadOnlyDictionary<string, string> properties)
     {
         if (string.IsNullOrWhiteSpace(project))
         {
             return null;
         }
 
+        string directory = Path.GetDirectoryName(file)!;
         // A placeholder, since the directory itself may hold quotes, commas or parentheses.
         const string ThisDirectory = "\u0001";
-        string value = project.Trim().Replace("$(MSBuildThisFileDirectory)", ThisDirectory + "/", StringComparison.OrdinalIgnoreCase);
+        string value = Property().Replace(
+                project.Trim(),
+                m => properties.TryGetValue(m.Groups["name"].Value, out string? v) ? v : m.Value)
+            .Replace("$(MSBuildThisFileDirectory)", ThisDirectory + "/", StringComparison.OrdinalIgnoreCase)
+            .Replace("$(MSBuildThisFile)", Path.GetFileName(file), StringComparison.OrdinalIgnoreCase);
         Match above = GetPathOfFileAbove().Match(value);
         if (above.Success)
         {
@@ -193,6 +231,9 @@ public sealed partial class Onboarding
             return null;
         }
     }
+
+    [GeneratedRegex(@"\$\((?<name>[A-Za-z_][A-Za-z0-9_.-]*)\)")]
+    private static partial Regex Property();
 
     [GeneratedRegex(@"^\$\(\[MSBuild\]::GetPathOfFileAbove\(\s*'?(?<name>[^',)]+)'?\s*(?:,\s*'?(?<start>[^')]*)'?\s*)?\)\)$", RegexOptions.IgnoreCase)]
     private static partial Regex GetPathOfFileAbove();

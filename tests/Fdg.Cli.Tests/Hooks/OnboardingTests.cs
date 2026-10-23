@@ -60,6 +60,7 @@ public sealed class OnboardingTests : IDisposable
     [InlineData("$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))")]
     [InlineData("..\\Directory.Build.props")]
     [InlineData("$(MSBuildThisFileDirectory)../Directory.Build.props")]
+    [InlineData("$([MSBuild]::GetPathOfFileAbove('$(MSBuildThisFile)', '$(MSBuildThisFileDirectory)../'))")]
     public void Child_Directory_Build_props_that_imports_its_parent_follows_it(string import)
     {
         _tree.Write("Directory.Build.props", Reference);
@@ -67,6 +68,45 @@ public sealed class OnboardingTests : IDisposable
         string tool = _tree.Write("tools/T/T.csproj", Plain);
 
         Assert.True(IsOnboarded(tool));
+    }
+
+    [Fact]
+    public void Import_through_a_property_of_the_same_file_follows_it_as_fdg_setup_writes_it()
+    {
+        _tree.Write("Directory.Build.props", Reference);
+        // The import fdg-setup's template writes into a new Directory.Build.props.
+        _tree.Write(
+            "tools/Directory.Build.props",
+            """
+            <Project>
+              <PropertyGroup>
+                <ParentDirectoryBuildProps>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))</ParentDirectoryBuildProps>
+              </PropertyGroup>
+              <Import Project="$(ParentDirectoryBuildProps)" Condition="'$(ParentDirectoryBuildProps)' != ''" />
+
+              <PropertyGroup>
+                <FrameworkDesignGuidelinesProfile>application</FrameworkDesignGuidelinesProfile>
+              </PropertyGroup>
+            </Project>
+            """);
+        string tool = _tree.Write("tools/T/T.csproj", Plain);
+
+        Assert.True(IsOnboarded(tool));
+    }
+
+    [Fact]
+    public void Property_is_substituted_one_level_only()
+    {
+        _tree.Write("Directory.Build.props", Reference);
+        _tree.Write(
+            "tools/Directory.Build.props",
+            "<Project>\n" +
+            "  <PropertyGroup><Inner>../Directory.Build.props</Inner><Outer>$(Inner)</Outer></PropertyGroup>\n" +
+            "  <Import Project=\"$(Outer)\" />\n" +
+            "</Project>\n");
+        string tool = _tree.Write("tools/T/T.csproj", Plain);
+
+        Assert.False(IsOnboarded(tool));
     }
 
     [Fact]
