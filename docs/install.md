@@ -60,8 +60,9 @@ or `test`) and builds once. It changes only working-tree files; review them with
 
 - **Two AI sessions in one repository at the same time** see each other's edits as their own, so a Stop can format
   or report lines the other session wrote.
-- **The AI committing in the middle of a turn**: Stop still formats and checks the files afterwards, so the commit
-  holds the unformatted code and the fixes are left uncommitted in the working tree.
+- **The AI committing in the middle of a turn**: Stop still formats and checks the files changed in those commits,
+  against their content at the start of the turn. The commit holds the unformatted code, and the fixes are left
+  uncommitted in the working tree.
 - **Extracting a class into a new file while the source file stays** reports the moved code as changed in the new
   file, so it is formatted and checked as new code.
 - **An explicit `ArtifactsPath` or a custom `BaseIntermediateOutputPath`**: SessionStart looks for the build marker

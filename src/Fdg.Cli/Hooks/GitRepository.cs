@@ -5,7 +5,7 @@ using System.Text;
 namespace Fdg.Cli.Hooks;
 
 /// <summary>
-/// Read-only git access for the hooks: <c>rev-parse</c>, <c>status</c>, <c>cat-file</c> and <c>diff --no-index</c>.
+/// Read-only git access for the hooks: <c>rev-parse</c>, <c>status</c>, <c>ls-files</c>, <c>cat-file</c> and <c>diff</c>.
 /// Nothing here touches the index, HEAD or the working tree. Output is read as raw bytes, so line endings and
 /// NUL separators arrive intact.
 /// </summary>
@@ -104,6 +104,22 @@ public sealed class GitRepository
 
         // An unmerged file is listed once per stage.
         return result.Text.Split('\0', StringSplitOptions.RemoveEmptyEntries).Distinct(StringComparer.Ordinal).ToArray();
+    }
+
+    /// <summary>The files that differ between two commits (<c>git diff --name-only --no-renames -z</c>).</summary>
+    /// <returns>Paths relative to <see cref="TopLevel"/>, with forward slashes.</returns>
+    public async Task<IReadOnlyList<string>> DiffNamesAsync(string fromCommit, string toCommit, CancellationToken cancellationToken)
+    {
+        GitResult result = await RunAsync(
+            TopLevel,
+            ["diff", "--name-only", "--no-renames", "--no-ext-diff", "-z", fromCommit, toCommit, "--"],
+            cancellationToken).ConfigureAwait(false);
+        if (result.ExitCode != 0)
+        {
+            throw new InvalidOperationException("git diff failed: " + result.Error.Trim());
+        }
+
+        return result.Text.Split('\0', StringSplitOptions.RemoveEmptyEntries);
     }
 
     /// <summary>

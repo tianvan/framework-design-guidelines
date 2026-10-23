@@ -50,7 +50,8 @@ public static class Snapshot
     /// <summary>
     /// From one <c>git status</c>: the candidate files whose content differs from the start of the turn, and the
     /// candidate paths gone from the working tree (deleted, or moved away, since HEAD or since the turn started),
-    /// each in ordinal order.
+    /// each in ordinal order. When HEAD moved during the turn, as when the AI commits, the files changed between
+    /// the turn's HEAD and the current one count as well; their baseline stays the start of the turn.
     /// </summary>
     public static async Task<TurnChanges> FindChangesAsync(
         GitRepository git,
@@ -58,8 +59,17 @@ public static class Snapshot
         CancellationToken cancellationToken)
     {
         IReadOnlyList<GitStatusEntry> entries = await git.StatusAsync(cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<string> committed = [];
+        if (snapshot.Head is not null &&
+            await git.HeadAsync(cancellationToken).ConfigureAwait(false) is string head &&
+            head != snapshot.Head)
+        {
+            committed = await git.DiffNamesAsync(snapshot.Head, head, cancellationToken).ConfigureAwait(false);
+        }
+
+        IReadOnlyList<string> paths = entries.Select(e => e.Path).Concat(committed).ToArray();
         var changed = new List<string>();
-        foreach (string path in Candidates(git, entries))
+        foreach (string path in Candidates(git, paths))
         {
             if (!snapshot.DirtyFiles.TryGetValue(path, out string? hash) ||
                 hash != Hash(await File.ReadAllBytesAsync(FullPath(git, path), cancellationToken).ConfigureAwait(false)))
@@ -68,8 +78,7 @@ public static class Snapshot
             }
         }
 
-        string[] deleted = entries
-            .Select(e => e.Path)
+        string[] deleted = paths
             .Concat(snapshot.DirtyFiles.Keys)
             .Where(IsCandidatePath)
             .Where(p => !File.Exists(FullPath(git, p)))
@@ -147,11 +156,10 @@ public static class Snapshot
     }
 
     private static async Task<IReadOnlyList<string>> CandidatesAsync(GitRepository git, CancellationToken cancellationToken) =>
-        Candidates(git, await git.StatusAsync(cancellationToken).ConfigureAwait(false));
+        Candidates(git, (await git.StatusAsync(cancellationToken).ConfigureAwait(false)).Select(e => e.Path));
 
-    private static IReadOnlyList<string> Candidates(GitRepository git, IReadOnlyList<GitStatusEntry> entries) =>
-        entries
-            .Select(e => e.Path)
+    private static IReadOnlyList<string> Candidates(GitRepository git, IEnumerable<string> paths) =>
+        paths
             .Where(IsCandidatePath)
             .Where(p => File.Exists(FullPath(git, p)))
             .Where(p => ProjectFiles.FindOwningProjects(Path.GetDirectoryName(FullPath(git, p))!).Count > 0)

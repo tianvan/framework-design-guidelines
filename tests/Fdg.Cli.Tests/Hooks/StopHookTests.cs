@@ -156,6 +156,24 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Files_committed_during_the_turn_are_still_formatted_and_reported()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int Bad_Name;")));
+        _repo.CommitAll("the AI commits");
+        _builder.Sarif = _ => [
+            new SarifResult("CA1707", "warning", "Remove the underscores", order, 4),
+            new SarifResult("CA1707", "warning", "On a line the AI did not change", order, 7),
+        ];
+
+        string reason = Json(await TurnStopAsync(), "reason")!;
+
+        Assert.StartsWith("FDG found 1 issue(s)", reason);
+        Assert.Contains("src/中文 App/Order.cs:4 CA1707", reason);
+        Assert.Equal(["Order.cs"], Assert.Single(_formatter.Calls).IncludeFiles);
+    }
+
+    [Fact]
     public async Task Compile_errors_in_changed_files_are_reported_on_any_line()
     {
         string other = _repo.Write("src/中文 App/Other.cs", Lines(5));
