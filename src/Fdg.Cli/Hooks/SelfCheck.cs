@@ -1,4 +1,5 @@
 using Fdg.Cli.Commands;
+using Fdg.Cli.Projects;
 
 namespace Fdg.Cli.Hooks;
 
@@ -7,18 +8,18 @@ namespace Fdg.Cli.Hooks;
 /// <param name="NoProfile">Onboarded projects whose marker has no valid profile, relative to the repository root.</param>
 /// <param name="NeverBuilt">Onboarded projects without a marker.</param>
 /// <param name="NewerProtocol">Projects whose marker has a protocol newer than this CLI supports.</param>
-/// <param name="LegacyProjects">How many non-SDK projects were found, onboarded or not.</param>
+/// <param name="LegacyOnboarded">Non-SDK projects that reference the package; other non-SDK projects are no issue.</param>
 public sealed record SetupFacts(
     string? DotnetVersion,
     IReadOnlyList<string> NoProfile,
     IReadOnlyList<string> NeverBuilt,
     IReadOnlyList<string> NewerProtocol,
-    int LegacyProjects,
+    IReadOnlyList<string> LegacyOnboarded,
     bool IsGitRepository);
 
 /// <summary>
-/// Turns <see cref="SetupFacts"/> into one <c>FDG setup issue:</c> line per problem. Lines for what /fdg-setup cannot
-/// change (legacy projects, no git repository) do not point to it.
+/// Turns <see cref="SetupFacts"/> into one <c>FDG setup issue:</c> line per problem the user can act on (Ruling 51).
+/// Lines for what /fdg-setup cannot change (legacy projects, no git repository) do not point to it.
 /// </summary>
 public static class SelfCheck
 {
@@ -65,11 +66,11 @@ public static class SelfCheck
                 $"{Names(facts.NewerProtocol)}. Update it with: dotnet tool update -g dotnet-fdg");
         }
 
-        if (facts.LegacyProjects > 0)
+        if (facts.LegacyOnboarded.Count > 0)
         {
-            issues.Add(IssuePrefix + (facts.LegacyProjects == 1
-                ? "1 legacy (non-SDK) project is not supported and is ignored."
-                : $"{facts.LegacyProjects} legacy (non-SDK) projects are not supported and are ignored."));
+            issues.Add(IssuePrefix +
+                $"Legacy (non-SDK) projects are not supported but reference {ProjectInfoProvider.PackageId}: " +
+                $"{Names(facts.LegacyOnboarded)}. Move them out of the onboarding scope.");
         }
 
         if (!facts.IsGitRepository)

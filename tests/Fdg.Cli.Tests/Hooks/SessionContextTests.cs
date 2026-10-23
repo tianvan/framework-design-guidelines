@@ -174,7 +174,7 @@ public sealed class SessionContextTests : IDisposable
     }
 
     [Fact]
-    public void Legacy_projects_are_counted_once()
+    public void Legacy_projects_that_reference_the_package_are_issues_and_the_others_one_context_line()
     {
         Project("src/A/A.csproj", "application");
         // One legacy project references the package itself, one through Directory.Build.props, one not at all.
@@ -187,18 +187,22 @@ public sealed class SessionContextTests : IDisposable
         string context = Build()!;
 
         Assert.Equal(
-            ["FDG setup issue: 3 legacy (non-SDK) projects are not supported and are ignored."],
+            [
+                "FDG setup issue: Legacy (non-SDK) projects are not supported but reference FrameworkDesignGuidelines.Analyzers: " +
+                "legacy/One/One.csproj, legacy/Two/Two.csproj. Move them out of the onboarding scope.",
+            ],
             Issues(context));
         Assert.Equal(
             "- Profiles: src/** = application. C# 7.3; targets netstandard2.0. Do not use newer syntax or APIs.",
             ProfilesLine(context));
+        Assert.EndsWith("\n- Legacy projects (not checked): 1\n" + Issues(context)[0], context);
 
         // Tracked but deleted files are not projects.
         File.Delete(_repo.Path("legacy/One/One.csproj"));
         File.Delete(_repo.Path("legacy/Two/Two.csproj"));
-        Assert.Equal(
-            ["FDG setup issue: 1 legacy (non-SDK) project is not supported and is ignored."],
-            Issues(Build()!));
+        context = Build()!;
+        Assert.Empty(Issues(context));
+        Assert.EndsWith("\n- Legacy projects (not checked): 1", context);
     }
 
     [Fact]
@@ -435,7 +439,9 @@ public sealed class SessionContextTests : IDisposable
     {
         _repo.Write("legacy/One/One.csproj", Legacy);
         _repo.Write("src/A/A.csproj", Plain);
-        const string Line = "FDG setup issue: 1 legacy (non-SDK) project is not supported and is ignored.";
+        const string Line =
+            "FDG setup issue: Legacy (non-SDK) projects are not supported but reference FrameworkDesignGuidelines.Analyzers: " +
+            "legacy/One/One.csproj. Move them out of the onboarding scope.";
 
         Assert.Equal(Line, Build());
 

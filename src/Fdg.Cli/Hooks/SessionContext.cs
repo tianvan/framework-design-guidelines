@@ -8,7 +8,7 @@ namespace Fdg.Cli.Hooks;
 
 /// <summary>
 /// What SessionStart tells the AI: the context lines, then one line per setup issue. The context is empty when only
-/// legacy projects use the analyzers.
+/// legacy projects reference the analyzers.
 /// </summary>
 public sealed record SessionReport(string Context, IReadOnlyList<string> Issues)
 {
@@ -137,6 +137,12 @@ public sealed class SessionContext
             context.Append(StyleLine).Append('\n');
             context.Append(AutofixLine).Append('\n');
             context.Append(SkillsLine);
+            int otherLegacy = projects.Count(p => !p.SdkStyle && !p.Onboarded);
+            if (otherLegacy > 0)
+            {
+                // A fact for the AI only: nothing to fix (Ruling 51).
+                context.Append('\n').Append("- Legacy projects (not checked): ").Append(otherLegacy);
+            }
         }
 
         var facts = new SetupFacts(
@@ -144,7 +150,7 @@ public sealed class SessionContext
             noProfile,
             neverBuilt,
             newerProtocol,
-            projects.Count(p => !p.SdkStyle),
+            projects.Where(p => !p.SdkStyle && p.Onboarded).Select(p => p.RelativePath).ToList(),
             git is not null);
         return new SessionReport(context.ToString(), SelfCheck.Issues(facts));
     }
