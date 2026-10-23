@@ -131,6 +131,31 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Diagnostic_of_many_rules_without_a_matching_word_in_its_message_quotes_no_rule()
+    {
+        // The pilot's case: IDE1006 checks 13 rules; "characters", "case" and "public" used to pull in FDG3005 and
+        // FDG3079 for a method name that is not PascalCase.
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "public static string describe_failure(")));
+        _builder.Sarif = _ => [
+            new SarifResult(
+                "IDE1006",
+                "warning",
+                "Naming rule violation: These words must begin with upper case characters: describe_failure",
+                order,
+                4),
+        ];
+
+        string reason = Json(await TurnStopAsync(), "reason")!;
+
+        Assert.Equal(
+            "FDG found 1 issue(s) in lines you changed this turn. Fix them before finishing.\n"
+            + "src/中文 App/Order.cs:4 IDE1006 Naming rule violation: These words must begin with upper case characters: describe_failure\n"
+            + "    public static string describe_failure(\n",
+            reason);
+    }
+
+    [Fact]
     public async Task Compile_errors_in_changed_files_are_reported_on_any_line()
     {
         string other = _repo.Write("src/中文 App/Other.cs", Lines(5));

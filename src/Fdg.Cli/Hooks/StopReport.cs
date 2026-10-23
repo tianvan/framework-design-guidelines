@@ -24,6 +24,8 @@ public static class StopReport
     private static readonly HashSet<string> IgnoredWords = new(StringComparer.Ordinal)
     {
         "naming", "rule", "violation", "the", "and", "for", "this", "that", "with", "should", "must", "not",
+        // IDE1006 says how a name fails, not which kind of symbol it names.
+        "these", "words", "begin", "upper", "lower", "case", "characters", "cannot", "contain", "leading", "letter",
     };
 
     /// <param name="header">The first line.</param>
@@ -64,7 +66,9 @@ public static class StopReport
     /// The rules a diagnostic checks under <paramref name="profile"/>, most relevant first. One diagnostic such as
     /// IDE1006 can check many rules; the ones sharing more words with the message and the flagged line (for
     /// "Missing prefix" on a private field, the private-field prefix rule) come first, otherwise the manifest's
-    /// order is kept.
+    /// order is kept. When there are more than <see cref="MaxRulesPerIssue"/>, only rules whose text has a word of
+    /// the message that is not in the flagged line (such as "prefix", but not the flagged name) are kept, so a
+    /// diagnostic like "must begin with upper case characters" quotes no rule rather than a wrong one.
     /// </summary>
     public static IReadOnlyList<RuleEntry> RulesFor(
         RulesManifest manifest,
@@ -82,6 +86,12 @@ public static class StopReport
             rules = active;
         }
 
+        if (rules.Length > MaxRulesPerIssue)
+        {
+            string[] signal = Words(message).Except(Words(sourceLine ?? string.Empty)).ToArray();
+            rules = rules.Where(r => TextWords(r.Text).Overlaps(signal)).ToArray();
+        }
+
         string[] words = Words(message + " " + sourceLine);
         return rules
             .Select((rule, index) => (Rule: rule, Index: index, Score: words.Count(w => rule.Text.Contains(w, StringComparison.OrdinalIgnoreCase))))
@@ -90,6 +100,12 @@ public static class StopReport
             .Select(r => r.Rule)
             .ToArray();
     }
+
+    /// <summary>The text's words: its runs of ASCII letters, lower-cased.</summary>
+    private static HashSet<string> TextWords(string text) => text
+        .Split(text.Where(c => !char.IsAsciiLetter(c)).Distinct().ToArray(), StringSplitOptions.RemoveEmptyEntries)
+        .Select(w => w.ToLowerInvariant())
+        .ToHashSet(StringComparer.Ordinal);
 
     private static string[] Words(string message) => message
         .Split((char[])[' ', ':', ';', '=', '\'', '"', ',', '.', '(', ')', '`'], StringSplitOptions.RemoveEmptyEntries)
