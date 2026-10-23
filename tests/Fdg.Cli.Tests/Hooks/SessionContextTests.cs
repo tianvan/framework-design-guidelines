@@ -240,6 +240,47 @@ public sealed class SessionContextTests : IDisposable
     }
 
     [Fact]
+    public void Package_id_in_a_comment_does_not_onboard()
+    {
+        _repo.Write(
+            "Directory.Build.props",
+            "<Project>\n  <!-- Add <PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" /> later. -->\n</Project>\n");
+        _repo.Write("src/A/A.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <!-- FrameworkDesignGuidelines.Analyzers -->\n</Project>\n");
+
+        Assert.Null(Build());
+    }
+
+    [Fact]
+    public void Child_Directory_Build_props_without_an_import_of_its_parent_is_not_onboarded()
+    {
+        _repo.Write(
+            "Directory.Build.props",
+            "<Project><ItemGroup><PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" PrivateAssets=\"all\" /></ItemGroup></Project>\n");
+        WriteMarker(_repo.Write("src/A/A.csproj", Plain), "library", "7.3", 1, ["netstandard2.0"]);
+        // MSBuild imports only the nearest Directory.Build.props, so this project never gets the package.
+        _repo.Write("tools/Directory.Build.props", "<Project />\n");
+        _repo.Write("tools/X/X.csproj", Plain);
+
+        Assert.Empty(Issues(Build()!));
+    }
+
+    [Fact]
+    public void Global_package_reference_onboards_every_project()
+    {
+        _repo.Write(
+            "Directory.Packages.props",
+            "<Project><ItemGroup><GlobalPackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" Version=\"0.1.0\" /></ItemGroup></Project>\n");
+        _repo.Write("src/A/A.csproj", Plain);
+
+        Assert.Equal(
+            [
+                "FDG setup issue: Never built with FrameworkDesignGuidelines.Analyzers (no obj/fdg/marker.json): " +
+                "src/A/A.csproj. Run /fdg-setup to fix.",
+            ],
+            Issues(Build()!));
+    }
+
+    [Fact]
     public void Old_or_missing_sdk_adds_setup_issue_line()
     {
         Project("src/A/A.csproj", "application");

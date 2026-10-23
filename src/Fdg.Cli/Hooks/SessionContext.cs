@@ -17,7 +17,7 @@ public sealed record SessionReport(string Context, IReadOnlyList<string> Issues)
 
 /// <summary>
 /// The SessionStart context (design §5.5) and self-check. Facts come from the files only: project files, the
-/// Directory.Build.props above them and the analyzer package's <c>fdg/marker*.json</c> in the intermediate
+/// files <see cref="Onboarding"/> reads and the analyzer package's <c>fdg/marker*.json</c> in the intermediate
 /// directory; MSBuild is never run.
 /// </summary>
 public sealed class SessionContext
@@ -235,12 +235,8 @@ public sealed class SessionContext
             .Where(f => !f.Split('/')[..^1].Any(ProjectFiles.IsSkippedDirectory))
             .Order(StringComparer.Ordinal)
             .ToArray();
-        var buildProps = new Dictionary<string, bool>(ProjectFiles.PathComparer);
-        foreach (string props in inScope.Where(IsBuildProps))
-        {
-            buildProps[DirectoryOf(props)] = MentionsPackage(Path.Combine(root, props));
-        }
-
+        var buildProps = inScope.Where(IsBuildProps).Select(DirectoryOf).ToHashSet(ProjectFiles.PathComparer);
+        var onboarding = new Onboarding(root);
         var projects = new List<Project>();
         foreach (string relativePath in inScope.Where(IsProjectFile))
         {
@@ -251,9 +247,10 @@ public sealed class SessionContext
                 continue;
             }
 
-            string[] ancestors = Ancestors(relativePath).ToArray();
-            bool onboarded = MentionsPackage(fullPath) || ancestors.Any(d => buildProps.GetValueOrDefault(d));
-            projects.Add(new Project(relativePath, onboarded, ancestors.FirstOrDefault(buildProps.ContainsKey)));
+            projects.Add(new Project(
+                relativePath,
+                onboarding.IsOnboarded(Path.GetFullPath(fullPath)),
+                Ancestors(relativePath).FirstOrDefault(buildProps.Contains)));
         }
 
         return projects;
@@ -358,22 +355,6 @@ public sealed class SessionContext
     private static bool IsProjectFile(string path) => path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsBuildProps(string path) => Path.GetFileName(path).Equals(BuildProps, StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>
-    /// A PackageReference in the project or a Directory.Build.props. Directory.Packages.props only pins versions, so
-    /// it is never read.
-    /// </summary>
-    private static bool MentionsPackage(string path)
-    {
-        try
-        {
-            return File.ReadAllText(path).Contains(ProjectInfoProvider.PackageId, StringComparison.OrdinalIgnoreCase);
-        }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
-        {
-            return false;
-        }
-    }
 
     private static bool IsSdkStyle(string path)
     {

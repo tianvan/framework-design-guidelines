@@ -194,7 +194,8 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
     private static ProjectInfo Unknown(string csprojPath, ProjectState state) =>
         new(csprojPath, null, null, null, null, null, null, state);
 
-    private static bool ReferencesPackage(string assetsFile)
+    /// <summary>Whether the restore recorded in <paramref name="assetsFile"/> includes the analyzer package.</summary>
+    public static bool ReferencesPackage(string assetsFile)
     {
         try
         {
