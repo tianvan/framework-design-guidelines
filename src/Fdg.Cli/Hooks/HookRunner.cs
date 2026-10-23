@@ -366,7 +366,7 @@ public sealed class HookRunner
             _formatter,
             projectPath,
             FormatIncludes.ToProjectRelative(projectPath, files),
-            project.Manifest.BreakingFixDiagnostics,
+            project.Manifest.FixDiagnostics,
             () => HashFiles(files),
             cancellationToken).ConfigureAwait(false);
         return format.Succeeded ? null : Failure(git, "dotnet format", projectPath, format);

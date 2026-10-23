@@ -15,6 +15,10 @@ public sealed record RulesManifest(
 {
     private const string EmbeddedResourceName = "Fdg.Cli.Rules.rules.json";
 
+    /// <summary>The registered diagnostics whose fixes FDG applies: all but the breaking ones.</summary>
+    public IReadOnlyList<string> FixDiagnostics =>
+        RegisteredDiagnostics.Except(BreakingFixDiagnostics, StringComparer.OrdinalIgnoreCase).ToArray();
+
     private static readonly JsonSerializerOptions Options = new() { PropertyNameCaseInsensitive = true };
 
     /// <exception cref="IOException">The file cannot be read.</exception>

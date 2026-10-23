@@ -6,8 +6,8 @@ using Fdg.Cli.Tooling;
 namespace Fdg.Cli.Commands;
 
 /// <summary>
-/// <c>dotnet fdg fix [&lt;path&gt;...]</c>: runs dotnet format on every in-scope project, excluding the manifest's
-/// breaking fixes. Prints one line per project; exits with 1 when any project failed, 2 on invalid arguments.
+/// <c>dotnet fdg fix [&lt;path&gt;...]</c>: runs dotnet format on every in-scope project, fixing the manifest's
+/// registered diagnostics except the breaking ones. Prints one line per project; exits with 1 when any project failed, 2 on invalid arguments.
 /// </summary>
 public sealed class FixCommand
 {
@@ -116,12 +116,12 @@ public sealed class FixCommand
             return false;
         }
 
-        IReadOnlyList<string> excluded = RulesManifest.LoadOrEmbedded(info.RulesPath).BreakingFixDiagnostics;
+        IReadOnlyList<string> diagnostics = RulesManifest.LoadOrEmbedded(info.RulesPath).FixDiagnostics;
         IReadOnlyList<string>? includes = target.IncludeFiles is null
             ? null
             : FormatIncludes.ToProjectRelative(target.ProjectPath, target.IncludeFiles);
         ToolResult format = await FormatPasses
-            .RunAsync(_formatter, target.ProjectPath, includes, excluded, () => HashSources(target), cancellationToken)
+            .RunAsync(_formatter, target.ProjectPath, includes, diagnostics, () => HashSources(target), cancellationToken)
             .ConfigureAwait(false);
         if (!format.Succeeded)
         {

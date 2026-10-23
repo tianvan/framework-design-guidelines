@@ -27,7 +27,7 @@ public sealed class FakeHookProjects : IProjectInfoProvider
     }
 }
 
-public sealed record HookFormatCall(string ProjectPath, IReadOnlyList<string>? IncludeFiles, IReadOnlyList<string> ExcludeDiagnostics);
+public sealed record HookFormatCall(string ProjectPath, IReadOnlyList<string>? IncludeFiles, IReadOnlyList<string> Diagnostics);
 
 /// <summary>Stands in for dotnet format; <see cref="OnFormat"/> can edit the files like the real one.</summary>
 public sealed class FakeHookFormatter : IFormatRunner
@@ -43,12 +43,12 @@ public sealed class FakeHookFormatter : IFormatRunner
     public Task<ToolResult> FormatAsync(
         string projectPath,
         IReadOnlyList<string>? includeFiles,
-        IReadOnlyList<string> excludeDiagnostics,
+        IReadOnlyList<string> diagnostics,
         CancellationToken cancellationToken)
     {
         lock (_lock)
         {
-            Calls.Add(new HookFormatCall(projectPath, includeFiles, excludeDiagnostics));
+            Calls.Add(new HookFormatCall(projectPath, includeFiles, diagnostics));
         }
 
         OnFormat(projectPath);

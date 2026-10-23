@@ -1,8 +1,11 @@
 namespace Fdg.Cli.Tooling;
 
 /// <summary>
-/// Runs <c>dotnet format &lt;proj&gt; --no-restore --severity warn</c> (dotnet format spells warning "warn") without a
-/// subcommand, so whitespace, style and analyzers all run. The process starts in the project directory because
+/// Runs <c>dotnet format &lt;proj&gt; --no-restore --severity warn --diagnostics ...</c> (dotnet format spells warning
+/// "warn") without a subcommand, so whitespace, style and analyzers all run. <c>--diagnostics</c> limits the style and
+/// analyzer fixes to those ids, so a project's other analyzers (<c>AnalysisMode=All</c>, CA1822) change nothing;
+/// whitespace is formatted in full whatever the list holds (measured with SDK 10.0.402). The process starts in the
+/// project directory because
 /// <c>--include</c> only matches paths relative to the working directory: absolute paths and paths starting with
 /// <c>../</c> silently match nothing (measured with SDK 10.0.402).
 /// </summary>
@@ -20,7 +23,7 @@ public sealed class DotnetFormatRunner : IFormatRunner
     public Task<ToolResult> FormatAsync(
         string projectPath,
         IReadOnlyList<string>? includeFiles,
-        IReadOnlyList<string> excludeDiagnostics,
+        IReadOnlyList<string> diagnostics,
         CancellationToken cancellationToken)
     {
         List<string> arguments = ["format", projectPath, "--no-restore", "--severity", "warn"];
@@ -30,10 +33,10 @@ public sealed class DotnetFormatRunner : IFormatRunner
             arguments.AddRange(includeFiles);
         }
 
-        if (excludeDiagnostics.Count > 0)
+        if (diagnostics.Count > 0)
         {
-            arguments.Add("--exclude-diagnostics");
-            arguments.AddRange(excludeDiagnostics);
+            arguments.Add("--diagnostics");
+            arguments.AddRange(diagnostics);
         }
 
         string projectDirectory = Path.GetDirectoryName(projectPath)!;

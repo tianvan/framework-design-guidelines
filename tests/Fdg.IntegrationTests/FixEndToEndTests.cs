@@ -40,6 +40,31 @@ public sealed class FixEndToEndTests : IClassFixture<PackageFixture>
 
         """;
 
+    // A strict repository: every CA rule as a warning. dotnet format applies a rule's fix only when the severity
+    // comes from an .editorconfig, not from AnalysisMode alone (measured with SDK 10.0.402), so CA1822 is set there.
+    internal const string StrictProperties = "<AnalysisMode>All</AnalysisMode>";
+
+    internal const string StrictEditorConfig = "[*.cs]\ndotnet_diagnostic.CA1822.severity = warning\n";
+
+    // A public instance method that does not use "this" (CA1822), a braceless if (IDE0011) and bad indentation.
+    internal const string StrictSource =
+        """
+        namespace Sample
+        {
+            public class Worker
+            {
+                public int Twice(int value)
+                {
+                      int doubled = value * 2;
+                    if (doubled < 0)
+                        return 0;
+                    return doubled;
+                }
+            }
+        }
+
+        """;
+
     private readonly PackageFixture _fixture;
     private readonly ITestOutputHelper _log;
 
@@ -79,6 +104,33 @@ public sealed class FixEndToEndTests : IClassFixture<PackageFixture>
         Assert.DoesNotContain("IDE0011", build.Output);
         // The breaking rename was not applied, so it is still reported.
         Assert.Contains("warning IDE1006", build.Output);
+    }
+
+    [Fact]
+    public void Fix_applies_no_fix_of_diagnostics_FDG_does_not_register()
+    {
+        using var workspace = new SampleWorkspace(_fixture, "fix strict", StrictEditorConfig);
+        workspace.AddProject("Strict", "application", StrictSource, StrictProperties);
+
+        DotnetResult fix = workspace.Fdg("fix", "Strict");
+
+        Assert.True(fix.ExitCode == 0, $"dotnet fdg exited with {fix.ExitCode}:\n{fix.Output}");
+        AssertOnlyFdgFixes(workspace.Read(Path.Combine("Strict", "Strict.cs")));
+    }
+
+    /// <summary>
+    /// The FDG fixes and whitespace of <see cref="StrictSource"/> are applied; CA1822's "make it static", a warning
+    /// here, is not: it would break every caller of a public method.
+    /// </summary>
+    internal static void AssertOnlyFdgFixes(string source)
+    {
+        string[] lines = source.ReplaceLineEndings("\n").Split('\n');
+        Assert.Contains("        public int Twice(int value)", lines);
+        Assert.DoesNotContain("static", source);
+        // Whitespace is formatted in full.
+        Assert.Contains("            int doubled = value * 2;", lines);
+        // IDE0011, an FDG fix: the braceless if gets braces.
+        AssertSequence(lines.Select(l => l.Trim()).ToArray(), "if (doubled < 0)", "{", "return 0;", "}");
     }
 
     [Fact]

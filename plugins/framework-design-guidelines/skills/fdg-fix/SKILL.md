@@ -32,8 +32,8 @@ Note `git diff --stat` first, so you can tell the CLI's changes from the user's.
 dotnet fdg fix <paths>
 ```
 
-It fixes layout, applies the IDE style fixes and the non-breaking analyzer fixes, and prints no report. If
-`dotnet fdg` is not installed, tell the user to run `dotnet tool install -g dotnet-fdg` and stop. It skips projects
+It fixes layout, applies the non-breaking fixes of the diagnostics FDG registers (no other analyzer's), and prints
+no report. If `dotnet fdg` is not installed, tell the user to run `dotnet tool install -g dotnet-fdg` and stop. It skips projects
 that are legacy (non-SDK) or have no `FrameworkDesignGuidelinesProfile`; name any such project the paths cover and
 suggest `/fdg-setup`.
 

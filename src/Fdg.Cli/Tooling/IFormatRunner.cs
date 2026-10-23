@@ -1,6 +1,6 @@
 namespace Fdg.Cli.Tooling;
 
-/// <summary>Formats a project: whitespace, code style and analyzer fixes, in that order.</summary>
+/// <summary>Formats a project: all whitespace, then the code style and analyzer fixes of the given diagnostics.</summary>
 public interface IFormatRunner
 {
     /// <param name="projectPath">Full path of the .csproj.</param>
@@ -9,10 +9,12 @@ public interface IFormatRunner
     /// <see cref="FormatIncludes.ToProjectRelative"/> produces: relative to the project directory, forward slashes,
     /// directories ending in <c>/</c>.
     /// </param>
-    /// <param name="excludeDiagnostics">Diagnostic ids whose fixes must not be applied.</param>
+    /// <param name="diagnostics">
+    /// The diagnostic ids whose fixes may be applied; empty for all. Whitespace is formatted either way.
+    /// </param>
     Task<ToolResult> FormatAsync(
         string projectPath,
         IReadOnlyList<string>? includeFiles,
-        IReadOnlyList<string> excludeDiagnostics,
+        IReadOnlyList<string> diagnostics,
         CancellationToken cancellationToken);
 }

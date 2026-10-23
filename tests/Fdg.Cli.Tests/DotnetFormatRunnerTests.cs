@@ -5,7 +5,7 @@ namespace Fdg.Cli.Tests;
 public sealed class DotnetFormatRunnerTests
 {
     [Fact]
-    public async Task Runs_dotnet_format_in_the_project_directory_with_includes_and_exclusions()
+    public async Task Runs_dotnet_format_in_the_project_directory_with_includes_and_diagnostics()
     {
         string project = Path.Combine(Path.GetTempPath(), "中文 目录", "A", "A.csproj");
         var runner = new RecordingRunner();
@@ -13,7 +13,7 @@ public sealed class DotnetFormatRunnerTests
         await new DotnetFormatRunner(runner, TimeSpan.FromMinutes(1)).FormatAsync(
             project,
             ["src/中文 目录/A.cs", "src/深 层/"],
-            ["CA1707", "IDE1006"],
+            ["FDGA003", "IDE0055"],
             CancellationToken.None);
 
         Assert.Equal("dotnet", runner.FileName);
@@ -22,7 +22,7 @@ public sealed class DotnetFormatRunnerTests
             [
                 "format", project, "--no-restore", "--severity", "warn",
                 "--include", "src/中文 目录/A.cs", "src/深 层/",
-                "--exclude-diagnostics", "CA1707", "IDE1006",
+                "--diagnostics", "FDGA003", "IDE0055",
             ],
             runner.Arguments);
     }
@@ -36,7 +36,7 @@ public sealed class DotnetFormatRunnerTests
             .FormatAsync(Path.Combine(Path.GetTempPath(), "A.csproj"), null, [], CancellationToken.None);
 
         Assert.DoesNotContain("--include", runner.Arguments);
-        Assert.DoesNotContain("--exclude-diagnostics", runner.Arguments);
+        Assert.DoesNotContain("--diagnostics", runner.Arguments);
     }
 
     [Fact]

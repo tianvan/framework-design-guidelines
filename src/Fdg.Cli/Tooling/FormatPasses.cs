@@ -14,7 +14,7 @@ public static class FormatPasses
         IFormatRunner formatter,
         string projectPath,
         IReadOnlyList<string>? includeFiles,
-        IReadOnlyList<string> excludeDiagnostics,
+        IReadOnlyList<string> diagnostics,
         Func<string> hashSources,
         CancellationToken cancellationToken)
     {
@@ -23,7 +23,7 @@ public static class FormatPasses
         for (int pass = 1; pass <= MaxPasses; pass++)
         {
             result = await formatter
-                .FormatAsync(projectPath, includeFiles, excludeDiagnostics, cancellationToken)
+                .FormatAsync(projectPath, includeFiles, diagnostics, cancellationToken)
                 .ConfigureAwait(false);
             if (!result.Succeeded)
             {

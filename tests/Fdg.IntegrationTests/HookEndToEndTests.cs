@@ -100,6 +100,26 @@ public sealed class HookEndToEndTests : IClassFixture<PackageFixture>
     }
 
     [Fact]
+    public void Stop_applies_no_fix_of_diagnostics_FDG_does_not_register()
+    {
+        using var workspace = new SampleWorkspace(_fixture, "hook strict", FixEndToEndTests.StrictEditorConfig);
+        string project = workspace.AddProject("Strict", "application", CleanSource, FixEndToEndTests.StrictProperties);
+        DotnetResult warmUp = workspace.Build(project);
+        Assert.True(warmUp.ExitCode == 0, warmUp.Output);
+        InitRepository(workspace);
+        string json = JsonSerializer.Serialize(new { session_id = "e2e", cwd = workspace.DirectoryPath, hook_event_name = "UserPromptSubmit" });
+        DotnetResult turnStart = workspace.FdgHook("turn-start", json, Environment);
+        Assert.True(turnStart.ExitCode == 0 && turnStart.Output.Trim().Length == 0, turnStart.Output);
+
+        workspace.Write(Path.Combine("Strict", "Strict.cs"), FixEndToEndTests.StrictSource);
+        DotnetResult stop = workspace.FdgHook("turn-stop", json.Replace("UserPromptSubmit", "Stop"), Environment);
+        _log.WriteLine($"turn-stop (exit {stop.ExitCode}):\n{stop.Output}");
+
+        Assert.Equal(0, stop.ExitCode);
+        FixEndToEndTests.AssertOnlyFdgFixes(workspace.Read(Path.Combine("Strict", "Strict.cs")));
+    }
+
+    [Fact]
     public void Up_to_date_project_whose_reference_recompiles_is_still_checked()
     {
         // Review experiment 2: App references Lib. With reference assemblies, a change to a Lib method body leaves

@@ -115,19 +115,19 @@ public sealed class FixCommandTests : IDisposable
     }
 
     [Fact]
-    public async Task Breaking_fix_diagnostics_are_excluded()
+    public async Task Only_registered_diagnostics_without_breaking_fixes_are_fixed()
     {
         string rules = _tree.Write(
             "packages/rules.json",
             """
-            { "protocol": 1, "version": "0.1.0", "rules": [], "registeredDiagnostics": ["CA1707"],
+            { "protocol": 1, "version": "0.1.0", "rules": [], "registeredDiagnostics": ["CA1707", "FDGA003", "IDE0055"],
               "breakingFixDiagnostics": ["CA1707", "IDE1006", "FDG9999"] }
             """);
         AddProject("A/A.csproj", ProjectState.InScope, rulesPath: rules);
 
         await RunAsync();
 
-        Assert.Equal(["CA1707", "IDE1006", "FDG9999"], Assert.Single(_formatter.Calls).ExcludeDiagnostics);
+        Assert.Equal(["FDGA003", "IDE0055"], Assert.Single(_formatter.Calls).Diagnostics);
     }
 
     [Fact]
@@ -139,7 +139,11 @@ public sealed class FixCommandTests : IDisposable
         await RunAsync();
 
         Assert.Equal(2, _formatter.Calls.Count);
-        Assert.All(_formatter.Calls, c => Assert.Equal(["CA1707", "IDE0130", "IDE1006"], c.ExcludeDiagnostics));
+        Assert.All(_formatter.Calls, c =>
+        {
+            Assert.Contains("FDGA003", c.Diagnostics);
+            Assert.DoesNotContain("IDE1006", c.Diagnostics);
+        });
     }
 
     [Fact]
@@ -291,7 +295,7 @@ public sealed class FixCommandTests : IDisposable
     private sealed record FormatCall(
         string ProjectPath,
         IReadOnlyList<string>? IncludeFiles,
-        IReadOnlyList<string> ExcludeDiagnostics);
+        IReadOnlyList<string> Diagnostics);
 
     /// <summary>Answers with queued infos per project; the last one repeats.</summary>
     private sealed class FakeProjects : IProjectInfoProvider
@@ -353,10 +357,10 @@ public sealed class FixCommandTests : IDisposable
         public Task<ToolResult> FormatAsync(
             string projectPath,
             IReadOnlyList<string>? includeFiles,
-            IReadOnlyList<string> excludeDiagnostics,
+            IReadOnlyList<string> diagnostics,
             CancellationToken cancellationToken)
         {
-            Calls.Add(new FormatCall(projectPath, includeFiles, excludeDiagnostics));
+            Calls.Add(new FormatCall(projectPath, includeFiles, diagnostics));
             OnCall(Calls.Count);
             return Task.FromResult(Result(projectPath));
         }

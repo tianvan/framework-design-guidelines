@@ -123,7 +123,8 @@ public sealed class StopHookTests : IDisposable
         Assert.Equal(2, Json(output, "reason")!.Split('\n').Count(l => l.StartsWith("    FDG", StringComparison.Ordinal)));
         HookFormatCall format = Assert.Single(_formatter.Calls);
         Assert.Equal(["Order.cs"], format.IncludeFiles);
-        Assert.Contains("IDE1006", format.ExcludeDiagnostics);
+        Assert.Contains("FDGA003", format.Diagnostics);
+        Assert.DoesNotContain("IDE1006", format.Diagnostics);
         HookBuildCall build = Assert.Single(_builder.Calls);
         Assert.Equal(_project, build.ProjectPath);
         Assert.False(build.NoIncremental);
