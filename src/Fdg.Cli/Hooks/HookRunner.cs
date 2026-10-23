@@ -607,7 +607,8 @@ public sealed partial class HookRunner
         return errors.Length > 0 && errors.All(code => code is "MSB3021" or "MSB3026" or "MSB3027");
     }
 
-    [GeneratedRegex(@"\berror\s+(?<code>[A-Z]+[0-9]+)\s*:")]
+    // "error CODE:", or "error :" without a code, as a custom Error task writes it.
+    [GeneratedRegex(@"\berror(\s+(?<code>[A-Z]+[0-9]+))?\s*:")]
     private static partial Regex BuildError();
 
     private static string Failure(GitRepository git, string tool, string projectPath, ToolResult result)

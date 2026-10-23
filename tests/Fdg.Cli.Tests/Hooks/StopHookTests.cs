@@ -693,9 +693,12 @@ public sealed class StopHookTests : IDisposable
         Assert.Contains("Order.cs:4 CA1707", reason);
         Assert.EndsWith("\n" + Note + "\n", reason);
 
-        // Any other error is a failed build.
-        _builder.Result = _builder.Result with { Output = _builder.Result.Output + "error MSB4018: The task failed.\n" };
+        // Any other error is a failed build, including one without a code, such as a custom Error task's.
+        ToolResult copyFailure = _builder.Result;
+        _builder.Result = copyFailure with { Output = copyFailure.Output + "error MSB4018: The task failed.\n" };
         Assert.StartsWith("FDG: dotnet build failed", Json(await TurnStopAsync(stopHookActive: true), "reason")!.Split('\n')[^2]);
+        _builder.Result = copyFailure with { Output = copyFailure.Output + "App.csproj(12,5): error : Custom check failed.\n" };
+        Assert.StartsWith("FDG: dotnet build failed", Json(await TurnStopAsync(), "reason")!.Split('\n')[^2]);
     }
 
     [Fact]
