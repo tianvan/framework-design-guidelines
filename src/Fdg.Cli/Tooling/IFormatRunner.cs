@@ -10,7 +10,8 @@ public interface IFormatRunner
     /// directories ending in <c>/</c>.
     /// </param>
     /// <param name="diagnostics">
-    /// The diagnostic ids whose fixes may be applied; empty for all. Whitespace is formatted either way.
+    /// The diagnostic ids whose fixes may be applied; empty for none, so only whitespace is formatted. Whitespace is
+    /// formatted in full either way.
     /// </param>
     Task<ToolResult> FormatAsync(
         string projectPath,

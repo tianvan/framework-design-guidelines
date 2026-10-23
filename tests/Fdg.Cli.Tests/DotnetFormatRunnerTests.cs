@@ -33,10 +33,21 @@ public sealed class DotnetFormatRunnerTests
         var runner = new RecordingRunner();
 
         await new DotnetFormatRunner(runner, TimeSpan.FromMinutes(1))
-            .FormatAsync(Path.Combine(Path.GetTempPath(), "A.csproj"), null, [], CancellationToken.None);
+            .FormatAsync(Path.Combine(Path.GetTempPath(), "A.csproj"), null, ["FDGA003"], CancellationToken.None);
 
         Assert.DoesNotContain("--include", runner.Arguments);
-        Assert.DoesNotContain("--diagnostics", runner.Arguments);
+    }
+
+    [Fact]
+    public async Task No_diagnostics_formats_whitespace_only()
+    {
+        string project = Path.Combine(Path.GetTempPath(), "A", "A.csproj");
+        var runner = new RecordingRunner();
+
+        await new DotnetFormatRunner(runner, TimeSpan.FromMinutes(1))
+            .FormatAsync(project, ["A.cs"], [], CancellationToken.None);
+
+        Assert.Equal(["format", "whitespace", project, "--no-restore", "--include", "A.cs"], runner.Arguments);
     }
 
     [Fact]
