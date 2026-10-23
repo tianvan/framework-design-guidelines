@@ -1,7 +1,7 @@
 ---
 name: fdg-fix
 description: >-
-  Make the given C# code pass every Framework Design Guidelines tool check: run dotnet fdg fix, build, then fix the
+  Make the given C# code pass every Framework Design Guidelines tool check: run dotnet-fdg fix, build, then fix the
   remaining FDG, CA and IDE diagnostics and compiler errors project by project. Use when the user runs /fdg-fix (or
   `$fdg-fix` on Codex) or asks to clean up a directory, project or file with FDG.
 disable-model-invocation: true
@@ -29,13 +29,22 @@ Ground rules:
 Note `git diff --stat` first, so you can tell the CLI's changes from the user's. Then run:
 
 ```
-dotnet fdg fix <paths>
+dotnet-fdg fix <paths>
 ```
 
-It fixes layout, applies the non-breaking fixes of the diagnostics FDG registers (no other analyzer's), and prints
-no report. If `dotnet fdg` is not installed, tell the user to run `dotnet tool install -g dotnet-fdg` and stop. It skips projects
-that are legacy (non-SDK) or have no `FrameworkDesignGuidelinesProfile`; name any such project the paths cover and
-suggest `/fdg-setup`.
+`dotnet-fdg fix` is the same as `dotnet fdg fix`; the tool's own executable starts without resolving an SDK. It
+fixes layout, applies the non-breaking fixes of the diagnostics FDG registers (no other analyzer's), and prints no
+report. It skips projects that are legacy (non-SDK) or have no `FrameworkDesignGuidelinesProfile`; name any such
+project the paths cover and suggest `/fdg-setup`.
+
+Tell the two kinds of failure apart:
+
+- The shell cannot find `dotnet-fdg` ("command not found", "is not recognized"), and `~/.dotnet/tools/dotnet-fdg`
+  does not exist either: the tool is not installed. Tell the user to run `dotnet tool install -g dotnet-fdg`, then
+  restart Claude Code or Codex, and stop.
+- The output says "A compatible .NET SDK was not found" or names a requested SDK version: the tool is installed, but
+  the repository's `global.json` pins an SDK that is not installed. Tell the user to install that SDK or relax
+  `rollForward`, and stop. Do not suggest installing dotnet-fdg.
 
 ## Step 2: Collect the remaining issues
 
@@ -85,7 +94,7 @@ that its issues are gone before you move on. This keeps the context small. Fix c
 
 ## Step 5: Verify and summarize
 
-Run `dotnet fdg fix <paths>` and the builds from step 2 once more. Then report briefly:
+Run `dotnet-fdg fix <paths>` and the builds from step 2 once more. Then report briefly:
 
 - what the CLI fixed automatically (the files it changed, from `git diff --stat`);
 - what you changed by hand, by project;

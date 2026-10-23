@@ -16,7 +16,8 @@ dotnet tool install -g dotnet-fdg
 ```
 
 Restart Claude Code or Codex after the first install: a host started before it does not have the global tools
-directory (`~/.dotnet/tools`) on its PATH. The hooks also look there, but the skills run `dotnet fdg`, which needs it on the PATH.
+directory (`~/.dotnet/tools`) on its PATH. The hooks also look there, but the skills run `dotnet-fdg` (the same tool
+as `dotnet fdg`), which needs it on the PATH.
 
 Update it with `dotnet tool update -g dotnet-fdg`. Without the tool, every hook shows
 `FDG: dotnet-fdg is not installed. Run: dotnet tool install -g dotnet-fdg`; when it is installed but does not
