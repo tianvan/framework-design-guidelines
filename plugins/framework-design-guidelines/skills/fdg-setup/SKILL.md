@@ -17,6 +17,7 @@ Onboard this repository's C# projects in four steps. Ground rules for every step
 - Before you edit anything, list every file you will create or change, with what you will put in it, and wait for
   the user to confirm. Edit nothing until they do.
 - Add no plugin-specific files at the repository root. Settings go into the project's own MSBuild files.
+- Never put the package id in comments: the hooks would read a commented-out reference as onboarding.
 
 ## Step 1: Find the projects
 
@@ -118,18 +119,35 @@ First show the user the list of files you will change, then wait for confirmatio
 
 ## Step 4: Build and confirm
 
-1. Run `dotnet build` on the solution or on each changed project (it restores first).
-2. Confirm for every onboarded project that the build wrote `obj/fdg/marker.json` and that its `profile` is the
-   one chosen, and that the build shows neither FDG0001 (profile not set) nor FDG0002 (unknown profile). Fix and
-   rebuild if it does.
-3. Existing code may now show FDG, CA and IDE warnings. That is expected: the end-of-turn check reports only the
+Work through this list in order; do not skip a project.
+
+1. Write down the onboarded projects: the SDK-style projects from step 1 that are in a directory the user chose a
+   profile for, or that reference the package in their own `.csproj`.
+2. Build them all (`dotnet build` restores first):
+   1. List the solutions: `git ls-files "*.sln" "*.slnx"` plus untracked ones, as in step 1.
+   2. For each solution, list its projects with `dotnet sln <solution> list`. Build every solution that contains at
+      least one onboarded project: `dotnet build <solution>`.
+   3. Build every onboarded project that is in no solution on its own: `dotnet build <the .csproj>`.
+3. For each onboarded project, one by one, open `obj/fdg/marker.json` in the project directory. Write down every
+   project whose marker is missing, or whose `profile` is not the one chosen, and every project whose build showed
+   FDG0001 (profile not set) or FDG0002 (unknown profile). For each, fix the cause (the `PackageReference`, the
+   `FrameworkDesignGuidelinesProfile` property, or the import of the `Directory.Build.props` above), build that
+   project again, and check its marker again. Go on until no project is left on the list.
+4. Existing code may now show FDG, CA and IDE warnings. That is expected: the end-of-turn check reports only the
    lines the AI changes, and `/fdg-fix` cleans up a directory when the user wants it.
-4. Summarize the files you changed and remind the user to review them with `git diff` and commit them.
-5. Tell the user to install the CLI that the hooks and `/fdg-fix` use, unless `dotnet fdg` already runs:
+5. Summarize the files you changed and remind the user to review them with `git diff` and commit them.
+6. Check the CLI that the hooks and `/fdg-fix` use: run `dotnet-fdg --version` (the same tool as `dotnet fdg`;
+   its own executable starts without resolving an SDK). If the shell cannot find `dotnet-fdg` ("command not found",
+   "is not recognized"), and `~/.dotnet/tools/dotnet-fdg` does not exist either, it is not installed: tell the user
+   to install it, then restart Claude Code or Codex:
 
    ```
    dotnet tool install -g dotnet-fdg
    ```
+
+   An error that says "A compatible .NET SDK was not found" or names a requested SDK version is not a missing tool:
+   the repository's `global.json` pins an SDK that is not installed. Tell the user to install that SDK or relax
+   `rollForward`; do not suggest installing dotnet-fdg.
 
    On Codex, the plugin's hooks also have to be approved once in `/hooks`, and again after an update changes them;
    until then they silently do nothing.
