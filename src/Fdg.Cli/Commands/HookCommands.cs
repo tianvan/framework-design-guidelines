@@ -20,20 +20,22 @@ public static class HookCommands
         HookRunner runner,
         CancellationToken cancellationToken)
     {
-        HookInput hookInput;
-        try
-        {
-            hookInput = HookInput.Parse(await input.ReadToEndAsync(cancellationToken).ConfigureAwait(false));
-        }
-        catch (FormatException e)
-        {
-            error.WriteLine("FDG hook error: " + e.Message);
-            return 1;
-        }
-
         string result;
         try
         {
+            // Inside the outer try: a failed read of stdin is an error like any other.
+            string text = await input.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+            HookInput hookInput;
+            try
+            {
+                hookInput = HookInput.Parse(text);
+            }
+            catch (FormatException e)
+            {
+                error.WriteLine("FDG hook error: " + e.Message);
+                return 1;
+            }
+
             result = hookEvent switch
             {
                 "session-start" => await runner.SessionStartAsync(hookInput, cancellationToken).ConfigureAwait(false),

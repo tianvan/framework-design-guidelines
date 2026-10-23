@@ -789,6 +789,23 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Hook_command_turns_a_failed_stdin_read_into_a_system_message()
+    {
+        var stdout = new StringWriter();
+
+        int exitCode = await HookCommands.RunAsync(
+            "turn-stop",
+            new FailingReader(),
+            stdout,
+            new StringWriter(),
+            CreateRunner(),
+            CancellationToken.None);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal("FDG hook error: The pipe has been ended.", Json(stdout.ToString(), "systemMessage")!);
+    }
+
+    [Fact]
     public async Task Hook_command_rejects_unparsable_input_with_exit_code_1()
     {
         var stderr = new StringWriter();
@@ -838,6 +855,12 @@ public sealed class StopHookTests : IDisposable
         CreateRunner().TurnStopAsync(
             new HookInput(HostKind.Claude, Session, _repo.Root, "Stop") { StopHookActive = stopHookActive },
             CancellationToken.None);
+
+    private sealed class FailingReader : TextReader
+    {
+        public override Task<string> ReadToEndAsync(CancellationToken cancellationToken) =>
+            throw new IOException("The pipe has been ended.");
+    }
 
     private async Task<StateStore> StateAsync() =>
         StateStore.For((await GitRepository.OpenAsync(_repo.Root, CancellationToken.None))!, Session);
