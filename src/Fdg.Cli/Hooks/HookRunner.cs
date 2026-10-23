@@ -286,10 +286,12 @@ public sealed class HookRunner
 
     /// <summary>
     /// Assigns each changed file to the first in-scope project in its directory (two projects formatting one file
-    /// at once would race). Files under no project, or under an out-of-scope or unrestored project, are skipped.
+    /// at once would race). Files under no project, or under an out-of-scope or unrestored project, are skipped;
+    /// only an onboarded project that cannot be checked says so.
     /// </summary>
     private List<ProjectWork> GroupByProject(GitRepository git, IReadOnlyList<string> changed, List<string> notes)
     {
+        var onboarding = new Onboarding(git.TopLevel);
         var infos = new Dictionary<string, ProjectInfo?>(ProjectFiles.PathComparer);
         var work = new Dictionary<string, ProjectWork>(ProjectFiles.PathComparer);
         foreach (string path in changed)
@@ -299,7 +301,7 @@ public sealed class HookRunner
             {
                 if (!infos.TryGetValue(projectPath, out ProjectInfo? info))
                 {
-                    info = GetInScope(git, projectPath, notes);
+                    info = onboarding.IsOnboarded(projectPath) ? GetInScope(git, projectPath, notes) : null;
                     infos.Add(projectPath, info);
                 }
 
@@ -330,6 +332,12 @@ public sealed class HookRunner
         catch (ProjectEvaluationException e)
         {
             notes.Add($"FDG: cannot evaluate {Display(git, projectPath)}: {e.Message}; its files were not checked.");
+            return null;
+        }
+
+        if (info.State == ProjectState.NotRestored)
+        {
+            notes.Add($"FDG: {Display(git, projectPath)} is not restored (run dotnet restore); its files were not checked.");
             return null;
         }
 

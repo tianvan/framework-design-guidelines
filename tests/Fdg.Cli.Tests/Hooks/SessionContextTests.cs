@@ -22,6 +22,9 @@ public sealed class SessionContextTests : IDisposable
         "  </ItemGroup>\n" +
         "</Project>\n";
 
+    private const string BuildOnce =
+        "Build them once (dotnet build); if a build does not create obj/fdg/marker.json, run /fdg-setup.";
+
     private const string DisabledLine =
         "FDG setup issue: Not a git repository: end-of-turn checks are disabled.";
 
@@ -90,7 +93,7 @@ public sealed class SessionContextTests : IDisposable
         Assert.Equal(
             [
                 "FDG setup issue: Never built with FrameworkDesignGuidelines.Analyzers (no obj/fdg/marker.json): " +
-                "src/A/A.csproj. Run /fdg-setup to fix.",
+                "src/A/A.csproj. " + BuildOnce,
             ],
             Issues(context));
     }
@@ -150,7 +153,7 @@ public sealed class SessionContextTests : IDisposable
         Assert.Equal(
             [
                 "FDG setup issue: Never built with FrameworkDesignGuidelines.Analyzers (no obj/fdg/marker.json): " +
-                "src/A/A.csproj, src/B/B.csproj, src/C/C.csproj and 2 more. Run /fdg-setup to fix.",
+                "src/A/A.csproj, src/B/B.csproj, src/C/C.csproj and 2 more. " + BuildOnce,
             ],
             Issues(context));
     }
@@ -275,7 +278,7 @@ public sealed class SessionContextTests : IDisposable
         Assert.Equal(
             [
                 "FDG setup issue: Never built with FrameworkDesignGuidelines.Analyzers (no obj/fdg/marker.json): " +
-                "src/A/A.csproj. Run /fdg-setup to fix.",
+                "src/A/A.csproj. " + BuildOnce,
             ],
             Issues(Build()!));
     }
@@ -330,7 +333,7 @@ public sealed class SessionContextTests : IDisposable
             JsonElement root = output.RootElement;
             string issue =
                 "FDG setup issue: Never built with FrameworkDesignGuidelines.Analyzers (no obj/fdg/marker.json): " +
-                "src/A/A.csproj. Run /fdg-setup to fix.";
+                "src/A/A.csproj. " + BuildOnce;
             Assert.Equal(issue, root.GetProperty("systemMessage").GetString());
             Assert.Equal("SessionStart", root.GetProperty("hookSpecificOutput").GetProperty("hookEventName").GetString());
             string context = root.GetProperty("hookSpecificOutput").GetProperty("additionalContext").GetString()!;

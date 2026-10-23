@@ -54,8 +54,8 @@ public static class SelfCheck
         if (facts.NeverBuilt.Count > 0)
         {
             issues.Add(IssuePrefix +
-                $"Never built with FrameworkDesignGuidelines.Analyzers (no obj/fdg/marker.json): {Names(facts.NeverBuilt)}." +
-                RunSetup);
+                $"Never built with FrameworkDesignGuidelines.Analyzers (no obj/fdg/marker.json): {Names(facts.NeverBuilt)}. " +
+                "Build them once (dotnet build); if a build does not create obj/fdg/marker.json, run /fdg-setup.");
         }
 
         if (facts.NewerProtocol.Count > 0)

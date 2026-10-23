@@ -71,6 +71,23 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Onboarded_project_that_is_not_restored_adds_a_note()
+    {
+        string notRestored = _repo.Write("NotRestored/NotRestored.csproj", OnboardedProject);
+        _projects.Add(notRestored, ProjectState.NotRestored);
+        _repo.CommitAll();
+        await TurnStartAsync();
+        _repo.Write("NotRestored/R.cs", "class R { }\n");
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal(
+            "FDG: NotRestored/NotRestored.csproj is not restored (run dotnet restore); its files were not checked.",
+            Json(output, "systemMessage"));
+        Assert.Empty(_formatter.Calls);
+    }
+
+    [Fact]
     public async Task No_changes_this_turn_outputs_nothing()
     {
         _repo.Write("src/中文 App/Order.cs", Lines(10, (3, "int changedBeforeTheTurn;")));
