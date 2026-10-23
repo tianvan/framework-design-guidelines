@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Fdg.Cli.Commands;
 
 namespace Fdg.Cli.Rules;
 
@@ -23,6 +24,7 @@ public sealed record RulesManifest(
 
     /// <exception cref="IOException">The file cannot be read.</exception>
     /// <exception cref="JsonException">The file is not a rules manifest.</exception>
+    /// <exception cref="NotSupportedException">The manifest's protocol is newer than this CLI supports.</exception>
     public static RulesManifest Load(string path)
     {
         using FileStream stream = File.OpenRead(path);
@@ -38,6 +40,7 @@ public sealed record RulesManifest(
     }
 
     /// <summary>The manifest at <paramref name="path"/>, or the embedded one when it is missing or unreadable.</summary>
+    /// <exception cref="NotSupportedException">The manifest's protocol is newer than this CLI supports.</exception>
     public static RulesManifest LoadOrEmbedded(string? path)
     {
         if (path is not null)
@@ -61,6 +64,13 @@ public sealed record RulesManifest(
             manifest.RegisteredDiagnostics is null)
         {
             throw new JsonException("Not a rules manifest.");
+        }
+
+        if (manifest.Protocol > FixCommand.SupportedProtocol)
+        {
+            throw new NotSupportedException(
+                $"rules.json protocol {manifest.Protocol} is newer than this dotnet-fdg supports " +
+                $"({FixCommand.SupportedProtocol}); update it with: dotnet tool update -g dotnet-fdg");
         }
 
         return manifest;

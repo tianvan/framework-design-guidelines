@@ -60,6 +60,18 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Rules_json_protocol_matches_the_package_props()
+    {
+        string props = Path.Combine(
+            InstalledSdkFixture.RepositoryRoot(), "src", "FrameworkDesignGuidelines.Package", "build", "FrameworkDesignGuidelines.Analyzers.props");
+
+        // The CLI's FixCommand.SupportedProtocol is bound to the same props value in Fdg.Cli.Tests.
+        Assert.Equal(
+            RulesJsonEmitter.ProtocolVersion.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            System.Xml.Linq.XDocument.Load(props).Descendants("FdgProtocolVersion").Single().Value);
+    }
+
+    [Fact]
     public void Severity_for_shared_diagnostic_is_max_across_rules()
     {
         // FDG9003 (suggestion) and FDG9009 (warning in library) both map IDE1006.

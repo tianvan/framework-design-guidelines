@@ -294,25 +294,24 @@ public sealed partial class HookRunner
     private List<ProjectWork> GroupByProject(GitRepository git, IReadOnlyList<string> changed, List<string> notes)
     {
         var onboarding = new Onboarding(git.TopLevel);
-        var infos = new Dictionary<string, ProjectInfo?>(ProjectFiles.PathComparer);
-        var work = new Dictionary<string, ProjectWork>(ProjectFiles.PathComparer);
+        var projects = new Dictionary<string, ProjectWork?>(ProjectFiles.PathComparer);
+        var work = new List<ProjectWork>();
         foreach (string path in changed)
         {
             string directory = Path.GetDirectoryName(Snapshot.FullPath(git, path))!;
             foreach (string projectPath in ProjectFiles.FindOwningProjects(directory))
             {
-                if (!infos.TryGetValue(projectPath, out ProjectInfo? info))
+                if (!projects.TryGetValue(projectPath, out ProjectWork? project))
                 {
-                    info = onboarding.IsOnboarded(projectPath) ? GetInScope(git, projectPath, notes) : null;
-                    infos.Add(projectPath, info);
+                    project = onboarding.IsOnboarded(projectPath) ? GetInScope(git, projectPath, notes) : null;
+                    projects.Add(projectPath, project);
                 }
 
-                if (info is not null)
+                if (project is not null)
                 {
-                    if (!work.TryGetValue(projectPath, out ProjectWork? project))
+                    if (project.Files.Count == 0)
                     {
-                        project = new ProjectWork(info, RulesManifest.LoadOrEmbedded(info.RulesPath), []);
-                        work.Add(projectPath, project);
+                        work.Add(project);
                     }
 
                     project.Files.Add(path);
@@ -321,10 +320,10 @@ public sealed partial class HookRunner
             }
         }
 
-        return work.Values.ToList();
+        return work;
     }
 
-    private ProjectInfo? GetInScope(GitRepository git, string projectPath, List<string> notes)
+    private ProjectWork? GetInScope(GitRepository git, string projectPath, List<string> notes)
     {
         ProjectInfo info;
         try
@@ -356,7 +355,15 @@ public sealed partial class HookRunner
             return null;
         }
 
-        return info;
+        try
+        {
+            return new ProjectWork(info, RulesManifest.LoadOrEmbedded(info.RulesPath), []);
+        }
+        catch (NotSupportedException e)
+        {
+            notes.Add($"FDG: {Display(git, projectPath)}: {e.Message}; its files were not checked.");
+            return null;
+        }
     }
 
     /// <returns>A one-line note when formatting failed.</returns>

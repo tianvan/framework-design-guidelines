@@ -88,6 +88,27 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Project_whose_rules_json_has_a_newer_protocol_adds_a_note()
+    {
+        string newer = _repo.Write("Newer/Newer.csproj", OnboardedProject);
+        string rules = _repo.Write(
+            "packages/rules.json",
+            """{ "protocol": 2, "version": "9.0.0", "rules": [], "registeredDiagnostics": [], "breakingFixDiagnostics": [] }""");
+        _projects.Add(newer, ProjectState.InScope, rulesPath: rules);
+        _repo.CommitAll();
+        await TurnStartAsync();
+        _repo.Write("Newer/N.cs", "class N { }\n");
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal(
+            "FDG: Newer/Newer.csproj: rules.json protocol 2 is newer than this dotnet-fdg supports (1); update it " +
+            "with: dotnet tool update -g dotnet-fdg; its files were not checked.",
+            Json(output, "systemMessage"));
+        Assert.Empty(_formatter.Calls);
+    }
+
+    [Fact]
     public async Task No_changes_this_turn_outputs_nothing()
     {
         _repo.Write("src/中文 App/Order.cs", Lines(10, (3, "int changedBeforeTheTurn;")));

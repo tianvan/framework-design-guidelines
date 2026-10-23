@@ -11,8 +11,8 @@ public sealed class FakeHookProjects : IProjectInfoProvider
 
     public Exception? Failure { get; set; }
 
-    public void Add(string csprojPath, ProjectState state, string profile = "application") =>
-        _infos[csprojPath] = new ProjectInfo(csprojPath, profile, "0.1.0", 1, "7.3", "netstandard2.0", null, state);
+    public void Add(string csprojPath, ProjectState state, string profile = "application", string? rulesPath = null) =>
+        _infos[csprojPath] = new ProjectInfo(csprojPath, profile, "0.1.0", 1, "7.3", "netstandard2.0", rulesPath, state);
 
     public ProjectInfo Get(string csprojPath)
     {

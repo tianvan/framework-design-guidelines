@@ -116,7 +116,17 @@ public sealed class FixCommand
             return false;
         }
 
-        IReadOnlyList<string> diagnostics = RulesManifest.LoadOrEmbedded(info.RulesPath).FixDiagnostics;
+        IReadOnlyList<string> diagnostics;
+        try
+        {
+            diagnostics = RulesManifest.LoadOrEmbedded(info.RulesPath).FixDiagnostics;
+        }
+        catch (NotSupportedException e)
+        {
+            _output.WriteLine($"skipped {display}: {e.Message}");
+            return false;
+        }
+
         IReadOnlyList<string>? includes = target.IncludeFiles is null
             ? null
             : FormatIncludes.ToProjectRelative(target.ProjectPath, target.IncludeFiles);

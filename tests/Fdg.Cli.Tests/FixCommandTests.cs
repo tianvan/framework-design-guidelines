@@ -115,6 +115,24 @@ public sealed class FixCommandTests : IDisposable
     }
 
     [Fact]
+    public async Task Newer_rules_json_protocol_is_skipped_as_a_failure()
+    {
+        string rules = _tree.Write(
+            "packages/rules.json",
+            """{ "protocol": 2, "version": "9.0.0", "rules": [], "registeredDiagnostics": [], "breakingFixDiagnostics": [] }""");
+        AddProject("A/A.csproj", ProjectState.InScope, rulesPath: rules);
+
+        int exitCode = await RunAsync();
+
+        Assert.Equal(1, exitCode);
+        Assert.Empty(_formatter.Calls);
+        Assert.Equal(
+            "skipped A/A.csproj: rules.json protocol 2 is newer than this dotnet-fdg supports (1); update it with: " +
+            "dotnet tool update -g dotnet-fdg\n",
+            Output);
+    }
+
+    [Fact]
     public async Task Only_registered_diagnostics_without_breaking_fixes_are_fixed()
     {
         string rules = _tree.Write(
