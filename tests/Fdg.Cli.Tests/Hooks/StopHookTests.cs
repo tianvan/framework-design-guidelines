@@ -553,6 +553,33 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Build_that_only_failed_to_copy_its_output_says_the_diagnostics_were_checked()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int Bad_Name;")));
+        // As measured with the app running: the copy to bin/ fails, the compile step wrote the log.
+        _builder.Result = new ToolResult(
+            1,
+            "warning MSB3026: Could not copy \"obj/App.dll\" to \"bin/App.dll\". Beginning retry 1 in 1000ms.\n"
+            + "error MSB3027: Could not copy \"obj/App.dll\" to \"bin/App.dll\". Exceeded retry count of 0. Failed.\n"
+            + "error MSB3021: Unable to copy file \"obj/App.dll\" to \"bin/App.dll\". The process cannot access the file.\n",
+            false);
+        _builder.Sarif = _ => [];
+        const string Note = "FDG: output copy failed (is the app running?); diagnostics were checked.";
+
+        Assert.Equal(Note, Json(await TurnStopAsync(), "systemMessage"));
+
+        _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "Remove the underscores", order, 4)];
+        string reason = Json(await TurnStopAsync(), "reason")!;
+        Assert.Contains("Order.cs:4 CA1707", reason);
+        Assert.EndsWith("\n" + Note + "\n", reason);
+
+        // Any other error is a failed build.
+        _builder.Result = _builder.Result with { Output = _builder.Result.Output + "error MSB4018: The task failed.\n" };
+        Assert.StartsWith("FDG: dotnet build failed", Json(await TurnStopAsync(stopHookActive: true), "reason")!.Split('\n')[^2]);
+    }
+
+    [Fact]
     public async Task Build_failure_without_sarif_reports_one_line_and_allows_finish()
     {
         await TurnStartAsync();

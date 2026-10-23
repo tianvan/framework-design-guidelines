@@ -3,8 +3,10 @@ namespace Fdg.Cli.Tooling;
 /// <summary>
 /// Runs <c>dotnet build &lt;proj&gt; --no-restore -p:FdgSarifDir=&lt;dir&gt; -p:FdgSarifProject=&lt;proj&gt;</c> in the
 /// project directory. Global properties flow to referenced projects, so <c>FdgSarifProject</c> tells the package
-/// which project writes the log. A forced rebuild adds <c>--no-incremental --no-dependencies</c>, so only the project
-/// itself is recompiled.
+/// which project writes the log. <c>-p:CopyRetryCount=0</c>: while the app is running, its files in <c>bin/</c> are
+/// locked, and the default 10 retries of the copy cost about 10 seconds per Stop for the same failure (measured with
+/// SDK 10.0.402). A forced rebuild adds <c>--no-incremental --no-dependencies</c>, so only the project itself is
+/// recompiled.
 /// </summary>
 public sealed class DotnetBuildRunner : IBuildRunner
 {
@@ -30,6 +32,7 @@ public sealed class DotnetBuildRunner : IBuildRunner
             "--no-restore",
             "-p:FdgSarifDir=" + sarifDirectory,
             "-p:FdgSarifProject=" + projectPath,
+            "-p:CopyRetryCount=0",
         ];
         if (noIncremental)
         {

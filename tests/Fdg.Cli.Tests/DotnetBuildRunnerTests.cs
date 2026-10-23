@@ -17,7 +17,10 @@ public sealed class DotnetBuildRunnerTests
             .BuildAsync(Project, SarifDirectory, noIncremental: false, CancellationToken.None);
 
         Assert.Equal(
-            ["build", Project, "--no-restore", "-p:FdgSarifDir=" + SarifDirectory, "-p:FdgSarifProject=" + Project],
+            [
+                "build", Project, "--no-restore", "-p:FdgSarifDir=" + SarifDirectory, "-p:FdgSarifProject=" + Project,
+                "-p:CopyRetryCount=0",
+            ],
             Assert.Single(runner.Calls));
     }
 

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Fdg.Cli.Commands;
 using Fdg.Cli.Projects;
 using Fdg.Cli.Rules;
@@ -12,7 +13,7 @@ namespace Fdg.Cli.Hooks;
 /// The hook logic. Every method returns the hook's stdout: <see cref="HookOutput.None"/> or one JSON object.
 /// Nothing is written outside the state directory except the files dotnet format changes.
 /// </summary>
-public sealed class HookRunner
+public sealed partial class HookRunner
 {
     private static readonly TimeSpan CleanupGrace = TimeSpan.FromSeconds(2);
 
@@ -164,7 +165,7 @@ public sealed class HookRunner
         // 3-4. One project at a time, since builds of projects that reference each other would compile the shared
         // ones at once: build, read the SARIF logs.
         var diagnostics = new List<(ProjectWork Project, SarifDiagnostic Diagnostic)>();
-        var failedBuilds = new List<(ProjectWork Project, ToolResult Build)>();
+        var failedBuilds = new List<(ProjectWork Project, ToolResult Build, bool LogsRead)>();
         for (int i = 0; i < projects.Count; i++)
         {
             string? note = formatNotes.GetValueOrDefault(i);
@@ -174,7 +175,7 @@ public sealed class HookRunner
                     git, state, snapshot.Turn, projects[i], diagnostics, cancellationToken).ConfigureAwait(false);
                 if (!build.Succeeded && hasLogs)
                 {
-                    failedBuilds.Add((projects[i], build));
+                    failedBuilds.Add((projects[i], build, buildNote is null));
                 }
 
                 note ??= buildNote;
@@ -199,9 +200,10 @@ public sealed class HookRunner
             registered.TryAdd(manifest, manifest.RegisteredDiagnostics.ToHashSet(StringComparer.Ordinal));
         }
 
-        foreach ((ProjectWork project, ToolResult build) in failedBuilds)
+        foreach ((ProjectWork project, ToolResult build, bool logsRead) in failedBuilds)
         {
-            if (BuildFailure(git, project, build, diagnostics, changedLines, registered[project.Manifest]) is string note)
+            if (BuildFailure(git, project, build, logsRead, diagnostics, changedLines, registered[project.Manifest]) is string note &&
+                !notes.Contains(note))
             {
                 notes.Add(note);
             }
@@ -512,11 +514,14 @@ public sealed class HookRunner
     /// <summary>
     /// A failed build is never passed over: unless the report holds a compile error of the project and none were
     /// left out, one line says so, naming the first compile error in a file not changed this turn if there is one.
+    /// A build that compiled and only failed to copy its output, as when the app is running, says the diagnostics
+    /// were checked.
     /// </summary>
     private static string? BuildFailure(
         GitRepository git,
         ProjectWork project,
         ToolResult build,
+        bool logsRead,
         IEnumerable<(ProjectWork Project, SarifDiagnostic Diagnostic)> diagnostics,
         IReadOnlyDictionary<string, IReadOnlySet<int>> changedLines,
         IReadOnlySet<string> registered)
@@ -533,7 +538,14 @@ public sealed class HookRunner
             .ToArray();
         if (unreported.Length == 0)
         {
-            return errors.Length > 0 ? null : Failure(git, "dotnet build", project.Info.ProjectPath, build);
+            if (errors.Length > 0)
+            {
+                return null;
+            }
+
+            return logsRead && IsCopyFailure(build)
+                ? "FDG: output copy failed (is the app running?); diagnostics were checked."
+                : Failure(git, "dotnet build", project.Info.ProjectPath, build);
         }
 
         SarifDiagnostic first = unreported[0];
@@ -569,6 +581,16 @@ public sealed class HookRunner
         state.WriteAutofix(record);
         return record;
     }
+
+    /// <summary>The build's only errors are MSB3021, MSB3026 or MSB3027: copying a file to the output failed.</summary>
+    private static bool IsCopyFailure(ToolResult build)
+    {
+        string[] errors = BuildError().Matches(build.Output).Select(m => m.Groups["code"].Value).ToArray();
+        return errors.Length > 0 && errors.All(code => code is "MSB3021" or "MSB3026" or "MSB3027");
+    }
+
+    [GeneratedRegex(@"\berror\s+(?<code>[A-Z]+[0-9]+)\s*:")]
+    private static partial Regex BuildError();
 
     private static string Failure(GitRepository git, string tool, string projectPath, ToolResult result)
     {
