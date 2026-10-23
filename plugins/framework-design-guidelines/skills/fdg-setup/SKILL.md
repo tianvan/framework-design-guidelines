@@ -138,12 +138,15 @@ Work through this list in order; do not skip a project.
 5. Summarize the files you changed and remind the user to review them with `git diff` and commit them.
 6. Check the CLI that the hooks and `/fdg-fix` use: run `dotnet-fdg --version` (the same tool as `dotnet fdg`;
    its own executable starts without resolving an SDK). If the shell cannot find `dotnet-fdg` ("command not found",
-   "is not recognized"), and `~/.dotnet/tools/dotnet-fdg` does not exist either, it is not installed: tell the user
-   to install it, then restart Claude Code or Codex:
+   "is not recognized"), and neither `~/.dotnet/tools/dotnet-fdg` nor `~/.dotnet/tools/dotnet-fdg.exe` exists, it is
+   not installed: tell the user to install it, then restart Claude Code or Codex:
 
    ```
    dotnet tool install -g dotnet-fdg
    ```
+
+   If the shell cannot find `dotnet-fdg` but one of those files exists, the tool was installed after Claude Code or
+   Codex started, so the tools directory is not on its PATH yet: tell the user to restart Claude Code or Codex.
 
    An error that says "A compatible .NET SDK was not found" or names a requested SDK version is not a missing tool:
    the repository's `global.json` pins an SDK that is not installed. Tell the user to install that SDK or relax

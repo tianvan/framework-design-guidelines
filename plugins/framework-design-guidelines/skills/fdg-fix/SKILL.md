@@ -39,9 +39,12 @@ project the paths cover and suggest `/fdg-setup`.
 
 Tell the two kinds of failure apart:
 
-- The shell cannot find `dotnet-fdg` ("command not found", "is not recognized"), and `~/.dotnet/tools/dotnet-fdg`
-  does not exist either: the tool is not installed. Tell the user to run `dotnet tool install -g dotnet-fdg`, then
-  restart Claude Code or Codex, and stop.
+- The shell cannot find `dotnet-fdg` ("command not found", "is not recognized"), and neither
+  `~/.dotnet/tools/dotnet-fdg` nor `~/.dotnet/tools/dotnet-fdg.exe` exists: the tool is not installed. Tell the user
+  to run `dotnet tool install -g dotnet-fdg`, then restart Claude Code or Codex, and stop.
+- The shell cannot find `dotnet-fdg`, but one of those files exists: the tool was installed after Claude Code or
+  Codex started, so the tools directory is not on its PATH yet. Tell the user to restart Claude Code or Codex, and
+  stop.
 - The output says "A compatible .NET SDK was not found" or names a requested SDK version: the tool is installed, but
   the repository's `global.json` pins an SDK that is not installed. Tell the user to install that SDK or relax
   `rollForward`, and stop. Do not suggest installing dotnet-fdg.
