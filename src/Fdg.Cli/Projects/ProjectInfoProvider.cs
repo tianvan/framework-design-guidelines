@@ -57,8 +57,10 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
         {
             // A custom BaseIntermediateOutputPath, or not restored yet.
             properties = Query(csprojPath, QueriedProperties, targetFramework: null);
-            string reportedAssets = Property(properties, "ProjectAssetsFile");
-            string reportedIntermediate = Property(properties, "BaseIntermediateOutputPath");
+            // MSBuild reports paths as written in the project, often with backslashes, which are no separator on Unix.
+            string reportedAssets = Property(properties, "ProjectAssetsFile").Replace('\\', Path.DirectorySeparatorChar);
+            string reportedIntermediate = Property(properties, "BaseIntermediateOutputPath")
+                .Replace('\\', Path.DirectorySeparatorChar);
             if (reportedAssets.Length > 0)
             {
                 assetsFile = Path.GetFullPath(reportedAssets, projectDirectory);
