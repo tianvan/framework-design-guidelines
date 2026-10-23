@@ -70,7 +70,8 @@ or `test`) and builds once. It changes only working-tree files; review them with
 - **Changes inside git submodules** are not checked: Stop looks only at the repository the session runs in.
 - **The AI committing in the middle of a turn**: Stop still formats and checks the files changed in those commits,
   against their content at the start of the turn. The commit holds the unformatted code, and the fixes are left
-  uncommitted in the working tree.
+  uncommitted in the working tree. Commits from before the turn that a pull, checkout or rebase brings in are not
+  checked, and Stop says so; a commit counts as the turn's when its committer date is at or after the turn's start.
 - **Extracting a class into a new file while the source file stays** reports the moved code as changed in the new
   file, so it is formatted and checked as new code.
 - **An explicit `ArtifactsPath` or a custom `BaseIntermediateOutputPath`**: SessionStart looks for the build marker

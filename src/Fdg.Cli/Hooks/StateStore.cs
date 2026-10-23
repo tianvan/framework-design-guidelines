@@ -138,7 +138,17 @@ public sealed class StateStore
         }
     }
 
-    public TurnSnapshot? ReadSnapshot() => ReadJson<TurnSnapshot>("snapshot.json");
+    /// <summary>
+    /// The turn's snapshot. One written before snapshots recorded their start time started when its file was last
+    /// written.
+    /// </summary>
+    public TurnSnapshot? ReadSnapshot()
+    {
+        TurnSnapshot? snapshot = ReadJson<TurnSnapshot>("snapshot.json");
+        return snapshot is { Started: null }
+            ? snapshot with { Started = File.GetLastWriteTimeUtc(Path.Combine(Directory, "snapshot.json")) }
+            : snapshot;
+    }
 
     public void WriteSnapshot(TurnSnapshot snapshot) => WriteJson("snapshot.json", snapshot);
 

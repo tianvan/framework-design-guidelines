@@ -7,10 +7,20 @@ namespace Fdg.Cli.Hooks;
 /// <param name="Turn">Counts the turns of the session, starting at 1.</param>
 /// <param name="Head">The commit HEAD pointed to, or <see langword="null"/> in a repository without commits.</param>
 /// <param name="DirtyFiles">Candidate files that differed from HEAD, with the SHA-256 of their content.</param>
-public sealed record TurnSnapshot(int Turn, string? Head, IReadOnlyDictionary<string, string> DirtyFiles);
+/// <param name="Started">
+/// When the turn started; <see cref="StateStore.ReadSnapshot"/> fills it in for snapshots written without it.
+/// </param>
+public sealed record TurnSnapshot(
+    int Turn,
+    string? Head,
+    IReadOnlyDictionary<string, string> DirtyFiles,
+    DateTimeOffset? Started = null);
 
-/// <summary>What <see cref="Snapshot.FindChangesAsync"/> found: changed candidate files and deleted candidate paths.</summary>
-public sealed record TurnChanges(IReadOnlyList<string> Changed, IReadOnlyList<string> Deleted);
+/// <summary>
+/// What <see cref="Snapshot.FindChangesAsync"/> found: changed candidate files, deleted candidate paths, and one-line
+/// notes about changes it could not attribute to the turn.
+/// </summary>
+public sealed record TurnChanges(IReadOnlyList<string> Changed, IReadOnlyList<string> Deleted, IReadOnlyList<string> Notes);
 
 /// <summary>
 /// Turn snapshots from <c>git status</c>. A file changed in a turn is a candidate file that is dirty now and was
@@ -22,6 +32,7 @@ public static class Snapshot
 {
     public static async Task<TurnSnapshot> TakeAsync(GitRepository git, StateStore state, CancellationToken cancellationToken)
     {
+        DateTimeOffset started = DateTimeOffset.UtcNow;
         int turn = (state.ReadSnapshot()?.Turn ?? 0) + 1;
         state.ResetTurn();
         string? head = await git.HeadAsync(cancellationToken).ConfigureAwait(false);
@@ -35,7 +46,7 @@ public static class Snapshot
             dirty.Add(path, Hash(content));
         }
 
-        var snapshot = new TurnSnapshot(turn, head, dirty);
+        var snapshot = new TurnSnapshot(turn, head, dirty, started);
         state.WriteSnapshot(snapshot);
         return snapshot;
     }
@@ -50,8 +61,8 @@ public static class Snapshot
     /// <summary>
     /// From one <c>git status</c>: the candidate files whose content differs from the start of the turn, and the
     /// candidate paths gone from the working tree (deleted, or moved away, since HEAD or since the turn started),
-    /// each in ordinal order. When HEAD moved during the turn, as when the AI commits, the files changed between
-    /// the turn's HEAD and the current one count as well; their baseline stays the start of the turn.
+    /// each in ordinal order. When HEAD moved during the turn, as when the AI commits, the files of the commits made
+    /// during the turn count as well (<see cref="FindCommittedAsync"/>); their baseline stays the start of the turn.
     /// </summary>
     public static async Task<TurnChanges> FindChangesAsync(
         GitRepository git,
@@ -60,11 +71,14 @@ public static class Snapshot
     {
         IReadOnlyList<GitStatusEntry> entries = await git.StatusAsync(cancellationToken).ConfigureAwait(false);
         IReadOnlyList<string> committed = [];
-        if (snapshot.Head is not null &&
-            await git.HeadAsync(cancellationToken).ConfigureAwait(false) is string head &&
-            head != snapshot.Head)
+        var notes = new List<string>();
+        if (await git.HeadAsync(cancellationToken).ConfigureAwait(false) is string head && head != snapshot.Head)
         {
-            committed = await git.DiffNamesAsync(snapshot.Head, head, cancellationToken).ConfigureAwait(false);
+            (committed, string? note) = await FindCommittedAsync(git, snapshot, head, cancellationToken).ConfigureAwait(false);
+            if (note is not null)
+            {
+                notes.Add(note);
+            }
         }
 
         IReadOnlyList<string> paths = entries.Select(e => e.Path).Concat(committed).ToArray();
@@ -85,7 +99,46 @@ public static class Snapshot
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)
             .ToArray();
-        return new TurnChanges(changed, deleted);
+        return new TurnChanges(changed, deleted, notes);
+    }
+
+    /// <summary>
+    /// The files that the non-merge commits made during the turn (committed at or after its start) changed, and
+    /// that still differ between the turn's HEAD and <paramref name="head"/>. Commits from before the turn, brought
+    /// in by a pull, a checkout or a rebase, are someone else's: their files are left out, with a note.
+    /// </summary>
+    private static async Task<(IReadOnlyList<string> Files, string? Note)> FindCommittedAsync(
+        GitRepository git,
+        TurnSnapshot snapshot,
+        string head,
+        CancellationToken cancellationToken)
+    {
+        const string HeadMoved = "FDG: HEAD moved during the turn by commits not made in it; their files were not checked.";
+        try
+        {
+            bool foreign = snapshot.Head is not null &&
+                !await git.IsAncestorAsync(snapshot.Head, head, cancellationToken).ConfigureAwait(false);
+            // Commit times have whole seconds. Without a start time, no commit counts as the turn's.
+            long started = snapshot.Started?.ToUnixTimeSeconds() ?? long.MaxValue;
+            IReadOnlyList<GitCommit> commits = await git.ListCommitsAsync(snapshot.Head, head, cancellationToken)
+                .ConfigureAwait(false);
+            foreign |= commits.Any(c => c.CommitTime < started);
+            string[] made = commits.Where(c => c.ParentCount < 2 && c.CommitTime >= started).Select(c => c.Hash).ToArray();
+            if (made.Length == 0)
+            {
+                return ([], foreign ? HeadMoved : null);
+            }
+
+            string from = snapshot.Head ?? await git.EmptyTreeAsync(cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<string> differ = await git.DiffNamesAsync(from, head, cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<string> files = await git.CommitFilesAsync(made, cancellationToken).ConfigureAwait(false);
+            return (files.Intersect(differ, StringComparer.Ordinal).ToArray(), foreign ? HeadMoved : null);
+        }
+        catch (InvalidOperationException e)
+        {
+            string reason = e.Message.Split('\n', 2)[0].Trim();
+            return ([], $"FDG: cannot list the commits made during the turn ({reason}); their files were not checked.");
+        }
     }
 
     /// <inheritdoc cref="WriteBaselineAsync(GitRepository, StateStore, TurnSnapshot, string, MoveSources?, CancellationToken)"/>

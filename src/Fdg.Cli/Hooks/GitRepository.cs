@@ -5,7 +5,8 @@ using System.Text;
 namespace Fdg.Cli.Hooks;
 
 /// <summary>
-/// Read-only git access for the hooks: <c>rev-parse</c>, <c>status</c>, <c>ls-files</c>, <c>cat-file</c> and <c>diff</c>.
+/// Read-only git access for the hooks: <c>rev-parse</c>, <c>status</c>, <c>ls-files</c>, <c>cat-file</c>, <c>diff</c>,
+/// <c>log</c>, <c>merge-base</c> and <c>hash-object</c> (without <c>-w</c>).
 /// Nothing here touches the index, HEAD or the working tree. Output is read as raw bytes, so line endings and
 /// NUL separators arrive intact.
 /// </summary>
@@ -122,6 +123,79 @@ public sealed class GitRepository
         return result.Text.Split('\0', StringSplitOptions.RemoveEmptyEntries);
     }
 
+    /// <summary>Whether <paramref name="ancestor"/> is <paramref name="commit"/> or one of its ancestors.</summary>
+    public async Task<bool> IsAncestorAsync(string ancestor, string commit, CancellationToken cancellationToken)
+    {
+        GitResult result = await RunAsync(TopLevel, ["merge-base", "--is-ancestor", ancestor, commit], cancellationToken)
+            .ConfigureAwait(false);
+        return result.ExitCode switch
+        {
+            0 => true,
+            1 => false,
+            _ => throw new InvalidOperationException("git merge-base failed: " + result.Error.Trim()),
+        };
+    }
+
+    /// <summary>
+    /// The commits reachable from <paramref name="to"/> but not from <paramref name="from"/>, or all of them when
+    /// <paramref name="from"/> is <see langword="null"/>.
+    /// </summary>
+    public async Task<IReadOnlyList<GitCommit>> ListCommitsAsync(string? from, string to, CancellationToken cancellationToken)
+    {
+        GitResult result = await RunAsync(
+            TopLevel,
+            ["log", "--format=%H %ct %P", from is null ? to : from + ".." + to, "--"],
+            cancellationToken).ConfigureAwait(false);
+        if (result.ExitCode != 0)
+        {
+            throw new InvalidOperationException("git log failed: " + result.Error.Trim());
+        }
+
+        return result.Text
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(line => line.Split(' '))
+            .Select(fields => new GitCommit(
+                fields[0],
+                long.Parse(fields[1], System.Globalization.CultureInfo.InvariantCulture),
+                fields.Length - 2))
+            .ToArray();
+    }
+
+    /// <summary>The files the given non-merge commits changed, each against its parent.</summary>
+    /// <returns>Paths relative to <see cref="TopLevel"/>, with forward slashes, each once.</returns>
+    public async Task<IReadOnlyList<string>> CommitFilesAsync(IReadOnlyList<string> commits, CancellationToken cancellationToken)
+    {
+        GitResult result = await RunAsync(
+            TopLevel,
+            ["log", "--no-walk=unsorted", "--format=", "--name-only", "--no-renames", "-z", .. commits, "--"],
+            cancellationToken).ConfigureAwait(false);
+        if (result.ExitCode != 0)
+        {
+            throw new InvalidOperationException("git log failed: " + result.Error.Trim());
+        }
+
+        return result.Text
+            .Split('\0', StringSplitOptions.RemoveEmptyEntries)
+            .Select(p => p.Trim('\n'))
+            .Where(p => p.Length > 0)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    /// <summary>The id of the empty tree in this repository's hash format.</summary>
+    public async Task<string> EmptyTreeAsync(CancellationToken cancellationToken)
+    {
+        // Standard input is empty.
+        GitResult result = await RunAsync(TopLevel, ["hash-object", "-t", "tree", "--stdin"], cancellationToken)
+            .ConfigureAwait(false);
+        if (result.ExitCode != 0)
+        {
+            throw new InvalidOperationException("git hash-object failed: " + result.Error.Trim());
+        }
+
+        return result.Text.Trim();
+    }
+
     /// <summary>
     /// The file as a checkout would write it (<c>git cat-file --filters</c>), so <c>core.autocrlf</c> and
     /// <c>.gitattributes</c> conversions match the working tree.
@@ -215,3 +289,6 @@ public sealed class GitRepository
         public string Text => Encoding.UTF8.GetString(Output);
     }
 }
+
+/// <summary>A commit: its id, committer time in Unix seconds, and number of parents.</summary>
+public sealed record GitCommit(string Hash, long CommitTime, int ParentCount);

@@ -35,7 +35,22 @@ public sealed class GitTestRepo : IDisposable
         Git("commit", "-q", "-m", message);
     }
 
-    public string Git(params string[] arguments)
+    /// <summary>Commits everything with <paramref name="date"/> as the author and committer date.</summary>
+    public void CommitAll(string message, DateTimeOffset date)
+    {
+        Git("add", "-A");
+        string gitDate = date.ToUnixTimeSeconds().ToString(System.Globalization.CultureInfo.InvariantCulture) + " +0000";
+        GitWithEnvironment(
+            new Dictionary<string, string> { ["GIT_AUTHOR_DATE"] = gitDate, ["GIT_COMMITTER_DATE"] = gitDate },
+            "commit",
+            "-q",
+            "-m",
+            message);
+    }
+
+    public string Git(params string[] arguments) => GitWithEnvironment(new Dictionary<string, string>(), arguments);
+
+    public string GitWithEnvironment(IReadOnlyDictionary<string, string> environment, params string[] arguments)
     {
         var startInfo = new ProcessStartInfo("git")
         {
@@ -46,6 +61,11 @@ public sealed class GitTestRepo : IDisposable
             StandardOutputEncoding = Encoding.UTF8,
             StandardErrorEncoding = Encoding.UTF8,
         };
+        foreach ((string name, string value) in environment)
+        {
+            startInfo.Environment[name] = value;
+        }
+
         foreach (string argument in arguments)
         {
             startInfo.ArgumentList.Add(argument);

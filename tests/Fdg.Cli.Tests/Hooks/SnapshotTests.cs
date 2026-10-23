@@ -166,6 +166,95 @@ public sealed class SnapshotTests : IDisposable
             GitStatusEntry.Parse("R  new name.cs\0old name.cs\0?? 中文.cs\0").Select(e => e.Status + " " + e.Path));
     }
 
+    [Fact]
+    public async Task First_commit_made_during_the_turn_counts()
+    {
+        _repo.Write("App/App.csproj", Project);
+        (GitRepository git, StateStore state) = await OpenAsync();
+        TurnSnapshot snapshot = await Snapshot.TakeAsync(git, state, CancellationToken.None);
+        _repo.Write("App/A.cs", "class A { }\n");
+        _repo.CommitAll("the AI's first commit");
+
+        TurnChanges changes = await Snapshot.FindChangesAsync(git, snapshot, CancellationToken.None);
+
+        Assert.Equal(["App/A.cs"], changes.Changed);
+        Assert.Empty(changes.Notes);
+    }
+
+    [Fact]
+    public async Task Commits_made_during_the_turn_count_and_those_from_before_it_say_so()
+    {
+        _repo.Write("App/App.csproj", Project);
+        _repo.Write("App/A.cs", "class A { }\n");
+        _repo.Write("App/B.cs", "class B { }\n");
+        _repo.CommitAll();
+        _repo.Git("switch", "-q", "-c", "side");
+        _repo.Write("App/B.cs", "class B { int old; }\n");
+        _repo.CommitAll("on another branch, before the turn", DateTimeOffset.UtcNow.AddDays(-1));
+        _repo.Git("switch", "-q", "main");
+        (GitRepository git, StateStore state) = await OpenAsync();
+        TurnSnapshot snapshot = await Snapshot.TakeAsync(git, state, CancellationToken.None);
+        _repo.Git("merge", "-q", "--no-ff", "--no-edit", "side");
+        _repo.Write("App/A.cs", "class A { int x; }\n");
+        _repo.CommitAll("the AI commits");
+
+        TurnChanges changes = await Snapshot.FindChangesAsync(git, snapshot, CancellationToken.None);
+
+        // The merge commit is new, but a merge brings in no file of its own.
+        Assert.Equal(["App/A.cs"], changes.Changed);
+        Assert.Equal(["FDG: HEAD moved during the turn by commits not made in it; their files were not checked."], changes.Notes);
+    }
+
+    [Fact]
+    public async Task Head_that_is_no_longer_a_descendant_of_the_turns_head_says_so()
+    {
+        _repo.Write("App/App.csproj", Project);
+        _repo.Write("App/A.cs", "class A { }\n");
+        _repo.CommitAll();
+        _repo.Git("branch", "side");
+        _repo.Write("App/A.cs", "class A { int main; }\n");
+        _repo.CommitAll();
+        (GitRepository git, StateStore state) = await OpenAsync();
+        TurnSnapshot snapshot = await Snapshot.TakeAsync(git, state, CancellationToken.None);
+        _repo.Git("switch", "-q", "side");
+
+        TurnChanges changes = await Snapshot.FindChangesAsync(git, snapshot, CancellationToken.None);
+
+        Assert.Empty(changes.Changed);
+        Assert.Equal(["FDG: HEAD moved during the turn by commits not made in it; their files were not checked."], changes.Notes);
+    }
+
+    [Fact]
+    public async Task Turn_head_that_cannot_be_read_gives_one_note()
+    {
+        _repo.Write("App/App.csproj", Project);
+        _repo.Write("App/A.cs", "class A { }\n");
+        _repo.CommitAll();
+        (GitRepository git, _) = await OpenAsync();
+        var snapshot = new TurnSnapshot(1, new string('1', 40), new Dictionary<string, string>(), DateTimeOffset.UtcNow);
+
+        TurnChanges changes = await Snapshot.FindChangesAsync(git, snapshot, CancellationToken.None);
+
+        Assert.Empty(changes.Changed);
+        Assert.StartsWith("FDG: cannot list the commits made during the turn (", Assert.Single(changes.Notes));
+        Assert.EndsWith("); their files were not checked.", changes.Notes[0]);
+    }
+
+    [Fact]
+    public async Task Snapshot_without_a_start_time_started_when_its_file_was_written()
+    {
+        (GitRepository git, StateStore state) = await OpenAsync();
+        Directory.CreateDirectory(state.Directory);
+        string path = Path.Combine(state.Directory, "snapshot.json");
+        File.WriteAllText(path, """{ "turn": 3, "head": null, "dirtyFiles": {} }""");
+        var written = new DateTime(2026, 10, 1, 8, 0, 0, DateTimeKind.Utc);
+        File.SetLastWriteTimeUtc(path, written);
+
+        TurnSnapshot snapshot = state.ReadSnapshot()!;
+
+        Assert.Equal(new DateTimeOffset(written), snapshot.Started);
+    }
+
     private void ResetRepo(bool autoCrlf)
     {
         _repo.Dispose();

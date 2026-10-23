@@ -137,7 +137,7 @@ public sealed partial class HookRunner
     {
         // 1. The turn's changed files, in scope only, grouped by project.
         TurnChanges changes = await Snapshot.FindChangesAsync(git, snapshot, cancellationToken).ConfigureAwait(false);
-        var notes = new List<string>();
+        var notes = new List<string>(changes.Notes);
         IReadOnlyList<ProjectWork> projects = GroupByProject(git, changes.Changed, notes);
         if (projects.Count == 0)
         {

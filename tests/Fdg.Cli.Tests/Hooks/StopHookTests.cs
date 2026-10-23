@@ -196,6 +196,34 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Commits_pulled_during_the_turn_are_not_checked_and_say_so()
+    {
+        using var remote = new GitTestRepo(init: false);
+        remote.Git("init", "-q", "--bare", "-b", "main");
+        _repo.Git("remote", "add", "origin", remote.Root);
+        _repo.Git("push", "-q", "-u", "origin", "main");
+        using var other = new GitTestRepo(init: false);
+        other.Git("clone", "-q", remote.Root, ".");
+        other.Git("config", "user.name", "Someone Else");
+        other.Git("config", "user.email", "else@example.invalid");
+        other.Write("src/中文 App/Order.cs", Lines(10, (4, "int Bad_Name;")));
+        other.CommitAll("pushed before the turn", DateTimeOffset.UtcNow.AddHours(-1));
+        other.Git("push", "-q", "origin", "main");
+        await TurnStartAsync();
+        _repo.Git("pull", "-q", "--ff-only");
+        string order = _repo.Path("src/中文 App/Order.cs");
+        _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "Remove the underscores", order, 4)];
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal(
+            "FDG: HEAD moved during the turn by commits not made in it; their files were not checked.",
+            Json(output, "systemMessage"));
+        Assert.Empty(_formatter.Calls);
+        Assert.Empty(_builder.Calls);
+    }
+
+    [Fact]
     public async Task Compile_errors_in_changed_files_are_reported_on_any_line()
     {
         string other = _repo.Write("src/中文 App/Other.cs", Lines(5));
