@@ -5,9 +5,13 @@ the `dotnet-fdg` .NET tool that the hooks run. Both are needed.
 
 ## Requirements
 
-- .NET SDK 8.0.100 or later.
+- .NET SDK 8.0.100 or later. That is the lowest version the session start check accepts, but it is untested: the
+  pilot and CI use 10.0.402. A `.slnx` solution needs SDK 9.0.200 or later.
 - Windows: Git for Windows (Claude Code runs the hooks in Git Bash) and, for Codex, PowerShell 7 (`pwsh`) on the
   PATH.
+
+Until the first release is published, `dotnet tool install -g dotnet-fdg` and the marketplace repository below do not
+work: use `artifacts/packages` as the NuGet source of both packages, and add the marketplace from a local clone.
 
 ## 1. Install the tool
 
@@ -51,8 +55,8 @@ them; until then the old approval does not apply and the hooks do nothing.
 In the repository, run the setup skill:
 
 - Claude Code: `/framework-design-guidelines:fdg-setup` (or `/fdg-setup` when no other command has that name)
-- Codex: the skill is `framework-design-guidelines:fdg-setup`; `$fdg-setup` should work when no other skill has
-  that name (to be confirmed in the pilot)
+- Codex: the skill is `framework-design-guidelines:fdg-setup`. `$fdg-setup` may work when no other skill has that
+  name; this has not been verified.
 
 It adds the `FrameworkDesignGuidelines.Analyzers` package, gives each project a profile (`library`, `application`
 or `test`) and builds once. It changes only working-tree files; review them with `git diff` and commit them yourself.
@@ -61,6 +65,9 @@ or `test`) and builds once. It changes only working-tree files; review them with
 
 - **Two AI sessions in one repository at the same time** see each other's edits as their own, so a Stop can format
   or report lines the other session wrote.
+- **Files you edit yourself during a turn**, for example in an IDE, count as the AI's: Stop formats them and reports
+  their diagnostics like the AI's changes.
+- **Changes inside git submodules** are not checked: Stop looks only at the repository the session runs in.
 - **The AI committing in the middle of a turn**: Stop still formats and checks the files changed in those commits,
   against their content at the start of the turn. The commit holds the unformatted code, and the fixes are left
   uncommitted in the working tree.
@@ -71,4 +78,5 @@ or `test`) and builds once. It changes only working-tree files; review them with
 - **A `global.json` that pins an SDK that is not installed** breaks the checks: the builds that Stop and setup run
   fail before any analyzer runs. Install that SDK or relax the pin (`rollForward`).
 - **Stop time grows with the number of projects touched** in the turn, since each is built in turn; the Stop check
-  gives up after 60 seconds (`FDG_HOOK_TIMEOUT_SECONDS`).
+  gives up after 60 seconds (`FDG_HOOK_TIMEOUT_SECONDS`). A value above about 85 is capped by the host, which ends
+  the Stop hook after 90 seconds.
