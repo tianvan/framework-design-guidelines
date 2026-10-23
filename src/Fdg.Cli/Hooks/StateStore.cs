@@ -115,7 +115,28 @@ public sealed class StateStore
     public IReadOnlyDictionary<string, int[]> ReadAiLines() =>
         ReadJson<Dictionary<string, int[]>>("ai-lines.json") ?? [];
 
-    public void WriteAiLines(IReadOnlyDictionary<string, int[]> lines) => WriteJson("ai-lines.json", lines);
+    /// <summary>
+    /// Keeps the lines of the files a Stop processed, and removes the formatted copies of every other file: a file
+    /// the next Stop finds changed again is then compared with its baseline, not with a copy from before a revert.
+    /// </summary>
+    public void WriteAiLines(IReadOnlyDictionary<string, int[]> lines)
+    {
+        WriteJson("ai-lines.json", lines);
+        string formatted = Path.Combine(Directory, "formatted");
+        if (!System.IO.Directory.Exists(formatted))
+        {
+            return;
+        }
+
+        var kept = lines.Keys.Select(Sha1).ToHashSet(StringComparer.Ordinal);
+        foreach (string copy in System.IO.Directory.EnumerateFiles(formatted))
+        {
+            if (!kept.Contains(Path.GetFileName(copy)))
+            {
+                File.Delete(copy);
+            }
+        }
+    }
 
     public TurnSnapshot? ReadSnapshot() => ReadJson<TurnSnapshot>("snapshot.json");
 

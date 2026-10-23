@@ -142,6 +142,7 @@ public sealed partial class HookRunner
         if (projects.Count == 0)
         {
             state.WriteAutofix(null);
+            state.WriteAiLines(new Dictionary<string, int[]>());
             return Finish(notes, []);
         }
 
@@ -253,7 +254,8 @@ public sealed partial class HookRunner
         IReadOnlyList<ProjectWork> projects,
         CancellationToken cancellationToken)
     {
-        var aiLines = new Dictionary<string, int[]>(state.ReadAiLines(), StringComparer.Ordinal);
+        IReadOnlyDictionary<string, int[]> previousAiLines = state.ReadAiLines();
+        var aiLines = new Dictionary<string, int[]>(StringComparer.Ordinal);
         var changedLines = new Dictionary<string, IReadOnlySet<int>>(ProjectFiles.PathComparer);
         foreach (string path in projects.SelectMany(p => p.Files).Distinct(StringComparer.Ordinal))
         {
@@ -261,7 +263,7 @@ public sealed partial class HookRunner
             string aiVersion = state.AiVersionPath(path);
             string previous = state.FormattedPath(path);
             IReadOnlySet<int> lines;
-            if (aiLines.TryGetValue(path, out int[]? previousLines) && File.Exists(previous))
+            if (previousAiLines.TryGetValue(path, out int[]? previousLines) && File.Exists(previous))
             {
                 lines = await ChangedLines.ComputeSinceAsync(
                     git, previous, previousLines.ToHashSet(), aiVersion, current, cancellationToken).ConfigureAwait(false);

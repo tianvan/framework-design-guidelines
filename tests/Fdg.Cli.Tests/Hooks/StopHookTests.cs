@@ -306,6 +306,53 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task File_changed_again_after_a_revert_is_compared_with_the_baseline()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int Bad_Name;")));
+        _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "Remove the underscores", order, 4)];
+        Assert.Equal("block", Json(await TurnStopAsync(), "decision"));
+
+        // Reverted: this Stop processes no file, so it drops what the first one kept.
+        _repo.Write("src/中文 App/Order.cs", Lines(10));
+        Assert.Equal(string.Empty, await TurnStopAsync());
+        StateStore state = await StateAsync();
+        Assert.Empty(state.ReadAiLines());
+        Assert.False(File.Exists(state.FormattedPath("src/中文 App/Order.cs")));
+
+        // Line 4 is as at the start of the turn again, so only line 7 is the AI's.
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (7, "int Other_Name;")));
+        _builder.Sarif = _ => [
+            new SarifResult("CA1707", "warning", "Remove the underscores", order, 4),
+            new SarifResult("CA1707", "warning", "Remove the underscores", order, 7),
+        ];
+
+        string reason = Json(await TurnStopAsync(), "reason")!;
+
+        Assert.StartsWith("FDG found 1 issue(s)", reason);
+        Assert.Contains("Order.cs:7 CA1707", reason);
+    }
+
+    [Fact]
+    public async Task Stop_keeps_the_AI_lines_and_formatted_copies_of_the_files_it_processed_only()
+    {
+        string other = _repo.Write("src/中文 App/Other.cs", Lines(5));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        _repo.Write("src/中文 App/Other.cs", Lines(5, (2, "int y;")));
+        await TurnStopAsync();
+        File.WriteAllText(other, Lines(5));
+
+        await TurnStopAsync();
+
+        StateStore state = await StateAsync();
+        Assert.Equal(["src/中文 App/Order.cs"], state.ReadAiLines().Keys);
+        Assert.True(File.Exists(state.FormattedPath("src/中文 App/Order.cs")));
+        Assert.False(File.Exists(state.FormattedPath("src/中文 App/Other.cs")));
+    }
+
+    [Fact]
     public async Task Stop_without_the_stop_hook_active_field_keeps_the_block_count()
     {
         await TurnStartAsync();
