@@ -46,32 +46,39 @@ public sealed class StateStore
     /// <summary>
     /// Deletes the state directories of other sessions last changed before <paramref name="cutoffUtc"/>. Every turn
     /// rewrites a session's <c>snapshot.json</c>, which changes its directory. The current session's state is kept.
+    /// Best effort: whatever cannot be listed or deleted stays, and the next session tries again.
     /// </summary>
     public static void DeleteOtherSessions(GitRepository git, string currentSessionId, DateTime cutoffUtc)
     {
         string root = Path.Combine(git.GitDirectory, "fdg");
-        if (!System.IO.Directory.Exists(root))
-        {
-            return;
-        }
-
         string current = SanitizeSessionId(currentSessionId);
-        foreach (string directory in System.IO.Directory.EnumerateDirectories(root))
+        try
         {
-            if (ProjectFiles.PathComparer.Equals(Path.GetFileName(directory), current) ||
-                System.IO.Directory.GetLastWriteTimeUtc(directory) >= cutoffUtc)
+            if (!System.IO.Directory.Exists(root))
             {
-                continue;
+                return;
             }
 
-            try
+            foreach (string directory in System.IO.Directory.EnumerateDirectories(root))
             {
-                System.IO.Directory.Delete(directory, recursive: true);
+                if (ProjectFiles.PathComparer.Equals(Path.GetFileName(directory), current) ||
+                    System.IO.Directory.GetLastWriteTimeUtc(directory) >= cutoffUtc)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    System.IO.Directory.Delete(directory, recursive: true);
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+                {
+                    // In use; the others can still go.
+                }
             }
-            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
-            {
-                // In use; the next session tries again.
-            }
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
         }
     }
 

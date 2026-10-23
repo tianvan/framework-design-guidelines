@@ -841,6 +841,26 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Session_start_still_gives_its_context_when_the_old_state_cannot_be_listed()
+    {
+        string fdg = Directory.CreateDirectory(_repo.Path(".git/fdg")).FullName;
+        Directory.CreateDirectory(Path.Combine(fdg, "old-session"));
+        DenyListing(fdg, deny: true);
+        try
+        {
+            string output = await CreateRunner().SessionStartAsync(
+                new HookInput(HostKind.Claude, Session, _repo.Root, "SessionStart"),
+                CancellationToken.None);
+
+            Assert.NotEqual(string.Empty, output);
+        }
+        finally
+        {
+            DenyListing(fdg, deny: false);
+        }
+    }
+
+    [Fact]
     public async Task Session_start_outside_git_says_checks_are_disabled_for_onboarded_projects_only()
     {
         using var tree = new TempTree();
@@ -992,6 +1012,30 @@ public sealed class StopHookTests : IDisposable
     {
         public override Task<string> ReadToEndAsync(CancellationToken cancellationToken) =>
             throw new IOException("The pipe has been ended.");
+    }
+
+    /// <summary>Makes <paramref name="directory"/> unlistable for the current user, or listable again.</summary>
+    private static void DenyListing(string directory, bool deny)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            File.SetUnixFileMode(
+                directory,
+                deny ? UnixFileMode.None : UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            return;
+        }
+
+        string user = Environment.UserDomainName + "\\" + Environment.UserName;
+        var startInfo = new System.Diagnostics.ProcessStartInfo("icacls") { UseShellExecute = false, RedirectStandardOutput = true };
+        foreach (string argument in deny ? [directory, "/deny", user + ":(RD)"] : (string[])[directory, "/remove:d", user])
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        using var process = System.Diagnostics.Process.Start(startInfo)!;
+        process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+        Assert.Equal(0, process.ExitCode);
     }
 
     private async Task<StateStore> StateAsync() =>
