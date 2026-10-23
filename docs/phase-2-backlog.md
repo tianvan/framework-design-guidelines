@@ -15,7 +15,7 @@ The design calls for full coverage of the book before version 1.0. Until then, r
 - Set a preview version, for example `0.1.0-preview.1`.
 - Publish the analyzer package and `dotnet-fdg` to nuget.org. Once they are published, check that `docs/install.md` works exactly as written.
 - Add a CI job on SDK 8.0.1xx running the integration tests, or raise the documented minimum SDK to a tested version. `.slnx` needs SDK 9.0.200 or later.
-- Pin GitHub Actions to commit SHAs.
+- Pin GitHub Actions to commit SHAs, on versions that run on Node.js 24 (CI warns that Node.js 20 is deprecated).
 - Not yet verified on a real host:
   - the Codex `$fdg-setup` invocation;
   - Codex SessionStart after compaction;
