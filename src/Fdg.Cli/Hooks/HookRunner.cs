@@ -15,6 +15,9 @@ namespace Fdg.Cli.Hooks;
 /// </summary>
 public sealed partial class HookRunner
 {
+    // Each dotnet format loads a whole workspace into memory, so only a few run at once.
+    private const int MaxParallelFormats = 4;
+
     private static readonly TimeSpan CleanupGrace = TimeSpan.FromSeconds(2);
 
     private static readonly TimeSpan StaleSessionAge = TimeSpan.FromDays(7);
@@ -149,11 +152,11 @@ public sealed partial class HookRunner
             File.Copy(Snapshot.FullPath(git, path), aiVersion, overwrite: true);
         }
 
-        // 2. Per project, in parallel: format.
+        // 2. Per project, a few at a time: format.
         var formatNotes = new ConcurrentDictionary<int, string>();
         await Parallel.ForEachAsync(
             projects.Select((project, index) => (Project: project, Index: index)),
-            cancellationToken,
+            new ParallelOptions { MaxDegreeOfParallelism = MaxParallelFormats, CancellationToken = cancellationToken },
             async (item, token) =>
             {
                 if (await FormatProjectAsync(git, item.Project, token).ConfigureAwait(false) is string note)

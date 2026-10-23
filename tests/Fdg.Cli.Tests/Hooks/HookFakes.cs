@@ -33,14 +33,20 @@ public sealed record HookFormatCall(string ProjectPath, IReadOnlyList<string>? I
 public sealed class FakeHookFormatter : IFormatRunner
 {
     private readonly object _lock = new();
+    private int _running;
 
     public List<HookFormatCall> Calls { get; } = [];
+
+    /// <summary>The most formats that ran at the same time.</summary>
+    public int MaxConcurrent { get; private set; }
 
     public Action<string> OnFormat { get; set; } = _ => { };
 
     public ToolResult Result { get; set; } = new(0, string.Empty, false);
 
-    public Task<ToolResult> FormatAsync(
+    public TimeSpan Delay { get; set; } = TimeSpan.Zero;
+
+    public async Task<ToolResult> FormatAsync(
         string projectPath,
         IReadOnlyList<string>? includeFiles,
         IReadOnlyList<string> diagnostics,
@@ -49,10 +55,26 @@ public sealed class FakeHookFormatter : IFormatRunner
         lock (_lock)
         {
             Calls.Add(new HookFormatCall(projectPath, includeFiles, diagnostics));
+            MaxConcurrent = Math.Max(MaxConcurrent, ++_running);
+        }
+
+        try
+        {
+            if (Delay > TimeSpan.Zero)
+            {
+                await Task.Delay(Delay, cancellationToken);
+            }
+        }
+        finally
+        {
+            lock (_lock)
+            {
+                _running--;
+            }
         }
 
         OnFormat(projectPath);
-        return Task.FromResult(Result);
+        return Result;
     }
 }
 

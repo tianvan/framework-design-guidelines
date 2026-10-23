@@ -542,6 +542,29 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task At_most_4_projects_are_formatted_at_once()
+    {
+        for (int i = 0; i < 7; i++)
+        {
+            _projects.Add(_repo.Write($"src/P{i}/P{i}.csproj", OnboardedProject), ProjectState.InScope);
+        }
+
+        _repo.CommitAll();
+        await TurnStartAsync();
+        for (int i = 0; i < 7; i++)
+        {
+            _repo.Write($"src/P{i}/C.cs", Lines(3));
+        }
+
+        _formatter.Delay = TimeSpan.FromMilliseconds(300);
+
+        await TurnStopAsync();
+
+        Assert.Equal(7, _formatter.Calls.Count);
+        Assert.InRange(_formatter.MaxConcurrent, 2, 4);
+    }
+
+    [Fact]
     public async Task Projects_are_built_one_at_a_time()
     {
         string lib = _repo.Write("src/Lib/Lib.csproj", OnboardedProject);
