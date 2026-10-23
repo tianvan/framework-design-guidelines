@@ -22,4 +22,4 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 
 ### Appendix A: C# Coding Style Conventions
 
-- **A** (rationale): The appendix introduction says that, unlike the framework design guidelines, these coding style conventions "are not required and should be treated as a set of suggestions", because they have no direct effect on most users of a framework. This is why every appendix A rule has style: true, is enabled by default, and can be overridden.
+- **A** (rationale): The appendix introduction says that, unlike the framework design guidelines, these coding style conventions "are not required and should be treated as a set of suggestions", because they have no direct effect on most users of a framework. This is why every appendix A rule has style: true, is enabled by the profiles, and can be overridden.
