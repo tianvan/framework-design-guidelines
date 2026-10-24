@@ -99,7 +99,7 @@
         System.IO
         System.Threading.IOCompletionCallback
         public void StartIO(Stream ioStream)
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -130,7 +130,7 @@
         System.Xml
         System.Xml.XmlNode
         public void ProcessHtmlTag(string htmlTag)
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
