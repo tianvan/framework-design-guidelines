@@ -9,7 +9,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Members;
 
 /// <summary>
 /// FDG5077: no two externally visible extension methods of the compilation, in different classes, have the same name,
-/// number of type parameters and parameter types. Each one is reported, with the class of another.
+/// number of type parameters and parameter types. Each one is reported, with the first other class by fully qualified
+/// name.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class DuplicateExtensionMethodAnalyzer : DiagnosticAnalyzer
@@ -42,7 +43,11 @@ public sealed class DuplicateExtensionMethodAnalyzer : DiagnosticAnalyzer
     {
         foreach (IGrouping<string, IMethodSymbol> group in methods.GroupBy(Signature))
         {
-            IMethodSymbol[] same = group.ToArray();
+            IMethodSymbol[] same = group
+                .OrderBy(
+                    method => method.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                    StringComparer.Ordinal)
+                .ToArray();
             foreach (IMethodSymbol method in same)
             {
                 if (same.FirstOrDefault(other => !SymbolEqualityComparer.Default.Equals(

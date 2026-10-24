@@ -65,7 +65,7 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
 - [ ] FDG5057 DO use `System.EventHandler<T>` instead of manually creating new delegates to be used as event handlers.
   sdk CA1003, partial; breaking. Chosen because the body exempts new events in a feature area that already uses custom handlers, which CA1003 cannot see, and because replacing the delegate type of a public event is breaking with no code fix.
 - [ ] FDG5059 DO use a protected virtual method to raise each event. This is applicable only to nonstatic events on unsealed classes—not to structs, sealed classes, or static events.
-  fdg FDG5059, partial; no autofix. Chosen because the new analyzer finds the raising method by the "On" plus event name convention of the body, and leaves out override, abstract and explicitly implemented events on top of the exceptions in the text.
+  fdg FDG5059, partial; no autofix; library only. Chosen because the new analyzer finds the raising method by the "On" plus event name convention of the body, and leaves out override, abstract and explicitly implemented events on top of the exceptions in the text.
 - [ ] FDG5073 DO throw an `ArgumentNullException` when the `this` parameter in an extension method is `null`.
   sdk CA1062, partial; no autofix. Chosen because CA1062 reports only a dereferenced parameter, and also reports every other parameter of public methods, which belongs to argument validation in 5.8.2; on the noise samples none of its reports was on an extension method.
 - [ ] FDG5075 CONSIDER naming the type that holds extension methods for its functionality—for example, use “Routing” instead of “[ExtendedType] Extensions.”

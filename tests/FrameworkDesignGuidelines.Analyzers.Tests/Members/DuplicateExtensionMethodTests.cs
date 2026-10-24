@@ -73,6 +73,52 @@ public sealed class DuplicateExtensionMethodTests
     }
 
     [Fact]
+    public Task Message_names_the_first_other_class_by_full_name()
+    {
+        return Verifier.VerifyWithAsync(
+            """
+            namespace C
+            {
+                public static class CExtensions
+                {
+                    public static void {|#2:ExtensionMethod|}(this string value)
+                    {
+                    }
+                }
+            }
+
+            namespace B
+            {
+                public static class BExtensions
+                {
+                    public static void {|#1:ExtensionMethod|}(this string value)
+                    {
+                    }
+                }
+            }
+
+            namespace A
+            {
+                public static class AExtensions
+                {
+                    public static void {|#0:ExtensionMethod|}(this string value)
+                    {
+                    }
+                }
+            }
+            """,
+            new DiagnosticResult(FdgDescriptors.FDG5077)
+                .WithLocation(2)
+                .WithArguments("ExtensionMethod", "AExtensions"),
+            new DiagnosticResult(FdgDescriptors.FDG5077)
+                .WithLocation(1)
+                .WithArguments("ExtensionMethod", "AExtensions"),
+            new DiagnosticResult(FdgDescriptors.FDG5077)
+                .WithLocation(0)
+                .WithArguments("ExtensionMethod", "BExtensions"));
+    }
+
+    [Fact]
     public Task Different_signatures_and_hidden_methods_are_not_reported()
     {
         return Verifier.VerifyAsync(

@@ -261,6 +261,20 @@ public sealed class EventRaisingMethodTests
                 }
             }
 
+            public class Panel
+            {
+                private event EventHandler Scrolled;
+
+                internal event EventHandler Resized;
+            }
+
+            public class ScrollPanel : Panel
+            {
+                protected virtual void OnScrolled()
+                {
+                }
+            }
+
             internal class Hidden
             {
                 public event EventHandler Click;

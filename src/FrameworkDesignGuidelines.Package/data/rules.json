@@ -3714,7 +3714,7 @@
       "autofix": "no",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -3730,7 +3730,7 @@
       "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null

@@ -9,8 +9,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Members;
 /// FDG5074: an externally visible extension method does not extend System.Object. FDG5075: an externally visible
 /// static class that declares extension methods is not named "[ExtendedType]Extensions": "Extensions" after nothing or
 /// after the name of a type that one of its methods extends (for an interface, also without its leading I). FDG5076:
-/// an externally visible extension method is not in the namespace of the type it extends, unless that type is an interface, is declared in another
-/// assembly, or the method restricts its generic type.
+/// an externally visible extension method is not in the namespace of the type it extends, unless that type is an
+/// interface, is declared in another assembly, or the method restricts its generic type.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ExtensionMethodAnalyzer : DiagnosticAnalyzer

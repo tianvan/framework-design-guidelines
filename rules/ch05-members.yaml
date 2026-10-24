@@ -2093,7 +2093,7 @@
     - kind: annotation
       text: Why did we decide to use “raise” rather than “fire”? Well, we certainly have some prior art on our side on this one, but we also felt like “fire” was too negative a term. After all, you fire a gun or you fire an employee. “Raise” sounds more peaceful.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2129,7 +2129,7 @@
       author: Brian Pepin
     - kind: paragraph
       text: Creating new custom event handlers is rare, and the guidance has been archived to Appendix B.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2164,7 +2164,7 @@
         public class AlarmRaisedEventArgs : EventArgs {
            public DateTimeOffset AlarmTime { get; }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2218,7 +2218,7 @@
   autofix: no
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
@@ -2226,7 +2226,7 @@
   analyzer:
     message: 'Add a protected virtual method ''On{0}'' that raises the event ''{0}'''
     category: Members
-  notes: 'FDG5059 reports an externally visible instance event declared in an unsealed class when neither the class nor a base class has a protected (or protected internal) virtual, abstract or override method named "On" followed by the event name, the convention the body gives. Structs, sealed and static classes and static events are not reported, as the text says. Override, abstract and explicitly implemented events are not reported: they declare no new event that the class can raise. A raising method with another name is reported; the body names the convention. Adding a protected virtual method changes no existing signature, so the fix is not breaking, but there is no code fix.'
+  notes: 'Library only: the protected virtual method is for derived classes outside the library, an extensibility point of public API. FDG5059 reports an externally visible instance event declared in an unsealed class when neither the class nor a base class has a protected (or protected internal) virtual, abstract or override method named "On" followed by the event name, the convention the body gives. Structs, sealed and static classes and static events are not reported, as the text says. Override, abstract and explicitly implemented events are not reported: they declare no new event that the class can raise. A raising method with another name is reported; the body names the convention. Adding a protected virtual method changes no existing signature, so the fix is not breaking, but there is no code fix.'
 - id: FDG5060
   strength: DO
   text: take one parameter to the protected method that raises an event.
@@ -2251,7 +2251,7 @@
   autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
@@ -2259,7 +2259,7 @@
   analyzer:
     message: 'The method ''{0}'' that raises an event should take one parameter'
     category: Members
-  notes: 'FDG5060 reports an externally visible protected (or protected internal) method named "On" followed by the name of an event of its class or a base class, when it does not take exactly one parameter. Overrides are not reported; their parameters come from the base method. A raising method with another name is not seen. The name e and the event argument type, which the body adds, are not checked. Changing the parameters of a protected method changes the public API, so the fix is breaking.'
+  notes: 'Library only: the protected raising method is an extensibility point for derived classes outside the library. FDG5060 reports an externally visible protected (or protected internal) method named "On" followed by the name of an event of its class, or of a base class event that the class can access, when it does not take exactly one parameter. Overrides are not reported; their parameters come from the base method. A raising method with another name is not seen. The name e and the event argument type, which the body adds, are not checked. Changing the parameters of a protected method changes the public API, so the fix is breaking.'
 - id: FDG5061
   strength: DO NOT
   text: pass `null` as the sender when raising a nonstatic event.
@@ -2267,7 +2267,7 @@
   section: 5.4 Event Design
   anchor: sec5_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2297,7 +2297,7 @@
       text: |-
         EventHandler<EventArgs> handler = ...;
         if (handler!=null) handler(null,...);
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2325,7 +2325,7 @@
   body:
     - kind: paragraph
       text: You should pass `EventArgs.Empty` if you don’t want to pass any data to the event handling method. Developers expect this parameter not to be `null`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2358,7 +2358,7 @@
         void ClosingHandler(object sender, CancelEventArgs e) {
           e.Cancel = true;
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2416,7 +2416,7 @@
     - kind: annotation
       text: Personally, I always make my fields private. I don’t even expose fields as internal, because doing so would give me no protection from code in my own assembly.
       author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2448,7 +2448,7 @@
            public const int MaxValue = 0x7fffffff;
            public const int MinValue = unchecked((int)0x80000000);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2499,7 +2499,7 @@
         public static Color Red { get; } = new Color(0x0000FF);
         ```
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2534,7 +2534,7 @@
     - kind: annotation
       text: The real distinction here is between *deep* versus *shallow* immutability. A deeply immutable type is one whose fields are all `readonly`, and each field is of a type that itself is also deeply immutable. This ensures that a whole object graph is transitively immutable. While deep immutability is certainly the most useful kind, shallow immutability can also be useful. What this guideline is trying to protect you from is believing you’ve exposed a deeply immutable object graph when in fact it is shallow, and then writing code that assumes the whole graph is immutable.
       author: Joe Duffy
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2586,7 +2586,7 @@
 
         Centralizing these types of operations in a set of internal extension methods allowed our code to be much cleaner and allowed us to optimize implementations in one place.
       author: Brian Pepin
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2621,7 +2621,7 @@
 
         This is one of the many times I like to quote from *Spiderman*: “With great power comes great responsibility.”
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2646,7 +2646,7 @@
   body:
     - kind: paragraph
       text: For example, when the `ReadOnlySpan<T>` type was originally introduced, it was in a stand-alone library. Rather than waiting for an opportunity for `String` to depend on `ReadOnlySpan<char>` for the `AsSpan()` method and having a strong dependency between these types, the `AsSpan` method for `String` was written as an extension method in the library that defined `ReadOnlySpan<T>`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2689,7 +2689,7 @@
       text: In addition to making use of generic constraints to restrict applicable types, some methods only make sense on specific generic instantiations, such as the `IsWhiteSpace` method for `ReadOnlySpan<char>`.
     - kind: code
       text: public static bool IsWhiteSpace(this ReadOnlySpan<char> span) {...}
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2740,7 +2740,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'CA1062 reports a parameter of an externally visible method, the this parameter of an extension method included, that is dereferenced without a null check. It does not report a this parameter that the method never dereferences, which the body asks to validate too, nor one passed on to another method. It also reports the other parameters of every externally visible method; those reports belong to argument validation in 5.8.2, not to this rule. Do not set exclude_extension_method_this_parameter. CA1062 has no code fix; adding the check changes no signature.'
+  notes: 'CA1062 reports a parameter of an externally visible method, the this parameter of an extension method included, that is dereferenced without a null check. It does not report a this parameter that the method never dereferences, which the body asks to validate too, nor one passed on to another method. It also reports the other parameters of every externally visible method; those reports belong to argument validation in 5.8.2, not to this rule. Do not set exclude_extension_method_this_parameter. CA1062 accepts any null check before the dereference: a this parameter that is checked and then silently ignored (return or default), or checked with a different exception, is not reported, although the text asks for ArgumentNullException. CA1062 has no code fix; adding the check changes no signature.'
 - id: FDG5074
   strength: AVOID
   text: defining extension methods on `System.Object`.
@@ -2767,7 +2767,7 @@
       text: SomeExtensions.SomeMethod(o)
     - kind: paragraph
       text: Note that this guideline applies to other languages where the same binding behavior is present, or where extension methods are not supported.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2837,7 +2837,7 @@
 
         Please use extension methods with caution.
       author: Anthony Moore
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2865,7 +2865,7 @@
   body:
     - kind: paragraph
       text: Of course, in the case of dependency management, the type with the extension methods would be in a different assembly.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2937,7 +2937,7 @@
         B.BExtensions.ExtensionMethod(someObj);
         ```
       author: Mircea Trofin
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2963,7 +2963,7 @@
   section: 5.6 Extension Methods
   anchor: sec5_6
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3004,7 +3004,7 @@
            public static void DisposeAll<T>(
               this List<T> list) where T : IDisposable { ... }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3039,7 +3039,7 @@
 
         The drawback, of course, is that this results in a “hidden” API that is not very discoverable.
       author: Phil Haack
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3062,7 +3062,7 @@
   section: 5.7 Operator Overloads
   anchor: sec5_7
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3087,7 +3087,7 @@
   body:
     - kind: paragraph
       text: For example, `System.String` has `operator==` and `operator!=` defined.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3110,7 +3110,7 @@
   section: 5.7 Operator Overloads
   anchor: sec5_7
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3135,7 +3135,7 @@
   body:
     - kind: paragraph
       text: Operator overloading is useful in cases in which it is immediately obvious what the result of the operation will be. For example, it makes sense to be able to subtract one `DateTime` from another `DateTime` and get a `TimeSpan`. However, it is not appropriate to use the logical union operator to combine two database queries, or to use the shift operator to write to a stream.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3171,7 +3171,7 @@
          // compile in C#.
          // public static RangedInt32 operator-(int left, int right);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3199,7 +3199,7 @@
     - kind: annotation
       text: More generally, if you haven’t defined a whole family of overloads (because maybe they don’t all make sense), there’s a good chance that operator overloading isn’t really the best way to express your class. Remember—there are no bonus points for using fewer characters in your method calls.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3285,7 +3285,7 @@
     kind: sdk
     diagnostics:
       - CA2225
-    coverage: full
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -3295,7 +3295,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Library only: the reason is languages that do not support operator overloading; an application''s code is used from one language. CA2225 reports an operator of an externally visible type that has no method with the friendly name (for example Add for op_Addition, ToXxx or FromXxx for conversions); in a probe with SDK 10.0.402 it accepted CompareTo or Compare for the comparison operators, as Table 5-1 lists CompareTo. Adding a method changes no signature, but the code fix adds a method whose body must still be written, so it is not a safe fix.'
+  notes: 'Library only: the reason is languages that do not support operator overloading; an application''s code is used from one language. CA2225 reports an operator of an externally visible type that has no method with the friendly name (for example Add for op_Addition, ToXxx or FromXxx for conversions); in a probe with SDK 10.0.402 it accepted CompareTo or Compare for the comparison operators, as Table 5-1 lists CompareTo. CA2225 does not check the C# 14 user-defined compound assignment and instance increment/decrement operators (op_AdditionAssignment and the others of Table 5-1), and it accepts Compare as well as CompareTo. Adding a method changes no signature, but the code fix adds a method whose body must still be written, so it is not a safe fix.'
 - id: FDG5088
   strength: DO NOT
   text: provide a conversion operator if such a conversion is not clearly expected by the end users.
@@ -3305,7 +3305,7 @@
   body:
     - kind: paragraph
       text: Ideally, you should have some user research data showing that the conversion is expected, or some prior art examples where a similar type needed such conversion.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3335,7 +3335,7 @@
         public struct DateTime {
           public DateTime(long ticks){ ... }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3360,7 +3360,7 @@
   body:
     - kind: paragraph
       text: For example, there should not be an implicit conversion from `Double` to `Int32` because `Double` has a wider range than `Int32`. An explicit conversion operator can be provided even if the conversion is potentially lossy.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3385,7 +3385,7 @@
   body:
     - kind: paragraph
       text: Since implicit conversions are usually not visible in calling code, the potential performance costs of the method will be hidden from anyone reading the code. If a conversion requires more than a small amount of constant-time work, it should instead be exposed as a named method.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3413,7 +3413,7 @@
     - kind: annotation
       text: From a performance perspective, implicit conversions should also avoid allocations or otherwise having nontrivial overhead. Just as with boxing, if an implicit conversion is expensive, it’s likely developers will end up paying these costs without realizing it.
       author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -3445,7 +3445,7 @@
            }
            return new RangedInt32((int)value, Int32.MinValue, Int32.MaxValue);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3486,7 +3486,7 @@
   analyzer:
     message: 'Implement IComparable<{0}> on ''{0}'', which defines inequality operators'
     category: Members
-  notes: 'FDG5094 reports, once per type, an externally visible class or struct that declares operator <, >, <= or >= and does not implement IComparable<T> with T the type itself. Interfaces are not reported. The body says that a type with the operators has an easy basis for implementing the interface; adding an interface changes no existing signature, so the fix is not breaking, but there is no code fix. CA1036 is not mapped: it asks a type that implements IComparable to define all the comparison operators, the opposite direction, which the text does not ask.'
+  notes: 'FDG5094 reports, once per type, an externally visible class or struct that declares operator <, >, <= or >= and does not implement IComparable<T> with T the type itself. Interfaces are not reported. The body of FDG5095 says that a type with the operators has an easy basis for implementing the interface; adding an interface changes no existing signature, so the fix is not breaking, but there is no code fix. CA1036 is not mapped: it asks a type that implements IComparable to define all the comparison operators, the opposite direction, which the text does not ask.'
 - id: FDG5095
   strength: DO
   text: implement inequality operators consistent with the `IComparable<T>` implementation.
@@ -3500,7 +3500,7 @@
       text: |-
         public static bool operator <(SomeType left, SomeType right) =>
            left.CompareTo(right) < 0;
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3525,7 +3525,7 @@
   body:
     - kind: paragraph
       text: When both “less than” and “equal” are defined, then “less than or equal” should be well defined.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3551,7 +3551,7 @@
   section: 5.7.3 Inequality Operators
   anchor: sec5_7_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3594,7 +3594,7 @@
         // Almost everyone believes that the type of x here is Boolean.
         // Therefore it should be for any inequality operator you define.
         var x = a < b;
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3646,7 +3646,7 @@
         public partial struct DateTimeOffset {
          public DateTime UtcDateTime { get { ... } }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg

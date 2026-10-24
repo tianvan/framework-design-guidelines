@@ -7,7 +7,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Members;
 
 /// <summary>
 /// FDG5059: an externally visible instance event of an unsealed class has a protected virtual method, named "On" and
-/// the event name, that raises it. FDG5060: a protected method named that way takes one parameter.
+/// the event name, that raises it. FDG5060: a protected method named that way, for an event of its type or an event
+/// of a base type that its type can access, takes one parameter.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class EventRaisingMethodAnalyzer : DiagnosticAnalyzer
@@ -62,7 +63,8 @@ public sealed class EventRaisingMethodAnalyzer : DiagnosticAnalyzer
         string eventName = method.Name.Substring(Prefix.Length);
         for (INamedTypeSymbol? current = method.ContainingType; current is not null; current = current.BaseType)
         {
-            if (current.GetMembers(eventName).OfType<IEventSymbol>().Any())
+            if (current.GetMembers(eventName).OfType<IEventSymbol>()
+                .Any(@event => context.Compilation.IsSymbolAccessibleWithin(@event, method.ContainingType)))
             {
                 context.ReportDiagnostic(Diagnostic.Create(FdgDescriptors.FDG5060, location, method.Name));
                 return;
