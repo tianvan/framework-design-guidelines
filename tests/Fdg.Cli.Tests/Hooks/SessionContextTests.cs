@@ -296,7 +296,7 @@ public sealed class SessionContextTests : IDisposable
         Assert.Equal(
             ["FDG setup issue: .NET SDK 7.0.410 is older than 8.0.100. Run /fdg-setup to fix."],
             Issues(Build()!));
-        _sdkVersion = "9.0.100-rc.1.24452.12";
+        _sdkVersion = "10.0.100-rc.2";
         Assert.Empty(Issues(Build()!));
 
         var failing = new FakeProcessRunner().Respond(
@@ -305,6 +305,41 @@ public sealed class SessionContextTests : IDisposable
         Assert.Equal(
             ["FDG setup issue: dotnet --version failed here; FDG needs .NET SDK 8.0.100 or later. Run /fdg-setup to fix."],
             Issues(new SessionContext(failing).Build(_repo.Root)!));
+    }
+
+    [Theory]
+    [InlineData("8.0.100")]
+    [InlineData("9.0.300")]
+    public void Sdk_below_10_0_100_notes_missing_rules(string version)
+    {
+        Project("src/A/A.csproj", "application");
+        _sdkVersion = version;
+
+        Assert.Equal(
+            [$"FDG setup issue: .NET SDK {version} is older than 10.0.100: some rules need SDK 10.0.100 or later."],
+            Issues(Build()!));
+    }
+
+    [Theory]
+    [InlineData("10.0.100")]
+    [InlineData("10.0.100-rc.2")]
+    [InlineData("10.0.402")]
+    public void Sdk_10_0_100_or_later_has_no_note(string version)
+    {
+        Project("src/A/A.csproj", "application");
+        _sdkVersion = version;
+
+        Assert.Empty(Issues(Build()!));
+    }
+
+    [Fact]
+    public void Sdk_below_8_0_100_reports_only_the_minimum()
+    {
+        Project("src/A/A.csproj", "application");
+        _sdkVersion = "7.0.410";
+
+        string issue = Assert.Single(Issues(Build()!));
+        Assert.DoesNotContain("10.0.100", issue);
     }
 
     [Fact]

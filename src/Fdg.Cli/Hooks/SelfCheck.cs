@@ -27,12 +27,17 @@ public static class SelfCheck
 
     public const string MinimumSdkVersion = "8.0.100";
 
+    /// <summary>With an older SDK (still 8.0.100 or later) some rules do not run; SessionStart notes it.</summary>
+    public const string FullCoverageSdkVersion = "10.0.100";
+
     private const string RunSetup = " Run /fdg-setup to fix.";
 
     /// <summary>Projects named in one line; the rest are counted.</summary>
     private const int NamedProjects = 3;
 
     private static readonly Version MinimumSdk = Version.Parse(MinimumSdkVersion);
+
+    private static readonly Version FullCoverageSdk = Version.Parse(FullCoverageSdkVersion);
 
     public static IReadOnlyList<string> Issues(SetupFacts facts)
     {
@@ -41,9 +46,16 @@ public static class SelfCheck
         {
             issues.Add(IssuePrefix + $"dotnet --version failed here; FDG needs .NET SDK {MinimumSdkVersion} or later." + RunSetup);
         }
-        else if (IsOlderThanMinimum(facts.DotnetVersion))
+        else if (IsOlderThan(facts.DotnetVersion, MinimumSdk))
         {
             issues.Add(IssuePrefix + $".NET SDK {facts.DotnetVersion} is older than {MinimumSdkVersion}." + RunSetup);
+        }
+        else if (IsOlderThan(facts.DotnetVersion, FullCoverageSdk))
+        {
+            // Nothing to fix with /fdg-setup: the user may be unable to move to a newer SDK.
+            issues.Add(IssuePrefix +
+                $".NET SDK {facts.DotnetVersion} is older than {FullCoverageSdkVersion}: " +
+                $"some rules need SDK {FullCoverageSdkVersion} or later.");
         }
 
         if (facts.NoProfile.Count > 0)
@@ -82,10 +94,10 @@ public static class SelfCheck
     }
 
     /// <summary>Compares the numeric part only, so <c>9.0.100-rc.1</c> counts as 9.0.100. Unreadable versions pass.</summary>
-    private static bool IsOlderThanMinimum(string version)
+    private static bool IsOlderThan(string version, Version minimum)
     {
         string numeric = version.Trim().Split('-', '+')[0];
-        return Version.TryParse(numeric, out Version? parsed) && parsed < MinimumSdk;
+        return Version.TryParse(numeric, out Version? parsed) && parsed < minimum;
     }
 
     private static string Names(IReadOnlyList<string> projects) =>
