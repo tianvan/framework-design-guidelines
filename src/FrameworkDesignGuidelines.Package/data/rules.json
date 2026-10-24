@@ -4830,6 +4830,318 @@
       "naming": null
     },
     {
+      "id": "FDG6001",
+      "strength": "CONSIDER",
+      "text": "using unsealed classes with no added virtual or protected members as a great way to provide inexpensive yet much appreciated extensibility to a framework.",
+      "section": "6.1.1 Unsealed Classes",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6002",
+      "strength": "CONSIDER",
+      "text": "using protected members for advanced customization.",
+      "section": "6.1.2 Protected Members",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6003",
+      "strength": "DO",
+      "text": "treat protected members in unsealed classes as public for the purpose of security, documentation, and compatibility analysis.",
+      "section": "6.1.2 Protected Members",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6004",
+      "strength": "CONSIDER",
+      "text": "using callbacks to allow users to provide custom code to be executed by the framework.",
+      "section": "6.1.3 Events and Callbacks",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6005",
+      "strength": "CONSIDER",
+      "text": "using events, instead of virtual members, to allow users to customize the behavior of a framework without the need for understanding object-oriented design.",
+      "section": "6.1.3 Events and Callbacks",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6006",
+      "strength": "CONSIDER",
+      "text": "using events instead of plain callbacks, because events are more familiar to a broader range of developers and are integrated with Visual Studio statement completion.",
+      "section": "6.1.3 Events and Callbacks",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6007",
+      "strength": "AVOID",
+      "text": "using callbacks in performance-sensitive APIs.",
+      "section": "6.1.3 Events and Callbacks",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6008",
+      "strength": "DO",
+      "text": "use the `Func<...>`, `Action<...>`, or `Expression<...>` types instead of custom delegates when possible, when defining APIs with callbacks.",
+      "section": "6.1.3 Events and Callbacks",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6009",
+      "strength": "DO",
+      "text": "measure and understand the performance implications of using `Expression<...>`, instead of using `Func<...>` and `Action<...>` delegates.",
+      "section": "6.1.3 Events and Callbacks",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6010",
+      "strength": "DO",
+      "text": "understand that by calling a delegate, you are executing arbitrary code, and that could have security, correctness, and compatibility repercussions.",
+      "section": "6.1.3 Events and Callbacks",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6011",
+      "strength": "DO NOT",
+      "text": "make members virtual unless you have a good reason to do so and you are aware of all the costs related to designing, testing, and maintaining virtual members.",
+      "section": "6.1.4 Virtual Members",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6012",
+      "strength": "CONSIDER",
+      "text": "limiting extensibility to only what is absolutely necessary through the use of the Template Method Pattern, described in section 9.9.",
+      "section": "6.1.4 Virtual Members",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6013",
+      "strength": "DO",
+      "text": "prefer protected accessibility over public accessibility for virtual members. Public members should provide extensibility (if required) by calling into a protected virtual member.",
+      "section": "6.1.4 Virtual Members",
+      "diagnostics": [
+        "FDG6013"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6014",
+      "strength": "DO NOT",
+      "text": "provide abstractions unless they are tested by developing several concrete implementations and APIs consuming the abstractions.",
+      "section": "6.1.5 Abstractions (Abstract Types and Interfaces)",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6015",
+      "strength": "DO",
+      "text": "choose carefully between an abstract class and an interface when designing an abstraction. See section 4.3 for more details on this subject.",
+      "section": "6.1.5 Abstractions (Abstract Types and Interfaces)",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6016",
+      "strength": "CONSIDER",
+      "text": "providing reference tests for concrete implementations of abstractions. Such tests should allow users to test whether their implementations correctly implement the contract.",
+      "section": "6.1.5 Abstractions (Abstract Types and Interfaces)",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6017",
+      "strength": "CONSIDER",
+      "text": "making base classes abstract even if they don’t contain any abstract members. This clearly communicates to the users that the class is designed solely to be inherited from.",
+      "section": "6.2 Base Classes",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6018",
+      "strength": "CONSIDER",
+      "text": "placing base classes in a separate namespace from the mainline scenario types. By definition, base classes are intended for advanced extensibility scenarios and are not interesting to the majority of users. See section 2.2.4 for details.",
+      "section": "6.2 Base Classes",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6019",
+      "strength": "AVOID",
+      "text": "naming base classes with a “Base” suffix if the class is intended for use in public APIs.",
+      "section": "6.2 Base Classes",
+      "diagnostics": [
+        "FDG6019"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6020",
+      "strength": "DO NOT",
+      "text": "seal classes without having a good reason to do so.",
+      "section": "6.3 Sealing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6021",
+      "strength": "DO NOT",
+      "text": "declare protected or virtual members on sealed types.",
+      "section": "6.3 Sealing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG6022",
+      "strength": "CONSIDER",
+      "text": "sealing members that you override.",
+      "section": "6.3 Sealing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
       "id": "FDGA001",
       "strength": "DO",
       "text": "place the opening brace on the next line, indented to the same level as the block statement.",
@@ -6063,6 +6375,8 @@
     "FDG5130",
     "FDG5131",
     "FDG5132",
+    "FDG6013",
+    "FDG6019",
     "FDGA003",
     "FDGA004",
     "FDGA023",
@@ -6129,6 +6443,8 @@
     "FDG5130",
     "FDG5131",
     "FDG5132",
+    "FDG6013",
+    "FDG6019",
     "IDE0130",
     "IDE1006"
   ]

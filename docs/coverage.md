@@ -10,8 +10,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 3 Naming Guidelines | 87 | 34 | 8 | 45 | 0 | 87 |
 | 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 70 |
 | 5 Member Design | 133 | 20 | 39 | 74 | 0 | 133 |
+| 6 Designing for Extensibility | 22 | 0 | 2 | 20 | 0 | 0 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 393 | 114 | 59 | 220 | 0 | 393 |
+| Total | 415 | 114 | 61 | 240 | 0 | 393 |
 
 ## Non-guideline content
 
@@ -85,6 +86,19 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 - **5.8.4** (background): The description of variable numbers of arguments through array parameters, the String.Format examples, and the note that params can be added only to the last parameter are background for FDG5116 to FDG5123.
 - **5.8.5** (rationale): The introduction (pointers should not appear in the public surface area of a managed framework except where interoperability requires them, and Span<T> and ReadOnlySpan<T> are preferred when possible, see section 9.12) is rationale for FDG5124 to FDG5126 and for FDG5102.
 - **5.9** (rationale): The four tuple mechanisms (System.Tuple, System.ValueTuple, named tuples and descriptive types), the GetPerson and target heart rate examples, the benefits of descriptive types and the note that changing the number of tuple elements is a breaking change are rationale for FDG5127 to FDG5133.
+- **Summary** (background): The chapter summary states no guideline.
+
+### Chapter 6: Designing for Extensibility
+
+- **6** (background): The chapter introduction (extensibility needs a careful look at the costs and benefits of each mechanism: subclassing, events, virtual members, callbacks; the design details are in other sections, which the chapter cross-references; a good understanding of object-oriented programming is assumed) is background for the whole chapter.
+- **6.1** (rationale): The section introduction (mechanisms range from less powerful and less costly to very powerful and expensive; choose the least costly one that meets the requirements, since extensibility can be added later but never taken away without breaking changes) is rationale for FDG6001 to FDG6016.
+- **6.1.1** (rationale): The definition of sealed and unsealed classes, the String and TraceSource example, and the narrative that subclasses can add members, apply attributes and implement interfaces, while protected and virtual members are costly, so an unsealed class without them is inexpensive extensibility, are rationale for FDG6001.
+- **6.1.2** (rationale): The narrative that protected members make subclassing more powerful without complicating the main public interface, the SourceSwitch.Value and FlowSwitch example, and the warning that "protected" gives a false sense of security, so the defensive practices of public members apply, are rationale for FDG6002 and FDG6003.
+- **6.1.3** (rationale): The definitions of callbacks and events, the RemoveAll and Timer examples, the pointer to section 5.4, and the comparison with virtual members (more approachable, customizable at runtime, but slower, using more memory, and running arbitrary code that needs a security, correctness and compatibility analysis) are rationale for FDG6004 to FDG6010.
+- **6.1.4** (rationale): The narrative on virtual members (similar to callbacks in extensibility, faster, natural for specialization, fixed at compile time, costly to design, test and maintain) and on limiting their extensibility is rationale for FDG6011 to FDG6013. The Cwalina annotation (overrides must preserve the contract of the base class, which rarely requires calling the base implementation) is background.
+- **6.1.5** (rationale): The definition of an abstraction (Stream, IEnumerable<T>, Object), extension by implementing one, the narrative on the high design cost of abstractions and on too many abstractions hurting usability, the Richter annotation on the undocumented contract of ICloneable, and the narrative on the power of abstractions (plug-ins, inversion of control, pipelines, testability) are rationale for FDG6014 to FDG6016.
+- **6.2** (rationale): The definition of a base class, the IList<T>, Collection<T> and OrderCollection example, the narrative that base classes hold too much implementation to serve as abstractions, the Cwalina annotation on using Collection<T> directly, and the narrative that base classes add surface area and depth, so they should provide significant value to users (with delegation to an internal implementation when they would help only the implementers), are rationale for FDG6017 to FDG6019. That last advice has no icon and is not a rule.
+- **6.3** (rationale): The narrative on the power and danger of extensible design, the Cwalina annotation on limiting a hierarchy to a fixed set of classes with an internal constructor (the LivingOrganism, Animal and Plant example), the definition of sealing classes and members with the NonNullCollection example, and the advice to seal only with good reasons are rationale for FDG6020 to FDG6022.
 - **Summary** (background): The chapter summary states no guideline.
 
 ### Appendix A: C# Coding Style Conventions

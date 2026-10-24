@@ -511,6 +511,24 @@ internal static class FdgDescriptors
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5132.md");
 
+    public static readonly DiagnosticDescriptor FDG6013 = new DiagnosticDescriptor(
+        id: "FDG6013",
+        title: "DO prefer protected accessibility over public accessibility for virtual members. Public members should provide extensibility (if required) by calling into a protected virtual member.",
+        messageFormat: "Make the virtual member '{0}' protected and call it from a nonvirtual public member",
+        category: "FrameworkDesignGuidelines.Extensibility",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG6013.md");
+
+    public static readonly DiagnosticDescriptor FDG6019 = new DiagnosticDescriptor(
+        id: "FDG6019",
+        title: "AVOID naming base classes with a “Base” suffix if the class is intended for use in public APIs.",
+        messageFormat: "Remove the 'Base' suffix from '{0}', which a public API uses as a type",
+        category: "FrameworkDesignGuidelines.Extensibility",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG6019.md");
+
     public static readonly DiagnosticDescriptor FDGA003 = new DiagnosticDescriptor(
         id: "FDGA003",
         title: "DO place the closing brace on its own line, except the end of a `do`..`while` statement.",

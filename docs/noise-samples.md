@@ -435,3 +435,29 @@ same reports as in the 5.4 to 5.7 run, where 20 were checked).
   Ruling 21 an analyzer with 0 reports passes the false positive gate. The library-only rules (FDG5102, FDG5115,
   FDG5123, FDG5124 and FDG5128 to FDG5132) are `none` in the application profile, so the internal samples measure them
   only by their absence.
+
+## Chapter 6 mappings and analyzers
+
+Package 0.1.0 with the mappings of chapter 6 and its two analyzers, enabled by the profile globalconfigs (library for
+the open-source samples, application for the internal ones). Chapter 6 maps no SDK diagnostic, so only FDG6013 and
+FDG6019 are counted. FDG6013 was checked at 20 evenly spaced locations, FDG6019 in full.
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| FDG6013 | FDG6013 | 3 | 8 | 191 | 0 | 0 | 20 | 0 | 20 | None needed. |
+| FDG6019 | FDG6019 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1 | None needed. |
+
+### Notes
+
+- **FDG6013.** Every checked report is a public virtual or abstract method, property or indexer declared (not
+  overridden) in a public class: serilog's abstract `Render` and `Length` of its property value and token classes, and
+  newtonsoft-json's reader, writer, serializer, token and naming strategy classes, whose public virtual `Read...`,
+  `Write...` and settings members are the extensibility points. polly's 8 are public abstract or virtual members of
+  its context pool, pipeline provider and telemetry listener classes and of its rejection exception. The body asks
+  for protected virtual members called from public ones, so all are true warnings; none is an override.
+- **FDG6019.** polly's pipeline builder base class, which the type parameter constraints of public extension methods
+  name, so callers meet the Base suffix in those APIs. True. newtonsoft-json's date and time converter base class is
+  not reported: the compilation uses it only as a base class. A first run that did not read constraints reported
+  nothing; constraints were added to the analyzer after it.
+- **Library only.** Both rules are `none` in the application profile, so the internal samples measure them only by
+  their absence.

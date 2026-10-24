@@ -81,3 +81,26 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
   sdk CA1021, partial; breaking. Chosen because CA1045 was dropped after the noise run: its 3 reports were a property change setter helper, a pattern that requires ref; ref parameters of value types are now unchecked.
 - [ ] FDG5131 DO NOT use tuples as method parameters.
   fdg FDG5131, full; breaking; library only. Chosen because collections of tuples are reported (the body calls them more justifiable, yet better served by descriptive types), while type parameters substituted with tuples and interface implementations are not.
+
+## Chapter 6: Designing for Extensibility
+
+- [ ] FDG6008 DO use the `Func<...>`, `Action<...>`, or `Expression<...>` types instead of custom delegates when possible, when defining APIs with callbacks.
+  judgment; no autofix. Chosen because the analyzer candidate was rejected: the Toub exceptions can be read from symbols, but the Kotas annotation accepts a custom delegate whose arguments need names, which is meaning.
+- [ ] FDG6010 DO understand that by calling a delegate, you are executing arbitrary code, and that could have security, correctness, and compatibility repercussions.
+  judgment; no autofix; kept in the application profile. Chosen because delegates invoked under a lock (the Pepin annotation) are not reported, since the Duffy annotation says that this is sometimes unavoidable.
+- [ ] FDG6011 DO NOT make members virtual unless you have a good reason to do so and you are aware of all the costs related to designing, testing, and maintaining virtual members.
+  judgment; no autofix; library only. Chosen because the profile rests on reading the costs as those of an extensibility point for subclasses outside the library, although the body also names the speed of nonvirtual calls.
+- [ ] FDG6013 DO prefer protected accessibility over public accessibility for virtual members. Public members should provide extensibility (if required) by calling into a protected virtual member.
+  fdg FDG6013, full; breaking; library only. Chosen because the new analyzer reports abstract members too, as virtual members, and leaves out only overrides, compiler-declared members and a record's Equals(T).
+- [ ] FDG6014 DO NOT provide abstractions unless they are tested by developing several concrete implementations and APIs consuming the abstractions.
+  judgment; no autofix. Chosen because it stays in the application profile, like FDG4015, FDG4023 and FDG4024, while most of the chapter is library only.
+- [ ] FDG6017 CONSIDER making base classes abstract even if they don’t contain any abstract members. This clearly communicates to the users that the class is designed solely to be inherited from.
+  judgment; no autofix; library only. Chosen because the Barton annotation still asks for a reason to make a class abstract, so no analyzer could report a concrete base class.
+- [ ] FDG6019 AVOID naming base classes with a “Base” suffix if the class is intended for use in public APIs.
+  fdg FDG6019, partial; breaking; library only. Chosen because the new analyzer reads "intended for use in public APIs" as a use in the signature (constraints included) of an externally visible member or type of the same compilation, so a class used only as a base class is not reported.
+- [ ] FDG6020 DO NOT seal classes without having a good reason to do so.
+  judgment; no autofix; library only. Chosen because the body's list of good reasons is open ("include the following"), and because CA1813 and CA1852, which ask for sealing, are not mapped.
+- [ ] FDG6021 DO NOT declare protected or virtual members on sealed types.
+  judgment; no autofix. Chosen because the C# compiler enforces it (CS0628, CS0549, CS0666), so it needs no analyzer and stays in the application profile.
+- [ ] FDG6022 CONSIDER sealing members that you override.
+  judgment; no autofix; library only. Chosen because overrides are not reported: the dispose pattern of section 9.4 has subclasses override Dispose(bool) again.
