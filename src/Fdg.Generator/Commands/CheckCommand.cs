@@ -37,7 +37,7 @@ public static class CheckCommand
         }
         catch (Exception exception) when (exception is InvalidOperationException or IOException)
         {
-            error.WriteLine($"Could not load the SDK's analyzers: {exception.Message}");
+            error.WriteLine($"Could not load the SDK's analyzers: {ToolErrors.OneLine(exception.Message)}");
             return 2;
         }
 

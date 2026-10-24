@@ -3,6 +3,7 @@ using System.Text.Json;
 using Fdg.Generator.Book;
 using Fdg.Generator.Commands;
 using Fdg.Generator.Rules;
+using Json.Schema;
 using YamlDotNet.Core;
 
 namespace Fdg.Generator.Tests;
@@ -88,7 +89,9 @@ public sealed class GeneratorCliTests : IDisposable, IClassFixture<InstalledSdkF
         File.WriteAllText(Path.Combine(_rulesDir, fileName), "- id: [unclosed");
     }
 
-    /// <summary>A failed tool run: exit code 2 and one "&lt;command&gt; failed: ..." line without a stack trace.</summary>
+    /// <summary>
+    /// A failed tool run: exit code 2 and one "&lt;command&gt; failed: ..." line without a stack trace.
+    /// </summary>
     private static void AssertOneLine(string command, (int ExitCode, string Output, string Error) result)
     {
         string error = result.Error.Trim();
@@ -345,6 +348,23 @@ public sealed class GeneratorCliTests : IDisposable, IClassFixture<InstalledSdkF
         Assert.Contains("rules.schema.json", result.Error);
     }
 
+    // The first schema fails while it is built (JsonSchemaException), the second while a rules file is validated
+    // against it (RefResolutionException).
+    [Theory]
+    [InlineData("{\"type\": 5}", "type")]
+    [InlineData("{\"$ref\": \"#/$defs/missing\"}", "#/$defs/missing")]
+    public void Check_with_an_invalid_schema_gives_one_line(string schema, string cause)
+    {
+        Extract();
+        AddSchemaAndProfiles();
+        File.WriteAllText(Path.Combine(_rulesDir, "rules.schema.json"), schema);
+
+        var result = Check();
+
+        AssertOneLine("check", result);
+        Assert.Contains(cause, result.Error);
+    }
+
     [Fact]
     public void Check_with_an_unusable_sdk_directory_gives_one_line()
     {
@@ -357,7 +377,29 @@ public sealed class GeneratorCliTests : IDisposable, IClassFixture<InstalledSdkF
         Assert.Equal(2, result.ExitCode);
         Assert.DoesNotContain("\n", error);
         Assert.DoesNotContain("   at ", error);
-        Assert.Contains("SDK", error);
+        Assert.Contains("an SDK directory", error);
+    }
+
+    [Fact]
+    public void Check_with_a_failing_dotnet_gives_one_line()
+    {
+        // check runs `dotnet --version` in the parent of the rules directory. A global.json that asks for an SDK that
+        // is not installed makes dotnet fail with several lines on stderr.
+        string root = Path.Combine(_rulesDir, "repo");
+        string rulesDir = Path.Combine(root, "rules");
+        Directory.CreateDirectory(rulesDir);
+        File.Copy(Path.Combine(_rulesDir, "meta.yaml"), Path.Combine(rulesDir, "meta.yaml"));
+        File.WriteAllText(
+            Path.Combine(root, "global.json"),
+            "{ \"sdk\": { \"version\": \"99.0.0\", \"rollForward\": \"disable\" } }\n");
+
+        var result = Run("check", "--rules", rulesDir);
+
+        string error = result.Error.Trim();
+        Assert.Equal(2, result.ExitCode);
+        Assert.DoesNotContain("\n", error);
+        Assert.Contains("'dotnet --version' failed", error);
+        Assert.Contains("99.0.0", error);
     }
 }
 
@@ -374,6 +416,7 @@ public sealed class ToolErrorsTests
     [InlineData(typeof(YamlException))]
     [InlineData(typeof(FormatException))]
     [InlineData(typeof(JsonException))]
+    [InlineData(typeof(JsonSchemaException))]
     [InlineData(typeof(BookFormatException))]
     [InlineData(typeof(IOException))]
     [InlineData(typeof(FileNotFoundException))]
@@ -403,6 +446,7 @@ public sealed class ToolErrorsTests
     [InlineData(typeof(ArgumentException))]
     [InlineData(typeof(NullReferenceException))]
     [InlineData(typeof(KeyNotFoundException))]
+    [InlineData(typeof(ObjectDisposedException))]
     public void Other_exceptions_are_bugs_and_propagate(Type type)
     {
         var exception = (Exception)Activator.CreateInstance(type, "a bug")!;
