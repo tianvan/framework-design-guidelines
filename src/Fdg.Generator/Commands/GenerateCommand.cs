@@ -34,8 +34,9 @@ public static class GenerateCommand
         try
         {
             IReadOnlyList<GeneratedFile> files = GeneratedFiles.Create(GeneratorInput.Load(rulesDir, version));
-            int changed = GeneratedFiles.Write(root, files);
-            output.WriteLine($"Generated {files.Count} files under {root}: {changed} changed, {files.Count - changed} unchanged.");
+            int changed = GeneratedFiles.Write(root, files, out int removed);
+            int written = changed - removed;
+            output.WriteLine($"Generated {files.Count} files under {root}: {written} written, {removed} removed, {files.Count - written} unchanged.");
             return 0;
         }
         catch (GenerationException exception)

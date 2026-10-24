@@ -386,6 +386,39 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Write_reports_the_removed_files_separately()
+    {
+        string root = TempDir();
+        IReadOnlyList<GeneratedFile> files = GeneratedFiles.Create(Input());
+        GeneratedFiles.Write(root, files, out int removedOnFirstWrite);
+        File.WriteAllText(Path.Combine(root, "docs", "rules", "FDG0000.md"), "hand-made");
+
+        int changes = GeneratedFiles.Write(root, files, out int removed);
+
+        Assert.Equal(0, removedOnFirstWrite);
+        Assert.Equal(1, removed);
+        Assert.Equal(1, changes);
+    }
+
+    [Fact]
+    public void Generate_command_reports_written_removed_and_unchanged_counts()
+    {
+        string root = TempDir();
+        string[] args = { "generate", "--rules", _fixtureRules, "--out", root, "--version", "0.1.0" };
+        var first = new StringWriter();
+        GeneratorCli.Run(args, first, new StringWriter());
+        int count = Directory.GetFiles(root, "*", SearchOption.AllDirectories).Length;
+        File.WriteAllText(Path.Combine(root, "docs", "rules", "FDG0000.md"), "hand-made");
+        var second = new StringWriter();
+
+        int exitCode = GeneratorCli.Run(args, second, new StringWriter());
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains($"Generated {count} files under {root}: {count} written, 0 removed, 0 unchanged.", first.ToString());
+        Assert.Contains($"{count} files under {root}: 0 written, 1 removed, {count} unchanged.", second.ToString());
+    }
+
+    [Fact]
     public void Generated_files_use_lf_and_carry_a_header_where_comments_are_allowed()
     {
         IReadOnlyList<GeneratedFile> files = GeneratedFiles.Create(Input());
