@@ -13,10 +13,10 @@ This is a coding style convention. The book treats the appendix A conventions as
 - Check: sdk (partial coverage)
 - Diagnostics: IDE0011
 - Automatic fix: yes
-- Severity: library warning, application warning, test warning
+- Severity: library suggestion, application suggestion, test suggestion
 - Status: verified
 
-IDE0011 does not know the argument validation preamble exception (FDGA005). planned-analyzer: braces, exempting argument validation preambles.
+IDE0011 does not know the argument validation preamble exception (FDGA005). planned-analyzer: braces, exempting argument validation preambles. Noise: IDE0011 is a suggestion because it reports argument validation preambles that FDGA005 allows (5 of 20 spot-checked reports, docs/noise-samples.md).
 
 ## Options
 

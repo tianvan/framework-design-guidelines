@@ -16,7 +16,7 @@ csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = false
 
 # FDGA004
-csharp_prefer_braces = true:warning
+csharp_prefer_braces = true:suggestion
 
 # FDGA006
 csharp_prefer_simple_using_statement = false
@@ -182,7 +182,7 @@ dotnet_diagnostic.CA1724.severity = none
 dotnet_diagnostic.FDGA003.severity = warning
 dotnet_diagnostic.FDGA023.severity = warning
 dotnet_diagnostic.IDE0008.severity = warning
-dotnet_diagnostic.IDE0011.severity = warning
+dotnet_diagnostic.IDE0011.severity = suggestion
 dotnet_diagnostic.IDE0017.severity = warning
 dotnet_diagnostic.IDE0028.severity = warning
 dotnet_diagnostic.IDE0032.severity = warning

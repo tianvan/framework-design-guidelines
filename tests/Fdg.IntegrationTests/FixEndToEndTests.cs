@@ -46,7 +46,8 @@ public sealed class FixEndToEndTests : IClassFixture<PackageFixture>
 
     internal const string StrictEditorConfig = "[*.cs]\ndotnet_diagnostic.CA1822.severity = warning\n";
 
-    // A public instance method that does not use "this" (CA1822), a braceless if (IDE0011) and bad indentation.
+    // A public instance method that does not use "this" (CA1822), a braceless if (IDE0011, a suggestion) and bad
+    // indentation.
     internal const string StrictSource =
         """
         namespace Sample
@@ -129,8 +130,8 @@ public sealed class FixEndToEndTests : IClassFixture<PackageFixture>
         Assert.DoesNotContain("static", source);
         // Whitespace is formatted in full.
         Assert.Contains("            int doubled = value * 2;", lines);
-        // IDE0011, an FDG fix: the braceless if gets braces.
-        AssertSequence(lines.Select(l => l.Trim()).ToArray(), "if (doubled < 0)", "{", "return 0;", "}");
+        // IDE0011 is a suggestion (it also reports argument validation preambles), so the braceless if is kept.
+        AssertSequence(lines.Select(l => l.Trim()).ToArray(), "if (doubled < 0)", "return 0;");
     }
 
     [Fact]
@@ -246,8 +247,8 @@ public sealed class FixEndToEndTests : IClassFixture<PackageFixture>
         AssertSequence(trimmed, "Failed(", "firstValue,", "secondValue,", "null,", "thirdValue,");
         // One statement per line.
         AssertSequence(trimmed, "int first = 1;", "int second = 2;");
-        // IDE0011: the braceless if gets braces.
-        AssertSequence(trimmed, "if (first > second)", "{", "Log(null);", "}");
+        // IDE0011 is a suggestion, so the braceless if is kept.
+        AssertSequence(trimmed, "if (first > second)", "Log(null);");
         Assert.All(lines, l => Assert.True(l.Length <= 120, $"Line longer than 120 columns: {l}"));
     }
 

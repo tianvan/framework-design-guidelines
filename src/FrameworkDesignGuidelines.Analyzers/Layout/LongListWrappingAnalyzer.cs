@@ -11,7 +11,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Layout;
 /// FDGA023: a parameter or argument list that is exceedingly long must be chopped: a line break after the
 /// opening parenthesis, one item per line indented one level from the line of the opening parenthesis, and the
 /// closing parenthesis right after the last item. A list is exceedingly long when its line is longer than
-/// <c>max_line_length</c>, or when the author wrapped it over several lines.
+/// <c>max_line_length</c>, or when the author wrapped it over several lines. A line that is long only because a
+/// conditional, <c>||</c>, <c>&amp;&amp;</c> or <c>??</c> expression joins short calls does not make their lists long.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
@@ -123,7 +124,8 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
         int maxLength = LineLength.Get(context.Options.AnalyzerConfigOptionsProvider.GetOptions(tree));
         if ((line.Span.Length <= maxLength && !IsWrapped(text, shape))
             || IsChopped(text, shape)
-            || HasEarlierListOnLine(context.Node.SyntaxTree.GetRoot(context.CancellationToken), shape, line))
+            || IsLongOnlyThroughOperator(text, context.Node, shape, line, maxLength)
+            || HasEarlierListOnLine(tree.GetRoot(context.CancellationToken), text, shape, line, maxLength))
         {
             return;
         }
@@ -132,10 +134,67 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    /// Only the leftmost list opening on a line is reported: the one enclosing the others, or the first link of a
-    /// fluent chain. The rest are left for the next run, which then indents them from their new line.
+    /// True when the list is not wrapped and its line is within <paramref name="maxLength"/> once the outermost
+    /// enclosing conditional, <c>||</c>, <c>&amp;&amp;</c> or <c>??</c> expression on the line is reduced to the
+    /// list's own invocation, including the fluent chain it is part of. The operator then makes the line long, not
+    /// the invocation.
     /// </summary>
-    private static bool HasEarlierListOnLine(SyntaxNode root, ListShape shape, TextLine line)
+    private static bool IsLongOnlyThroughOperator(SourceText text, SyntaxNode list, ListShape shape, TextLine line, int maxLength)
+    {
+        if (list is not ArgumentListSyntax || list.Parent is not ExpressionSyntax || IsWrapped(text, shape))
+        {
+            return false;
+        }
+
+        SyntaxNode chain = list.Parent;
+        while (chain.Parent is SyntaxNode parent && IsChainLink(parent, chain))
+        {
+            chain = parent;
+        }
+
+        SyntaxNode? operatorExpression = null;
+        for (SyntaxNode? node = chain.Parent;
+            node is ExpressionSyntax and not AnonymousFunctionExpressionSyntax;
+            node = node.Parent)
+        {
+            if (node.IsKind(SyntaxKind.ConditionalExpression)
+                || node.IsKind(SyntaxKind.LogicalOrExpression)
+                || node.IsKind(SyntaxKind.LogicalAndExpression)
+                || node.IsKind(SyntaxKind.CoalesceExpression))
+            {
+                operatorExpression = node;
+            }
+        }
+
+        return operatorExpression is not null
+            && line.Span.Length - LengthOnLine(operatorExpression, line) + LengthOnLine(chain, line) <= maxLength;
+    }
+
+    /// <summary>True when <paramref name="parent"/> continues the fluent chain that ends at <paramref name="node"/>.</summary>
+    private static bool IsChainLink(SyntaxNode parent, SyntaxNode node)
+    {
+        return parent switch
+        {
+            MemberAccessExpressionSyntax access => access.Expression == node,
+            InvocationExpressionSyntax invocation => invocation.Expression == node,
+            ElementAccessExpressionSyntax access => access.Expression == node,
+            ConditionalAccessExpressionSyntax => true,
+            PostfixUnaryExpressionSyntax or AwaitExpressionSyntax => true,
+            _ => false,
+        };
+    }
+
+    private static int LengthOnLine(SyntaxNode node, TextLine line)
+    {
+        return line.Span.Intersection(node.Span) is TextSpan overlap ? overlap.Length : 0;
+    }
+
+    /// <summary>
+    /// Only the leftmost list opening on a line is reported: the one enclosing the others, or the first link of a
+    /// fluent chain. The rest are left for the next run, which then indents them from their new line. A list that
+    /// is long only through an operator does not hide the lists after it.
+    /// </summary>
+    private static bool HasEarlierListOnLine(SyntaxNode root, SourceText text, ListShape shape, TextLine line, int maxLength)
     {
         for (SyntaxToken token = root.FindToken(line.Start);
             token.SpanStart < shape.Open.SpanStart && !token.IsKind(SyntaxKind.None);
@@ -145,7 +204,8 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
                 && (token.IsKind(SyntaxKind.OpenParenToken) || token.IsKind(SyntaxKind.OpenBracketToken))
                 && token.Parent is SyntaxNode list
                 && TryGetList(list, out ListShape earlier)
-                && earlier.Open == token)
+                && earlier.Open == token
+                && !IsLongOnlyThroughOperator(text, list, earlier, line, maxLength))
             {
                 return true;
             }

@@ -136,15 +136,15 @@
     coverage: partial
   autofix: yes
   severity:
-    library: warning
-    application: warning
-    test: warning
+    library: suggestion
+    application: suggestion
+    test: suggestion
   config:
     - csharp_prefer_braces = true
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'IDE0011 does not know the argument validation preamble exception (FDGA005). planned-analyzer: braces, exempting argument validation preambles.'
+  notes: 'IDE0011 does not know the argument validation preamble exception (FDGA005). planned-analyzer: braces, exempting argument validation preambles. Noise: IDE0011 is a suggestion because it reports argument validation preambles that FDGA005 allows (5 of 20 spot-checked reports, docs/noise-samples.md).'
 - id: FDGA005
   strength: CONSIDER
   text: omitting braces in an argument validation preamble.
@@ -772,7 +772,7 @@
   analyzer:
     message: Place each argument or parameter of a long list on its own line, starting on the line after the opening parenthesis
     category: Layout
-  notes: 'A list is long when its line exceeds max_line_length (default 120). Scope: A parameter or argument list is treated as exceedingly long, because the author chose to wrap it, when a line break falls between its items (at a separator, or before the first item or any later item); it must then be chopped before the first item, indented one level, with one item per line. Line breaks only inside a single item (a lambda body, an initializer, a nested call or a continued expression) do not by themselves make the list wrapped, but a list whose line exceeds the length guide is still covered.'
+  notes: 'A list is long when its line exceeds max_line_length (default 120). Scope: A parameter or argument list is treated as exceedingly long, because the author chose to wrap it, when a line break falls between its items (at a separator, or before the first item or any later item); it must then be chopped before the first item, indented one level, with one item per line. Line breaks only inside a single item (a lambda body, an initializer, a nested call or a continued expression) do not by themselves make the list wrapped, but a list whose line exceeds the length guide is still covered. A line that is long only because an enclosing conditional, ||, && or ?? expression joins short calls does not make their lists long; the list''s own invocation, with the fluent chain it is part of, must exceed the guide (docs/noise-samples.md).'
 - id: FDGA024
   strength: DO
   text: add a blank line before control flow statements.

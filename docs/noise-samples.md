@@ -45,21 +45,22 @@ file that is not committed; this page gives only counts and anonymized conclusio
 ## Baseline: chapter 3 and appendix A
 
 Package 0.1.0 (chapter 3 and appendix A). FP is false positives and True is true warnings among the spot-checked
-reports.
+reports. The FDGA023 and CA1708 rows are re-measured after the treatments in their row; the notes give the first
+counts.
 
 | Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | CA1507 | FDGA048 | 0 | 0 | 0 | 0 | 344 | 20 | 0 | 20 | None needed. |
 | CA1707 | FDG3010, FDG3079 | 0 | 0 | 0 | 0 | 726 | 20 | 0 | 20 | None needed. |
-| CA1708 | FDG3007 | 0 | 0 | 0 | 0 | 70 | 20 | 0 | 20 | None needed. All 20 are a private field and a public property that differ by case; the rule text states no exception, so they are true warnings. See the notes. |
+| CA1708 | FDG3007 | 0 | 0 | 0 | 0 | 5 | 5 | 0 | 5 | Narrowed to the public API (`dotnet_code_quality.CA1708.api_surface = public`), because chapter 3 governs public names. See the notes. |
 | CA1711 | FDG3023 and others | 0 | 0 | 0 | 1 | 3 | 4 | 0 | 4 | None needed. |
 | CA1716 | FDG3012 | 12 | 0 | 0 | 0 | 0 | 12 | 0 | 12 | None needed. |
 | CA1720 | FDG3016, FDG3017, FDG3018 | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | Over the threshold (n = 1). Already `suggestion` in every profile; no change. |
 | CA1724 | FDG3032 | 0 | 0 | 0 | 0 | 3 | 3 | 2 | 1 | Over the threshold (n = 3). No change yet; see the notes. |
 | FDGA003 | FDGA003 | 0 | 0 | 0 | 1 | 9 | 10 | 0 | 10 | None needed. |
-| FDGA023 | FDGA023 | 142 | 90 | 1106 | 20 | 86 | 20 | 2 | 18 | Over the threshold. R6 write-up below; no code change in this task. |
+| FDGA023 | FDGA023 | 141 | 89 | 989 | 20 | 84 | 20 | 0 | 20 | R6: narrowed so that an enclosing operator expression no longer makes a list long. Under the threshold after the narrowing. |
 | IDE0008 | FDGA042 | 242 | 0 | 12 | 7 | 62 | 20 | 0 | 20 | None needed. |
-| IDE0011 | FDGA004 | 123 | 0 | 0 | 28 | 98 | 20 | 5 | 15 | Over the threshold. No change yet; see the notes. |
+| IDE0011 | FDGA004 | 123 | 0 | 0 | 28 | 98 | 20 | 5 | 15 | Over the threshold. R7: lowered to `suggestion` in every profile. |
 | IDE0017 | FDGA043 | 0 | 0 | 37 | 0 | 33 | 20 | 0 | 20 | None needed. |
 | IDE0028 | FDGA044 | 0 | 0 | 11 | 0 | 143 | 20 | 0 | 20 | None needed. |
 | IDE0032 | FDGA046 | 2 | 0 | 38 | 0 | 36 | 20 | 0 | 20 | None needed. |
@@ -73,26 +74,30 @@ reports.
 
 ### Notes
 
-- **FDGA023.** Both false positives are a line that is long only because an operator joins short calls (a conditional
-  expression, or a condition joined by `||`): each argument list is short, but the line crosses the guide. That is not
-  an "exceedingly long" method invocation. Over all 1444 reports, about 78 (about 5.5%) are of this kind, and 75 of
-  them are in newtonsoft-json, mostly `condition ? A(x, token) : B(x, token)`. A fluent chain, a nested call, or an
-  expression-bodied member that makes the line long was counted as a true warning, because the invocation itself is
-  what makes the line long. About 12 newtonsoft-json reports are lists that are chopped one item per line but whose
-  closing parenthesis is on its own line. The rule text does not say where the parenthesis goes, but the rule's
-  example keeps it on the last item's line, so these were counted as true warnings; they are debatable. R6 treatment:
-  the analyzer stays for now, and the proposed narrowing is to report a list on a long line only when its own
-  invocation (including a fluent chain it is part of) crosses the guide, not when an enclosing operator expression
-  does. If that narrowing is not made, R6 removes the analyzer and FDGA023 goes back to judgment.
+- **FDGA023.** In the first measurement (serilog 142, polly 90, newtonsoft-json 1106, internal-a 20, internal-b 86),
+  2 of 20 spot-checked reports were false positives: a line that is long only because an operator joins short calls (a
+  conditional expression, or a condition joined by `||`). Each argument list was short, but the line crossed the guide;
+  that is not an "exceedingly long" method invocation. Over all 1444 reports, about 78 (about 5.5%) were of this kind,
+  most in newtonsoft-json (`condition ? A(x, token) : B(x, token)`). R6 treatment: a list that is not wrapped is now
+  long only when its line stays longer than `max_line_length` after the outermost enclosing conditional, `||`, `&&` or
+  `??` expression on the line is reduced to the list's own invocation, including the fluent chain it is part of. The
+  re-measurement removed 121 reports, all on such lines (the estimate of 78 missed some `&&` and `==` conditions), and
+  added none. A fresh spot check of 20 found no false positives. Lines where the operator is inside the list itself (43
+  reports, for example `F(a ?? b, c, d)`) are still reported, because the list is what makes the line long. About 12
+  newtonsoft-json reports are lists that are chopped one item per line but whose closing parenthesis is on its own
+  line. The rule text does not say where the parenthesis goes, but the rule's example keeps it on the last item's
+  line, so these are counted as true warnings; they are debatable.
 - **IDE0011.** All five false positives are an argument validation preamble (`if (x == null) throw ...;`), which
-  FDGA005 allows without braces. R7 would lower FDGA004's IDE0011 to `suggestion` or narrow it. FDGA005's notes already
-  accept this conflict ("braces everywhere is its readability goal"), so the change is left to the controller.
+  FDGA005 allows without braces. R7 treatment: FDGA004's IDE0011 is a `suggestion` in every profile, and FDGA004's
+  notes say why. The counts are unchanged, because suggestions are still reported.
 - **CA1724.** Two of the three reports name a type the same as a framework namespace that the type is not in; the
   FDG3032 text covers only "a type in that namespace". The sample is too small for a decision, and FDG3032's notes
   deliberately include framework namespaces, so the mapping is left unchanged.
-- **CA1708.** The 20 checked reports are a private field and a public property whose names differ only by case. The rule
-  text states no exception, so they are true warnings. Chapter 3 is about public names, though, and polly's own
-  configuration limits CA1708 to the public API surface; narrowing FDG3007 to the public surface is a candidate.
+- **CA1708.** In the first measurement (internal-b 70), all 20 checked reports were a private field and a public
+  property whose names differ only by case. The rule text states no exception, so they were true warnings, but chapter
+  3 governs public names, and polly's own configuration also limits CA1708 to the public API surface. FDG3007 now sets
+  `dotnet_code_quality.CA1708.api_surface = public`. The 5 remaining reports are all public members that differ only
+  by case.
 - **IDE1006.** For `[ThreadStatic]` fields the message names the `s_` prefix instead of `t_`, but each checked field
   lacked any prefix, so the reports are true warnings.
 - **IDE0055.** The false positive is attribute spacing on a parameter (`[NotNullWhen(true)]out`), which no book rule

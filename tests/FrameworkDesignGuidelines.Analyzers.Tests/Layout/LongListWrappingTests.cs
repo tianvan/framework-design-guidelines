@@ -467,6 +467,140 @@ public sealed class LongListWrappingTests
     }
 
     [Fact]
+    public Task Lists_on_a_line_made_long_only_by_an_operator_are_not_reported()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            class C
+            {
+                int M(bool isAsync, int value, int token)
+                {
+                    if (IsFirst(value, token) || IsSecond(value, token) && IsThird(value, token))
+                    {
+                        return isAsync ? ReadFirst(value, token) : ReadSecond(value, token);
+                    }
+
+                    return (Find(value, token) ?? Find(token, value) ?? Find(value, value)).Value;
+                }
+
+                static bool IsFirst(int a, int b) => a == b;
+
+                static bool IsSecond(int a, int b) => a != b;
+
+                static bool IsThird(int a, int b) => a > b;
+
+                static int ReadFirst(int a, int b) => a;
+
+                static int ReadSecond(int a, int b) => b;
+
+                static int? Find(int a, int b) => a;
+            }
+            """,
+            extraEditorConfig: "max_line_length = 60\n");
+    }
+
+    [Fact]
+    public Task Long_invocation_in_an_operator_is_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                int M(bool isAsync, int value, int token)
+                {
+                    return isAsync ? ReadFirst(value, token) : Combine{|FDGA023:(|}value, token, value, token, value, token, value);
+                }
+
+                static int ReadFirst(int a, int b) => a;
+
+                static int Combine(
+                    int a,
+                    int b,
+                    int c,
+                    int d,
+                    int e,
+                    int f,
+                    int g) => a;
+            }
+            """,
+            """
+            class C
+            {
+                int M(bool isAsync, int value, int token)
+                {
+                    return isAsync ? ReadFirst(value, token) : Combine(
+                        value,
+                        token,
+                        value,
+                        token,
+                        value,
+                        token,
+                        value);
+                }
+
+                static int ReadFirst(int a, int b) => a;
+
+                static int Combine(
+                    int a,
+                    int b,
+                    int c,
+                    int d,
+                    int e,
+                    int f,
+                    int g) => a;
+            }
+            """,
+            extraEditorConfig: "max_line_length = 60\n");
+    }
+
+    [Fact]
+    public Task Long_fluent_chain_in_an_operator_is_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class B
+            {
+                public bool Valid { get; }
+
+                public B Add(int first, int second)
+                {
+                    return this;
+                }
+            }
+
+            class C
+            {
+                bool M(bool isReady)
+                {
+                    return isReady && new B().Add{|FDGA023:(|}1111111, 2222222).Add(3333333, 4444444).Valid;
+                }
+            }
+            """,
+            """
+            class B
+            {
+                public bool Valid { get; }
+
+                public B Add(int first, int second)
+                {
+                    return this;
+                }
+            }
+
+            class C
+            {
+                bool M(bool isReady)
+                {
+                    return isReady && new B().Add(
+                        1111111,
+                        2222222).Add(3333333, 4444444).Valid;
+                }
+            }
+            """,
+            extraEditorConfig: "max_line_length = 60\n");
+    }
+
+    [Fact]
     public Task Fluent_chain_next_link_is_chopped_from_its_new_line()
     {
         return Verifier.VerifyAsync(

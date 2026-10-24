@@ -224,8 +224,8 @@ public sealed class PackageTests : IClassFixture<PackageFixture>
         AssertSequence(trimmed, "seventhValue,", "\"a ninth argument.\");");
         // csharp_preserve_single_line_statements = false: one statement per line.
         AssertSequence(trimmed, "int first = 1;", "int second = 2;");
-        // IDE0011 (csharp_prefer_braces): the braceless if gets braces.
-        AssertSequence(trimmed, "if (first > second)", "{", "Log(null);", "}");
+        // IDE0011 (csharp_prefer_braces) is a suggestion, which dotnet format does not fix by default.
+        AssertSequence(trimmed, "if (first > second)", "Log(null);");
         Assert.All(lines, l => Assert.True(l.Length <= 120, $"Line longer than 120 columns: {l}"));
     }
 

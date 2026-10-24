@@ -316,11 +316,12 @@
     library: warning
     application: warning
     test: none
-  config: []
+  config:
+    - dotnet_code_quality.CA1708.api_surface = public
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1708 is limited to the public API because chapter 3 governs public names; without the limit it reports private fields that differ by case from their public properties (docs/noise-samples.md).'
 - id: FDG3008
   strength: DO
   text: choose easily readable identifier names.
