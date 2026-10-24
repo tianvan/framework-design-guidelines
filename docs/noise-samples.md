@@ -374,10 +374,10 @@ ones). Only the newly mapped SDK diagnostics and the new analyzers are counted. 
 ## Chapter 5 (5.8 to 5.9) mappings and analyzers
 
 Package 0.1.0 with the mappings of sections 5.8 and 5.9, the new parameter and tuple analyzers, and the FDG5011 change
-(an override is compared with the default of the referenced root member), enabled by the profile globalconfigs
-(library for the open-source samples, application for the internal ones). Only the newly mapped SDK diagnostics, the
-new analyzers and FDG5011 are counted. Every report was checked, except CA1062 (56, the same reports as in the 5.4 to
-5.7 run, where 20 were checked).
+(an override is compared with the default of a referenced member, not with a source parent), enabled by the
+profile globalconfigs (library for the open-source samples, application for the internal ones). Only the newly
+mapped SDK diagnostics, the new analyzers and FDG5011 are counted. Every report was checked, except CA1062 (56, the
+same reports as in the 5.4 to 5.7 run, where 20 were checked).
 
 | Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
@@ -418,8 +418,12 @@ new analyzers and FDG5011 are counted. Every report was checked, except CA1062 (
   constructors, a property setter and an operator: true warnings under FDG5108 and FDG5109, which this round maps.
   None is on a params array, so none counts for FDG5122; none is on a comparison or hashing method, which the Mariani
   annotation of 5.8.2 would let skip validation.
-- **FDG5011.** The counts match the 5.1 to 5.3 run, so comparing with the root of the override chain changed nothing
-  on these samples; a new test covers the case it changes (a metadata, source, source chain).
+- **FDG5011.** The counts match the 5.1 to 5.3 run, so comparing with a referenced member changed nothing on these
+  samples; tests cover the cases it changes (a metadata, source, source chain, and two referenced levels).
+- **Re-run after the cross-check.** With the fixes of the cross-check (FDG5102 leaves pointer parameters of members
+  with a pointer-free overload, FDG5011 compares with the nearest overridden member declared in a referenced
+  assembly, FDG5118 sees deconstruction assignments, the tuple rules see events), FDG5011, FDG5102, FDG5118 and
+  FDG5128 to FDG5130 were measured again: FDG5011 11, 0, 0, 1, 1 as above, the others 0.
 - **FDG5105.** newtonsoft-json's `DeserializeXmlNode` and `DeserializeXNode` overloads with the two bool parameters
   `writeArrayAttribute` and `encodeSpecialCharacters`. True.
 - **FDG5111.** internal-a validates an enum constructor argument with `if (!Enum.IsDefined(typeof(T), value)) throw

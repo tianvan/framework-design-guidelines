@@ -180,6 +180,43 @@ public sealed class TupleSignatureTests
     }
 
     [Fact]
+    public Task Events_are_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+
+            public class Grid
+            {
+                public event EventHandler<Tuple<int, int>> {|FDG5128:Moved|};
+
+                public event Action<(int Row, int Column, int Layer, int Page)> {|FDG5130:Paged|};
+
+                public event Action<(int {|FDG5129:row|}, int Column)> Selected;
+
+                internal event Action<(int, int)> Hidden;
+            }
+            """);
+    }
+
+    [Fact]
+    public Task The_fields_of_a_long_System_Tuple_are_counted()
+    {
+        return Verifier.VerifyWithAsync(
+            """
+            using System;
+
+            public static class Values
+            {
+                public static Tuple<int, int, int, int, int, int, int, Tuple<int, int>> {|#0:GetNine|}() => null;
+            }
+            """,
+            new DiagnosticResult(FdgDescriptors.FDG5128).WithLocation(0)
+                .WithArguments("Tuple<int, int, int, int, int, int, int, Tuple<int, int>>", "GetNine"),
+            new DiagnosticResult(FdgDescriptors.FDG5130).WithLocation(0).WithArguments(9, "GetNine"));
+    }
+
+    [Fact]
     public Task Generated_code_is_not_reported()
     {
         return Verifier.VerifyAsync(

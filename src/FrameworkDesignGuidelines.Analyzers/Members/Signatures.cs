@@ -13,7 +13,7 @@ internal static class Signatures
 {
     /// <summary>
     /// True when <paramref name="symbol"/> declares its own externally visible signature: a method, constructor,
-    /// operator, conversion, delegate (its Invoke method), property, indexer or field. Accessors, implicit
+    /// operator, conversion, delegate (its Invoke method), property, indexer, field or event. Accessors, implicit
     /// declarations, and overrides and interface implementations, which take their signature from the member they
     /// override or implement, are left out.
     /// </summary>
@@ -24,7 +24,7 @@ internal static class Signatures
             IMethodSymbol { MethodKind: MethodKind.DelegateInvoke } => true,
             IMethodSymbol method => !method.IsImplicitlyDeclared && method.MethodKind is MethodKind.Ordinary
                 or MethodKind.Constructor or MethodKind.UserDefinedOperator or MethodKind.Conversion,
-            IPropertySymbol or IFieldSymbol => !symbol.IsImplicitlyDeclared,
+            IPropertySymbol or IFieldSymbol or IEventSymbol => !symbol.IsImplicitlyDeclared,
             _ => false,
         };
         return hasSignature && NamingSymbols.IsExternallyVisible(symbol) && !NamingSymbols.IsInherited(symbol);

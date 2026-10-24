@@ -7,13 +7,13 @@ namespace FrameworkDesignGuidelines.Analyzers.Tests.Members;
 public sealed class PointerParameterTests
 {
     [Fact]
-    public Task Pointer_and_multidimensional_array_parameters_of_visible_members_are_reported()
+    public Task Multidimensional_arrays_and_pointer_parameters_without_an_alternative_are_reported()
     {
         return Verifier.VerifyAsync(
             """
             public unsafe class Buffer
             {
-                public Buffer(byte* {|FDG5102:data|}, int length)
+                public Buffer(byte* data, int length)
                 {
                 }
 
@@ -25,11 +25,15 @@ public sealed class PointerParameterTests
 
                 public static Buffer operator +(Buffer left, int[,] {|FDG5102:right|}) => left;
 
-                public void Copy(int*[] {|FDG5102:sources|})
+                public void Copy(int*[] sources)
                 {
                 }
 
                 public void Copy(int[][] sources)
+                {
+                }
+
+                public void Copy(int*[,] {|FDG5102:sources|}, int count)
                 {
                 }
 
@@ -45,7 +49,7 @@ public sealed class PointerParameterTests
                 {
                 }
 
-                protected void Read(byte* {|FDG5102:destination|})
+                protected void Read(byte* destination)
                 {
                 }
 
@@ -91,7 +95,7 @@ public sealed class PointerParameterTests
             """
             public unsafe interface IReader
             {
-                void Read(byte* {|FDG5102:destination|});
+                void Read(byte* destination);
 
                 void Read(byte[] destination);
             }
@@ -127,7 +131,7 @@ public sealed class PointerParameterTests
             """
             public unsafe class Native
             {
-                public void Register(delegate*<int, void> {|FDG5102:callback|})
+                public void Register(delegate*<int, void> callback)
                 {
                 }
 
@@ -175,7 +179,7 @@ public sealed class PointerParameterTests
             """
             public unsafe class Encoder
             {
-                public Encoder(char* {|FDG5102:table|})
+                public Encoder(char* table)
                 {
                 }
 
@@ -183,7 +187,7 @@ public sealed class PointerParameterTests
                 {
                 }
 
-                public int GetBytes(char* {|FDG5102:chars|}, int charCount) => 0;
+                public int GetBytes(char* chars, int charCount) => 0;
 
                 public int GetBytes(char[] chars) => 0;
 
@@ -205,6 +209,32 @@ public sealed class PointerParameterTests
                 public {|FDG5124:Table|}(byte* {|FDG5102:data|})
                 {
                 }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Pointer_parameters_of_members_with_an_alternative_are_not_reported()
+    {
+        // The FDG5124 example of section 5.8.5: a pointer overload beside an array alternative.
+        return Verifier.VerifyAsync(
+            """
+            using System;
+
+            public unsafe class Encoding
+            {
+                [CLSCompliant(false)]
+                public int GetBytes(char* chars, int charCount, byte* bytes, int byteCount) => 0;
+
+                public int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex) => 0;
+            }
+
+            public unsafe class Decoder
+            {
+                [CLSCompliant(false)]
+                public int {|FDG5124:GetChars|}(byte* {|FDG5102:bytes|}, int byteCount, char* {|FDG5102:chars|}) => 0;
+
+                public int GetCharCount(byte[] bytes) => 0;
             }
             """);
     }

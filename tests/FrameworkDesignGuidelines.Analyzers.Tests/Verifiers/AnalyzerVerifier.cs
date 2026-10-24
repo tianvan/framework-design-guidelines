@@ -53,6 +53,22 @@ internal static class AnalyzerVerifier<TAnalyzer>
     }
 
     /// <summary>
+    /// Verifies <paramref name="source"/> in a project that references a project built from
+    /// <paramref name="referencedSource"/>, for members declared in a referenced assembly. Diagnostics in the
+    /// referenced project are marked in <paramref name="referencedSource"/>.
+    /// </summary>
+    public static async Task VerifyWithReferenceAsync(string source, string referencedSource)
+    {
+        foreach (ReferenceAssemblies referenceAssemblies in _referenceAssemblies)
+        {
+            foreach (LanguageVersion languageVersion in _languageVersions)
+            {
+                await VerifyAsync(source, referenceAssemblies, languageVersion, [], [], referencedSource);
+            }
+        }
+    }
+
+    /// <summary>
     /// Verifies .NET 8 under the latest language version only, for features that C# 7.3 or .NET Framework lack
     /// (records, primary constructors, static abstract interface members).
     /// </summary>
@@ -76,7 +92,8 @@ internal static class AnalyzerVerifier<TAnalyzer>
         ReferenceAssemblies referenceAssemblies,
         LanguageVersion languageVersion,
         DiagnosticResult[] expected,
-        (string Path, string Text)[] extraSources)
+        (string Path, string Text)[] extraSources,
+        string? referencedSource = null)
     {
         var test = new Test(languageVersion)
         {
@@ -86,6 +103,14 @@ internal static class AnalyzerVerifier<TAnalyzer>
         foreach ((string path, string text) in extraSources)
         {
             test.TestState.Sources.Add((path, text.Replace("\r\n", "\n")));
+        }
+
+        if (referencedSource is not null)
+        {
+            ProjectState referenced = test.TestState.AdditionalProjects["Referenced"];
+            referenced.Sources.Add(("/Referenced/Referenced.cs", referencedSource.Replace("\r\n", "\n")));
+            referenced.AnalyzerConfigFiles.Add(("/Referenced/.editorconfig", EditorConfig()));
+            test.TestState.AdditionalProjectReferences.Add("Referenced");
         }
 
         test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", EditorConfig()));

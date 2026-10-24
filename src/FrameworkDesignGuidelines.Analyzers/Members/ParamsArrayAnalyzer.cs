@@ -8,7 +8,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Members;
 
 /// <summary>
 /// FDG5118 (section 5.8.4): an externally visible method or constructor that declares its own signature does not
-/// assign an element of its params array, in its body or in the lambdas and local functions of its body.
+/// assign an element of its params array, deconstruction included, in its body or in the lambdas and local
+/// functions of its body.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ParamsArrayAnalyzer : DiagnosticAnalyzer
@@ -39,6 +40,7 @@ public sealed class ParamsArrayAnalyzer : DiagnosticAnalyzer
             OperationKind.SimpleAssignment,
             OperationKind.CompoundAssignment,
             OperationKind.CoalesceAssignment,
+            OperationKind.DeconstructionAssignment,
             OperationKind.Increment,
             OperationKind.Decrement);
         context.RegisterOperationBlockEndAction(endContext =>
@@ -70,7 +72,15 @@ public sealed class ParamsArrayAnalyzer : DiagnosticAnalyzer
 
         public void Record(IOperation? target, IParameterSymbol parameter)
         {
-            if (target is IArrayElementReferenceOperation
+            if (target is ITupleOperation tuple)
+            {
+                // The target of a deconstruction, such as (values[0], values[1]) = (values[1], values[0]).
+                foreach (IOperation element in tuple.Elements)
+                {
+                    Record(element, parameter);
+                }
+            }
+            else if (target is IArrayElementReferenceOperation
                 {
                     ArrayReference: IParameterReferenceOperation { Parameter: var assigned },
                 }

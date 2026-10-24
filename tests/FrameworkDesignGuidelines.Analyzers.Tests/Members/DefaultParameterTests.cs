@@ -349,7 +349,7 @@ public sealed class DefaultParameterTests
     }
 
     [Fact]
-    public Task Overrides_are_compared_with_the_default_of_the_referenced_root_member()
+    public Task Overrides_are_compared_with_the_default_of_the_referenced_member_they_follow()
     {
         // ArrayPool<T>.Return declares clearArray = false. ChangedPool changes it; StrictPool repeats ChangedPool's
         // changed default, which still disagrees with the root; ResetPool repeats the root's default.
@@ -382,6 +382,44 @@ public sealed class DefaultParameterTests
             """,
             ReferenceAssemblies.Net.Net80,
             LanguageVersion.Latest);
+    }
+
+    [Fact]
+    public Task Overrides_are_compared_with_the_default_of_the_nearest_referenced_member()
+    {
+        // Both levels are referenced: StrictPool repeats the changed default of ChangedPool, the nearest referenced
+        // member, and is not reported; ResetPool goes back to the default of BasePool, which changes ChangedPool's.
+        return Verifier.VerifyWithReferenceAsync(
+            """
+            public class StrictPool : ChangedPool
+            {
+                public override void Return(bool clear = true)
+                {
+                }
+            }
+
+            public class ResetPool : ChangedPool
+            {
+                public override void Return(bool {|FDG5011:clear|} = false)
+                {
+                }
+            }
+            """,
+            """
+            public class BasePool
+            {
+                public virtual void Return(bool {|FDG5011:clear|} = false)
+                {
+                }
+            }
+
+            public class ChangedPool : BasePool
+            {
+                public override void Return(bool {|FDG5011:clear|} = true)
+                {
+                }
+            }
+            """);
     }
 
     [Fact]

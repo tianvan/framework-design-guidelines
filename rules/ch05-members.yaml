@@ -498,7 +498,7 @@
   analyzer:
     message: Do not give the parameter '{0}' of the virtual or interface member '{1}' a default value
     category: Members
-  notes: FDG5011 reports a parameter with a default value, other than one of type CancellationToken, on an externally visible interface member or on a virtual, abstract or override method of a class. The Template Method Pattern of the body (a nonvirtual public method with the defaults that calls a protected virtual method without them) and extension methods are not reported. An override of a member declared in a referenced assembly is not reported for a default that repeats the explicit default of the overridden member, since it only follows a declaration the user cannot change; an override that adds or changes a default is reported. There is no code fix; removing a default value breaks callers that omit the argument, so the fix is breaking.
+  notes: FDG5011 reports a parameter with a default value, other than one of type CancellationToken, on an externally visible interface member or on a virtual, abstract or override method of a class. The Template Method Pattern of the body (a nonvirtual public method with the defaults that calls a protected virtual method without them) and extension methods are not reported. An override is not reported for a default that repeats the explicit default of the nearest overridden member declared in a referenced assembly, since it only follows a declaration the user cannot change; an override that adds or changes a default is reported, including one that repeats a default changed by a class in source between them. A project reference counts as a referenced assembly. There is no code fix; removing a default value breaks callers that omit the argument, so the fix is breaking.
 - id: FDG5012
   strength: DO NOT
   text: change the default value for a parameter once it has been publicly released.
@@ -3686,7 +3686,7 @@
     - kind: annotation
       text: Interface isn’t everything. If your algorithm needs a more specialized type to get decent performance, there’s no point in pretending that you only need a base type. Best to make your needs clear—ask for the type that is required to get the designed behavior. Likewise, if your method requires certain thread-safety or security features provided by subtypes, insist on those features in the contract. There’s no point in allowing users to make calls that won’t work.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3721,7 +3721,7 @@
 
         // added in a future version
         public void Method(SomeOption option, string path);
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3755,7 +3755,7 @@
     kind: fdg
     diagnostics:
       - FDG5102
-    coverage: full
+    coverage: partial
   autofix: breaking
   severity:
     library: warning
@@ -3767,7 +3767,7 @@
   analyzer:
     message: 'Do not take the pointer or multidimensional array parameter ''{0}'' in the publicly exposed member ''{1}'''
     category: Members
-  notes: 'Library only: the text is about publicly exposed methods, whose callers outside the library find pointers and multidimensional arrays difficult to use. FDG5102 reports a parameter of an externally visible method, constructor, operator, delegate or indexer whose type is a pointer, a function pointer, an array of either, or a multidimensional array, at any level of a jagged array. Overrides and interface implementations are not reported, since they take their signature from the member they override or implement. CA1814 is not mapped: it also reports fields and return values and suggests jagged arrays, which the text does not ask. FDG5124 reports pointer members without an alternative. Changing a parameter type changes the public API, so the fix is breaking; there is no code fix.'
+  notes: 'Library only: the text is about publicly exposed methods, whose callers outside the library find pointers and multidimensional arrays difficult to use. FDG5102 reports a parameter of an externally visible method, constructor, operator, delegate or indexer whose type is a pointer, a function pointer, an array of either, or a multidimensional array, at any level of a jagged array. The 5.8.5 introduction allows pointers where interoperability requires them, with an alternative (FDG5124): a pointer parameter of a method or constructor that has an overload of the same name without pointer parameters is not reported. Whether interoperability requires the pointer is otherwise not seen. Multidimensional arrays are reported in every member. Overrides and interface implementations are not reported, since they take their signature from the member they override or implement. CA1814 is not mapped: it also reports fields and return values and suggests jagged arrays, which the text does not ask. FDG5124 reports pointer members without an alternative. Changing a parameter type changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5103
   strength: DO
   text: place all `out` parameters following all of the by-value and `ref` parameters (excluding parameter arrays), even if it results in an inconsistency in parameter ordering between overloads (see section 5.1.1).
@@ -3784,7 +3784,7 @@
           public static bool TryParse(string input, IFormatProvider
         formatProvider, DateTimeStyles styles, out DateTimeOffset result);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3836,7 +3836,7 @@
           // incorrect; the parameter should be called 'obj'
            public override bool Equals(object value) { ... }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -3895,7 +3895,7 @@
 
         the name of the arguments makes it clear. I still agree with the general guidance, but the ramifications of not following it aren’t as stark as they once were.
       author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3926,7 +3926,7 @@
     - kind: annotation
       text: 'We have seen a couple of places in the framework where we added a Boolean in one version, and in the next version we were forced to add another Boolean option to account for what could have been a foreseeable change. Don’t let this happen to you: If there is even a slight possibility of needing more options in the future, use an enum now.'
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3952,7 +3952,7 @@
     - kind: annotation
       text: An interesting clarification of this guideline for constructor parameters that map onto properties is that if the value is typically set in the constructor, an enum value is better. If the value is typically set using the property setter, a Boolean value is better. This thinking helped us clarify a `CodeDom` work item to add `IsGlobal` on `CodeTypeReference`. In this case, it should be an enum because it is typically set in the constructor, but the `IsPartial` property on `CodeTypeDeclaration` should be a Boolean.
       author: Anthony Moore
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3986,7 +3986,7 @@
         }
     - kind: paragraph
       text: Note that the actual validation does not necessarily have to happen in the public or protected member itself. It could happen at a lower level in some private or internal routine. The main point is that the entire surface area that is exposed to the end users checks the arguments.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -4010,7 +4010,7 @@
   section: 5.8.2 Validating Arguments
   anchor: sec5_8_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -4047,7 +4047,7 @@
     - kind: annotation
       text: I am not a believer in always validating `[Flags]` enums. Typically, all you can usefully do for them is to confirm that “unused” flags are not used, but this also makes your code unnecessarily fragile (now adding a new flag is a breaking change!). Your code “naturally” would simply ignore unused flags, and I think that is a reasonable semantic. However, if certain combinations of flags are illegal, that should certainly be checked and an appropriate error thrown.
       author: Vance Morrison
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4115,7 +4115,7 @@
 
         The example is great, though, in that it demonstrates how easily you can unintentionally misuse `Enum.IsDefined`, so use it thoughtfully.
       author: Brent Rector
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4146,7 +4146,7 @@
     - kind: annotation
       text: This is one of the many places where you can cash in on the fact that CLR strings are immutable; there is no need to copy them in security-sensitive operations.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4180,7 +4180,7 @@
     - kind: annotation
       text: Generics and `ref`/`out` parameters interact very nicely. Normally, the variable used to make a `ref` call must be an exact type match, which can be inconvenient. However, if the method is defined with a generic argument that is merely constrained to the required base type, then variables of derived types can be used to make the call. Meanwhile, inference by the compiler makes it unlikely that the caller is impacted by the generic syntax for the method. Very nice!
       author: Jason Clark
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -4236,7 +4236,7 @@
   analyzer:
     message: 'Do not pass the reference type parameter ''{0}'' of ''{1}'' by reference'
     category: Members
-  notes: 'FDG5114 reports a ref, in or ref readonly parameter of a reference type (a class, interface, delegate, array or string, or a type parameter constrained to a reference type) of an externally visible method, constructor, delegate, operator or indexer. Overrides and interface implementations are not reported. The swap exception of the body is recognized by its shape: ref parameters are not reported when the member has two or more ref parameters of the same type. in and ref readonly parameters are always reported, since the body says there is no reason for them. An unconstrained type parameter, as in the Swap<T> example, is not a reference type and is not reported. CA1045 is not mapped (see FDG5113). Changing how a public parameter is passed changes the public API, so the fix is breaking; there is no code fix.'
+  notes: 'FDG5114 reports a ref, in or ref readonly parameter of a reference type (a class, interface, delegate, array or string, or a type parameter constrained to a reference type) of an externally visible method, constructor, delegate, operator or indexer. Overrides and interface implementations are not reported. The swap exception of the body is recognized by its shape: ref parameters are not reported when the member has two or more ref parameters of the same type. Other limited exceptions, such as a helper that assigns a caller''s field through a ref parameter of a class-constrained type parameter (LazyInitializer.EnsureInitialized, Interlocked.Exchange, a property setter helper), are reported; such reports are false positives. in and ref readonly parameters are always reported, since the body says there is no reason for them. An unconstrained type parameter, as in the Swap<T> example, is not a reference type and is not reported. CA1045 is not mapped (see FDG5113). Changing how a public parameter is passed changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5115
   strength: DO NOT
   text: pass value types by read-only reference (`in`).
@@ -4251,7 +4251,7 @@
     - kind: annotation
       text: The `in` modifier, like large structs, can be useful in private or internal code. The edge cases and gotchas to this modifier can be noticed in private code and changed to pass-by-value or “full” `ref`. Since public (and protected) members can’t freely change from `in` to `ref`—or from `in` to by-value—when performance testing says to do so, we advise against using the `in` modifier in those members.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4282,7 +4282,7 @@
     - kind: annotation
       text: There are several places in the framework where we didn’t do this, and it still grates on me whenever I have to write code that creates a bunch of temporary arrays. In many cases, we were able to add params in a later version, but in other cases adding params made the method ambiguous and was a source-code breaking change.
       author: Brian Pepin
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4307,7 +4307,7 @@
   body:
     - kind: paragraph
       text: For example, members with byte array parameters would almost never be called by passing individual bytes. For this reason, byte array parameters in .NET do not use the `params` keyword.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4350,7 +4350,7 @@
   analyzer:
     message: 'Do not use params for the parameter ''{0}'' of ''{1}'', which modifies the array'
     category: Members
-  notes: 'FDG5118 reports the params array parameter of an externally visible method or constructor when its body, lambdas and local functions included, assigns an element of the array: a simple, compound or null-coalescing assignment, or an increment or decrement. Overrides and interface implementations are not reported. Changes made through calls, such as Array.Sort or Array.Clear, or through ref arguments, are not seen, and neither are params collections other than arrays (C# 13). The text asks not to use params for such a member, so the fix removes params, which callers that pass the elements inline rely on; it is breaking, and there is no code fix.'
+  notes: 'FDG5118 reports the params array parameter of an externally visible method or constructor when its body, lambdas and local functions included, assigns an element of the array: a simple, compound, null-coalescing or deconstruction assignment, or an increment or decrement. Overrides and interface implementations are not reported. Changes made through calls, such as Array.Sort or Array.Clear, or through ref arguments, are not seen, and neither are params collections other than arrays (C# 13). The text asks not to use params for such a member, so the fix removes params, which callers that pass the elements inline rely on; it is breaking, and there is no code fix.'
 - id: FDG5119
   strength: CONSIDER
   text: using the `params` keyword in a simple overload, even if a more complex overload could not use it.
@@ -4370,7 +4370,7 @@
         }
     - kind: paragraph
       text: The array parameter of the second overload is not the last parameter in the parameter list, so it cannot use the `params` keyword. This does not mean that the keyword should not be used in the first overload, where it is the last parameter. If the first overload is used often, users will appreciate the addition.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4409,7 +4409,7 @@
         Sort(IComparer comparer)
         Sort(IComparer comparer, params string[] names)
         Sort(params string[] names)
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4445,7 +4445,7 @@
     - kind: annotation
       text: You might also do this if you want to specialize the code path at some point, even if you can’t do it in your first release. That way, you can change your internal implementation without having your clients recompile, and you can do the most important specializations first.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4487,7 +4487,7 @@
     - kind: annotation
       text: Very low-level functions (those doing only a tiny amount of work) will find the cost of temporary array creation and array validation a significant burden. All of this argues in favor of using the params construct higher up in your stack—in bigger functions that are doing more work.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -4519,7 +4519,7 @@
     - kind: annotation
       text: The runtime support for `varargs` is just enough to make managed C++ work on Windows. The performance is not great, and it has not been implemented for non-Windows platforms. For these reasons, I would not recommend using it even for internal implementations. Several teams have done experiments with it, only to find that it is worse across the board than the alternatives.
       author: Jan Kotas
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4556,7 +4556,7 @@
         // Consider Span<T> / ReadOnlySpan<T> instead of
         // (or in addition to) methods that take pointers
         public int GetBytes(ReadOnlySpan<char> source, Span<byte> destination);
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4587,7 +4587,7 @@
     - kind: annotation
       text: This is right in line with my general advice. Put the argument checking at the right level of your abstraction stack. That will get you the best diagnostics at the best price. After you get this close to the metal, those extra tests can be a significant fraction of the job at hand.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4627,7 +4627,7 @@
     - kind: annotation
       text: For developers working with pointer-based APIs, it is more natural to think of the world with a pointer-oriented mindset. Although it is common in “safe” managed code, passing an index is uncommon in pointer-based code; it is more natural to use pointer arithmetic.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4653,7 +4653,7 @@
     - kind: annotation
       text: Neither discoverability nor evolution is particularly important for internals. It’s good to remember that the guidelines here are about public APIs. Tuples (and the syntax C# provides for them) are really handy in implementation and are a convenient way of passing around multiple pieces of related data, including when providing multiple return values from methods.
       author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4701,7 +4701,7 @@
   analyzer:
     message: 'Name the elements of the tuple type ''{0}'' in the signature of ''{1}'''
     category: Members
-  notes: 'Library only: see FDG5127. FDG5128 reports, once per member, an externally visible method, constructor, delegate, operator, property, indexer or field whose signature uses an unnamed tuple: System.Tuple<...>, or a value tuple with an element that has no name, such as (int, int) or ValueTuple<int, int>, also as a type argument or an array element type. Overrides and interface implementations are not reported. Replacing System.Tuple with a named tuple changes the type, so the fix is breaking; only adding names to a value tuple is not. There is no code fix.'
+  notes: 'Library only: see FDG5127. FDG5128 reports, once per member, an externally visible method, constructor, delegate, operator, property, indexer, field or event whose signature uses an unnamed tuple: System.Tuple<...>, or a value tuple with an element that has no name, such as (int, int) or ValueTuple<int, int>, also as a type argument or an array element type. Overrides and interface implementations are not reported. Replacing System.Tuple with a named tuple changes the type, so the fix is breaking; only adding names to a value tuple is not. There is no code fix.'
 - id: FDG5129
   strength: DO
   text: name elements of a named tuple using PascalCase, as if they were properties.
@@ -4729,7 +4729,7 @@
   analyzer:
     message: 'Name the tuple element ''{0}'' in the signature of ''{1}'' in PascalCase'
     category: Members
-  notes: 'Library only: see FDG5127. FDG5129 reports each element name of a tuple in the signature of an externally visible method, constructor, delegate, operator, property, indexer or field that does not start with an uppercase letter. The rest of PascalCase is not checked. Overrides and interface implementations are not reported. Callers read the elements by name, so renaming them breaks their source and the fix is breaking; there is no code fix.'
+  notes: 'Library only: see FDG5127. FDG5129 reports each element name of a tuple in the signature of an externally visible method, constructor, delegate, operator, property, indexer, field or event that does not start with an uppercase letter. The rest of PascalCase is not checked. Overrides and interface implementations are not reported. Callers read the elements by name, so renaming them breaks their source and the fix is breaking; there is no code fix.'
 - id: FDG5130
   strength: DO NOT
   text: use tuples with more than three fields.
@@ -4760,7 +4760,7 @@
   analyzer:
     message: 'Use a descriptive type in place of the tuple with {0} fields in the signature of ''{1}'''
     category: Members
-  notes: 'Library only: see FDG5127. FDG5130 reports, once per member, an externally visible method, constructor, delegate, operator, property, indexer or field whose signature uses a tuple with more than three elements: a value tuple, named or not, or System.Tuple, also as a type argument or an array element type. Overrides and interface implementations are not reported. Replacing the tuple with a descriptive type changes the public API, so the fix is breaking; there is no code fix.'
+  notes: 'Library only: see FDG5127. FDG5130 reports, once per member, an externally visible method, constructor, delegate, operator, property, indexer, field or event whose signature uses a tuple with more than three elements: a value tuple, named or not, or System.Tuple (an eight-argument System.Tuple counts the elements of its last one), also as a type argument or an array element type. Overrides and interface implementations are not reported. Replacing the tuple with a descriptive type changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5131
   strength: DO NOT
   text: use tuples as method parameters.
@@ -4788,7 +4788,7 @@
         // Not OK if explicitly defined this way
         public static (int Base, int Exponent) Max(
          IComparer<(int Base, int Exponent)> comparer, ...) { ... }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4833,7 +4833,7 @@
         int dotProduct = value.DotProduct(otherValue);
     - kind: paragraph
       text: This is because the C# language (and VB.NET) considers all tuples, as well as `System.ValueTuple<T1,...>`, to be the same type if their ordered list of element types is the same.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4882,7 +4882,7 @@
       text: This same code works for all four representations of the person because `System.Tuple<T1, ...>`, `System.ValueTuple<T1, ...>`, and named tuples all have similar `Deconstruct` methods and the deconstruction language feature does not require any similarity in the `out` parameter names and the local variable names.
     - kind: paragraph
       text: The deconstruction syntax is especially nice for tuples, as their lack of methods means that any logic operating on a tuple has to first break it down to some (or all) of its element values. If a tuple was a candidate for the return type of a method, then even for the descriptive type, a likely common operation for callers will be to break the type down to its element values.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment

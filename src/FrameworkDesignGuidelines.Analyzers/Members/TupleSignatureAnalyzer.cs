@@ -30,7 +30,12 @@ public sealed class TupleSignatureAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.RegisterSymbolAction(
-            AnalyzeMember, SymbolKind.Method, SymbolKind.Property, SymbolKind.Field, SymbolKind.NamedType);
+            AnalyzeMember,
+            SymbolKind.Method,
+            SymbolKind.Property,
+            SymbolKind.Field,
+            SymbolKind.Event,
+            SymbolKind.NamedType);
     }
 
     private static void AnalyzeMember(SymbolAnalysisContext context)
@@ -84,13 +89,14 @@ public sealed class TupleSignatureAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    /// <summary>The type of a field or property, or the return type of a method.</summary>
+    /// <summary>The type of a field, property or event, or the return type of a method.</summary>
     private static ITypeSymbol ValueType(ISymbol member)
     {
         return member switch
         {
             IMethodSymbol method => method.ReturnType,
             IPropertySymbol property => property.Type,
+            IEventSymbol @event => @event.Type,
             _ => ((IFieldSymbol)member).Type,
         };
     }
@@ -149,9 +155,20 @@ public sealed class TupleSignatureAnalyzer : DiagnosticAnalyzer
         return !tuple.IsTupleType || tuple.TupleElements.Any(element => !element.IsExplicitlyNamedTupleElement);
     }
 
+    /// <summary>
+    /// The number of elements of a tuple; a <c>System.Tuple</c> with eight type arguments continues in its last one.
+    /// </summary>
     private static int ElementCount(INamedTypeSymbol tuple)
     {
-        return tuple.IsTupleType ? tuple.TupleElements.Length : tuple.TypeArguments.Length;
+        if (tuple.IsTupleType)
+        {
+            return tuple.TupleElements.Length;
+        }
+
+        ImmutableArray<ITypeSymbol> arguments = tuple.TypeArguments;
+        return arguments.Length == 8 && arguments[7] is INamedTypeSymbol rest && IsSystemTuple(rest)
+            ? 7 + ElementCount(rest)
+            : arguments.Length;
     }
 
     private static string Display(ITypeSymbol type)

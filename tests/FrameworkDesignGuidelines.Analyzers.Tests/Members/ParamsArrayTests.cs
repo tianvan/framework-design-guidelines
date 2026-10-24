@@ -97,6 +97,33 @@ public sealed class ParamsArrayTests
     }
 
     [Fact]
+    public Task Deconstruction_assignments_are_reported()
+    {
+        return Verifier.VerifyLatestAsync(
+            """
+            public static class Pairs
+            {
+                public static void Swap(params int[] {|FDG5118:values|})
+                {
+                    (values[0], values[1]) = (values[1], values[0]);
+                }
+
+                public static void Rotate(params int[] {|FDG5118:values|})
+                {
+                    int first;
+                    (first, (values[0], values[1])) = (values[0], (values[1], values[2]));
+                }
+
+                public static int Sum(params int[] values)
+                {
+                    (int first, int second) = (values[0], values[1]);
+                    return first + second;
+                }
+            }
+            """);
+    }
+
+    [Fact]
     public Task Overrides_and_interface_implementations_are_not_reported()
     {
         return Verifier.VerifyAsync(

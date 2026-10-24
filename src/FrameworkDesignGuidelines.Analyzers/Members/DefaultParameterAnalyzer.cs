@@ -9,8 +9,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Members;
 /// The default parameter rules of section 5.1.1, over the externally visible methods and constructors of a type:
 /// FDG5010, a member with two or more default parameters has an overload without defaults and with no more
 /// parameters than its required ones; FDG5011, interface members and virtual, abstract or override methods give no
-/// parameter a default value except a <c>CancellationToken</c>, and an override of a member declared in a referenced
-/// assembly is not reported for a default that repeats the one of that referenced member; FDG5013, two overloads
+/// parameter a default value except a <c>CancellationToken</c>, and an override is not reported for a default that
+/// repeats the one of the nearest overridden member declared in a referenced assembly; FDG5013, two overloads
 /// with defaults do not have compatible required parameters; FDG5015, a parameter has the same default value in
 /// every overload.
 /// Members that override or implement another one are reported by FDG5011 only.
@@ -77,13 +77,11 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        IMethodSymbol root = Root(method);
-        IMethodSymbol? referencedRoot =
-            method.IsOverride && !root.Locations.Any(location => location.IsInSource) ? root : null;
+        IMethodSymbol? referenced = NearestReferenced(method);
         foreach (IParameterSymbol parameter in method.Parameters)
         {
             if (parameter.IsOptional && !Overloads.IsCancellationToken(parameter.Type)
-                && !(referencedRoot is not null && RepeatsDefault(referencedRoot, parameter))
+                && !(referenced is not null && RepeatsDefault(referenced, parameter))
                 && NamingSymbols.SourceLocation(parameter) is { } location)
             {
                 context.ReportDiagnostic(Diagnostic.Create(
@@ -141,30 +139,37 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    /// The method that <paramref name="method"/> overrides, followed back to the first declaration.
+    /// The nearest member that <paramref name="method"/> overrides, directly or through overrides in its own
+    /// assembly, that is declared in a referenced assembly; null when the whole chain is in the compilation.
+    /// The assembly is compared, not the locations, so that a project reference, whose symbols have source
+    /// locations in the IDE, counts as referenced the way the built assembly does.
     /// </summary>
-    private static IMethodSymbol Root(IMethodSymbol method)
+    private static IMethodSymbol? NearestReferenced(IMethodSymbol method)
     {
-        IMethodSymbol root = method;
-        while (root.OverriddenMethod is { } overridden)
+        for (IMethodSymbol? overridden = method.OverriddenMethod;
+            overridden is not null;
+            overridden = overridden.OverriddenMethod)
         {
-            root = overridden;
+            if (!SymbolEqualityComparer.Default.Equals(overridden.ContainingAssembly, method.ContainingAssembly))
+            {
+                return overridden;
+            }
         }
 
-        return root;
+        return null;
     }
 
     /// <summary>
-    /// True when the referenced <paramref name="root"/> gives <paramref name="parameter"/> the same explicit default.
-    /// An override of a referenced member that repeats its default only follows a declaration the user cannot
-    /// change; one that adds or changes a default creates the disagreement the rule is about. The root is compared,
-    /// not the member overridden directly, so that an override that repeats a source parent's changed default is
-    /// still reported.
+    /// True when the <paramref name="referenced"/> member gives <paramref name="parameter"/> the same explicit
+    /// default. An override of a referenced member that repeats its default only follows a declaration the user
+    /// cannot change; one that adds or changes a default creates the disagreement the rule is about. The nearest
+    /// referenced member is compared, not the member overridden directly, so that an override that repeats a
+    /// changed default of a class in the compilation is still reported.
     /// </summary>
-    private static bool RepeatsDefault(IMethodSymbol root, IParameterSymbol parameter)
+    private static bool RepeatsDefault(IMethodSymbol referenced, IParameterSymbol parameter)
     {
-        return parameter.Ordinal < root.Parameters.Length
-            && root.Parameters[parameter.Ordinal] is { HasExplicitDefaultValue: true } original
+        return parameter.Ordinal < referenced.Parameters.Length
+            && referenced.Parameters[parameter.Ordinal] is { HasExplicitDefaultValue: true } original
             && parameter.HasExplicitDefaultValue
             && Equals(original.ExplicitDefaultValue, parameter.ExplicitDefaultValue);
     }
