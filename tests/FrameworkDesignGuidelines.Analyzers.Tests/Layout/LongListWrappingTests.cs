@@ -855,8 +855,8 @@ public sealed class LongListWrappingTests
                     Report{|FDGA023:(|}
                         1, 2,
                         3);
-                    Report{|FDGA023:(|}1, 2, 3
-                    );
+                    Report{|FDGA023:(|}
+                        1, 2, 3);
                 }
 
                 static void Report(int a, int b, int c)
@@ -899,6 +899,68 @@ public sealed class LongListWrappingTests
                     public Widget(int a, int b, int c)
                     {
                     }
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Break_before_the_first_item_with_items_sharing_a_line_is_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M{|FDGA023:(|}
+                    int a, int b)
+                {
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M(
+                    int a,
+                    int b)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Line_breaks_only_inside_one_item_are_not_a_wrap()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            using System;
+
+            class C
+            {
+                void M()
+                {
+                    Run(1, () =>
+                    {
+                        M();
+                    }, 2);
+                    Hold(1, new Holder
+                    {
+                        Count = 1,
+                    }, 2);
+                }
+
+                static void Run(int a, Action b, int c)
+                {
+                }
+
+                static void Hold(int a, Holder b, int c)
+                {
+                }
+
+                sealed class Holder
+                {
+                    public int Count { get; set; }
                 }
             }
             """);

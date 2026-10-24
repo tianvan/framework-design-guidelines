@@ -754,7 +754,7 @@
     - kind: annotation
       text: We don’t have a set line length as part of our style guidelines. I set my IDE to give a guide line at 120 characters, which is generally narrow enough to avoid horizontal scrolling for most IDE configurations and web-based code viewers. However, I treat this as a “soft” limit and violate it when adding the line break makes the line too hard to read.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: true
   check:
     kind: fdg
@@ -772,7 +772,7 @@
   analyzer:
     message: Place each argument or parameter of a long list on its own line, starting on the line after the opening parenthesis
     category: Layout
-  notes: 'A list is long when its line exceeds max_line_length (default 120). Scope: A parameter or argument list that spans more than one line is treated as exceedingly long, because the author chose to wrap it; it must then be chopped before the first item, indented one level, with one item per line, and a list whose first item stays on the opening line violates the rule even if no line passes the length guide.'
+  notes: 'A list is long when its line exceeds max_line_length (default 120). Scope: A parameter or argument list is treated as exceedingly long, because the author chose to wrap it, when a line break falls between its items (at a separator, or before the first item or any later item); it must then be chopped before the first item, indented one level, with one item per line. Line breaks only inside a single item (a lambda body, an initializer, a nested call or a continued expression) do not by themselves make the list wrapped, but a list whose line exceeds the length guide is still covered.'
 - id: FDGA024
   strength: DO
   text: add a blank line before control flow statements.

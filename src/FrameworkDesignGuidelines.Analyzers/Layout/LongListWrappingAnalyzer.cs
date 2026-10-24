@@ -92,10 +92,22 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
             || last.TrailingTrivia.Any(SyntaxKind.SingleLineCommentTrivia);
     }
 
-    /// <summary>True when the list is written over more than one line.</summary>
+    /// <summary>
+    /// True when the author wrapped the list: a line break falls between its items, that is before the first item
+    /// or at a separator. Breaks only inside one item (a lambda body, an initializer) are not a wrap of the list.
+    /// </summary>
     private static bool IsWrapped(SourceText text, ListShape shape)
     {
-        return LayoutText.GetLineNumber(text, shape.Open.SpanStart) != LayoutText.GetLineNumber(text, shape.Close.SpanStart);
+        foreach (SyntaxNode item in shape.Items)
+        {
+            SyntaxToken first = item.GetFirstToken();
+            if (LayoutText.GetLineNumber(text, first.GetPreviousToken().Span.End) != LayoutText.GetLineNumber(text, first.SpanStart))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void AnalyzeList(SyntaxNodeAnalysisContext context)
