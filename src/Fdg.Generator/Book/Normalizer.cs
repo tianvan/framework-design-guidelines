@@ -11,21 +11,35 @@ public static partial class Normalizer
     [GeneratedRegex(@"\s+")]
     private static partial Regex Whitespace();
 
+    // Split ligatures found by scanning the whole book (2026-10-23); a heuristic would join real words such as "off the".
+    private static readonly (string Split, string Joined)[] SplitLigatures = [("Conf licts", "Conflicts")];
+
     public static string Glyphs(string text)
     {
         return text.Replace(ZeroGlyph, '0');
     }
 
+    /// <summary>Rejoins the words that the epub breaks at a ligature; only the known splits are touched.</summary>
+    public static string Ligatures(string text)
+    {
+        foreach ((string split, string joined) in SplitLigatures)
+        {
+            text = text.Replace(split, joined, StringComparison.Ordinal);
+        }
+
+        return text;
+    }
+
     /// <summary>Collapses every run of whitespace to one space and trims the ends.</summary>
     public static string Collapse(string text)
     {
-        return Whitespace().Replace(Glyphs(text), " ").Trim();
+        return Ligatures(Whitespace().Replace(Glyphs(text), " ").Trim());
     }
 
     /// <summary>Normalizes line endings, drops trailing whitespace, and trims blank lines at both ends.</summary>
     public static string Code(string text)
     {
-        string unified = Glyphs(text).Replace("\r\n", "\n").Replace('\r', '\n');
+        string unified = Ligatures(Glyphs(text)).Replace("\r\n", "\n").Replace('\r', '\n');
         string[] lines = unified.Split('\n').Select(line => line.TrimEnd()).ToArray();
 
         int start = 0;
