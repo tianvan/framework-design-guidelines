@@ -364,6 +364,28 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Write_removes_stale_reference_files()
+    {
+        string root = TempDir();
+        GeneratedFiles.Write(root, GeneratedFiles.Create(Input()));
+        string skill = Path.Combine(root, "plugins", "framework-design-guidelines", "skills", "fdg-write");
+        string references = Path.Combine(skill, "references");
+        string[] stale = { Path.Combine(references, "old.md"), Path.Combine(references, "examples", "old.md") };
+        string[] kept = { Path.Combine(references, "keep.txt"), Path.Combine(skill, "SKILL.md") };
+        foreach (string path in stale.Concat(kept))
+        {
+            File.WriteAllText(path, "hand-made");
+        }
+
+        // Every generated file already matches the disk, so the count is exactly the two removals.
+        int changes = GeneratedFiles.Write(root, GeneratedFiles.Create(Input()));
+
+        Assert.All(stale, path => Assert.False(File.Exists(path), path));
+        Assert.All(kept, path => Assert.True(File.Exists(path), path));
+        Assert.Equal(2, changes);
+    }
+
+    [Fact]
     public void Generated_files_use_lf_and_carry_a_header_where_comments_are_allowed()
     {
         IReadOnlyList<GeneratedFile> files = GeneratedFiles.Create(Input());
