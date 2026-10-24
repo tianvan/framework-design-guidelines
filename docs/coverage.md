@@ -9,9 +9,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 2 Framework Design Fundamentals | 32 | 0 | 0 | 32 | 0 | 32 |
 | 3 Naming Guidelines | 87 | 34 | 8 | 45 | 0 | 87 |
 | 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 70 |
-| 5 Member Design | 133 | 15 | 25 | 93 | 0 | 99 |
+| 5 Member Design | 133 | 20 | 39 | 74 | 0 | 99 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 393 | 109 | 45 | 239 | 0 | 359 |
+| Total | 393 | 114 | 59 | 220 | 0 | 359 |
 
 ## Non-guideline content
 
@@ -78,6 +78,14 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 - **5.7.1** (background): The section only says that overloading operator == is complicated and refers to sections 8.9.1 and 8.13, whose rules cover it (CA1046 and CA2231 belong there).
 - **5.7.2** (background): The definition of implicit and explicit conversion operators and the RangedInt32 example are background for FDG5088 to FDG5093.
 - **5.7.3** (background): The section introduction (inequality operators should be consistent with the built-in operators; != belongs with == in section 8.13) is background for FDG5094 to FDG5099.
+- **5.8** (background): The section introduction (broad guidelines on parameter design and argument checks, and a pointer to the parameter naming guidelines of chapter 3) is background for FDG5100 to FDG5104.
+- **5.8.1** (rationale): The introduction (favor enums when they make client code more readable, especially in commonly used APIs, and use Booleans when enums would add unneeded complexity or the API is very rarely used) is rationale for FDG5105 to FDG5107.
+- **5.8.2** (rationale): The introduction (rigorous argument checks are crucial in reusable libraries, and users accept their cost for better error reporting when arguments are validated high on the call stack) and the Mariani annotation (low in the stack, as in comparison and hashing functions, validation can cost too much) are rationale for FDG5108 to FDG5112. The FDG5108 notes record that CA1062 still reports such functions.
+- **5.8.3** (background): The four groups of parameters (by-value, ref, in and out) and their semantics, the Add, Swap and Uri.TryParse examples, and the Vick and Mariani annotations are background for FDG5113 to FDG5115.
+- **5.8.4** (background): The description of variable numbers of arguments through array parameters, the String.Format examples, and the note that params can be added only to the last parameter are background for FDG5116 to FDG5123.
+- **5.8.5** (rationale): The introduction (pointers should not appear in the public surface area of a managed framework except where interoperability requires them, and Span<T> and ReadOnlySpan<T> are preferred when possible, see section 9.12) is rationale for FDG5124 to FDG5126 and for FDG5102.
+- **5.9** (rationale): The four tuple mechanisms (System.Tuple, System.ValueTuple, named tuples and descriptive types), the GetPerson and target heart rate examples, the benefits of descriptive types and the note that changing the number of tuple elements is a breaking change are rationale for FDG5127 to FDG5133.
+- **Summary** (background): The chapter summary states no guideline.
 
 ### Appendix A: C# Coding Style Conventions
 

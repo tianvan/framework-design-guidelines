@@ -8,53 +8,31 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 - **FDG5100** DO use the least derived parameter type that provides the functionality required by the member. — examples: examples/ch05-members-parameters.md#fdg5100
 - **FDG5101** DO NOT use reserved parameters. — examples: examples/ch05-members-parameters.md#fdg5101
-- **FDG5102** DO NOT have publicly exposed methods that take pointers, arrays of pointers, or multidimensional arrays as parameters. — examples: examples/ch05-members-parameters.md#fdg5102
-- **FDG5103** DO place all `out` parameters following all of the by-value and `ref` parameters (excluding parameter arrays), even if it results in an inconsistency in parameter ordering between overloads (see section 5.1.1). — examples: examples/ch05-members-parameters.md#fdg5103
-- **FDG5104** DO be consistent in naming parameters when overriding members or implementing interface members. — examples: examples/ch05-members-parameters.md#fdg5104
 
 ## 5.8.1 Choosing Between Enum and Boolean Parameters
 
-- **FDG5105** DO use enums if a member would otherwise have two or more Boolean parameters. — examples: examples/ch05-members-parameters.md#fdg5105
 - **FDG5106** DO NOT use Boolean parameters unless you are absolutely sure there will never be a need for more than two values. — examples: examples/ch05-members-parameters.md#fdg5106
 - **FDG5107** CONSIDER using Booleans for constructor parameters that are truly two-state values and are simply used to initialize Boolean properties. — examples: examples/ch05-members-parameters.md#fdg5107
 
 ## 5.8.2 Validating Arguments
 
-- **FDG5108** DO validate arguments passed to public, protected, or explicitly implemented members. Throw `System.ArgumentException`, or one of its subclasses, if the validation fails. — examples: examples/ch05-members-parameters.md#fdg5108
-- **FDG5109** DO throw `ArgumentNullException` if a null argument is passed and the member does not support null arguments.
 - **FDG5110** DO validate enum parameters. — examples: examples/ch05-members-parameters.md#fdg5110
-- **FDG5111** DO NOT use `Enum.IsDefined` for enum range checks. — examples: examples/ch05-members-parameters.md#fdg5111
 - **FDG5112** DO be aware that mutable arguments might have changed after they were validated. — examples: examples/ch05-members-parameters.md#fdg5112
-
-## 5.8.3 Parameter Passing
-
-- **FDG5113** AVOID using `out` or `ref` parameters except when implementing patterns that require them, such as the Try pattern (section 7.5.2). — examples: examples/ch05-members-parameters.md#fdg5113
-- **FDG5114** DO NOT pass reference types by reference (`ref` or `in`). — examples: examples/ch05-members-parameters.md#fdg5114
-- **FDG5115** DO NOT pass value types by read-only reference (`in`). — examples: examples/ch05-members-parameters.md#fdg5115
 
 ## 5.8.4 Members with Variable Number of Parameters
 
 - **FDG5116** CONSIDER adding the `params` keyword to array parameters if you expect the end users to pass arrays with a small number of elements. — examples: examples/ch05-members-parameters.md#fdg5116
 - **FDG5117** AVOID using params arrays if the caller would almost always have the input already in an array. — examples: examples/ch05-members-parameters.md#fdg5117
-- **FDG5118** DO NOT use params arrays if the array is modified by the member taking the params array parameter. — examples: examples/ch05-members-parameters.md#fdg5118
 - **FDG5119** CONSIDER using the `params` keyword in a simple overload, even if a more complex overload could not use it. — examples: examples/ch05-members-parameters.md#fdg5119
 - **FDG5120** DO try to order parameters to make it possible to use the `params` keyword. — examples: examples/ch05-members-parameters.md#fdg5120
 - **FDG5121** CONSIDER providing special overloads and code paths for calls with a small number of arguments in extremely performance-sensitive APIs. — examples: examples/ch05-members-parameters.md#fdg5121
-- **FDG5122** DO be aware that `null` could be passed as a params array argument. — examples: examples/ch05-members-parameters.md#fdg5122
-- **FDG5123** DO NOT use the `varargs` methods, otherwise known as the ellipsis. — examples: examples/ch05-members-parameters.md#fdg5123
 
 ## 5.8.5 Pointer Parameters
 
-- **FDG5124** DO provide an alternative for any member that takes a pointer argument, because pointers are not CLS-compliant. — examples: examples/ch05-members-parameters.md#fdg5124
 - **FDG5125** AVOID doing expensive argument checking for pointer arguments. — examples: examples/ch05-members-parameters.md#fdg5125
 - **FDG5126** DO follow common pointer-related conventions when designing members with pointers. — examples: examples/ch05-members-parameters.md#fdg5126
 
 ## 5.9 Using Tuples in Member Signatures
 
 - **FDG5127** DO prefer descriptive types over tuples, `System.Tuple<T1, ...>`, and `System.ValueTuple<T1, ...>`; they improve discoverability and can better evolve over time. — examples: examples/ch05-members-parameters.md#fdg5127
-- **FDG5128** DO prefer named tuples over unnamed tuples (including `System.Tuple<T1, ...>` and `System.ValueTuple<T1, ...>`). — examples: examples/ch05-members-parameters.md#fdg5128
-- **FDG5129** DO name elements of a named tuple using PascalCase, as if they were properties. — examples: examples/ch05-members-parameters.md#fdg5129
-- **FDG5130** DO NOT use tuples with more than three fields. — examples: examples/ch05-members-parameters.md#fdg5130
-- **FDG5131** DO NOT use tuples as method parameters. — examples: examples/ch05-members-parameters.md#fdg5131
-- **FDG5132** DO NOT define extension methods over tuples. — examples: examples/ch05-members-parameters.md#fdg5132
-- **FDG5133** CONSIDER adding an appropriate `Deconstruct` method to any type that was chosen as an alternative to a tuple. — examples: examples/ch05-members-parameters.md#fdg5133
+- **FDG5133** CONSIDER adding an appropriate `Deconstruct` method to any type that was chosen as an alternative to a tuple. [C# 7+] (alt: Before C# 7.0 there is no deconstruction syntax; callers read the properties of the type.) — examples: examples/ch05-members-parameters.md#fdg5133

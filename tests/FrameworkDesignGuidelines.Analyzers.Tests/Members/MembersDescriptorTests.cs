@@ -24,6 +24,11 @@ public sealed class MembersDescriptorTests
         new ExtensionMethodAnalyzer(),
         new DuplicateExtensionMethodAnalyzer(),
         new InequalityOperatorAnalyzer(),
+        new PointerParameterAnalyzer(),
+        new ParameterPassingAnalyzer(),
+        new ParamsArrayAnalyzer(),
+        new EnumIsDefinedAnalyzer(),
+        new TupleSignatureAnalyzer(),
     ];
 
     [Fact]
@@ -34,7 +39,9 @@ public sealed class MembersDescriptorTests
             [
                 "FDG5003", "FDG5004", "FDG5005", "FDG5008", "FDG5010", "FDG5011", "FDG5013", "FDG5015", "FDG5034",
                 "FDG5040", "FDG5046", "FDG5059", "FDG5060", "FDG5061", "FDG5062", "FDG5063", "FDG5068", "FDG5074",
-                "FDG5075", "FDG5076", "FDG5077", "FDG5094", "FDG5096", "FDG5097", "FDG5099",
+                "FDG5075", "FDG5076", "FDG5077", "FDG5094", "FDG5096", "FDG5097", "FDG5099", "FDG5102", "FDG5103",
+                "FDG5105", "FDG5111", "FDG5114", "FDG5115", "FDG5118", "FDG5123", "FDG5124", "FDG5128", "FDG5129",
+                "FDG5130", "FDG5131", "FDG5132",
             ],
             descriptors.Select(descriptor => descriptor.Id).Order());
         Assert.All(descriptors, descriptor => Assert.False(descriptor.IsEnabledByDefault));

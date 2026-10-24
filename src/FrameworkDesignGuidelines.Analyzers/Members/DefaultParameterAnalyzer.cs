@@ -10,8 +10,9 @@ namespace FrameworkDesignGuidelines.Analyzers.Members;
 /// FDG5010, a member with two or more default parameters has an overload without defaults and with no more
 /// parameters than its required ones; FDG5011, interface members and virtual, abstract or override methods give no
 /// parameter a default value except a <c>CancellationToken</c>, and an override of a member declared in a referenced
-/// assembly is not reported for a default that repeats the overridden one; FDG5013, two overloads with defaults do
-/// not have compatible required parameters; FDG5015, a parameter has the same default value in every overload.
+/// assembly is not reported for a default that repeats the one of that referenced member; FDG5013, two overloads
+/// with defaults do not have compatible required parameters; FDG5015, a parameter has the same default value in
+/// every overload.
 /// Members that override or implement another one are reported by FDG5011 only.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -76,11 +77,13 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        bool referencedRoot = method.IsOverride && !IsRootInSource(method);
+        IMethodSymbol root = Root(method);
+        IMethodSymbol? referencedRoot =
+            method.IsOverride && !root.Locations.Any(location => location.IsInSource) ? root : null;
         foreach (IParameterSymbol parameter in method.Parameters)
         {
             if (parameter.IsOptional && !Overloads.IsCancellationToken(parameter.Type)
-                && !(referencedRoot && RepeatsOverriddenDefault(method, parameter))
+                && !(referencedRoot is not null && RepeatsDefault(referencedRoot, parameter))
                 && NamingSymbols.SourceLocation(parameter) is { } location)
             {
                 context.ReportDiagnostic(Diagnostic.Create(
@@ -138,10 +141,9 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    /// True when the method that <paramref name="method"/> overrides, followed back to the first declaration, is in
-    /// source.
+    /// The method that <paramref name="method"/> overrides, followed back to the first declaration.
     /// </summary>
-    private static bool IsRootInSource(IMethodSymbol method)
+    private static IMethodSymbol Root(IMethodSymbol method)
     {
         IMethodSymbol root = method;
         while (root.OverriddenMethod is { } overridden)
@@ -149,19 +151,20 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
             root = overridden;
         }
 
-        return root.Locations.Any(location => location.IsInSource);
+        return root;
     }
 
     /// <summary>
-    /// True when the overridden method gives <paramref name="parameter"/> the same explicit default. An override of a
-    /// referenced member that repeats its default only follows a declaration the user cannot change; one that adds or
-    /// changes a default creates the disagreement the rule is about.
+    /// True when the referenced <paramref name="root"/> gives <paramref name="parameter"/> the same explicit default.
+    /// An override of a referenced member that repeats its default only follows a declaration the user cannot
+    /// change; one that adds or changes a default creates the disagreement the rule is about. The root is compared,
+    /// not the member overridden directly, so that an override that repeats a source parent's changed default is
+    /// still reported.
     /// </summary>
-    private static bool RepeatsOverriddenDefault(IMethodSymbol method, IParameterSymbol parameter)
+    private static bool RepeatsDefault(IMethodSymbol root, IParameterSymbol parameter)
     {
-        return method.OverriddenMethod is { } overridden
-            && parameter.Ordinal < overridden.Parameters.Length
-            && overridden.Parameters[parameter.Ordinal] is { HasExplicitDefaultValue: true } original
+        return parameter.Ordinal < root.Parameters.Length
+            && root.Parameters[parameter.Ordinal] is { HasExplicitDefaultValue: true } original
             && parameter.HasExplicitDefaultValue
             && Equals(original.ExplicitDefaultValue, parameter.ExplicitDefaultValue);
     }

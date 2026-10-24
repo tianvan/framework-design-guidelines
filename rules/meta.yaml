@@ -183,6 +183,30 @@ chapters:
       - section: "5.7.3"
         disposition: background
         note: "The section introduction (inequality operators should be consistent with the built-in operators; != belongs with == in section 8.13) is background for FDG5094 to FDG5099."
+      - section: "5.8"
+        disposition: background
+        note: "The section introduction (broad guidelines on parameter design and argument checks, and a pointer to the parameter naming guidelines of chapter 3) is background for FDG5100 to FDG5104."
+      - section: "5.8.1"
+        disposition: rationale
+        note: "The introduction (favor enums when they make client code more readable, especially in commonly used APIs, and use Booleans when enums would add unneeded complexity or the API is very rarely used) is rationale for FDG5105 to FDG5107."
+      - section: "5.8.2"
+        disposition: rationale
+        note: "The introduction (rigorous argument checks are crucial in reusable libraries, and users accept their cost for better error reporting when arguments are validated high on the call stack) and the Mariani annotation (low in the stack, as in comparison and hashing functions, validation can cost too much) are rationale for FDG5108 to FDG5112. The FDG5108 notes record that CA1062 still reports such functions."
+      - section: "5.8.3"
+        disposition: background
+        note: "The four groups of parameters (by-value, ref, in and out) and their semantics, the Add, Swap and Uri.TryParse examples, and the Vick and Mariani annotations are background for FDG5113 to FDG5115."
+      - section: "5.8.4"
+        disposition: background
+        note: "The description of variable numbers of arguments through array parameters, the String.Format examples, and the note that params can be added only to the last parameter are background for FDG5116 to FDG5123."
+      - section: "5.8.5"
+        disposition: rationale
+        note: "The introduction (pointers should not appear in the public surface area of a managed framework except where interoperability requires them, and Span<T> and ReadOnlySpan<T> are preferred when possible, see section 9.12) is rationale for FDG5124 to FDG5126 and for FDG5102."
+      - section: "5.9"
+        disposition: rationale
+        note: "The four tuple mechanisms (System.Tuple, System.ValueTuple, named tuples and descriptive types), the GetPerson and target heart rate examples, the benefits of descriptive types and the note that changing the number of tuple elements is a breaking change are rationale for FDG5127 to FDG5133."
+      - section: "Summary"
+        disposition: background
+        note: "The chapter summary states no guideline."
   - token: "A"
     file: app01.xhtml
     rules: appA-coding-style.yaml

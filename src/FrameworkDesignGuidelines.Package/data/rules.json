@@ -4348,11 +4348,13 @@
       "strength": "DO NOT",
       "text": "have publicly exposed methods that take pointers, arrays of pointers, or multidimensional arrays as parameters.",
       "section": "5.8 Parameter Design",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5102"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -4362,8 +4364,10 @@
       "strength": "DO",
       "text": "place all `out` parameters following all of the by-value and `ref` parameters (excluding parameter arrays), even if it results in an inconsistency in parameter ordering between overloads (see section 5.1.1).",
       "section": "5.8 Parameter Design",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5103"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -4376,8 +4380,10 @@
       "strength": "DO",
       "text": "be consistent in naming parameters when overriding members or implementing interface members.",
       "section": "5.8 Parameter Design",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "CA1725"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -4390,8 +4396,10 @@
       "strength": "DO",
       "text": "use enums if a member would otherwise have two or more Boolean parameters.",
       "section": "5.8.1 Choosing Between Enum and Boolean Parameters",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5105"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -4432,7 +4440,9 @@
       "strength": "DO",
       "text": "validate arguments passed to public, protected, or explicitly implemented members. Throw `System.ArgumentException`, or one of its subclasses, if the validation fails.",
       "section": "5.8.2 Validating Arguments",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA1062"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -4446,7 +4456,9 @@
       "strength": "DO",
       "text": "throw `ArgumentNullException` if a null argument is passed and the member does not support null arguments.",
       "section": "5.8.2 Validating Arguments",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA1062"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -4474,7 +4486,9 @@
       "strength": "DO NOT",
       "text": "use `Enum.IsDefined` for enum range checks.",
       "section": "5.8.2 Validating Arguments",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG5111"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -4502,8 +4516,10 @@
       "strength": "AVOID",
       "text": "using `out` or `ref` parameters except when implementing patterns that require them, such as the Try pattern (section 7.5.2).",
       "section": "5.8.3 Parameter Passing",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "CA1021"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -4516,8 +4532,10 @@
       "strength": "DO NOT",
       "text": "pass reference types by reference (`ref` or `in`).",
       "section": "5.8.3 Parameter Passing",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5114"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -4530,11 +4548,13 @@
       "strength": "DO NOT",
       "text": "pass value types by read-only reference (`in`).",
       "section": "5.8.3 Parameter Passing",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5115"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -4572,8 +4592,10 @@
       "strength": "DO NOT",
       "text": "use params arrays if the array is modified by the member taking the params array parameter.",
       "section": "5.8.4 Members with Variable Number of Parameters",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5118"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -4628,7 +4650,9 @@
       "strength": "DO",
       "text": "be aware that `null` could be passed as a params array argument.",
       "section": "5.8.4 Members with Variable Number of Parameters",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA1062"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -4642,11 +4666,13 @@
       "strength": "DO NOT",
       "text": "use the `varargs` methods, otherwise known as the ellipsis.",
       "section": "5.8.4 Members with Variable Number of Parameters",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5123"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -4656,11 +4682,13 @@
       "strength": "DO",
       "text": "provide an alternative for any member that takes a pointer argument, because pointers are not CLS-compliant.",
       "section": "5.8.5 Pointer Parameters",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG5124"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -4702,7 +4730,7 @@
       "autofix": "no",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -4712,11 +4740,13 @@
       "strength": "DO",
       "text": "prefer named tuples over unnamed tuples (including `System.Tuple<T1, ...>` and `System.ValueTuple<T1, ...>`).",
       "section": "5.9 Using Tuples in Member Signatures",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5128"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -4726,11 +4756,13 @@
       "strength": "DO",
       "text": "name elements of a named tuple using PascalCase, as if they were properties.",
       "section": "5.9 Using Tuples in Member Signatures",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5129"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -4740,11 +4772,13 @@
       "strength": "DO NOT",
       "text": "use tuples with more than three fields.",
       "section": "5.9 Using Tuples in Member Signatures",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5130"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -4754,11 +4788,13 @@
       "strength": "DO NOT",
       "text": "use tuples as method parameters.",
       "section": "5.9 Using Tuples in Member Signatures",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5131"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -4768,11 +4804,13 @@
       "strength": "DO NOT",
       "text": "define extension methods over tuples.",
       "section": "5.9 Using Tuples in Member Signatures",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5132"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -4786,7 +4824,7 @@
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -5933,6 +5971,7 @@
     "CA1014",
     "CA1016",
     "CA1017",
+    "CA1021",
     "CA1024",
     "CA1027",
     "CA1028",
@@ -5960,6 +5999,7 @@
     "CA1720",
     "CA1721",
     "CA1724",
+    "CA1725",
     "CA1802",
     "CA1810",
     "CA1819",
@@ -6009,6 +6049,20 @@
     "FDG5096",
     "FDG5097",
     "FDG5099",
+    "FDG5102",
+    "FDG5103",
+    "FDG5105",
+    "FDG5111",
+    "FDG5114",
+    "FDG5115",
+    "FDG5118",
+    "FDG5123",
+    "FDG5124",
+    "FDG5128",
+    "FDG5129",
+    "FDG5130",
+    "FDG5131",
+    "FDG5132",
     "FDGA003",
     "FDGA004",
     "FDGA023",
@@ -6031,6 +6085,7 @@
     "CA1003",
     "CA1008",
     "CA1012",
+    "CA1021",
     "CA1024",
     "CA1027",
     "CA1028",
@@ -6040,6 +6095,7 @@
     "CA1052",
     "CA1065",
     "CA1707",
+    "CA1725",
     "CA1819",
     "CA2217",
     "FDG4013",
@@ -6061,6 +6117,18 @@
     "FDG5077",
     "FDG5097",
     "FDG5099",
+    "FDG5102",
+    "FDG5103",
+    "FDG5105",
+    "FDG5114",
+    "FDG5115",
+    "FDG5118",
+    "FDG5123",
+    "FDG5128",
+    "FDG5129",
+    "FDG5130",
+    "FDG5131",
+    "FDG5132",
     "IDE0130",
     "IDE1006"
   ]

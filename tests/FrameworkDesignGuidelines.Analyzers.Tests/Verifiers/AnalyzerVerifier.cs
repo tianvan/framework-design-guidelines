@@ -107,5 +107,11 @@ internal static class AnalyzerVerifier<TAnalyzer>
         {
             return ((CSharpParseOptions)base.CreateParseOptions()).WithLanguageVersion(languageVersion);
         }
+
+        protected override CompilationOptions CreateCompilationOptions()
+        {
+            // Unsafe code is allowed so that tests can declare pointer parameters.
+            return ((CSharpCompilationOptions)base.CreateCompilationOptions()).WithAllowUnsafe(true);
+        }
     }
 }

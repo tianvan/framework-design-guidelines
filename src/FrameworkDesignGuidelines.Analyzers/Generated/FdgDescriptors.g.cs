@@ -385,6 +385,132 @@ internal static class FdgDescriptors
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5099.md");
 
+    public static readonly DiagnosticDescriptor FDG5102 = new DiagnosticDescriptor(
+        id: "FDG5102",
+        title: "DO NOT have publicly exposed methods that take pointers, arrays of pointers, or multidimensional arrays as parameters.",
+        messageFormat: "Do not take the pointer or multidimensional array parameter '{0}' in the publicly exposed member '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5102.md");
+
+    public static readonly DiagnosticDescriptor FDG5103 = new DiagnosticDescriptor(
+        id: "FDG5103",
+        title: "DO place all `out` parameters following all of the by-value and `ref` parameters (excluding parameter arrays), even if it results in an inconsistency in parameter ordering between overloads (see section 5.1.1).",
+        messageFormat: "Place the out parameter '{0}' of '{1}' after the by-value and ref parameters",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5103.md");
+
+    public static readonly DiagnosticDescriptor FDG5105 = new DiagnosticDescriptor(
+        id: "FDG5105",
+        title: "DO use enums if a member would otherwise have two or more Boolean parameters.",
+        messageFormat: "Use an enum in place of the {0} Boolean parameters of '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5105.md");
+
+    public static readonly DiagnosticDescriptor FDG5111 = new DiagnosticDescriptor(
+        id: "FDG5111",
+        title: "DO NOT use `Enum.IsDefined` for enum range checks.",
+        messageFormat: "Do not use Enum.IsDefined to range-check the enum argument '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5111.md");
+
+    public static readonly DiagnosticDescriptor FDG5114 = new DiagnosticDescriptor(
+        id: "FDG5114",
+        title: "DO NOT pass reference types by reference (`ref` or `in`).",
+        messageFormat: "Do not pass the reference type parameter '{0}' of '{1}' by reference",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5114.md");
+
+    public static readonly DiagnosticDescriptor FDG5115 = new DiagnosticDescriptor(
+        id: "FDG5115",
+        title: "DO NOT pass value types by read-only reference (`in`).",
+        messageFormat: "Do not pass the value type parameter '{0}' of '{1}' by read-only reference",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5115.md");
+
+    public static readonly DiagnosticDescriptor FDG5118 = new DiagnosticDescriptor(
+        id: "FDG5118",
+        title: "DO NOT use params arrays if the array is modified by the member taking the params array parameter.",
+        messageFormat: "Do not use params for the parameter '{0}' of '{1}', which modifies the array",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5118.md");
+
+    public static readonly DiagnosticDescriptor FDG5123 = new DiagnosticDescriptor(
+        id: "FDG5123",
+        title: "DO NOT use the `varargs` methods, otherwise known as the ellipsis.",
+        messageFormat: "Do not use a varargs (__arglist) parameter list in '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5123.md");
+
+    public static readonly DiagnosticDescriptor FDG5124 = new DiagnosticDescriptor(
+        id: "FDG5124",
+        title: "DO provide an alternative for any member that takes a pointer argument, because pointers are not CLS-compliant.",
+        messageFormat: "Provide an alternative without pointer parameters for '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5124.md");
+
+    public static readonly DiagnosticDescriptor FDG5128 = new DiagnosticDescriptor(
+        id: "FDG5128",
+        title: "DO prefer named tuples over unnamed tuples (including `System.Tuple<T1, ...>` and `System.ValueTuple<T1, ...>`).",
+        messageFormat: "Name the elements of the tuple type '{0}' in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5128.md");
+
+    public static readonly DiagnosticDescriptor FDG5129 = new DiagnosticDescriptor(
+        id: "FDG5129",
+        title: "DO name elements of a named tuple using PascalCase, as if they were properties.",
+        messageFormat: "Name the tuple element '{0}' in the signature of '{1}' in PascalCase",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5129.md");
+
+    public static readonly DiagnosticDescriptor FDG5130 = new DiagnosticDescriptor(
+        id: "FDG5130",
+        title: "DO NOT use tuples with more than three fields.",
+        messageFormat: "Use a descriptive type in place of the tuple with {0} fields in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5130.md");
+
+    public static readonly DiagnosticDescriptor FDG5131 = new DiagnosticDescriptor(
+        id: "FDG5131",
+        title: "DO NOT use tuples as method parameters.",
+        messageFormat: "Do not use a tuple in the type of the parameter '{0}' of '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5131.md");
+
+    public static readonly DiagnosticDescriptor FDG5132 = new DiagnosticDescriptor(
+        id: "FDG5132",
+        title: "DO NOT define extension methods over tuples.",
+        messageFormat: "Do not define the extension method '{0}' over the tuple type '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5132.md");
+
     public static readonly DiagnosticDescriptor FDGA003 = new DiagnosticDescriptor(
         id: "FDGA003",
         title: "DO place the closing brace on its own line, except the end of a `do`..`while` statement.",

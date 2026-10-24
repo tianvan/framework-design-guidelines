@@ -349,6 +349,42 @@ public sealed class DefaultParameterTests
     }
 
     [Fact]
+    public Task Overrides_are_compared_with_the_default_of_the_referenced_root_member()
+    {
+        // ArrayPool<T>.Return declares clearArray = false. ChangedPool changes it; StrictPool repeats ChangedPool's
+        // changed default, which still disagrees with the root; ResetPool repeats the root's default.
+        return Verifier.VerifyAsync(
+            """
+            using System.Buffers;
+
+            public class ChangedPool : ArrayPool<byte>
+            {
+                public override byte[] Rent(int minimumLength) => new byte[minimumLength];
+
+                public override void Return(byte[] array, bool {|FDG5011:clearArray|} = true)
+                {
+                }
+            }
+
+            public class StrictPool : ChangedPool
+            {
+                public override void Return(byte[] array, bool {|FDG5011:clearArray|} = true)
+                {
+                }
+            }
+
+            public sealed class ResetPool : ChangedPool
+            {
+                public override void Return(byte[] array, bool clearArray = false)
+                {
+                }
+            }
+            """,
+            ReferenceAssemblies.Net.Net80,
+            LanguageVersion.Latest);
+    }
+
+    [Fact]
     public Task Generated_code_is_not_reported()
     {
         return Verifier.VerifyAsync(

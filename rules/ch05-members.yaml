@@ -3701,7 +3701,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: which members of a parameter type a member needs, and whether it needs a more derived type for performance, thread safety or security (the Mariani annotation), is a design decision that symbols do not show. CA1859 is not mapped: it asks for more concrete types in non-public code, the opposite direction.'
 - id: FDG5101
   strength: DO NOT
   text: use reserved parameters.
@@ -3736,7 +3736,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Analyzer candidate rejected: a parameter is reserved by intent, which the signature does not show; a check for parameters named "reserved" would see only one naming habit. IDE0060 is not mapped: it reports every unused parameter, and an unused parameter is not necessarily one reserved for a future version.'
 - id: FDG5102
   strength: DO NOT
   text: have publicly exposed methods that take pointers, arrays of pointers, or multidimensional arrays as parameters.
@@ -3752,19 +3752,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5102
+    coverage: full
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Do not take the pointer or multidimensional array parameter ''{0}'' in the publicly exposed member ''{1}'''
+    category: Members
+  notes: 'Library only: the text is about publicly exposed methods, whose callers outside the library find pointers and multidimensional arrays difficult to use. FDG5102 reports a parameter of an externally visible method, constructor, operator, delegate or indexer whose type is a pointer, a function pointer, an array of either, or a multidimensional array, at any level of a jagged array. Overrides and interface implementations are not reported, since they take their signature from the member they override or implement. CA1814 is not mapped: it also reports fields and return values and suggests jagged arrays, which the text does not ask. FDG5124 reports pointer members without an alternative. Changing a parameter type changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5103
   strength: DO
   text: place all `out` parameters following all of the by-value and `ref` parameters (excluding parameter arrays), even if it results in an inconsistency in parameter ordering between overloads (see section 5.1.1).
@@ -3784,10 +3787,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5103
+    coverage: full
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -3795,8 +3799,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Place the out parameter ''{0}'' of ''{1}'' after the by-value and ref parameters'
+    category: Members
+  notes: 'FDG5103 reports an out parameter of an externally visible method, constructor or delegate that is followed by a parameter that is not out and is not a params array. Overrides and interface implementations are not reported. FDG5003 leaves out parameters out when it compares positions across overloads, as this rule allows. Reordering parameters changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5104
   strength: DO
   text: be consistent in naming parameters when overriding members or implementing interface members.
@@ -3833,10 +3839,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - CA1725
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -3845,7 +3852,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1725 reports a parameter of an override or of an implicit interface implementation whose name differs from the name in the base declaration. In a probe with SDK 10.0.402 it reported both, and did not report an explicit interface implementation or a member of an internal type. CA1725 has a code fix that renames the parameter, but renaming a public parameter breaks callers that pass it as a named argument, so autofix is breaking.'
 - id: FDG5105
   strength: DO
   text: use enums if a member would otherwise have two or more Boolean parameters.
@@ -3891,10 +3898,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5105
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -3902,8 +3910,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Use an enum in place of the {0} Boolean parameters of ''{1}'''
+    category: Members
+  notes: 'FDG5105 reports an externally visible method, constructor, delegate or indexer that has two or more bool parameters, out parameters left out. Overrides and interface implementations are not reported. A constructor is not reported when each of its bool parameters has the name of a bool property of its type or of a base type, ignoring case: the case of FDG5107, two-state values used to initialize Boolean properties (a positional record is one). Whether such values are truly two-state is not seen. Replacing Boolean parameters with an enum changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5106
   strength: DO NOT
   text: use Boolean parameters unless you are absolutely sure there will never be a need for more than two values.
@@ -3931,7 +3941,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether there will never be a need for more than two values is a prediction (the Abrams annotation). FDG5105 reports members with two or more Boolean parameters.'
 - id: FDG5107
   strength: CONSIDER
   text: using Booleans for constructor parameters that are truly two-state values and are simply used to initialize Boolean properties.
@@ -3957,7 +3967,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: a positive recommendation. FDG5105 does not report a constructor whose bool parameters are named after bool properties of its type. Whether a value is typically set in the constructor or through the property setter (the Moore annotation) is a design decision.'
 - id: FDG5108
   strength: DO
   text: validate arguments passed to public, protected, or explicitly implemented members. Throw `System.ArgumentException`, or one of its subclasses, if the validation fails.
@@ -3979,9 +3989,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1062
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -3991,7 +4002,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1062 reports a parameter of an externally visible method, protected members included, that is dereferenced without a null check. Validation in a called method counts, as the body allows: in a probe with SDK 10.0.402, a public method that passed its argument to a private method that throws ArgumentNullException was not reported. CA1062 checks only null arguments, not ranges or formats, and in that probe it did not report an explicit interface implementation, which the text names. It accepts any null check, not only one that throws an ArgumentException: a parameter that is checked and then silently ignored is not reported (see FDG5073). The Mariani annotation lets low-level comparison and hashing functions skip validation; CA1062 still reports them. CA2208 is not mapped: it checks how argument exceptions are constructed, which the chapter 7 exception rules cover. CA1062 has no code fix; adding validation changes no signature.'
 - id: FDG5109
   strength: DO
   text: throw `ArgumentNullException` if a null argument is passed and the member does not support null arguments.
@@ -4002,9 +4013,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1062
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -4014,7 +4026,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1062 reports a parameter that is dereferenced without a null check: a member that does not support null and does not throw ArgumentNullException. It accepts any null check before the dereference, so a check that throws another exception or returns is not reported, although the text asks for ArgumentNullException (see FDG5073); it does not report an explicit interface implementation (see FDG5108). Whether a member supports null is otherwise not seen. CA1510 is not mapped: it only rewrites a check that already throws ArgumentNullException. CA1062 has no code fix; adding the check changes no signature.'
 - id: FDG5110
   strength: DO
   text: validate enum parameters.
@@ -4050,7 +4062,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Analyzer candidate rejected: whether an enum parameter is validated depends on code paths, the validation may happen in a lower-level routine (FDG5108), and the Morrison annotation leaves [Flags] enums without a range check. FDG5111 reports Enum.IsDefined used as the range check.'
 - id: FDG5111
   strength: DO NOT
   text: use `Enum.IsDefined` for enum range checks.
@@ -4106,9 +4118,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG5111
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -4117,8 +4130,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Do not use Enum.IsDefined to range-check the enum argument ''{0}'''
+    category: Members
+  notes: 'FDG5111 reports a call to Enum.IsDefined, generic or not, whose value argument is a parameter of the calling member and whose result, negated or combined with && or || or not, is the condition of an if statement or a conditional expression with a branch that throws: a throw statement, a block with a throw statement among its statements, or a throw expression. That is an enum range check of an argument. Other calls are not reported, since the Rector annotation finds Enum.IsDefined appropriate for asking whether a value is one of the defined ones. CA2263 is not mapped: it only prefers the generic overload. The fix, a comparison with the bounds the member needs, changes no signature; there is no code fix.'
 - id: FDG5112
   strength: DO
   text: be aware that mutable arguments might have changed after they were validated.
@@ -4146,7 +4161,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether an argument can change after it is validated depends on its type and on other threads, and whether a member is security-sensitive is a design fact.'
 - id: FDG5113
   strength: AVOID
   text: using `out` or `ref` parameters except when implementing patterns that require them, such as the Try pattern (section 7.5.2).
@@ -4168,10 +4183,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - CA1021
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4180,7 +4196,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1021 reports an out parameter of an externally visible method; in a probe with SDK 10.0.402 it did not report a Try method that returns bool, the pattern the text names, nor a Deconstruct method. Other patterns that require out parameters are not known to it, and ref parameters are not checked. CA1045 (ref parameters) is not mapped, a narrowing after the noise run: all 3 of its reports on the samples were a protected Set<T>(ref T field, T value, string propertyName) helper of the property change notification pattern, a pattern that requires ref, which the text excepts; CA1045 reports every ref parameter, a generic Swap<T>(ref T, ref T) included, and cannot tell such patterns apart. FDG5114 reports ref parameters of reference types. Removing an out parameter changes the public API, so the fix is breaking; CA1021 has no code fix.'
 - id: FDG5114
   strength: DO NOT
   text: pass reference types by reference (`ref` or `in`).
@@ -4205,10 +4221,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5114
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4216,8 +4233,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Do not pass the reference type parameter ''{0}'' of ''{1}'' by reference'
+    category: Members
+  notes: 'FDG5114 reports a ref, in or ref readonly parameter of a reference type (a class, interface, delegate, array or string, or a type parameter constrained to a reference type) of an externally visible method, constructor, delegate, operator or indexer. Overrides and interface implementations are not reported. The swap exception of the body is recognized by its shape: ref parameters are not reported when the member has two or more ref parameters of the same type. in and ref readonly parameters are always reported, since the body says there is no reason for them. An unconstrained type parameter, as in the Swap<T> example, is not a reference type and is not reported. CA1045 is not mapped (see FDG5113). Changing how a public parameter is passed changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5115
   strength: DO NOT
   text: pass value types by read-only reference (`in`).
@@ -4235,19 +4254,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5115
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Do not pass the value type parameter ''{0}'' of ''{1}'' by read-only reference'
+    category: Members
+  notes: 'Library only: the text and the Barton annotation are about public and protected members, which cannot change the modifier later without breaking callers; in private or internal code the in modifier can be useful. FDG5115 reports an in or ref readonly parameter of a value type (a struct, an enum, or a type parameter constrained to a value type) of an externally visible method, constructor, delegate, operator or indexer. Overrides and interface implementations are not reported, and neither is an in parameter of an unconstrained type parameter. Changing the modifier changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5116
   strength: CONSIDER
   text: adding the `params` keyword to array parameters if you expect the end users to pass arrays with a small number of elements.
@@ -4275,7 +4297,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: how many elements callers pass is usage, which the signature does not show.'
 - id: FDG5117
   strength: AVOID
   text: using params arrays if the caller would almost always have the input already in an array.
@@ -4300,7 +4322,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Analyzer candidate rejected: whether callers already have the input in an array is usage; the byte arrays of the body are one example, not a rule for an element type.'
 - id: FDG5118
   strength: DO NOT
   text: use params arrays if the array is modified by the member taking the params array parameter.
@@ -4313,10 +4335,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5118
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4324,8 +4347,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Do not use params for the parameter ''{0}'' of ''{1}'', which modifies the array'
+    category: Members
+  notes: 'FDG5118 reports the params array parameter of an externally visible method or constructor when its body, lambdas and local functions included, assigns an element of the array: a simple, compound or null-coalescing assignment, or an increment or decrement. Overrides and interface implementations are not reported. Changes made through calls, such as Array.Sort or Array.Clear, or through ref arguments, are not seen, and neither are params collections other than arrays (C# 13). The text asks not to use params for such a member, so the fix removes params, which callers that pass the elements inline rely on; it is breaking, and there is no code fix.'
 - id: FDG5119
   strength: CONSIDER
   text: using the `params` keyword in a simple overload, even if a more complex overload could not use it.
@@ -4360,7 +4385,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether users would value a params array in one overload is usage.'
 - id: FDG5120
   strength: DO
   text: try to order parameters to make it possible to use the `params` keyword.
@@ -4399,7 +4424,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Analyzer candidate rejected: whether parameters can be reordered depends on the other ordering rules (FDG5003 for overloads, FDG5103 for out parameters) and on what the parameters mean, and "try" leaves the outcome to judgment.'
 - id: FDG5121
   strength: CONSIDER
   text: providing special overloads and code paths for calls with a small number of arguments in extremely performance-sensitive APIs.
@@ -4435,7 +4460,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether an API is extremely performance-sensitive, and whether the special overloads have their own code path, is a design decision. The parameter names of the body (a singular form with a numeric suffix) are not checked.'
 - id: FDG5122
   strength: DO
   text: be aware that `null` could be passed as a params array argument.
@@ -4465,9 +4490,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1062
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -4477,7 +4503,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1062 reports a params array parameter of an externally visible method that is dereferenced without a null check: in a probe with SDK 10.0.402 it reported a public Sum(params int[] values) that loops over values, the example of the body. It accepts any null check before the dereference (see FDG5108). CA1062 has no code fix; adding the check changes no signature.'
 - id: FDG5123
   strength: DO NOT
   text: use the `varargs` methods, otherwise known as the ellipsis.
@@ -4496,19 +4522,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5123
+    coverage: full
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Do not use a varargs (__arglist) parameter list in ''{0}'''
+    category: Members
+  notes: 'Library only: the reason is CLS compliance, which matters to callers of a framework in other languages. The Kotas annotation advises against varargs in internal code too, but the text is about frameworks. FDG5123 reports an externally visible method or constructor declared with __arglist. Removing __arglist changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5124
   strength: DO
   text: provide an alternative for any member that takes a pointer argument, because pointers are not CLS-compliant.
@@ -4530,19 +4559,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG5124
+    coverage: partial
   autofix: no
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Provide an alternative without pointer parameters for ''{0}'''
+    category: Members
+  notes: 'Library only: the reason is CLS compliance, which matters to callers of a framework in other languages. FDG5124 reports an externally visible method or constructor with a parameter whose type is a pointer, a function pointer or an array of either, when every overload of the same name declared in the same type (every constructor, for a constructor) has such a parameter. An alternative with another name, or one declared in a base type, is not seen. Overrides and interface implementations are not reported. Adding an overload changes no existing signature, so the fix is not breaking, but there is no code fix. FDG5102 reports the pointer parameters themselves.'
 - id: FDG5125
   strength: AVOID
   text: doing expensive argument checking for pointer arguments.
@@ -4570,7 +4602,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether argument checking is expensive, and whether an API is performance-critical enough, is a design judgment.'
 - id: FDG5126
   strength: DO
   text: follow common pointer-related conventions when designing members with pointers.
@@ -4610,7 +4642,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: the conventions are a matter of design; an index parameter next to a pointer parameter, the example of the body, does not always duplicate pointer arithmetic.'
 - id: FDG5127
   strength: DO
   text: prefer descriptive types over tuples, `System.Tuple<T1, ...>`, and `System.ValueTuple<T1, ...>`; they improve discoverability and can better evolve over time.
@@ -4630,13 +4662,13 @@
   autofix: no
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the Toub annotation says that the tuple guidelines are about public APIs, and that tuples are handy in implementation. Analyzer candidate rejected: the body of FDG5128 allows a named tuple for a method so specialized that its result would never be amended and would only be deconstructed, which is intent. FDG5128, FDG5130, FDG5131 and FDG5132 report the mechanical cases.'
 - id: FDG5128
   strength: DO
   text: prefer named tuples over unnamed tuples (including `System.Tuple<T1, ...>` and `System.ValueTuple<T1, ...>`).
@@ -4654,19 +4686,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5128
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
-  minLanguage: null
-  alternative: null
-  analyzer: null
-  notes: null
+  minLanguage: "7.0"
+  alternative: Before C# 7.0 there are no named tuples; use a descriptive type (FDG5127).
+  analyzer:
+    message: 'Name the elements of the tuple type ''{0}'' in the signature of ''{1}'''
+    category: Members
+  notes: 'Library only: see FDG5127. FDG5128 reports, once per member, an externally visible method, constructor, delegate, operator, property, indexer or field whose signature uses an unnamed tuple: System.Tuple<...>, or a value tuple with an element that has no name, such as (int, int) or ValueTuple<int, int>, also as a type argument or an array element type. Overrides and interface implementations are not reported. Replacing System.Tuple with a named tuple changes the type, so the fix is breaking; only adding names to a value tuple is not. There is no code fix.'
 - id: FDG5129
   strength: DO
   text: name elements of a named tuple using PascalCase, as if they were properties.
@@ -4679,19 +4714,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5129
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
-  minLanguage: null
-  alternative: null
-  analyzer: null
-  notes: null
+  minLanguage: "7.0"
+  alternative: Before C# 7.0 there are no named tuples; name the properties of a descriptive type in PascalCase.
+  analyzer:
+    message: 'Name the tuple element ''{0}'' in the signature of ''{1}'' in PascalCase'
+    category: Members
+  notes: 'Library only: see FDG5127. FDG5129 reports each element name of a tuple in the signature of an externally visible method, constructor, delegate, operator, property, indexer or field that does not start with an uppercase letter. The rest of PascalCase is not checked. Overrides and interface implementations are not reported. Callers read the elements by name, so renaming them breaks their source and the fix is breaking; there is no code fix.'
 - id: FDG5130
   strength: DO NOT
   text: use tuples with more than three fields.
@@ -4707,19 +4745,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5130
+    coverage: full
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Use a descriptive type in place of the tuple with {0} fields in the signature of ''{1}'''
+    category: Members
+  notes: 'Library only: see FDG5127. FDG5130 reports, once per member, an externally visible method, constructor, delegate, operator, property, indexer or field whose signature uses a tuple with more than three elements: a value tuple, named or not, or System.Tuple, also as a type argument or an array element type. Overrides and interface implementations are not reported. Replacing the tuple with a descriptive type changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5131
   strength: DO NOT
   text: use tuples as method parameters.
@@ -4750,19 +4791,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5131
+    coverage: full
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Do not use a tuple in the type of the parameter ''{0}'' of ''{1}'''
+    category: Members
+  notes: 'Library only: see FDG5127. FDG5131 reports a parameter of an externally visible method, constructor, delegate, operator or indexer whose type is or contains a tuple (a value tuple or System.Tuple), a collection of tuples included, which the body says is better served by descriptive types. The this parameter of an extension method over a tuple is left to FDG5132. A type parameter that callers substitute with a tuple is not reported, as the body allows, and neither are overrides and interface implementations, whose tuple can come from such a substitution in the member they override or implement. Replacing the parameter type changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5132
   strength: DO NOT
   text: define extension methods over tuples.
@@ -4792,19 +4836,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5132
+    coverage: full
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Do not define the extension method ''{0}'' over the tuple type ''{1}'''
+    category: Members
+  notes: 'Library only: see FDG5127. FDG5132 reports an externally visible extension method whose this parameter is a tuple: a value tuple, named or not, or System.Tuple. Moving the method off the tuple changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5133
   strength: CONSIDER
   text: adding an appropriate `Deconstruct` method to any type that was chosen as an alternative to a tuple.
@@ -4844,10 +4891,10 @@
   autofix: no
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
-  minLanguage: null
-  alternative: null
+  minLanguage: "7.0"
+  alternative: Before C# 7.0 there is no deconstruction syntax; callers read the properties of the type.
   analyzer: null
-  notes: null
+  notes: 'Library only: see FDG5127. Not checked: whether a type was chosen as an alternative to a tuple is intent.'

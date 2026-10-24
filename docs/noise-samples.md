@@ -370,3 +370,64 @@ ones). Only the newly mapped SDK diagnostics and the new analyzers are counted. 
   same assembly. None is an interface, a generic restriction or a dependency split, so all 12 are true.
 - **No reports.** The other diagnostics report nothing on these samples; their tests cover the positive cases. Under
   Ruling 21 an analyzer with 0 reports passes the false positive gate.
+
+## Chapter 5 (5.8 to 5.9) mappings and analyzers
+
+Package 0.1.0 with the mappings of sections 5.8 and 5.9, the new parameter and tuple analyzers, and the FDG5011 change
+(an override is compared with the default of the referenced root member), enabled by the profile globalconfigs
+(library for the open-source samples, application for the internal ones). Only the newly mapped SDK diagnostics, the
+new analyzers and FDG5011 are counted. Every report was checked, except CA1062 (56, the same reports as in the 5.4 to
+5.7 run, where 20 were checked).
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| CA1021 | FDG5113 | 4 | 0 | 2 | 0 | 0 | 6 | 0 | 6 | None needed. |
+| CA1045 | (FDG5113) | 0 | 0 | 0 | 0 | 3 | 3 | 3 | 0 | Not mapped after this run (see notes). |
+| CA1062 | FDG5073, FDG5108, FDG5109, FDG5122 | 9 | 0 | 0 | 0 | 47 | 20 | 0 | 20 | None needed. True warnings under FDG5108 and FDG5109; none is an FDG5073 or FDG5122 instance (no `this` parameter, no params array). |
+| CA1725 | FDG5104 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| FDG5011 | FDG5011 | 11 | 0 | 0 | 1 | 1 | 13 | 0 | 13 | Unchanged by the root comparison (see notes). |
+| FDG5102 | FDG5102 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5103 | FDG5103 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5105 | FDG5105 | 0 | 0 | 2 | 0 | 0 | 2 | 0 | 2 | None needed. |
+| FDG5111 | FDG5111 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | None needed. |
+| FDG5114 | FDG5114 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5115 | FDG5115 | 1 | 1 | 0 | 0 | 0 | 2 | 0 | 2 | None needed. |
+| FDG5118 | FDG5118 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5123 | FDG5123 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5124 | FDG5124 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5128 | FDG5128 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5129 | FDG5129 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5130 | FDG5130 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5131 | FDG5131 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5132 | FDG5132 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+
+### Notes
+
+- **polly's configuration.** polly's own globalconfig files set CA1021, CA1045 and CA1062 to `none`, so polly's zeros
+  for those diagnostics measure polly's configuration. They set CA1725 to `warning`, so its 0 there is a measurement.
+- **CA1021.** serilog's `BindMessageTemplate` and `BindProperty`, each declared on the logger interface and on the
+  static facade: they return bool with out parameters, the shape of the Try pattern without the Try prefix that
+  section 7.5.2 asks for. newtonsoft-json's schema `IsValid` extension with an out list of error messages, and the
+  serialization binder's `BindToName`, a void method with two out parameters. All 6 are true.
+- **CA1045, narrowing.** All 3 reports in internal-b are the same protected helper, `Set<T>(ref T field, T newValue,
+  string propertyName)`, which property setters of the property change notification pattern call. That pattern
+  requires ref, the exception of the text, so the 3 are false positives, over 1/20. CA1045 reports every ref
+  parameter and cannot tell such patterns apart, so it is no longer mapped: FDG5113 keeps CA1021 only, and FDG5114
+  reports ref parameters of reference types (it does not report this helper, whose type parameter is unconstrained).
+- **CA1062.** The same 56 reports as in the 5.4 to 5.7 run. They are dereferenced parameters of public methods,
+  constructors, a property setter and an operator: true warnings under FDG5108 and FDG5109, which this round maps.
+  None is on a params array, so none counts for FDG5122; none is on a comparison or hashing method, which the Mariani
+  annotation of 5.8.2 would let skip validation.
+- **FDG5011.** The counts match the 5.1 to 5.3 run, so comparing with the root of the override chain changed nothing
+  on these samples; a new test covers the case it changes (a metadata, source, source chain).
+- **FDG5105.** newtonsoft-json's `DeserializeXmlNode` and `DeserializeXNode` overloads with the two bool parameters
+  `writeArrayAttribute` and `encodeSpecialCharacters`. True.
+- **FDG5111.** internal-a validates an enum constructor argument with `if (!Enum.IsDefined(typeof(T), value)) throw
+  new ArgumentOutOfRangeException(...)`. True.
+- **FDG5115.** serilog's public token constructor takes `in Alignment? alignment`, and polly's public abstract
+  telemetry `Write` method takes its event arguments struct by `in`. Both are value types passed by read-only
+  reference in public members. True.
+- **No reports.** The other diagnostics report nothing on these samples; their tests cover the positive cases. Under
+  Ruling 21 an analyzer with 0 reports passes the false positive gate. The library-only rules (FDG5102, FDG5115,
+  FDG5123, FDG5124 and FDG5128 to FDG5132) are `none` in the application profile, so the internal samples measure them
+  only by their absence.

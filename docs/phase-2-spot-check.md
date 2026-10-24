@@ -72,3 +72,12 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
   fdg FDG5075, partial; breaking. Chosen because the analyzer reports only the "[ExtendedType]Extensions" pattern and lets "[Feature][ExtendedType]Extensions" pass, a reading of the text that removed 9 of 13 reports on the samples.
 - [ ] FDG5076 DO NOT put extension methods in the same namespace as the extended type unless the intention is to add methods to interfaces, for generic type restriction, or for dependency management.
   fdg FDG5076, partial; breaking. Chosen for its three exceptions: interfaces and generic restriction are read from symbols, and dependency management is approximated by leaving out every extended type from another assembly.
+
+## Chapter 5: Member Design (5.8 to 5.9)
+
+- [ ] FDG5111 DO NOT use `Enum.IsDefined` for enum range checks.
+  fdg FDG5111, partial; no autofix. Chosen because the analyzer narrows to calls on an argument that guard a throw, reading the Rector annotation (`Enum.IsDefined` is fine for asking whether a value is a defined one) as an exception.
+- [ ] FDG5113 AVOID using `out` or `ref` parameters except when implementing patterns that require them, such as the Try pattern (section 7.5.2).
+  sdk CA1021, partial; breaking. Chosen because CA1045 was dropped after the noise run: its 3 reports were a property change setter helper, a pattern that requires ref; ref parameters of value types are now unchecked.
+- [ ] FDG5131 DO NOT use tuples as method parameters.
+  fdg FDG5131, full; breaking; library only. Chosen because collections of tuples are reported (the body calls them more justifiable, yet better served by descriptive types), while type parameters substituted with tuples and interface implementations are not.
