@@ -203,7 +203,7 @@ the new analyzers are counted. Every report was checked, except FDG4032 (37; 20 
   polly's configuration, not the package.
 - **Library-only rules on the internal samples.** CA1014, CA1016, CA1017, CA1034, FDG4038, FDG4056, FDG4059, FDG4061
   and FDG4062 are off in the application profile, so they did not run on internal-a and internal-b.
-- **CA1040.** The one report is an empty interface that eight effect classes implement and that is used as the type
+- **CA1040.** The one report is an empty interface that eight classes implement and that is used as the type
   of a property and a local variable: a marker checked at compile time, which the FDG4022 body allows. 1 false positive
   of 1 is above 1 in 20, so FDG4022 is now a suggestion in both profiles.
 - **CA1027.** One report is a `[Flags]`-style enum of 1, 2, 4 and 8 tested with `&` (true). The other is a simple enum
@@ -217,8 +217,8 @@ the new analyzers are counted. Every report was checked, except FDG4032 (37; 20 
   FDG4059 and FDG4061 ask for. The generated file version has four parts. A test project without these properties
   reported CA1014, FDG4059 (AssemblyDescription) and FDG4061 (AssemblyCopyright) as expected. Diagnostics without a
   source location are counted with an empty path.
-- **CA1050.** Public types declared outside any namespace in internal-b (models and HTTP parameter holders).
-- **CA1052.** Public classes with only static members, neither static nor sealed: HTTP parameter builders and a user
+- **CA1050.** Public types declared outside any namespace in internal-b (models and parameter holders).
+- **CA1052.** Public classes with only static members, neither static nor sealed: parameter builders and a
   holder. All true. Their fix (make the class static) is breaking, so on API that already existed they do not block.
 - **CA1028.** Six `sbyte` enums of two to eight values, re-judged against all three exceptions of the FDG4041 list.
   None is a flags enum or used for unmanaged interop. None falls under the space-saving exception either: each is a
