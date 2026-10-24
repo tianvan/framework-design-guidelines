@@ -967,6 +967,158 @@ public sealed class LongListWrappingTests
     }
 
     [Fact]
+    public Task Closing_paren_on_its_own_line_is_joined_to_the_last_item()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M()
+                {
+                    Report{|FDGA023:(|}
+                        1,
+                        2,
+                        3
+                    );
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M()
+                {
+                    Report(
+                        1,
+                        2,
+                        3);
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Closing_paren_alone_on_a_line_is_not_a_wrap()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            class C
+            {
+                void M()
+                {
+                    Report(1, 2, 3
+                    );
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Nested_wrapped_lists_are_fixed_by_FixAll()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M()
+                {
+                    Outer{|FDGA023:(|}1,
+                        Inner{|FDGA023:(|}2,
+                            3));
+                }
+
+                static void Outer(int a, int b)
+                {
+                }
+
+                static int Inner(int a, int b)
+                {
+                    return a + b;
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M()
+                {
+                    Outer(
+                        1,
+                        Inner(
+                            2,
+                            3));
+                }
+
+                static void Outer(int a, int b)
+                {
+                }
+
+                static int Inner(int a, int b)
+                {
+                    return a + b;
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Preprocessor_directives_inside_a_wrapped_list_are_kept()
+    {
+        return Verifier.VerifyAsync(
+            """
+            #define FLAG
+
+            class C
+            {
+                void M()
+                {
+                    Report{|FDGA023:(|}1,
+            #if FLAG
+                        2,
+            #endif
+                        3);
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """,
+            """
+            #define FLAG
+
+            class C
+            {
+                void M()
+                {
+                    Report(
+                        1,
+            #if FLAG
+                        2,
+            #endif
+                        3);
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
     public Task Single_line_list_within_limit_is_not_reported()
     {
         return Verifier.VerifyNoDiagnosticsAsync(
