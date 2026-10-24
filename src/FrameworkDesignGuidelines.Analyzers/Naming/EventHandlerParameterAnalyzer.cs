@@ -30,10 +30,12 @@ public sealed class EventHandlerParameterAnalyzer : DiagnosticAnalyzer
 
     private static void AnalyzeType(SymbolAnalysisContext context, HashSet<INamedTypeSymbol> eventDelegates)
     {
-        if (context.Symbol is not INamedTypeSymbol { TypeKind: TypeKind.Delegate, DelegateInvokeMethod: { } invoke } type
+        if (context.Symbol is not INamedTypeSymbol
+                { TypeKind: TypeKind.Delegate, DelegateInvokeMethod: { } invoke } type
             || !NamingSymbols.IsExternallyVisible(type)
             || !(type.Name.EndsWith("EventHandler", StringComparison.Ordinal) || eventDelegates.Contains(type))
-            || invoke.Parameters is { Length: 2 } parameters && parameters[0].Name == "sender" && parameters[1].Name == "e"
+            || (invoke.Parameters is { Length: 2 } parameters
+                && parameters[0].Name == "sender" && parameters[1].Name == "e")
             || NamingSymbols.SourceLocation(type) is not { } location)
         {
             return;

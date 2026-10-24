@@ -219,4 +219,20 @@ public sealed class AcronymCasingTests
             }
             """);
     }
+
+    [Fact]
+    public Task Record_positional_parameters_are_pascal_cased_property_names()
+    {
+        return Verifier.VerifyLatestAsync(
+            """
+            public record Page(string {|FDG3004:HTMLBody|}, string {|FDG3003:IoName|}, string Title);
+
+            public record struct Frame(int {|FDG3003:UiIndex|});
+
+            public class Reader(int ioLimit, string HTMLSource)
+            {
+                public int Limit => ioLimit + HTMLSource.Length;
+            }
+            """);
+    }
 }

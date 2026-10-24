@@ -107,7 +107,7 @@ internal static class NamingSymbols
                 {
                     foreach (IParameterSymbol parameter in method.Parameters)
                     {
-                        yield return (parameter, true);
+                        yield return (parameter, !IsRecordPositional(parameter));
                     }
                 }
 
@@ -137,6 +137,17 @@ internal static class NamingSymbols
     public static bool IsPositionalProperty(IPropertySymbol property)
     {
         return property.DeclaringSyntaxReferences.Any(reference => reference.GetSyntax() is ParameterSyntax);
+    }
+
+    /// <summary>
+    /// True for a record's primary constructor parameter that also declares a positional property: its name is a
+    /// public property name, so it is Pascal-cased and reported here, once, in place of the skipped property.
+    /// </summary>
+    private static bool IsRecordPositional(IParameterSymbol parameter)
+    {
+        return parameter.ContainingSymbol is IMethodSymbol
+                { MethodKind: MethodKind.Constructor, ContainingType: { } type }
+            && type.GetMembers(parameter.Name).OfType<IPropertySymbol>().Any(IsPositionalProperty);
     }
 
     /// <summary>The first source location of the symbol, where its diagnostics are reported.</summary>

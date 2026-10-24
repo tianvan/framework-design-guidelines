@@ -51,6 +51,7 @@ public sealed class CollectionPropertyNameAnalyzer : DiagnosticAnalyzer
         }
 
         return type.SpecialType == SpecialType.System_Collections_IEnumerable
-            || type.AllInterfaces.Any(@interface => @interface.SpecialType == SpecialType.System_Collections_IEnumerable);
+            || type.AllInterfaces.Any(
+                @interface => @interface.SpecialType == SpecialType.System_Collections_IEnumerable);
     }
 }
