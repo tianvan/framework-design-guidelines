@@ -9,9 +9,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 2 Framework Design Fundamentals | 32 | 0 | 0 | 32 | 0 | 32 |
 | 3 Naming Guidelines | 87 | 34 | 8 | 45 | 0 | 87 |
 | 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 70 |
-| 5 Member Design | 133 | 15 | 25 | 93 | 0 | 94 |
+| 5 Member Design | 133 | 15 | 25 | 93 | 0 | 99 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 393 | 109 | 45 | 239 | 0 | 354 |
+| Total | 393 | 109 | 45 | 239 | 0 | 359 |
 
 ## Non-guideline content
 

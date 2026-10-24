@@ -2208,7 +2208,7 @@
       author: Rico Mariani
     - kind: paragraph
       text: The derived class can choose not to call the base implementation of the method in its override. Be prepared for this by not including any processing in the method that is required for the base class to work correctly.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2241,7 +2241,7 @@
         protected virtual void OnAlarmRaised(AlarmRaisedEventArgs e){
           AlarmRaised?.Invoke(this, e);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2724,7 +2724,7 @@
         // This is the same at runtime,
         // so it should throw the same kind of exception.
         ((SomeType)null).SomeMethod();
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -3279,7 +3279,7 @@
         | `-` (unary) | `op_UnaryNegation` | `Negate` |
         | `+` (unary) | `op_UnaryPlus` | `Plus` |
         | `~` | `op_OnesComplement` | `OnesComplement` |
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -3295,7 +3295,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Library only: the reason is languages that do not support operator overloading; an application''s code is used from one language. CA2225 reports an operator of an externally visible type that has no method with the friendly name (for example Add for op_Addition, ToXxx or FromXxx for conversions); in a probe with SDK 10.0.402 it accepted CompareTo or Compare for the comparison operators, as Table 5-1 lists CompareTo. CA2225 does not check the C# 14 user-defined compound assignment and instance increment/decrement operators (op_AdditionAssignment and the others of Table 5-1), and it accepts Compare as well as CompareTo. Adding a method changes no signature, but the code fix adds a method whose body must still be written, so it is not a safe fix.'
+  notes: 'Library only: the reason is languages that do not support operator overloading; an application''s code is used from one language. CA2225 reports an operator of an externally visible type that has no method with the friendly name (for example Add for op_Addition, ToXxx or FromXxx for conversions); in a probe with SDK 10.0.402 it accepted CompareTo or Compare for the comparison operators, as Table 5-1 lists CompareTo. CA2225 does not check the C# 14 user-defined compound assignment and instance increment/decrement operators (op_AdditionAssignment and the others of Table 5-1). Adding a method changes no signature, but the code fix adds a method whose body must still be written, so it is not a safe fix.'
 - id: FDG5088
   strength: DO NOT
   text: provide a conversion operator if such a conversion is not clearly expected by the end users.
@@ -3468,7 +3468,7 @@
   section: 5.7.3 Inequality Operators
   anchor: sec5_7_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
