@@ -7,7 +7,7 @@
   body:
     - kind: paragraph
       text: For example, use `TextColor` rather than `Textcolor` or `Text_color`. Single words, such as `Button`, simply have initial capitals. Compound words that are always written as a single word, like endpoint, are treated as single words and have initial capitals only. More information on compound words is given in section 3.1.3.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -32,6 +32,7 @@
       - method
       - property
       - event
+      - visibleField
     failures:
       - casing
 - id: FDG3002
@@ -64,7 +65,7 @@
     - kind: annotation
       text: An early version of this table included a convention for instance field names. We later adopted the guideline that you should almost never use publicly exposed instance fields and should use properties instead. Thus, the guideline for publicly exposed instance fields was no longer needed. For the record, the convention was camelCasing.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -193,7 +194,7 @@
     - kind: annotation
       text: No matter how hard we try to follow all of these guidelines, sometimes we make mistakes. For example, `System.Text.UTF8Encoding` should really have been `System.Text.Utf8Encoding`. Now when we introduce new UTF8-related functionality, what do we do? Do we continue to use “UTF8” for consistency, or do we use “Utf8” for adherence to the guidelines? In general, we choose to not repeat the mistakes of the past, and newer types have used “Utf8”—for example, `System.Buffers.Text.Utf8Formatter`.
       author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1003,7 +1004,7 @@
   section: 3.4 Names of Namespaces
   anchor: sec3_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2348,7 +2349,7 @@
         public struct UInt32 {
            public const MinValue = 0;
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2405,7 +2406,7 @@
     - kind: annotation
       text: As with just about all the guidelines in this book, this guideline is meant to apply only to publicly exposed fields. In this case, it’s important that the names be clean and simple so the masses of consumers can easily understand them. As many have noted, there are very good reasons to use some sort of convention for private fields and local variables.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2428,6 +2429,7 @@
       - visibleField
     failures:
       - casing
+      - prefix
 - id: FDG3080
   strength: DO
   text: use camelCasing in parameter names.
@@ -2441,7 +2443,7 @@
            public bool Contains(string value);
            public string Remove(int startIndex, int count);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk

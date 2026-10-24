@@ -1736,7 +1736,7 @@
                 ...
             }
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1794,7 +1794,7 @@
                 ...
             }
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1835,7 +1835,7 @@
   section: A.2 Naming Conventions
   anchor: secA_2
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1877,7 +1877,7 @@
 
             private int _instanceId;
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1919,7 +1919,7 @@
   section: A.2 Naming Conventions
   anchor: secA_2
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1953,7 +1953,7 @@
   section: A.2 Naming Conventions
   anchor: secA_2
   body: []
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk

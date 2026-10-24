@@ -202,6 +202,46 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Upper_case_parameter_quotes_only_parameter_rules()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write(
+            "src/中文 App/Order.cs",
+            Lines(10, (1, "class Order {"), (4, "    public void Ship(int Count) { }"), (10, "}")));
+        _builder.Sarif = _ => [
+            new SarifResult(
+                "IDE1006",
+                "warning",
+                "Naming rule violation: The first word, 'Count', must begin with a lower case character",
+                order,
+                4) { Column = 26 },
+        ];
+
+        string reason = Json(await TurnStopAsync(), "reason")!;
+
+        string[] quoted = reason.Split('\n').Where(l => l.StartsWith("    FDG", StringComparison.Ordinal)).ToArray();
+        Assert.InRange(quoted.Length, 1, 2);
+        Assert.All(quoted, l => Assert.Matches(@"^    (FDG3002|FDG3005|FDG3080|FDGA057) ", l));
+    }
+
+    [Fact]
+    public async Task Prefix_on_a_public_field_quotes_FDG3079()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write(
+            "src/中文 App/Order.cs",
+            Lines(10, (1, "class Order {"), (4, "    public int _count;"), (10, "}")));
+        _builder.Sarif = _ => [
+            new SarifResult("IDE1006", "warning", "Naming rule violation: Prefix '_' is not expected", order, 4) { Column = 16 },
+        ];
+
+        string reason = Json(await TurnStopAsync(), "reason")!;
+
+        string quoted = Assert.Single(reason.Split('\n'), l => l.StartsWith("    FDG", StringComparison.Ordinal));
+        Assert.StartsWith("    FDG3079 ", quoted);
+    }
+
+    [Fact]
     public async Task Files_committed_during_the_turn_are_still_formatted_and_reported()
     {
         await TurnStartAsync();

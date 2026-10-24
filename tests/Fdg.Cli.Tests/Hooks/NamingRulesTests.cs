@@ -65,11 +65,42 @@ public sealed class NamingRulesTests
     [InlineData(NamingSymbolKind.ConstLocal, "FDGA053")]
     [InlineData(NamingSymbolKind.Local, "FDGA056")]
     [InlineData(NamingSymbolKind.PrivateField, "FDGA054")]
-    [InlineData(NamingSymbolKind.VisibleField, "FDG3077")]
     [InlineData(NamingSymbolKind.TypeParameter, "FDG3001")]
     public void Each_symbol_kind_finds_its_rule(NamingSymbolKind kind, string expected)
     {
         Assert.Contains(expected, Quoted(kind, NamingFailure.Casing, profile: null));
+    }
+
+    [Fact]
+    public void Unexpected_prefix_on_a_public_field_quotes_FDG3079()
+    {
+        Assert.Equal(["FDG3079"], Quoted(NamingSymbolKind.VisibleField, NamingFailure.Prefix));
+    }
+
+    [Fact]
+    public void Lower_case_public_field_quotes_the_visible_field_rules()
+    {
+        string[] quoted = Quoted(NamingSymbolKind.VisibleField, NamingFailure.Casing);
+
+        Assert.All(quoted, id => Assert.Contains(id, new[] { "FDG3001", "FDG3077", "FDG3079", "FDGA052" }));
+    }
+
+    [Fact]
+    public void Naming_tags_apply_to_IDE1006_only_so_CA1707_keeps_its_rules()
+    {
+        // CA1707 and IDE1006 share FDG3079; the tags of FDG3079 must not empty the list for CA1707.
+        string[] quoted = StopReport.RulesFor(
+                Manifest,
+                "CA1707",
+                "Remove the underscores from member name Order_Id",
+                "public int Order_Id;",
+                "library",
+                null)
+            .Select(r => r.Id)
+            .ToArray();
+
+        Assert.Contains("FDG3010", quoted);
+        Assert.Contains("FDG3079", quoted);
     }
 
     [Fact]

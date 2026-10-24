@@ -39,6 +39,14 @@ public sealed class DeclarationLocatorTests
     }
 
     [Fact]
+    public void Field_without_modifier_in_an_interface_is_visible()
+    {
+        Assert.Equal(NamingSymbolKind.VisibleField, DeclarationLocator.NamingKindAt("interface I { static int count; }", 1, 26));
+        Assert.Equal(NamingSymbolKind.PrivateField, DeclarationLocator.NamingKindAt("interface I { private static int count; }", 1, 34));
+        Assert.Equal(NamingSymbolKind.PrivateField, DeclarationLocator.NamingKindAt("struct S { int count; }", 1, 16));
+    }
+
+    [Fact]
     public void Finds_the_declaration_on_a_later_line()
     {
         const string source = "namespace N\n{\n    class C\n    {\n        private int count;\n    }\n}\n";
@@ -103,8 +111,12 @@ public sealed class DeclarationLocatorTests
 
     [Theory]
     [InlineData("Naming rule violation: Missing prefix: '_'", NamingFailure.Prefix)]
+    [InlineData("Naming rule violation: Prefix '_' is not expected", NamingFailure.Prefix)]
+    [InlineData("Naming rule violation: Prefix 'm_' is not expected", NamingFailure.Prefix)]
     [InlineData("Naming rule violation: These words must begin with upper case characters: describe_failure", NamingFailure.Casing)]
-    [InlineData("Naming rule violation: These words must begin with lower case characters: Value", NamingFailure.Casing)]
+    [InlineData("Naming rule violation: The first word, 'Value', must begin with a lower case character", NamingFailure.Casing)]
+    [InlineData("Naming rule violation: These non-leading words must begin with an upper case letter: my_Value", NamingFailure.Casing)]
+    [InlineData("Naming rule violation: Suffix 'Async' is not expected", null)]
     [InlineData("Naming rule violation: Missing suffix: 'Async'", null)]
     [InlineData("Naming rule violation: These words cannot contain lower case characters: Value", null)]
     [InlineData("Naming rule violation: These words must not contain underscores: a_b", null)]

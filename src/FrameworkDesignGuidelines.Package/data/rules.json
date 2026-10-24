@@ -23,7 +23,8 @@
           "typeParameter",
           "method",
           "property",
-          "event"
+          "event",
+          "visibleField"
         ],
         "failures": [
           "casing"
@@ -1221,7 +1222,8 @@
           "visibleField"
         ],
         "failures": [
-          "casing"
+          "casing",
+          "prefix"
         ]
       }
     },

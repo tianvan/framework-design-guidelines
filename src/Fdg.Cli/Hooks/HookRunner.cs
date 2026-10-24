@@ -6,6 +6,7 @@ using Fdg.Cli.Commands;
 using Fdg.Cli.Projects;
 using Fdg.Cli.Rules;
 using Fdg.Cli.Tooling;
+using Microsoft.CodeAnalysis;
 
 namespace Fdg.Cli.Hooks;
 
@@ -17,9 +18,6 @@ public sealed partial class HookRunner
 {
     // Each dotnet format loads a whole workspace into memory, so only a few run at once.
     private const int MaxParallelFormats = 4;
-
-    /// <summary>The diagnostic whose rules the symbol kind and failure of the flagged name select.</summary>
-    private const string NamingDiagnostic = "IDE1006";
 
     private static readonly TimeSpan CleanupGrace = TimeSpan.FromSeconds(2);
 
@@ -497,6 +495,7 @@ public sealed partial class HookRunner
         IReadOnlyDictionary<RulesManifest, IReadOnlySet<string>> registered)
     {
         var sourceLines = new Dictionary<string, string[]>(ProjectFiles.PathComparer);
+        var trees = new Dictionary<string, SyntaxTree>(ProjectFiles.PathComparer);
         var seen = new HashSet<(string, int, string, string)>();
         var issues = new List<ReportedIssue>();
         foreach ((ProjectWork project, SarifDiagnostic diagnostic) in diagnostics)
@@ -520,8 +519,8 @@ public sealed partial class HookRunner
             }
 
             string? source = diagnostic.Line >= 1 && diagnostic.Line <= lines.Length ? lines[diagnostic.Line - 1].Trim() : null;
-            (NamingSymbolKind, NamingFailure)? naming = diagnostic.RuleId == NamingDiagnostic
-                ? NamingOf(diagnostic, lines)
+            (NamingSymbolKind, NamingFailure)? naming = diagnostic.RuleId == DeclarationLocator.NamingDiagnosticId
+                ? NamingOf(diagnostic, trees)
                 : null;
             issues.Add(new ReportedIssue(
                 path,
@@ -536,7 +535,7 @@ public sealed partial class HookRunner
     }
 
     /// <summary>What IDE1006 flagged: the kind of the declared symbol and how its name fails; null if either is unknown.</summary>
-    private static (NamingSymbolKind, NamingFailure)? NamingOf(SarifDiagnostic diagnostic, string[] lines)
+    private static (NamingSymbolKind, NamingFailure)? NamingOf(SarifDiagnostic diagnostic, Dictionary<string, SyntaxTree> trees)
     {
         NamingFailure? failure = DeclarationLocator.ClassifyNamingFailure(diagnostic.Message);
         if (failure is null)
@@ -544,7 +543,14 @@ public sealed partial class HookRunner
             return null;
         }
 
-        NamingSymbolKind? kind = DeclarationLocator.NamingKindAt(string.Join("\n", lines), diagnostic.Line, diagnostic.Column);
+        // Parsed from the file's text rather than its lines, since Roslyn counts line breaks that ReadAllLines does not.
+        if (!trees.TryGetValue(diagnostic.FilePath, out SyntaxTree? tree))
+        {
+            tree = DeclarationLocator.Parse(File.ReadAllText(diagnostic.FilePath));
+            trees.Add(diagnostic.FilePath, tree);
+        }
+
+        NamingSymbolKind? kind = DeclarationLocator.NamingKindAt(tree, diagnostic.Line, diagnostic.Column);
         return kind is null ? null : (kind.Value, failure.Value);
     }
 

@@ -35,14 +35,24 @@ public enum NamingFailure
 /// </summary>
 public static class DeclarationLocator
 {
+    /// <summary>The diagnostic whose rules the symbol kind and failure of the flagged name select.</summary>
+    public const string NamingDiagnosticId = "IDE1006";
+
+    /// <summary>Parses <paramref name="source"/> for <see cref="NamingKindAt(SyntaxTree, int, int)"/>, which callers can repeat on one tree.</summary>
+    public static SyntaxTree Parse(string source) =>
+        CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview));
+
     /// <summary>The kind of the symbol declared at the 1-based line and column, or null when no declaration name is there.</summary>
     /// <remarks>
     /// Also null when the source has syntax errors (it may not be the code that was built), for declarations that are
     /// not members of a type, for top-level statements, and for symbols without a kind (enum members, local functions).
     /// </remarks>
-    public static NamingSymbolKind? NamingKindAt(string source, int line, int column)
+    public static NamingSymbolKind? NamingKindAt(string source, int line, int column) =>
+        NamingKindAt(Parse(source), line, column);
+
+    /// <inheritdoc cref="NamingKindAt(string, int, int)"/>
+    public static NamingSymbolKind? NamingKindAt(SyntaxTree tree, int line, int column)
     {
-        SyntaxTree tree = CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview));
         SourceText text = tree.GetText();
         if (line < 1 || line > text.Lines.Count || column < 1)
         {
@@ -72,18 +82,22 @@ public static class DeclarationLocator
         return KindOf(token);
     }
 
-    /// <summary>"Missing prefix" → Prefix; "begin with upper case" / "begin with lower case" → Casing; otherwise null.</summary>
+    /// <summary>
+    /// Roslyn's IDE1006 messages: "Missing prefix: '_'" and "Prefix '_' is not expected" → Prefix; the messages
+    /// "These words must begin with upper case characters", "These non-leading words must begin with an upper case
+    /// letter" and "The first word, 'X', must begin with a lower case character" → Casing; everything else
+    /// (suffixes, "cannot contain", ...) → null.
+    /// </summary>
     public static NamingFailure? ClassifyNamingFailure(string message)
     {
-        if (message.Contains("Missing prefix", StringComparison.OrdinalIgnoreCase))
+        if (message.Contains("Missing prefix", StringComparison.OrdinalIgnoreCase) ||
+            (message.Contains("Prefix '", StringComparison.OrdinalIgnoreCase) &&
+             message.Contains("is not expected", StringComparison.OrdinalIgnoreCase)))
         {
             return NamingFailure.Prefix;
         }
 
-        return message.Contains("begin with upper case", StringComparison.OrdinalIgnoreCase) ||
-            message.Contains("begin with lower case", StringComparison.OrdinalIgnoreCase)
-            ? NamingFailure.Casing
-            : null;
+        return message.Contains("must begin with", StringComparison.OrdinalIgnoreCase) ? NamingFailure.Casing : null;
     }
 
     private static NamingSymbolKind? KindOf(SyntaxToken name)
@@ -135,7 +149,7 @@ public static class DeclarationLocator
         switch (declarator.Parent?.Parent)
         {
             case FieldDeclarationSyntax { Parent: TypeDeclarationSyntax } field:
-                return FieldKind(field.Modifiers);
+                return FieldKind(field);
             case EventFieldDeclarationSyntax { Parent: TypeDeclarationSyntax }:
                 return NamingSymbolKind.Event;
             case LocalDeclarationStatementSyntax local:
@@ -149,16 +163,22 @@ public static class DeclarationLocator
         }
     }
 
-    /// <summary>Const wins over visibility; a field without an accessibility modifier is private.</summary>
-    private static NamingSymbolKind FieldKind(SyntaxTokenList modifiers)
+    /// <summary>
+    /// Const wins over visibility; a field without an accessibility modifier is private, except in an interface,
+    /// where it is public.
+    /// </summary>
+    private static NamingSymbolKind FieldKind(FieldDeclarationSyntax field)
     {
+        SyntaxTokenList modifiers = field.Modifiers;
         if (modifiers.Any(SyntaxKind.ConstKeyword))
         {
             return NamingSymbolKind.ConstField;
         }
 
         bool visible = modifiers.Any(SyntaxKind.PublicKeyword) ||
-            (modifiers.Any(SyntaxKind.ProtectedKeyword) && !modifiers.Any(SyntaxKind.PrivateKeyword));
+            (modifiers.Any(SyntaxKind.ProtectedKeyword) && !modifiers.Any(SyntaxKind.PrivateKeyword)) ||
+            (field.Parent is InterfaceDeclarationSyntax && !modifiers.Any(SyntaxKind.PrivateKeyword) &&
+                !modifiers.Any(SyntaxKind.InternalKeyword));
         return visible ? NamingSymbolKind.VisibleField : NamingSymbolKind.PrivateField;
     }
 }

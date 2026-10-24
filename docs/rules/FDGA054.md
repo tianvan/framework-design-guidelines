@@ -14,6 +14,6 @@ This is a coding style convention. The book treats the appendix A conventions as
 - Diagnostics: IDE1006
 - Automatic fix: yes
 - Severity: library warning, application warning, test suggestion
-- Status: draft
+- Status: verified
 
 Checked through the naming rules configured by FDGA055. The fix renames private and internal fields only; check reflection or serialization that uses field names.

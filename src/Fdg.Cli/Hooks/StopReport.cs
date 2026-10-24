@@ -64,8 +64,8 @@ public static class StopReport
 
     /// <summary>
     /// The rules a diagnostic checks under <paramref name="profile"/>, most relevant first, at most
-    /// <see cref="MaxRulesPerIssue"/>. If any of them carries naming tags (IDE1006), the tags decide: only the rules
-    /// that list the symbol kind and the failure of <paramref name="naming"/> are quoted, and none when it is
+    /// <see cref="MaxRulesPerIssue"/>. For IDE1006, if any of its rules carries naming tags, the tags decide: only the
+    /// rules that list the symbol kind and the failure of <paramref name="naming"/> are quoted, and none when it is
     /// <see langword="null"/> because the position or the message could not be read. Otherwise the rules sharing more
     /// words with the message and the flagged line come first and the manifest's order is kept among equals. When
     /// there are more than <see cref="MaxRulesPerIssue"/>, only rules whose text has a word of the message that is
@@ -81,7 +81,7 @@ public static class StopReport
         (NamingSymbolKind Kind, NamingFailure Failure)? naming)
     {
         RuleEntry[] rules = manifest.Rules.Where(r => r.Diagnostics.Contains(ruleId)).ToArray();
-        bool tagged = rules.Any(r => r.Naming is not null);
+        bool tagged = ruleId == DeclarationLocator.NamingDiagnosticId && rules.Any(r => r.Naming is not null);
         if (tagged)
         {
             if (naming is not var (kind, failure))
