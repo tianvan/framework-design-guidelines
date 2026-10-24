@@ -142,8 +142,7 @@ public sealed class GeneratorCliTests : IDisposable
         var result = Verify();
 
         Assert.Equal(1, result.ExitCode);
-        Assert.Contains("3", result.Error);
-        Assert.Contains("4", result.Error);
+        Assert.Contains("the book yields 4 rules but the file has 3", result.Error);
     }
 
     [Fact]
@@ -210,8 +209,7 @@ public sealed class GeneratorCliTests : IDisposable
 
         Assert.Equal(1, result.ExitCode);
         Assert.Equal(1, LineCount(result.Error));
-        Assert.Contains("3", result.Error);
-        Assert.Contains("4", result.Error);
+        Assert.Contains("the book yields 4 rules but the file has 3", result.Error);
         Assert.Equal(before, File.ReadAllText(path));
     }
 

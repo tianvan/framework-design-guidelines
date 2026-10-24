@@ -223,4 +223,58 @@ public class BookParserTests
             "An annotation with structure.\n\n- first\n- second\n\n1. one\n2. two\n\n| A | B |\n| --- | --- |\n| 1 | 2 |",
             annotation.Text);
     }
+
+    private static Rule ParseFidelity()
+    {
+        return BookParser.Parse(Fixture("fidelity.xhtml"), "8").Rules[0];
+    }
+
+    [Fact]
+    public void Markers_are_not_added_inside_inline_code()
+    {
+        Assert.Equal("Call `GetValue` once. Then stop.", ParseFidelity().Body[2].Text);
+    }
+
+    [Fact]
+    public void Footnote_references_are_dropped()
+    {
+        Rule rule = ParseFidelity();
+
+        Assert.DoesNotContain("once.2", rule.Body[2].Text);
+        Assert.DoesNotContain("Type1", rule.Section);
+    }
+
+    [Fact]
+    public void Headings_become_plain_text_sections()
+    {
+        Assert.Equal("8.1 Fidelity Section for the Foo Type", ParseFidelity().Section);
+    }
+
+    [Fact]
+    public void Table_cells_keep_line_breaks_and_emphasis_and_partial_bold_headers()
+    {
+        Block table = ParseFidelity().Body[3];
+
+        Assert.Equal(BlockKind.Table, table.Kind);
+        Assert.Equal(
+            "| **Name** (kind) | Value |\n| --- | --- |\n| line one<br>line two | an *emphasized* cell |",
+            table.Text);
+    }
+
+    [Fact]
+    public void List_items_keep_emphasis_drop_codelinks_and_quote_nested_sidebars()
+    {
+        Block list = ParseFidelity().Body[4];
+
+        Assert.Equal(BlockKind.List, list.Kind);
+        Assert.Equal(
+            "- an *emphasized* item\n" +
+            "- an item with code\n" +
+            "  int x = 1;\n" +
+            "- an item with a note\n" +
+            "  > **Brad Abrams**\n" +
+            "  >\n" +
+            "  > A nested *note*.",
+            list.Text);
+    }
 }

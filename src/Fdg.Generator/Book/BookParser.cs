@@ -112,7 +112,7 @@ public static class BookParser
             EndRule();
             _tableOwner = null;
             string? id = heading.GetAttribute("id");
-            string text = BlockRenderer.Inline(heading);
+            string text = BlockRenderer.Heading(heading);
             if (!string.IsNullOrEmpty(id) && text.Length > 0)
             {
                 _section = text;

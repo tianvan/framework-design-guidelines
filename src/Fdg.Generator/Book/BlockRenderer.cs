@@ -26,6 +26,18 @@ public static partial class BlockRenderer
         return Finish(builder.ToString());
     }
 
+    /// <summary>The text of a heading without any Markdown, since it becomes the section of a rule.</summary>
+    public static string Heading(IElement heading)
+    {
+        var copy = (IElement)heading.Clone(true);
+        foreach (IElement sup in copy.QuerySelectorAll("sup").Where(IsFootnoteReference).ToList())
+        {
+            sup.Remove();
+        }
+
+        return Normalizer.Collapse(copy.TextContent);
+    }
+
     /// <summary>A figure caption without the bold that the book sets every caption in; <see cref="Table"/> adds its own.</summary>
     public static string Caption(IElement figcaption)
     {
@@ -138,6 +150,8 @@ public static partial class BlockRenderer
                 break;
             case IElement { LocalName: "img" }:
                 break;
+            case IElement { LocalName: "sup" } sup when IsFootnoteReference(sup):
+                break;
             case IElement { LocalName: "code" } code:
                 string inner = Normalizer.Collapse(code.TextContent);
                 if (inner.Length > 0)
@@ -162,6 +176,16 @@ public static partial class BlockRenderer
                 AppendChildren(node, builder);
                 break;
         }
+    }
+
+    /// <summary>A footnote number such as <c>&lt;sup&gt;&lt;a href="#fn1"&gt;1&lt;/a&gt;&lt;/sup&gt;</c>; the footnotes themselves are not rules.</summary>
+    private static bool IsFootnoteReference(IElement sup)
+    {
+        return sup.Children.Length == 1
+            && sup.Children[0] is IElement { LocalName: "a" } link
+            && link.GetAttribute("href")?.Contains('#') == true
+            && !link.GetAttribute("href")!.StartsWith("http", StringComparison.Ordinal)
+            && Normalizer.Collapse(sup.TextContent) == Normalizer.Collapse(link.TextContent);
     }
 
     private static void AppendChildren(INode node, StringBuilder builder)
@@ -214,6 +238,20 @@ public static partial class BlockRenderer
         return whollyBold ? text[2..^2] : text;
     }
 
+    /// <summary>The lines of a Markdown blockquote: the author in bold, then the text of the annotation.</summary>
+    private static IEnumerable<string> Quote(Block annotation)
+    {
+        var lines = new List<string>();
+        if (annotation.Author is not null)
+        {
+            lines.Add($"**{annotation.Author}**");
+            lines.Add(string.Empty);
+        }
+
+        lines.AddRange(annotation.Text.Split('\n'));
+        return lines.Select(l => l.Length == 0 ? ">" : $"> {l}");
+    }
+
     private static void AppendList(IElement list, int depth, List<string> lines)
     {
         string indent = new(' ', depth * 2);
@@ -232,6 +270,15 @@ public static partial class BlockRenderer
                 else if (child is IElement { LocalName: "pre" } pre)
                 {
                     tail.AddRange(Normalizer.Code(pre.TextContent).Split('\n').Select(l => $"{indent}  {l}"));
+                }
+                else if (child is IElement { LocalName: "div" } sidebar && sidebar.ClassList.Contains("sidebar"))
+                {
+                    string quoteIndent = indent + new string(' ', marker.Length + 1);
+                    tail.AddRange(Quote(Annotation(sidebar)).Select(l => quoteIndent + l));
+                }
+                else if (child is IElement element && IsCodeLink(element))
+                {
+                    continue;
                 }
                 else
                 {

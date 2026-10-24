@@ -118,18 +118,9 @@ public static class ExtractCommand
         }
 
         merged = extracted.Select(r => r with { Mapping = byId[r.Id].Mapping }).ToList();
-        changed = extracted.Where(r => !SameBookFields(r, byId[r.Id])).Select(r => r.Id).ToList();
+        changed = extracted.Where(r => BookFields.Compare(r, byId[r.Id]).Count > 0).Select(r => r.Id).ToList();
         error = string.Empty;
         return true;
-    }
-
-    private static bool SameBookFields(Rule extracted, Rule existing)
-    {
-        return extracted.Text == existing.Text
-            && extracted.Context == existing.Context
-            && extracted.Section == existing.Section
-            && extracted.Anchor == existing.Anchor
-            && extracted.Body.SequenceEqual(existing.Body);
     }
 
     private static void Write(string target, IEnumerable<Rule> rules)

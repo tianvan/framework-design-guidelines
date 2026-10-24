@@ -223,8 +223,8 @@
         | `Hashtable` | `hashtable` | `HashTable` |
         | `Id` | `id` | `ID` |
         | `Indexes` | `indexes` | `Indices` |
-        | `Logoff`1 | `logoff` | `LogOut` |
-        | `Logon`1 | `logon` | `LogIn`2 |
+        | `Logoff` | `logoff` | `LogOut` |
+        | `Logon` | `logon` | `LogIn` |
         | `Metadata` | `metadata` | `MetaData, metaData` |
         | `Multipanel` | `multipanel` | `MultiPanel` |
         | `Multiview` | `multiview` | `MultiView` |
