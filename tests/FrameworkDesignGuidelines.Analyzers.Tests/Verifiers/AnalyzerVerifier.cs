@@ -1,0 +1,76 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Testing;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Testing;
+
+namespace FrameworkDesignGuidelines.Analyzers.Tests.Verifiers;
+
+/// <summary>
+/// Runs every analyzer test that has no code fix against .NET Framework 4.7.2 and .NET 8 reference assemblies, each
+/// under C# 7.3 and the latest language version, with the rules enabled through an .editorconfig the way a profile
+/// globalconfig would enable them.
+/// </summary>
+internal static class AnalyzerVerifier<TAnalyzer>
+    where TAnalyzer : DiagnosticAnalyzer, new()
+{
+    private static readonly ReferenceAssemblies[] _referenceAssemblies =
+    [
+        ReferenceAssemblies.NetFramework.Net472.Default,
+        ReferenceAssemblies.Net.Net80,
+    ];
+
+    private static readonly LanguageVersion[] _languageVersions = [LanguageVersion.CSharp7_3, LanguageVersion.Latest];
+
+    /// <summary>
+    /// Verifies the diagnostics marked in <paramref name="source"/>, for example <c>{|FDG3013:Naïve|}</c>.
+    /// <paramref name="extraSources"/> are added as further files, by path.
+    /// </summary>
+    public static async Task VerifyAsync(string source, params (string Path, string Text)[] extraSources)
+    {
+        foreach (ReferenceAssemblies referenceAssemblies in _referenceAssemblies)
+        {
+            foreach (LanguageVersion languageVersion in _languageVersions)
+            {
+                await VerifyAsync(source, referenceAssemblies, languageVersion, extraSources);
+            }
+        }
+    }
+
+    /// <summary>Verifies one reference assembly set and language version only.</summary>
+    public static Task VerifyAsync(
+        string source,
+        ReferenceAssemblies referenceAssemblies,
+        LanguageVersion languageVersion,
+        params (string Path, string Text)[] extraSources)
+    {
+        var test = new Test(languageVersion)
+        {
+            TestCode = source.Replace("\r\n", "\n"),
+            ReferenceAssemblies = referenceAssemblies,
+        };
+        foreach ((string path, string text) in extraSources)
+        {
+            test.TestState.Sources.Add((path, text.Replace("\r\n", "\n")));
+        }
+
+        test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", EditorConfig()));
+        return test.RunAsync();
+    }
+
+    private static string EditorConfig()
+    {
+        return "root = true\n\n[*]\n"
+            + string.Concat(new TAnalyzer().SupportedDiagnostics.Select(
+                descriptor => $"dotnet_diagnostic.{descriptor.Id}.severity = warning\n"));
+    }
+
+    private sealed class Test(LanguageVersion languageVersion)
+        : CSharpCodeFixTest<TAnalyzer, EmptyCodeFixProvider, DefaultVerifier>
+    {
+        protected override ParseOptions CreateParseOptions()
+        {
+            return ((CSharpParseOptions)base.CreateParseOptions()).WithLanguageVersion(languageVersion);
+        }
+    }
+}

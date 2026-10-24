@@ -6,9 +6,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 
 | Chapter | Rules | sdk | fdg | judgment | none | verified |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 3 Naming Guidelines | 87 | 34 | 0 | 53 | 0 | 87 |
+| 3 Naming Guidelines | 87 | 34 | 7 | 46 | 0 | 80 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 158 | 76 | 3 | 79 | 0 | 158 |
+| Total | 158 | 76 | 10 | 72 | 0 | 151 |
 
 ## Non-guideline content
 

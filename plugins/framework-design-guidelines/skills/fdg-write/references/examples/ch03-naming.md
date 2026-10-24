@@ -2,26 +2,6 @@
 
 # Chapter 3: Naming Guidelines — explanations and examples
 
-## FDG3003
-
-DO capitalize both characters of two-character acronyms, except the first word of a camel-cased identifier.
-
-```csharp
-System.IO
-System.Threading.IOCompletionCallback
-public void StartIO(Stream ioStream)
-```
-
-## FDG3004
-
-DO capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier.
-
-```csharp
-System.Xml
-System.Xml.XmlNode
-public void ProcessHtmlTag(string htmlTag)
-```
-
 ## FDG3006
 
 DO NOT capitalize each word in so-called closed-form compound words.
@@ -92,26 +72,6 @@ DO NOT use Hungarian notation.
 > One downside of Hungarian notation is that developers frequently change the type of variables during early coding, which requires the name of the variable to also change. Additionally, while commonly used fundamental data types (integers, characters, etc.) had well-recognized and standard prefixes, developers frequently fail to use a meaningful and consistent prefix for their custom data types.
 
 > **Krzysztof Cwalina:** There have always been both positive and negative effects of using the Hungarian naming convention, and they still exist today. Positives include better readability (if used correctly). Negatives include cost of maintenance, confusion if maintenance was not done properly, and finally, Hungarian makes the API more cryptic (less approachable) to some developers. In the world of procedural languages (e.g., C) and the separation of the System APIs for advanced developers from framework libraries for a much wider developer group, the positives seemed to be greater than the negatives. Today, with System APIs designed to be approachable to more developers, and with object-oriented (OO) languages, the trade-off seems to be pulling in the other direction. OO encapsulation brings variable declaration and usage points closer together, OO style favors short, well-factored methods, and abstractions often make the exact type less important or even meaningless.
-
-## FDG3013
-
-DO use only ASCII characters in identifier names.
-
-All of the identifiers in .NET use ASCII characters, so anyone working with .NET is capable of typing those characters and working with files or tools that understand those characters. But the developers who want to use your library may not have easy capability to type non-ASCII characters, or may use text editors (or other tools) that do not reliably preserve non-ASCII data.
-
-When basing an identifier on a word that properly requires diacritical marks, either use (or invent) the diacritical-free approximation or choose a different identifier.
-
-Table 3-3 describes some suggested replacement spellings to avoid diacritical marks. It is provided for clarity, but is neither authoritative nor exhaustive.
-
-**Table 3-3: Alternative Spellings to Avoid Diacritical Marks**
-
-| Spelling with Diacritics | Spelling for an Identifier |
-| --- | --- |
-| `Edelweiß` | `Edelweiss` |
-| `Mêlée` | `Melee` |
-| `Naïve` | `Naive` |
-| `Résumé` | `Resume` |
-| `Röntgen` | `Roentgen` |
 
 ## FDG3014
 
@@ -395,20 +355,6 @@ public class String {
 }
 ```
 
-## FDG3068
-
-DO name collection properties with a plural phrase describing the items in the collection instead of using a singular phrase followed by “List” or “Collection.”
-
-```csharp
-public class ListView {
-  // good naming
-  public ItemCollection Items { get; }
-
-  // bad naming
-  public ItemCollection ItemCollection { get; }
-}
-```
-
 ## FDG3069
 
 DO name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value.
@@ -461,19 +407,6 @@ DO give events names with a concept of before and after, using the present and p
 
 For example, a close event that is raised before a window is closed would be called `Closing`, and one that is raised after the window is closed would be called `Closed`.
 
-## FDG3075
-
-DO use two parameters named *sender* and *e* in event handlers.
-
-The sender parameter represents the object that raised the event. The sender parameter is typically of type `object`, even if it is possible to employ a more specific type. The pattern is used consistently across .NET and is described in more detail in section 5.4.
-
-> **Jeremy Barton:** The `object sender` parameter may be my least favorite guideline in .NET. But, for consistency, I have followed it in every event I’ve ever declared.
-
-```csharp
-public delegate void <EventName>EventHandler(object sender,
-                                             <EventName>EventArgs e);
-```
-
 ## FDG3081
 
 DO use descriptive parameter names.
@@ -523,11 +456,3 @@ DO NOT use abbreviations or numeric indices for operator overload parameter name
 public static bool operator ==(DateTimeOffset d1,
                                DateTimeOffset d2);
 ```
-
-## FDG3087
-
-DO NOT directly expose localizable resources as public (or protected) members.
-
-The types and members automatically generated by a resource editor should use the `internal` access modifier.
-
-When it does make sense to expose a resource via public API, use intentional type and member design.

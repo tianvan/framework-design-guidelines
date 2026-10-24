@@ -4,11 +4,6 @@
 
 Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
 
-## 3.1.2 Capitalizing Acronyms
-
-- **FDG3003** DO capitalize both characters of two-character acronyms, except the first word of a camel-cased identifier. — examples: examples/ch03-naming.md#fdg3003
-- **FDG3004** DO capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier. — examples: examples/ch03-naming.md#fdg3004
-
 ## 3.1.3 Capitalizing Compound Words and Common Terms
 
 - **FDG3006** DO NOT capitalize each word in so-called closed-form compound words. — examples: examples/ch03-naming.md#fdg3006
@@ -18,7 +13,6 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG3008** DO choose easily readable identifier names. — examples: examples/ch03-naming.md#fdg3008
 - **FDG3009** DO favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the *X*-axis).
 - **FDG3011** DO NOT use Hungarian notation. — examples: examples/ch03-naming.md#fdg3011
-- **FDG3013** DO use only ASCII characters in identifier names. — examples: examples/ch03-naming.md#fdg3013
 
 ## 3.2.2 Using Abbreviations and Acronyms
 
@@ -78,7 +72,6 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 3.5.2 Names of Common Types
 
-- **FDG3051** DO add the suffix “Callback” to names of delegates other than those used as event handlers. (context: System.Delegate)
 - **FDG3054** DO NOT derive from this class; use the keyword supported by your language instead; for example, in C#, use the `enum` keyword. (context: System.Enum)
 
 ## 3.5.3 Naming Enumerations
@@ -93,7 +86,6 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 ## 3.6.2 Names of Properties
 
 - **FDG3066** DO name properties using a noun, noun phrase, or adjective. — examples: examples/ch03-naming.md#fdg3066
-- **FDG3068** DO name collection properties with a plural phrase describing the items in the collection instead of using a singular phrase followed by “List” or “Collection.” — examples: examples/ch03-naming.md#fdg3068
 - **FDG3069** DO name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value. — examples: examples/ch03-naming.md#fdg3069
 - **FDG3070** CONSIDER giving a property the same name as its type. — examples: examples/ch03-naming.md#fdg3070
 
@@ -101,7 +93,6 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 - **FDG3071** DO name events with a verb or a verb phrase. — examples: examples/ch03-naming.md#fdg3071
 - **FDG3072** DO give events names with a concept of before and after, using the present and past tenses, such as `Closing` and `Closed`. — examples: examples/ch03-naming.md#fdg3072
-- **FDG3075** DO use two parameters named *sender* and *e* in event handlers. — examples: examples/ch03-naming.md#fdg3075
 
 ## 3.6.4 Naming Fields
 
@@ -118,7 +109,3 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG3084** DO use *value* for unary operator overload parameter names if there is no meaning to the parameters. — examples: examples/ch03-naming.md#fdg3084
 - **FDG3085** CONSIDER meaningful names for operator overload parameters if doing so adds significant value. — examples: examples/ch03-naming.md#fdg3085
 - **FDG3086** DO NOT use abbreviations or numeric indices for operator overload parameter names. — examples: examples/ch03-naming.md#fdg3086
-
-## 3.8 Naming Resources
-
-- **FDG3087** DO NOT directly expose localizable resources as public (or protected) members. — examples: examples/ch03-naming.md#fdg3087

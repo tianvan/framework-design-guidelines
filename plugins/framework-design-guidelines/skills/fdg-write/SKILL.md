@@ -41,20 +41,16 @@ In `test` projects the Chapter 3 rules are off (test names such as `Method_WhenX
 - **FDG3061** DO use a plural type name for an enumeration with bit fields as values, also called flags enum.
 - **FDG3065** DO give methods names that are verbs or verb phrases.
 - **FDG3066** DO name properties using a noun, noun phrase, or adjective.
-- **FDG3068** DO name collection properties with a plural phrase describing the items in the collection instead of using a singular phrase followed by “List” or “Collection.”
 - **FDG3069** DO name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value.
 - **FDG3070** CONSIDER giving a property the same name as its type.
 - **FDG3071** DO name events with a verb or a verb phrase.
 - **FDG3072** DO give events names with a concept of before and after, using the present and past tenses, such as `Closing` and `Closed`.
-- **FDG3075** DO use two parameters named *sender* and *e* in event handlers.
 - **FDG3078** DO name fields using a noun, noun phrase, or adjective.
 - **FDG3081** DO use descriptive parameter names.
 - **FDG3082** CONSIDER using names based on a parameter’s meaning rather than the parameter’s type.
 
 Casing that analyzers cannot see (they check only the first letter):
 
-- **FDG3003** DO capitalize both characters of two-character acronyms, except the first word of a camel-cased identifier.
-- **FDG3004** DO capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier.
 - **FDG3006** DO NOT capitalize each word in so-called closed-form compound words.
 
 ## Coding style that tools cannot check (Appendix A.1.6)

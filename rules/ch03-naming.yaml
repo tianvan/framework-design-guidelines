@@ -99,12 +99,13 @@
         System.IO
         System.Threading.IOCompletionCallback
         public void StartIO(Stream ioStream)
-  status: verified
+  status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG3003
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -113,8 +114,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: "planned-analyzer: acronym casing against the book's word lists."
+  analyzer:
+    message: 'Capitalize both characters of the two-character acronym ''{1}'' in ''{0}'''
+    category: Naming
+  notes: "FDG3003 and FDG3004 report, in the names that externally visible declarations choose (namespaces, types, members, parameters and type parameters; not overrides or interface implementations), a word that is one of the acronyms chapter 3 itself names and that is cased otherwise than the book shows: IO and UI in capitals; Html, Xml, Rgb and Argb with only the first letter capitalized. The first word of a parameter name is left to FDG3005, and the I prefix of an interface and the T prefix of a type parameter are not part of the first word. Other acronyms are not checked, because the book gives no longer list."
 - id: FDG3004
   strength: DO
   text: capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier.
@@ -127,12 +130,13 @@
         System.Xml
         System.Xml.XmlNode
         public void ProcessHtmlTag(string htmlTag)
-  status: verified
+  status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG3004
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -141,8 +145,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: "planned-analyzer: acronym casing against the book's word lists."
+  analyzer:
+    message: 'Capitalize only the first character of the acronym ''{1}'' in ''{0}'''
+    category: Naming
+  notes: "Checked by the FDG3003 analyzer; see FDG3003 for the acronyms and the names it checks."
 - id: FDG3005
   strength: DO NOT
   text: capitalize any of the characters of any acronyms, whatever their length, at the beginning of a camel-cased identifier.
@@ -210,7 +216,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: "IDE1006 reports camel-cased names that start with an uppercase acronym, such as 'IOStream', through the naming rules configured by FDGA056 and FDGA057. planned-analyzer: acronym casing against the book's word lists."
+  notes: "IDE1006 reports camel-cased names that start with an uppercase acronym, such as 'IOStream', through the naming rules configured by FDGA056 and FDGA057. FDG3003 and FDG3004 check acronyms after the first word."
   naming:
     symbols:
       - parameter
@@ -483,12 +489,13 @@
         | `Naïve` | `Naive` |
         | `Résumé` | `Resume` |
         | `Röntgen` | `Roentgen` |
-  status: verified
+  status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG3013
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -497,8 +504,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: 'planned-analyzer: identifiers outside ASCII.'
+  analyzer:
+    message: 'Use only ASCII characters in the name ''{0}'''
+    category: Naming
+  notes: "FDG3013 reports a non-ASCII character in a name that an externally visible declaration chooses (see FDG3003 for which names). Locals and non-public members are not checked, as chapter 3 governs public names."
 - id: FDG3014
   strength: DO NOT
   text: use abbreviations or contractions as part of identifier names.
@@ -1112,7 +1121,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'planned-analyzer: overly general type names.'
+  notes: "Analyzer candidate rejected (gate 1): the book names four examples (Element, Node, Log, Message) but gives no list, and whether a type name is overly general depends on its namespace category and scenarios, so a check would have to guess intent."
 - id: FDG3034
   strength: DO NOT
   text: give the same name to multiple types across namespaces within a single application model.
@@ -1582,12 +1591,13 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: verified
+  status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG3051
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -1596,8 +1606,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: 'planned-analyzer: delegates not used by events that lack the Callback suffix.'
+  analyzer:
+    message: 'Add the suffix ''Callback'' to the delegate ''{0}'', which no event uses'
+    category: Naming
+  notes: "FDG3051 reports an externally visible delegate whose name ends with neither 'Callback' nor 'EventHandler' and that no event declared in the same compilation uses. A delegate named '...EventHandler' is left to FDG3050 and FDG3074."
 - id: FDG3052
   strength: DO NOT
   text: add the suffix “Delegate” to a delegate.
@@ -2065,12 +2077,13 @@
           // bad naming
           public ItemCollection ItemCollection { get; }
         }
-  status: verified
+  status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG3068
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -2079,8 +2092,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: 'planned-analyzer: collection properties named with a List or Collection suffix.'
+  analyzer:
+    message: 'Name the collection property ''{0}'' with a plural phrase instead of a ''List'' or ''Collection'' suffix'
+    category: Naming
+  notes: "FDG3068 reports an externally visible property of an array or IEnumerable type (other than string) whose last word is 'List' or 'Collection', as in the book's bad example. It cannot tell whether the rest of the name is a plural phrase. Overrides and interface implementations are not reported."
 - id: FDG3069
   strength: DO
   text: name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value.
@@ -2128,7 +2143,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'planned-analyzer: negative Boolean property names.'
+  notes: "Analyzer candidate rejected (gate 1): the rule text gives one negative example (CantSeek) and no word list. Telling a negative phrase from an affirmative one (Disabled, Hidden, NoWrap) would need a word list the book does not give, so a check would have to guess intent."
 - id: FDG3070
   strength: CONSIDER
   text: giving a property the same name as its type.
@@ -2283,12 +2298,13 @@
       text: |-
         public delegate void <EventName>EventHandler(object sender,
                                                      <EventName>EventArgs e);
-  status: verified
+  status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG3075
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -2297,8 +2313,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: 'planned-analyzer: event handler parameters named sender and e.'
+  analyzer:
+    message: 'Name the two parameters of the event handler ''{0}'' ''sender'' and ''e'''
+    category: Naming
+  notes: "FDG3075 reports an externally visible delegate that an event in the same compilation uses, or whose name ends with 'EventHandler', when its parameters are not exactly 'sender' and 'e'. Parameter types are not checked."
 - id: FDG3076
   strength: DO
   text: 'name event argument classes with the “EventArgs” suffix, as shown in the following example:'
@@ -2636,12 +2654,13 @@
       text: The types and members automatically generated by a resource editor should use the `internal` access modifier.
     - kind: paragraph
       text: When it does make sense to expose a resource via public API, use intentional type and member design.
-  status: verified
+  status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG3087
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -2650,5 +2669,7 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: 'planned-analyzer: public resource classes generated from .resx files.'
+  analyzer:
+    message: 'Make the resource class ''{0}'' internal'
+    category: Naming
+  notes: "FDG3087 reports an externally visible class marked [GeneratedCode(\"System.Resources.Tools.StronglyTypedResourceBuilder\", ...)], a resource class that a resource editor generated as public. Resources exposed through hand-written members are not detected."

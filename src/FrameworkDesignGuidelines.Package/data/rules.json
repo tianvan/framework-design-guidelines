@@ -59,7 +59,9 @@
       "strength": "DO",
       "text": "capitalize both characters of two-character acronyms, except the first word of a camel-cased identifier.",
       "section": "3.1.2 Capitalizing Acronyms",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG3003"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -73,7 +75,9 @@
       "strength": "DO",
       "text": "capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier.",
       "section": "3.1.2 Capitalizing Acronyms",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG3004"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -216,7 +220,9 @@
       "strength": "DO",
       "text": "use only ASCII characters in identifier names.",
       "section": "3.2.1 Word Choice",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG3013"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -778,7 +784,9 @@
       "strength": "DO",
       "text": "add the suffix “Callback” to names of delegates other than those used as event handlers.",
       "section": "3.5.2 Names of Common Types",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG3051"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -1038,7 +1046,9 @@
       "strength": "DO",
       "text": "name collection properties with a plural phrase describing the items in the collection instead of using a singular phrase followed by “List” or “Collection.”",
       "section": "3.6.2 Names of Properties",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG3068"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -1140,7 +1150,9 @@
       "strength": "DO",
       "text": "use two parameters named *sender* and *e* in event handlers.",
       "section": "3.6.3 Names of Events",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG3075"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -1339,7 +1351,9 @@
       "strength": "DO NOT",
       "text": "directly expose localizable resources as public (or protected) members.",
       "section": "3.8 Naming Resources",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG3087"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -2496,6 +2510,13 @@
     "CA1720",
     "CA1721",
     "CA1724",
+    "FDG3003",
+    "FDG3004",
+    "FDG3013",
+    "FDG3051",
+    "FDG3068",
+    "FDG3075",
+    "FDG3087",
     "FDGA003",
     "FDGA004",
     "FDGA023",

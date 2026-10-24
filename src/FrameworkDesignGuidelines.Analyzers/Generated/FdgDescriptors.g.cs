@@ -7,6 +7,69 @@ namespace FrameworkDesignGuidelines.Analyzers;
 
 internal static class FdgDescriptors
 {
+    public static readonly DiagnosticDescriptor FDG3003 = new DiagnosticDescriptor(
+        id: "FDG3003",
+        title: "DO capitalize both characters of two-character acronyms, except the first word of a camel-cased identifier.",
+        messageFormat: "Capitalize both characters of the two-character acronym '{1}' in '{0}'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3003.md");
+
+    public static readonly DiagnosticDescriptor FDG3004 = new DiagnosticDescriptor(
+        id: "FDG3004",
+        title: "DO capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier.",
+        messageFormat: "Capitalize only the first character of the acronym '{1}' in '{0}'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3004.md");
+
+    public static readonly DiagnosticDescriptor FDG3013 = new DiagnosticDescriptor(
+        id: "FDG3013",
+        title: "DO use only ASCII characters in identifier names.",
+        messageFormat: "Use only ASCII characters in the name '{0}'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3013.md");
+
+    public static readonly DiagnosticDescriptor FDG3051 = new DiagnosticDescriptor(
+        id: "FDG3051",
+        title: "DO add the suffix “Callback” to names of delegates other than those used as event handlers.",
+        messageFormat: "Add the suffix 'Callback' to the delegate '{0}', which no event uses",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3051.md");
+
+    public static readonly DiagnosticDescriptor FDG3068 = new DiagnosticDescriptor(
+        id: "FDG3068",
+        title: "DO name collection properties with a plural phrase describing the items in the collection instead of using a singular phrase followed by “List” or “Collection.”",
+        messageFormat: "Name the collection property '{0}' with a plural phrase instead of a 'List' or 'Collection' suffix",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3068.md");
+
+    public static readonly DiagnosticDescriptor FDG3075 = new DiagnosticDescriptor(
+        id: "FDG3075",
+        title: "DO use two parameters named *sender* and *e* in event handlers.",
+        messageFormat: "Name the two parameters of the event handler '{0}' 'sender' and 'e'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3075.md");
+
+    public static readonly DiagnosticDescriptor FDG3087 = new DiagnosticDescriptor(
+        id: "FDG3087",
+        title: "DO NOT directly expose localizable resources as public (or protected) members.",
+        messageFormat: "Make the resource class '{0}' internal",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3087.md");
+
     public static readonly DiagnosticDescriptor FDGA003 = new DiagnosticDescriptor(
         id: "FDGA003",
         title: "DO place the closing brace on its own line, except the end of a `do`..`while` statement.",

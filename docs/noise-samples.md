@@ -119,3 +119,35 @@ counts. FDGA004 replaces IDE0011 (see the notes).
   diagnostics that no book rule maps (CA1041, CA1050, CA1070, CA1514, CA1816, CA1822, CA1834, CA1854, CA1858, CA1859,
   CA1860, CA1861, CA2016, CA2211, CA2263; 1 to 28 each). The samples' own compiler warnings (CS0108, CS0612, CS0649) and
   polly's own analyzers (S1694, S2094) also appear in the logs. None of these is counted above.
+
+## Chapter 3 analyzers
+
+Package 0.1.0 with the chapter 3 naming analyzers (Task 12), enabled by the profile globalconfigs (library for the
+open-source samples, application for the internal ones). Only the new diagnostics are counted. Every report was
+checked, because no diagnostic had more than 20.
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| FDG3003 | FDG3003 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| FDG3004 | FDG3004 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | None needed. |
+| FDG3013 | FDG3013 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | None needed. |
+| FDG3051 | FDG3051 | 0 | 0 | 3 | 0 | 3 | 6 | 0 | 6 | None needed. |
+| FDG3068 | FDG3068 | 0 | 0 | 0 | 0 | 11 | 11 | 0 | 11 | None needed. |
+| FDG3075 | FDG3075 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| FDG3087 | FDG3087 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+
+### Notes
+
+- **FDG3004.** An enum member named in capitals after the acronym (`XML`).
+- **FDG3013.** An enum member named in Chinese characters; the diagnostic reports only the first, because the members
+  share a line and counts are deduplicated by line.
+- **FDG3051.** In newtonsoft-json, two delegates used as property types and one used as a constructor factory, none by
+  an event. In internal-b, three generic overloads of one "value changed" delegate that no event in the project uses.
+  The rule text names only event handlers as the exception, so all are true warnings.
+- **FDG3068.** Public properties of `List<T>`, `ObservableCollection<T>` or array type named with a `List` suffix,
+  several also camel-cased (which IDE1006 reports separately).
+- **No reports.** FDG3003, FDG3075 and FDG3087 report nothing on these samples; their tests cover the positive cases.
+  The open-source samples follow the book's casing, and the internal projects declare no public resource classes and
+  no custom event handler delegates.
+- **Rejected at gate 1 (not measured).** FDG3033 (overly general type names) and FDG3069 (negative Boolean property
+  names): the book gives no word list, so a check would have to guess intent. Their notes say so.
