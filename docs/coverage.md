@@ -6,13 +6,33 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 
 | Chapter | Rules | sdk | fdg | judgment | none | verified |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2 Framework Design Fundamentals | 32 | 0 | 0 | 32 | 0 | 0 |
 | 3 Naming Guidelines | 87 | 34 | 8 | 45 | 0 | 87 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 158 | 76 | 11 | 71 | 0 | 158 |
+| Total | 190 | 76 | 11 | 103 | 0 | 158 |
 
 ## Non-guideline content
 
 Book text that is not a guideline, and where it went: kept as the rationale of a rule, kept as background, or dropped as obsolete.
+
+### Chapter 2: Framework Design Fundamentals
+
+- **2** (background): The chapter introduction (a framework for a broad range of developers, one programming model for every kind of application and language) is background for FDG2001 to FDG2003, which follow it.
+- **2.1** (background): Progressive Frameworks: the history of multiframework platforms, Figures 2-1 and 2-2 (learning curves) and the Hejlsberg and Vick annotations are background for the chapter's aim of one framework with a gradual learning curve. No guideline is stated.
+- **2.2** (rationale): The section introduction, the Mariani annotation and the Pit of Success sidebar explain why the principles of 2.2.1 to 2.2.4 exist (VB.NET usability problems, making the right way the easy way). They are rationale for all of the chapter's rules.
+- **2.2.1** (rationale): The Framework Design Principle box (frameworks must be designed starting from usage scenarios and code samples), the narrative on scenario-driven API specifications and language-specific samples, and footnote 3 (TDD and use cases) are rationale for FDG2004 to FDG2010.
+- **2.2.1.1** (rationale): The narrative and annotations on formal and informal usability studies are rationale for FDG2011.
+- **2.2.2** (rationale): The Framework Design Principle box (a low barrier to entry through ease of experimentation) and the list of what an API must do to be easy to experiment with are rationale for FDG2012 to FDG2018.
+- **2.2.3** (rationale): The Framework Design Principle box (in simple scenarios, frameworks must be usable without documentation) and the Sells and Cwalina annotations are rationale for FDG2019 to FDG2021.
+- **2.2.3.1** (rationale): The narrative on reserving simple names for common types (the File and NtfsFile example) and on descriptive names is rationale for FDG2022 to FDG2025.
+- **2.2.3.2** (rationale): The EventLog example of an exception message is rationale for FDG2026; chapter 7 holds the exception guidelines.
+- **2.2.3.3** (rationale): The narrative on strong typing and on property bags as an exception to the rule is rationale for FDG2027.
+- **2.2.3.4** (rationale): The narrative on consistency with familiar APIs is rationale for FDG2028.
+- **2.2.3.5** (rationale): The narrative on abstractions in common-scenario APIs (and their place in testability and extensibility, see chapter 6) is rationale for FDG2029.
+- **2.2.4** (rationale): The Framework Design Principle box (layered design gives both power and ease of use), the narrative on low-level and high-level APIs and the JSON example are rationale for FDG2030 to FDG2032.
+- **2.2.4.1** (rationale): Exposing layers in separate namespaces, the networking example and the remark that most frameworks should factor namespaces this way have no guideline icon. They are rationale for FDG2031, which advises against the alternative of 2.2.4.2 when the low-level APIs are complex.
+- **2.2.4.2** (rationale): The narrative on layers in one namespace (the System.Text example) and the Clarke annotation on runtime behavior across layers are rationale for FDG2030 to FDG2032.
+- **Summary** (background): The chapter summary restates the chapter's aim and states no guideline.
 
 ### Chapter 3: Naming Guidelines
 

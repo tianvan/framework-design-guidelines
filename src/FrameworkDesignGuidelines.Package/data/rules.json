@@ -3,6 +3,454 @@
   "version": "0.1.0",
   "rules": [
     {
+      "id": "FDG2001",
+      "strength": "DO",
+      "text": "design frameworks that are both powerful and easy to use.",
+      "section": "2",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2002",
+      "strength": "DO",
+      "text": "understand and explicitly design for a broad range of developers with different programming styles, requirements, and skill levels.",
+      "section": "2",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2003",
+      "strength": "DO",
+      "text": "understand and design for the broad variety of programming languages.",
+      "section": "2",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2004",
+      "strength": "DO",
+      "text": "make sure that the API design specification is the central part of the design of any feature that includes a publicly accessible API.",
+      "section": "2.2.1 The Principle of Scenario-Driven Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2005",
+      "strength": "DO",
+      "text": "define top usage scenarios for each major feature area.",
+      "section": "2.2.1 The Principle of Scenario-Driven Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2006",
+      "strength": "DO",
+      "text": "ensure that the scenarios correspond to an appropriate abstraction level. They should roughly correspond to the end-user use cases.",
+      "section": "2.2.1 The Principle of Scenario-Driven Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2007",
+      "strength": "DO",
+      "text": "design APIs by first writing code samples for the main scenarios and then defining the object model to support the code samples.",
+      "section": "2.2.1 The Principle of Scenario-Driven Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2008",
+      "strength": "DO",
+      "text": "write main scenario code samples in at least two different language families (e.g., C# and F#).",
+      "section": "2.2.1 The Principle of Scenario-Driven Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2009",
+      "strength": "CONSIDER",
+      "text": "writing main scenario code samples using a dynamically typed language such as PowerShell or IronPython.",
+      "section": "2.2.1 The Principle of Scenario-Driven Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2010",
+      "strength": "DO NOT",
+      "text": "rely solely on standard design methodologies when designing the public API layer of a framework.",
+      "section": "2.2.1 The Principle of Scenario-Driven Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2011",
+      "strength": "DO",
+      "text": "organize usability studies to test APIs in main scenarios.",
+      "section": "2.2.1.1 Usability Studies",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2012",
+      "strength": "DO",
+      "text": "ensure that each main feature area namespace contains only types that are used in the most common scenarios. Types used in advanced scenarios should be placed in subnamespaces.",
+      "section": "2.2.2 The Principle of Low Barrier to Entry",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2013",
+      "strength": "DO",
+      "text": "provide simple overloads of constructors and methods. A simple overload has a very small number of parameters, and all parameters are primitives.",
+      "section": "2.2.2 The Principle of Low Barrier to Entry",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2014",
+      "strength": "DO NOT",
+      "text": "have members intended for advanced scenarios on types intended for mainline scenarios.",
+      "section": "2.2.2 The Principle of Low Barrier to Entry",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2015",
+      "strength": "DO NOT",
+      "text": "require users to explicitly instantiate more than one type in the most basic scenarios.",
+      "section": "2.2.2 The Principle of Low Barrier to Entry",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2016",
+      "strength": "DO NOT",
+      "text": "require that users perform any extensive initialization before they can start programming basic scenarios.",
+      "section": "2.2.2 The Principle of Low Barrier to Entry",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2017",
+      "strength": "DO",
+      "text": "provide good defaults for all properties and parameters (using convenience overloads), if possible.",
+      "section": "2.2.2 The Principle of Low Barrier to Entry",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2018",
+      "strength": "DO",
+      "text": "communicate incorrect usage of APIs using exceptions.",
+      "section": "2.2.2 The Principle of Low Barrier to Entry",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2019",
+      "strength": "DO",
+      "text": "ensure that APIs are intuitive and can be successfully used in basic scenarios without referring to the reference documentation.",
+      "section": "2.2.3 The Principle of Self-Documenting Object Models",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2020",
+      "strength": "DO",
+      "text": "provide great documentation with all APIs.",
+      "section": "2.2.3 The Principle of Self-Documenting Object Models",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2021",
+      "strength": "DO",
+      "text": "provide code samples illustrating how to use your most important APIs in common scenarios.",
+      "section": "2.2.3 The Principle of Self-Documenting Object Models",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2022",
+      "strength": "DO",
+      "text": "make the discussion about identifier naming choices a significant part of specification reviews.",
+      "section": "2.2.3.1 Naming",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2023",
+      "strength": "DO NOT",
+      "text": "be afraid to use verbose identifier names when doing so makes the API self-documenting.",
+      "section": "2.2.3.1 Naming",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2024",
+      "strength": "CONSIDER",
+      "text": "involving technical writers early in the design process. They can be a great resource for spotting designs with bad name choices and designs that would be difficult to explain to users.",
+      "section": "2.2.3.1 Naming",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2025",
+      "strength": "CONSIDER",
+      "text": "reserving the best type names for the most commonly used types.",
+      "section": "2.2.3.1 Naming",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2026",
+      "strength": "DO",
+      "text": "use exception messages to communicate framework usage mistakes to the developer.",
+      "section": "2.2.3.2 Exceptions",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2027",
+      "strength": "DO",
+      "text": "provide strongly typed APIs if at all possible.",
+      "section": "2.2.3.3 Strong Typing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2028",
+      "strength": "DO",
+      "text": "ensure consistency with .NET and other frameworks your users are likely to interact with.",
+      "section": "2.2.3.4 Consistency",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2029",
+      "strength": "AVOID",
+      "text": "many abstractions in mainline-scenario APIs.",
+      "section": "2.2.3.5 Limiting Abstractions",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2030",
+      "strength": "CONSIDER",
+      "text": "using a layered framework with high-level APIs optimized for productivity, and using low-level APIs optimized for power and expressiveness.",
+      "section": "2.2.4.2 Exposing Layers in the Same Namespace",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2031",
+      "strength": "AVOID",
+      "text": "mixing low-level and high-level APIs in a single namespace if the low-level APIs are very complex (i.e., they contain many types).",
+      "section": "2.2.4.2 Exposing Layers in the Same Namespace",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG2032",
+      "strength": "DO",
+      "text": "ensure that layers of a single feature area are well integrated. Developers should be able to start programming using one of the layers and then change their code to use the other layer without rewriting the whole application.",
+      "section": "2.2.4.2 Exposing Layers in the Same Namespace",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
       "id": "FDG3001",
       "strength": "DO",
       "text": "use PascalCasing for the names of namespaces, types, members, and generic type parameters.",

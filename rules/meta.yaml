@@ -1,5 +1,59 @@
 repositoryUrl: https://github.com/tianvan/framework-design-guidelines
 chapters:
+  - token: "2"
+    file: ch02.xhtml
+    rules: ch02-fundamentals.yaml
+    title: Framework Design Fundamentals
+    testProfile: off
+    nonGuideline:
+      - section: "2"
+        disposition: background
+        note: "The chapter introduction (a framework for a broad range of developers, one programming model for every kind of application and language) is background for FDG2001 to FDG2003, which follow it."
+      - section: "2.1"
+        disposition: background
+        note: "Progressive Frameworks: the history of multiframework platforms, Figures 2-1 and 2-2 (learning curves) and the Hejlsberg and Vick annotations are background for the chapter's aim of one framework with a gradual learning curve. No guideline is stated."
+      - section: "2.2"
+        disposition: rationale
+        note: "The section introduction, the Mariani annotation and the Pit of Success sidebar explain why the principles of 2.2.1 to 2.2.4 exist (VB.NET usability problems, making the right way the easy way). They are rationale for all of the chapter's rules."
+      - section: "2.2.1"
+        disposition: rationale
+        note: "The Framework Design Principle box (frameworks must be designed starting from usage scenarios and code samples), the narrative on scenario-driven API specifications and language-specific samples, and footnote 3 (TDD and use cases) are rationale for FDG2004 to FDG2010."
+      - section: "2.2.1.1"
+        disposition: rationale
+        note: "The narrative and annotations on formal and informal usability studies are rationale for FDG2011."
+      - section: "2.2.2"
+        disposition: rationale
+        note: "The Framework Design Principle box (a low barrier to entry through ease of experimentation) and the list of what an API must do to be easy to experiment with are rationale for FDG2012 to FDG2018."
+      - section: "2.2.3"
+        disposition: rationale
+        note: "The Framework Design Principle box (in simple scenarios, frameworks must be usable without documentation) and the Sells and Cwalina annotations are rationale for FDG2019 to FDG2021."
+      - section: "2.2.3.1"
+        disposition: rationale
+        note: "The narrative on reserving simple names for common types (the File and NtfsFile example) and on descriptive names is rationale for FDG2022 to FDG2025."
+      - section: "2.2.3.2"
+        disposition: rationale
+        note: "The EventLog example of an exception message is rationale for FDG2026; chapter 7 holds the exception guidelines."
+      - section: "2.2.3.3"
+        disposition: rationale
+        note: "The narrative on strong typing and on property bags as an exception to the rule is rationale for FDG2027."
+      - section: "2.2.3.4"
+        disposition: rationale
+        note: "The narrative on consistency with familiar APIs is rationale for FDG2028."
+      - section: "2.2.3.5"
+        disposition: rationale
+        note: "The narrative on abstractions in common-scenario APIs (and their place in testability and extensibility, see chapter 6) is rationale for FDG2029."
+      - section: "2.2.4"
+        disposition: rationale
+        note: "The Framework Design Principle box (layered design gives both power and ease of use), the narrative on low-level and high-level APIs and the JSON example are rationale for FDG2030 to FDG2032."
+      - section: "2.2.4.1"
+        disposition: rationale
+        note: "Exposing layers in separate namespaces, the networking example and the remark that most frameworks should factor namespaces this way have no guideline icon. They are rationale for FDG2031, which advises against the alternative of 2.2.4.2 when the low-level APIs are complex."
+      - section: "2.2.4.2"
+        disposition: rationale
+        note: "The narrative on layers in one namespace (the System.Text example) and the Clarke annotation on runtime behavior across layers are rationale for FDG2030 to FDG2032."
+      - section: "Summary"
+        disposition: background
+        note: "The chapter summary restates the chapter's aim and states no guideline."
   - token: "3"
     file: ch03.xhtml
     rules: ch03-naming.yaml

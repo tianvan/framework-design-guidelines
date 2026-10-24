@@ -1,0 +1,915 @@
+- id: FDG2001
+  strength: DO
+  text: design frameworks that are both powerful and easy to use.
+  context: null
+  section: "2"
+  anchor: ch02
+  body:
+    - kind: paragraph
+      text: A well-designed framework makes implementing simple scenarios easy. At the same time, it does not prohibit implementing more advanced scenarios, though these might be more difficult. As Alan Kay said, “Simple things should be simple and complex things should be possible.”
+    - kind: paragraph
+      text: This guideline is also related to the Pareto principle (the 80/20 rule), which says that in any situation, 20 percent will be important, and 80 percent will be trivial. When designing a framework, concentrate on the important 20 percent of scenarios and APIs. In other words, invest in the design of the most commonly used parts of the framework.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'A design principle for the whole API; not machine-checkable. Applies to an application''s internal layers too (design §5.1, layer contracts).'
+- id: FDG2002
+  strength: DO
+  text: understand and explicitly design for a broad range of developers with different programming styles, requirements, and skill levels.
+  context: null
+  section: "2"
+  anchor: ch02
+  body:
+    - kind: annotation
+      text: There is no magic bullet when designing frameworks for Visual Basic developers. Our users run the gamut from people who are picking up a programming tool for the first time to industry veterans building large-scale commercial applications. The key to designing a framework that appeals to Visual Basic developers is to focus on allowing them to get the job done with the minimum amount of fuss and bother. Designing a framework that uses the minimum number of concepts is a good idea, not because VB developers can’t handle concepts, but because having to stop and think about concepts extraneous to the task at hand interrupts workflow. The goal of a VB developer usually is not to learn some interesting or exciting new concept or to be impressed with the intellectual purity and simplicity of your design, but to get the job done and move on.
+      author: Paul Vick
+    - kind: annotation
+      text: It is easy to design for users who are like you, and very difficult to design for somebody unlike you. There are too many APIs that are designed by domain experts and, frankly, they are only good for domain experts. The problem is that most developers are not, will never be, and do not need to be experts in all technologies used in modern applications.
+      author: Krzysztof Cwalina
+    - kind: annotation
+      text: Although the famous Hewlett-Packard motto “Build for the engineer at the next bench” is useful for driving quality and completeness into software projects, it is misleading for API design. For example, the developers on the Microsoft Word team have a clear understanding that they are not the target customers for Word. My mom is much more the target customer. Therefore the Word team puts in many more features that my mom might find helpful rather than the features the development team finds helpful. Although that is obvious in the case of applications such as Word, we often tend to miss the principle when designing APIs. We tend to design APIs only for ourselves instead of thinking clearly about the customer scenarios.
+      author: Brad Abrams
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable. Kept in the application profile: an application''s internal layers are also used by developers of different skill levels.'
+- id: FDG2003
+  strength: DO
+  text: understand and design for the broad variety of programming languages.
+  context: null
+  section: "2"
+  anchor: ch02
+  body:
+    - kind: paragraph
+      text: Many programming language implementations are available that support the Common Language Runtime (CLR) and .NET. Some of these languages might be very different from the language you are using to implement your APIs. Often special care needs to be taken to ensure that your APIs can work well with a variety of languages.
+    - kind: paragraph
+      text: For example, developers using dynamically typed languages with the capability of interacting with .NET (such as PowerShell, IronPython, and others) might have problems using APIs that require them to create a custom type with attributes.
+    - kind: paragraph
+      text: As another example, the F# language does not honor user-defined implicit conversion operators. In consequence, APIs designed with implicit conversions to facilitate calling patterns will not necessarily be easy to use in F#.
+    - kind: annotation
+      text: Designing for the least common denominator of existing programming languages started to hamper evolution of the .NET platform. It was deemphasized in recent years to enable innovations such as `Span<T>`. C# and F# introduced new language features to enable `Span<T>`. Other traditional .NET-targeting languages (such as Visual Basic) have not enabled it, however, and the new Span-based APIs cannot be used from them.
+      author: Jan Kotas
+    - kind: annotation
+      text: While it’s true that we added `Span<T>` without language support from VB, the guidance for using the Span types—found in section 9.12—recommends having array-based alternative methods. That recommendation is based partly on usability, but ultimately comes back to this guideline and the variety of languages that can interact with the .NET CLR.
+      author: Jeremy Barton
+    - kind: paragraph
+      text: Other special considerations for various programming languages are described throughout the book.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: an application''s internal layers are consumed from the application''s own language. CA1014 (CLSCompliant) is not mapped, because the body asks for nothing about CLS compliance. The body''s F# example (implicit conversions) is left to the chapter 5 operator overload rules (CA2225 checks named alternates), and keywords of other languages by FDG3012.'
+- id: FDG2004
+  strength: DO
+  text: make sure that the API design specification is the central part of the design of any feature that includes a publicly accessible API.
+  context: null
+  section: 2.2.1 The Principle of Scenario-Driven Design
+  anchor: sec2_2_1
+  body:
+    - kind: paragraph
+      text: Appendix C contains an example of such a specification.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the rule text scopes it to features that include a publicly accessible API. A design-process rule; not machine-checkable.'
+- id: FDG2005
+  strength: DO
+  text: define top usage scenarios for each major feature area.
+  context: null
+  section: 2.2.1 The Principle of Scenario-Driven Design
+  anchor: sec2_2_1
+  body:
+    - kind: paragraph
+      text: The API specification should include a section that describes the main scenarios and shows code samples implementing these scenarios. This section should appear immediately after the executive overview section. The average feature area (such as file I/O) should have five to ten main scenarios.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'A design-process rule; not machine-checkable. Kept in the application profile for an application''s layer contracts.'
+- id: FDG2006
+  strength: DO
+  text: ensure that the scenarios correspond to an appropriate abstraction level. They should roughly correspond to the end-user use cases.
+  context: null
+  section: 2.2.1 The Principle of Scenario-Driven Design
+  anchor: sec2_2_1
+  body:
+    - kind: paragraph
+      text: For example, reading from a file is a good scenario. Opening a file, reading a line of text from a file, or closing a file are not good scenarios; they are too granular.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'A design-process rule; not machine-checkable. Kept in the application profile for an application''s layer contracts.'
+- id: FDG2007
+  strength: DO
+  text: design APIs by first writing code samples for the main scenarios and then defining the object model to support the code samples.
+  context: null
+  section: 2.2.1 The Principle of Scenario-Driven Design
+  anchor: sec2_2_1
+  body:
+    - kind: paragraph
+      text: 'For example, when designing an API to measure elapsed time, you might write the following scenario code samples:'
+    - kind: code
+      text: |-
+        // scenario #1 : measure time elapsed
+        Stopwatch watch = Stopwatch.StartNew();
+        DoSomething();
+        Console.WriteLine(watch.Elapsed);
+
+        // scenario #2 : reuse stopwatch
+        Dim watch As Stopwatch = Stopwatch.StartNew()
+        DoSomething();
+        Console.WriteLine(watch.ElapsedMilliseconds)
+
+        watch.Reset()
+        watch.Start()
+        DoSomething()
+        Console.WriteLine(watch.Elapsed)
+    - kind: paragraph
+      text: 'These code samples lead to the following object model:'
+    - kind: code
+      text: |-
+        public class Stopwatch {
+           public static Stopwatch StartNew();
+
+           public void Start();
+           public void Reset();
+
+           public TimeSpan Elapsed { get; }
+           public long ElapsedMilliseconds { get; }
+           ...
+        }
+    - kind: annotation
+      text: 'As software developers, we enjoy creating fun and powerful new capabilities, and sharing them with other developers. That’s one of the reasons API design is so enjoyable. But it’s also incredibly difficult to step back and objectively assess whether some new capability that you’re particularly passionate about has utility in the real world. Using scenarios is the best way I know of to identify the need for and ideal usage of new capabilities. Developing scenarios is in fact incredibly *hard*, for good reason: It requires a unique combination of technical skill and customer understanding. When you’re finished, you could make a series of decisions based only on gut feel and intuition, and perhaps deliver some useful APIs, but the risk that you will make a decision you will later regret is far greater. When in doubt, it’s best to leave a feature out and decide to add it later when a compelling need is better understood.'
+      author: Joe Duffy
+    - kind: annotation
+      text: It’s fun to add new APIs. But every new one that’s added comes with a cost. Sometimes that cost is “just” the cost of designing, developing, testing, documenting, and maintaining the functionality (plus the associated run-time costs). It’s unfortunately common, however, that adding an API actually inhibits one’s ability in the future to add other potentially much more desirable or impactful functionality, because such functionality would conflict with the functionality exposed by that API. This is one of the reasons we’re so deliberate in choosing what new APIs to expose, because we might be sealing our fate on some future innovation. If asked, I’m sure many of us have a favorite example of an API we wish we’d never added; I know I have several.
+      author: Stephen Toub
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'A design-process rule; not machine-checkable. Kept in the application profile: scenario code first also suits an application''s layer contracts.'
+- id: FDG2008
+  strength: DO
+  text: write main scenario code samples in at least two different language families (e.g., C# and F#).
+  context: null
+  section: 2.2.1 The Principle of Scenario-Driven Design
+  anchor: sec2_2_1
+  body:
+    - kind: paragraph
+      text: It is best to ensure that the languages chosen have significantly different syntax, style, and capabilities.
+    - kind: annotation
+      text: If you are writing a framework to be used by multiple languages, it is helpful to actually know more than one programming language (and knowing more than one C-style language doesn’t count). We’ve found that sometimes an API works well only in one language, and that’s because the person designing the API (and testing the API) only really knew that one language. Learn several .NET languages and really work with them the way they were designed to be used. Expecting the whole world to speak your language does not work well on a multilanguage platform like the .NET Framework.
+      author: Paul Vick
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: an application''s internal layers are written and consumed in one language. A design-process rule; not machine-checkable.'
+- id: FDG2009
+  strength: CONSIDER
+  text: writing main scenario code samples using a dynamically typed language such as PowerShell or IronPython.
+  context: null
+  section: 2.2.1 The Principle of Scenario-Driven Design
+  anchor: sec2_2_1
+  body:
+    - kind: paragraph
+      text: It is easy to design APIs that don’t work well with dynamically typed languages. Such languages often have problems dealing with some generic methods, as well as APIs that rely on applying attributes or creating strongly typed types.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only, for the same reason as FDG2008. A design-process rule; not machine-checkable.'
+- id: FDG2010
+  strength: DO NOT
+  text: rely solely on standard design methodologies when designing the public API layer of a framework.
+  context: null
+  section: 2.2.1 The Principle of Scenario-Driven Design
+  anchor: sec2_2_1
+  body:
+    - kind: paragraph
+      text: Standard design methodologies (including object-oriented design methodologies) are optimized for the maintainability of the resulting implementation, not for the usability of the resulting APIs. Scenario-driven design, together with prototyping, usability studies, and some amount of iteration, is a much better approach.
+    - kind: annotation
+      text: Each developer has his or her own methodology, and although there isn’t anything fundamentally wrong with using other modeling approaches, the problem generally is the output. Starting by writing the code you want a developer to write is almost always the best approach—think of it as a form of test-driven development. You write the perfect code and then work backward to figure out the object model that you would want.
+      author: Chris Anderson
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the rule text scopes it to the public API layer of a framework. A design-process rule; not machine-checkable.'
+- id: FDG2011
+  strength: DO
+  text: organize usability studies to test APIs in main scenarios.
+  context: null
+  section: 2.2.1.1 Usability Studies
+  anchor: sec2_2_1_1
+  body:
+    - kind: paragraph
+      text: These studies should be organized early in the development cycle, because the most severe usability problems often require substantial design changes. Most developers should be able to write code for the main scenarios without major problems; if they cannot, you need to redesign the API. Although redesign is a costly practice, we have found that it actually saves resources in the long run because the cost of fixing an unusable API without introducing changes that break existing code is enormous.
+    - kind: paragraph
+      text: The next section describes the importance of designing APIs so that the initial encounter is not discouraging. This is called the principle of low barrier to entry.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: usability studies with outside developers presuppose a framework with external users. A design-process rule; not machine-checkable.'
+- id: FDG2012
+  strength: DO
+  text: ensure that each main feature area namespace contains only types that are used in the most common scenarios. Types used in advanced scenarios should be placed in subnamespaces.
+  context: null
+  section: 2.2.2 The Principle of Low Barrier to Entry
+  anchor: sec2_2_2
+  body:
+    - kind: paragraph
+      text: For example, the `System.Net` namespace provides networking mainline-scenario APIs. The more advanced socket APIs are placed in the `System.Net.Sockets` subnamespace.
+    - kind: annotation
+      text: |-
+        The converse of this is also true, which could be stated as, “Don’t bury a commonly used type in a namespace with much less commonly used types.” `StringBuilder` is an example of something we later wished we had included in the `System` namespace. It lives in `System.Text` but is much more commonly used than the other types in there and is not closely related to them.
+
+        That being said, this is the only thing in the `System` namespace that suffers from the converse of this rule. For the most part, we suffered from having too many infrequently used types in there.
+      author: Anthony Moore
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: which types belong to the most common scenarios is a design judgment. Kept in the application profile for an application''s namespaces.'
+- id: FDG2013
+  strength: DO
+  text: provide simple overloads of constructors and methods. A simple overload has a very small number of parameters, and all parameters are primitives.
+  context: null
+  section: 2.2.2 The Principle of Low Barrier to Entry
+  anchor: sec2_2_2
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not an analyzer candidate: which constructors and methods need a simple overload depends on the main scenarios, so a check would have to guess intent.'
+- id: FDG2014
+  strength: DO NOT
+  text: have members intended for advanced scenarios on types intended for mainline scenarios.
+  context: null
+  section: 2.2.2 The Principle of Low Barrier to Entry
+  anchor: sec2_2_2
+  body:
+    - kind: annotation
+      text: One of the important principles in designing the .NET Framework was the notion of addition through subtraction. That is, by removing features from (or never adding them to) the framework, we could actually make developers more productive because there would be fewer concepts to deal with. Leaving out multiple inheritance is a classic example of addition through subtraction at the CLR level.
+      author: Brad Abrams
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: which members are advanced and which types are mainline is a design judgment.'
+- id: FDG2015
+  strength: DO NOT
+  text: require users to explicitly instantiate more than one type in the most basic scenarios.
+  context: null
+  section: 2.2.2 The Principle of Low Barrier to Entry
+  anchor: sec2_2_2
+  body:
+    - kind: annotation
+      text: 'Book publishers say that the number of copies a book will sell is inversely proportional to the number of equations in the book. The framework designer version of this law is this: The number of developers who will use your framework is inversely proportional to the number of explicit constructor invocations required to implement the top ten simple scenarios.'
+      author: Krzysztof Cwalina
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: needs the main scenarios.'
+- id: FDG2016
+  strength: DO NOT
+  text: require that users perform any extensive initialization before they can start programming basic scenarios.
+  context: null
+  section: 2.2.2 The Principle of Low Barrier to Entry
+  anchor: sec2_2_2
+  body:
+    - kind: paragraph
+      text: Mainline-scenario APIs should be designed to require minimal initialization. Ideally, a default constructor or a constructor with one simple parameter should be sufficient to start working with a type designed for the basic scenarios.
+    - kind: code
+      text: |-
+        var zipCodes = new Dictionary<string,int>();
+        zipCodes.Add("Redmond",98052);
+        zipCodes.Add("Sammamish",98074);
+    - kind: paragraph
+      text: If some initialization is necessary, the exception that results from not performing the initialization should clearly explain what needs to be done.
+    - kind: annotation
+      text: |-
+        Since the first edition of this book was published, we have done significant usability studies in this area. Time and time again, we observe that types that require extensive initialization significantly raise the barrier to entry. The consequences of this are that some developers will decide not to use those types and will look for something else that might do the job instead, some developers will end up using the type incorrectly, and only a few developers will eventually figure out how to use the type correctly.
+
+        `ADO.NET` is an example of a feature area that our users found difficult to use because of the extensive initialization it requires. Even in the simplest scenarios, users are expected to understand complex interactions and dependencies between several types. To use this feature, even in simple scenarios, users must instantiate and hook up several objects (instances of `DataSet`, `DataAdapter`, `SqlConnection`, and `SqlCommand`). Note that many of these problems were addressed in .NET Framework 2.0 through the addition of helper classes, which greatly simplified basic scenarios.
+      author: Steven Clarke
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: needs the main scenarios. The body''s exception message advice is FDG2018 and FDG2026.'
+- id: FDG2017
+  strength: DO
+  text: provide good defaults for all properties and parameters (using convenience overloads), if possible.
+  context: null
+  section: 2.2.2 The Principle of Low Barrier to Entry
+  anchor: sec2_2_2
+  body:
+    - kind: paragraph
+      text: '`System.Messaging.MessageQueue` is a good illustration of this concept. The component can send messages after passing just a path string to the constructor and calling the `Send` method. The message priority, encryption algorithms, and other message properties can be customized by adding code to the simple scenario.'
+    - kind: code
+      text: |-
+        var ordersQueue = new MessageQueue(path);
+        ordersQueue.Send(order); // uses default priority, encryption, etc.
+    - kind: paragraph
+      text: These recommendations cannot be applied blindly. Framework designers should avoid providing defaults if the default can lead the user astray. For example, a default should never result in a security hole or horribly performing code.
+    - kind: annotation
+      text: When deciding on “defaults,” it’s also critical to understand the primary use cases for the API, and—to whatever extent possible—try to predict expected use cases in the future. One of my top ten “I wish I could do that over again” cases is from `System.Threading. Tasks`. We’d initially designed the APIs with a focus on CPU-based parallelism, but over time the primary use cases ended up being much more focused on IO-based asynchrony, and some of our initial defaults lent themselves much better to the former to the detriment of the latter. In time we addressed these issues as part of adding easier-to-consume APIs, but the initial issues and resulting difficulties persist for developers who find themselves consuming the original APIs.
+      author: Stephen Toub
+    - kind: annotation
+      text: The counterpoint here is very important, and it can be hard to find the right balance. The .NET Cryptography APIs include a number of types that provide defaults to try to be both friendly and secure. Unfortunately, “friendly” persists, but “secure” is a moving target. Sometimes you’re doing your users a favor by providing defaults, and sometimes you’re doing them harm.
+      author: Jeremy Barton
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether a default is good (and never insecure or slow, as the body says) is a design judgment.'
+- id: FDG2018
+  strength: DO
+  text: communicate incorrect usage of APIs using exceptions.
+  context: null
+  section: 2.2.2 The Principle of Low Barrier to Entry
+  anchor: sec2_2_2
+  body:
+    - kind: paragraph
+      text: The exceptions should clearly describe their cause and the way the developer should modify the code to get rid of the problem. For example, the `EventLog` component requires the `Source` property to be set before events can be written. If the `Source` is not set before `WriteEntry` is called, an exception is thrown that states, `"Source property was not set before writing to the event log."`
+    - kind: annotation
+      text: We’ve observed many developers in our usability studies who consider exceptions like these to be the best kind of documentation an API can provide. The guidance provided is always in the context of what the developer is trying to achieve, and it really supports the learning-by-doing approach favored by many developers.
+      author: Steven Clarke
+    - kind: paragraph
+      text: The next section describes the importance of making the object model as self-documenting as possible.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether a message says how to fix the code is judgment. CA2208 (argument exceptions without a message) is left to the chapter 7 exception rules.'
+- id: FDG2019
+  strength: DO
+  text: ensure that APIs are intuitive and can be successfully used in basic scenarios without referring to the reference documentation.
+  context: null
+  section: 2.2.3 The Principle of Self-Documenting Object Models
+  anchor: sec2_2_3
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable; it is what usability studies (FDG2011) measure.'
+- id: FDG2020
+  strength: DO
+  text: provide great documentation with all APIs.
+  context: null
+  section: 2.2.3 The Principle of Self-Documenting Object Models
+  anchor: sec2_2_3
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not mapped: the compiler warning CS1591 (missing XML comment on a visible member) is not an SDK analyzer diagnostic, and whether documentation is great is judgment. Kept in the application profile for an application''s layer contracts.'
+- id: FDG2021
+  strength: DO
+  text: provide code samples illustrating how to use your most important APIs in common scenarios.
+  context: null
+  section: 2.2.3 The Principle of Self-Documenting Object Models
+  anchor: sec2_2_3
+  body:
+    - kind: paragraph
+      text: Not all APIs can be self-explanatory, and some developers will want to thoroughly understand the APIs before they start using them.
+    - kind: paragraph
+      text: To make a framework self-documenting, care must be taken when choosing names and types, designing exceptions, and so on. The following sections describe some of the most important considerations related to the design of self-documenting APIs.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable.'
+- id: FDG2022
+  strength: DO
+  text: make the discussion about identifier naming choices a significant part of specification reviews.
+  context: null
+  section: 2.2.3.1 Naming
+  anchor: sec2_2_3_1
+  body:
+    - kind: paragraph
+      text: What are the types most scenarios start with? What are the names most people will think of first when trying to implement this scenario? Are the names of the common types what users will think of first? For example, because “File” is the name most people think of when dealing with file I/O scenarios, the main type for accessing files should be named `File`.
+    - kind: paragraph
+      text: Also, you should discuss the most commonly used methods of the most commonly used types and all of their parameters. Can anybody who is familiar with your technology, but not this specific design, recognize and call those methods quickly, correctly, and easily?
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'A design-review rule; not machine-checkable. Kept in the application profile for an application''s layer contracts.'
+- id: FDG2023
+  strength: DO NOT
+  text: be afraid to use verbose identifier names when doing so makes the API self-documenting.
+  context: null
+  section: 2.2.3.1 Naming
+  anchor: sec2_2_3_1
+  body:
+    - kind: paragraph
+      text: Most identifier names should clearly state what each method does and what each type and parameter represents.
+    - kind: annotation
+      text: |-
+        Developers read identifier names hundreds, if not thousands, of times more than they type them. Modern editors even make the typing chore minimal. Longer names allow developers to find the right type or member via IntelliSense more quickly. Additionally, code using types with well-chosen identifier names is more understandable and maintainable over the long term.
+
+        A note to C-based language developers especially: Free yourselves from the shackles of reduced productivity induced by cryptic identifier naming habits.
+      author: Brent Rector
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable. It complements FDG3014 (no abbreviations) and FDG3008 (readable names).'
+- id: FDG2024
+  strength: CONSIDER
+  text: involving technical writers early in the design process. They can be a great resource for spotting designs with bad name choices and designs that would be difficult to explain to users.
+  context: null
+  section: 2.2.3.1 Naming
+  anchor: sec2_2_3_1
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: technical writers document APIs for external users. A design-process rule; not machine-checkable.'
+- id: FDG2025
+  strength: CONSIDER
+  text: reserving the best type names for the most commonly used types.
+  context: null
+  section: 2.2.3.1 Naming
+  anchor: sec2_2_3_1
+  body:
+    - kind: paragraph
+      text: If you believe you will add more high-level APIs in a future version, don’t be afraid to reserve the best name in the first version of your framework for future APIs.
+    - kind: annotation
+      text: There are other reasons to avoid names that are too general, even if you never anticipate using the name later. More-specific names help to make the API more understandable and readable. If someone sees a general name in code, that person is likely to assume that it has a very general application, so it is misleading to use a general name for something more specialized. A more descriptive name can also help identify what scenario or technology a type is associated with.
+      author: Anthony Moore
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: which types are most commonly used is a design judgment. FDG3033 checks the overly general names chapter 3 lists.'
+- id: FDG2026
+  strength: DO
+  text: use exception messages to communicate framework usage mistakes to the developer.
+  context: null
+  section: 2.2.3.2 Exceptions
+  anchor: sec2_2_3_2
+  body:
+    - kind: paragraph
+      text: For example, if a user forgets to set the `Source` property on an `EventLog` component, any calls to a method that requires the source to be set should state this clearly in the exception message. Chapter 7 provides more guidance about the design of exceptions and exception messages.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether a message names the usage mistake is judgment. Chapter 7 gives the detailed exception message rules.'
+- id: FDG2027
+  strength: DO
+  text: provide strongly typed APIs if at all possible.
+  context: null
+  section: 2.2.3.3 Strong Typing
+  anchor: sec2_2_3_3
+  body:
+    - kind: paragraph
+      text: Do not rely exclusively on weakly typed APIs such as property bags. In cases in which a property bag is required, provide strongly typed properties for the most common properties in the bag.
+    - kind: annotation
+      text: The strong typing (and thus much better Intelli-Sense) is a crucial reason why .NET frameworks are easier to “learn by programming” than your typical COM API. From time to time, I still need to use functionality exposed through COM, and as long as it stays strongly typed, I do fine. But all too often APIs return or take a generic object or string parameter or passed DWORD when an enumeration is needed, and it takes me ten times longer to discover what exactly needs to be passed.
+      author: Vance Morrison
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not an analyzer candidate: object, string or property-bag parameters are sometimes required (the body allows property bags), so a check would have to guess intent.'
+- id: FDG2028
+  strength: DO
+  text: ensure consistency with .NET and other frameworks your users are likely to interact with.
+  context: null
+  section: 2.2.3.4 Consistency
+  anchor: sec2_2_3_4
+  body:
+    - kind: paragraph
+      text: Consistency is great for general usability. If a user is familiar with some part of a framework that your API resembles, he or she will see your design as natural and intuitive. Your API should differ from other .NET APIs only in places where there is something unique about your particular API.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable. The detailed consistency rules are the naming (chapter 3) and design guidelines of later chapters.'
+- id: FDG2029
+  strength: AVOID
+  text: many abstractions in mainline-scenario APIs.
+  context: null
+  section: 2.2.3.5 Limiting Abstractions
+  anchor: sec2_2_3_5
+  body:
+    - kind: annotation
+      text: Abstractions are almost always necessary, but too many abstractions indicate overengineered systems. Framework designers should be careful to design for customers, not for their own intellectual pleasure.
+      author: Krzysztof Cwalina
+    - kind: annotation
+      text: A design with too many abstractions can impact performance, too. I once worked with a customer that reengineered its product to incorporate a heavily object-oriented design. They modeled *everything* as a class and ended up with some ridiculously deeply nested object hierarchies. Part of the intent of the redesign was to improve performance, but the “improved” software ran four times slower than the original!
+      author: Jeff Prosise
+    - kind: annotation
+      text: Anyone who has had the “pleasure” of debugging through the C++ STL libraries knows that abstraction is a double-edged sword. Too much abstraction and code gets very difficult to understand, because you have to remember what all the abstract names really mean in your scenario. Going overboard with generics and inheritance are common symptoms that you may have overgeneralized.
+      author: Vance Morrison
+    - kind: annotation
+      text: It’s often said that any problem in computer science can be solved by adding a layer of abstraction. Unfortunately, problems of developer education are often caused by them.
+      author: Chris Sells
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not an analyzer candidate: counting interfaces and abstract classes cannot tell which APIs are mainline-scenario APIs.'
+- id: FDG2030
+  strength: CONSIDER
+  text: using a layered framework with high-level APIs optimized for productivity, and using low-level APIs optimized for power and expressiveness.
+  context: null
+  section: 2.2.4.2 Exposing Layers in the Same Namespace
+  anchor: sec2_2_4_2
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: layering is an architecture decision.'
+- id: FDG2031
+  strength: AVOID
+  text: mixing low-level and high-level APIs in a single namespace if the low-level APIs are very complex (i.e., they contain many types).
+  context: null
+  section: 2.2.4.2 Exposing Layers in the Same Namespace
+  anchor: sec2_2_4_2
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: needs to know which types are low-level and which high-level.'
+- id: FDG2032
+  strength: DO
+  text: ensure that layers of a single feature area are well integrated. Developers should be able to start programming using one of the layers and then change their code to use the other layer without rewriting the whole application.
+  context: null
+  section: 2.2.4.2 Exposing Layers in the Same Namespace
+  anchor: sec2_2_4_2
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable.'

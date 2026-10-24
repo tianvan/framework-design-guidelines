@@ -80,6 +80,10 @@ the repository's own `.editorconfig` says otherwise.
 | Name an assembly, a namespace or a resource, add a new version of an existing API, name operator overload parameters, or name anything the rules above do not cover | [references/ch03-naming.md](references/ch03-naming.md) |
 | Write comments, organize a source file, order members or sort using directives | [references/appA-coding-style.md](references/appA-coding-style.md) |
 
+Other references:
+
+- [references/ch02-fundamentals.md](references/ch02-fundamentals.md): design an API's main scenarios, entry points, layers and documentation
+
 Each reference lists, by section, every rule of its chapter that tools do not enforce. When a rule's wording is not
 enough, follow the `examples:` link at the end of its line to the book's explanation and code.
 
