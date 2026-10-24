@@ -79,6 +79,87 @@ internal static class FdgDescriptors
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3087.md");
 
+    public static readonly DiagnosticDescriptor FDG4013 = new DiagnosticDescriptor(
+        id: "FDG4013",
+        title: "DO NOT define public or protected internal constructors in abstract types.",
+        messageFormat: "Make the constructor of the abstract class '{0}' protected instead of protected internal",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4013.md");
+
+    public static readonly DiagnosticDescriptor FDG4026 = new DiagnosticDescriptor(
+        id: "FDG4026",
+        title: "DO NOT provide a default constructor for a struct.",
+        messageFormat: "Remove the parameterless constructor of the struct '{0}'",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4026.md");
+
+    public static readonly DiagnosticDescriptor FDG4027 = new DiagnosticDescriptor(
+        id: "FDG4027",
+        title: "DO NOT define mutable value types.",
+        messageFormat: "The value type '{0}' can be changed through '{1}'",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4027.md");
+
+    public static readonly DiagnosticDescriptor FDG4032 = new DiagnosticDescriptor(
+        id: "FDG4032",
+        title: "DO implement `IEquatable<T>` on value types.",
+        messageFormat: "Implement IEquatable<{0}> on the value type '{0}'",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4032.md");
+
+    public static readonly DiagnosticDescriptor FDG4038 = new DiagnosticDescriptor(
+        id: "FDG4038",
+        title: "AVOID publicly exposing enums with only one value.",
+        messageFormat: "The enum '{0}' has only one value",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4038.md");
+
+    public static readonly DiagnosticDescriptor FDG4056 = new DiagnosticDescriptor(
+        id: "FDG4056",
+        title: "DO NOT define a nested type as a member of an interface. Many languages do not support such a construct.",
+        messageFormat: "Move the type '{0}' out of the interface '{1}'",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4056.md");
+
+    public static readonly DiagnosticDescriptor FDG4059 = new DiagnosticDescriptor(
+        id: "FDG4059",
+        title: "DO apply the following informational attributes to assemblies. These attributes are used by tools, such as Visual Studio, to inform the user of the assembly about its contents.",
+        messageFormat: "Apply {0} to the assembly",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4059.md");
+
+    public static readonly DiagnosticDescriptor FDG4061 = new DiagnosticDescriptor(
+        id: "FDG4061",
+        title: "CONSIDER applying `AssemblyFileVersionAttribute` and `Assembly-CopyrightAttribute` to provide additional information about the assembly.",
+        messageFormat: "Apply {0} to the assembly",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4061.md");
+
+    public static readonly DiagnosticDescriptor FDG4062 = new DiagnosticDescriptor(
+        id: "FDG4062",
+        title: "CONSIDER using the format `<V>.<S>.<B>.<R>` for the assembly file version, where `V` is the major version number, `S` is the servicing number, `B` is the build number, and `R` is the build revision number.",
+        messageFormat: "Use the format <V>.<S>.<B>.<R> for the assembly file version '{0}'",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4062.md");
+
     public static readonly DiagnosticDescriptor FDGA003 = new DiagnosticDescriptor(
         id: "FDGA003",
         title: "DO place the closing brace on its own line, except the end of a `do`..`while` statement.",

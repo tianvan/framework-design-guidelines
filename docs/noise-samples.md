@@ -161,3 +161,70 @@ checked (20 in all), because no diagnostic had more than 20.
 Chapter 2 (Framework Design Fundamentals, FDG2001 to FDG2032) maps no SDK diagnostic and adds no analyzer: all 32
 rules are judgment rules about the design process and the consumer experience of an API. No new diagnostics, so
 nothing was measured.
+
+## Chapter 4 mappings and analyzers
+
+Package 0.1.0 with the chapter 4 mappings and the new type design analyzers, enabled by the profile globalconfigs
+(library for the open-source samples, application for the internal ones). Only the newly mapped SDK diagnostics and
+the new analyzers are counted. Every report was checked, except FDG4032 (37; 20 checked) and CA1050 (28; 20 checked).
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| CA1008 | FDG4040, FDG4048, FDG4049 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | None needed. |
+| CA1012 | FDG4013, FDG4014 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | None needed. |
+| CA1014 | FDG4057 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| CA1016 | FDG4058 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| CA1017 | FDG4060 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Coverage narrowed to partial (see notes). |
+| CA1027 | FDG4044 | 0 | 0 | 0 | 0 | 2 | 2 | 1 | 1 | FDG4044 lowered to suggestion. |
+| CA1028 | FDG4041 | 0 | 0 | 0 | 0 | 6 | 6 | 0 | 6 | None needed (already a suggestion). |
+| CA1034 | FDG4053 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| CA1040 | FDG4022 | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | FDG4022 lowered to suggestion. |
+| CA1050 | FDG4006 | 0 | 0 | 0 | 0 | 28 | 20 | 0 | 20 | None needed. |
+| CA1052 | FDG4019 | 0 | 0 | 0 | 0 | 6 | 6 | 0 | 6 | None needed. |
+| CA1069 | FDG4039 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| CA1700 | FDG4037 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| CA2217 | FDG4044, FDG4045 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| IDE0250 | FDG4028 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| IDE0251 | FDG4029 | 3 | 0 | 9 | 0 | 0 | 12 | 0 | 12 | None needed. |
+| FDG4013 | FDG4013 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| FDG4026 | FDG4026 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| FDG4027 | FDG4027 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| FDG4032 | FDG4032 | 1 | 35 | 0 | 0 | 1 | 20 | 0 | 20 | None needed. |
+| FDG4038 | FDG4038 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| FDG4056 | FDG4056 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| FDG4059 | FDG4059 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| FDG4061 | FDG4061 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| FDG4062 | FDG4062 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+
+### Notes
+
+- **polly's configuration.** polly's own globalconfig files set CA1008, CA1014, CA1017, CA1028, CA1034, CA1040,
+  CA1050 and CA1700 to `none` and take precedence over the package, so polly's zeros for those diagnostics measure
+  polly's configuration, not the package.
+- **Library-only rules on the internal samples.** CA1014, CA1016, CA1017, CA1034, FDG4038, FDG4056, FDG4059, FDG4061
+  and FDG4062 are off in the application profile, so they did not run on internal-a and internal-b.
+- **CA1040.** The one report is an empty interface that eight effect classes implement and that is used as the type
+  of a property and a local variable: a marker checked at compile time, which the FDG4022 body allows. 1 false positive
+  of 1 is above 1 in 20, so FDG4022 is now a suggestion in both profiles.
+- **CA1027.** One report is a `[Flags]`-style enum of 1, 2, 4 and 8 tested with `&` (true). The other is a simple enum
+  with the values 0 and 2, which CA1027 takes for flags (false positive). 1 of 2 is above 1 in 20, so FDG4044 is now a
+  suggestion; CA2217 keeps warning severity through FDG4045.
+- **CA1017.** No sample was reported, although serilog has public types and no `ComVisibleAttribute`. A test project
+  showed that with SDK 10.0.402, CA1017 reports only an assembly with a public type in the global namespace. FDG4060's
+  coverage is now partial, and its notes say so.
+- **CA1014, CA1016, FDG4059, FDG4061 and FDG4062 on the open-source samples.** serilog and newtonsoft-json declare
+  `CLSCompliant(true)`, and their projects set `Description` and `Copyright`, so the SDK generates every attribute
+  FDG4059 and FDG4061 ask for. The generated file version has four parts. A test project without these properties
+  reported CA1014, FDG4059 (AssemblyDescription) and FDG4061 (AssemblyCopyright) as expected. Diagnostics without a
+  source location are counted with an empty path.
+- **CA1050.** Public types declared outside any namespace in internal-b (models and HTTP parameter holders).
+- **CA1052.** Public classes with only static members, neither static nor sealed: HTTP parameter builders and a user
+  holder. All true. Their fix (make the class static) is breaking, so on API that already existed they do not block.
+- **CA1028.** `sbyte` enums with no interop use; true warnings of a CONSIDER rule (suggestion).
+- **IDE0251.** Members of internal mutable structs (an enumerator, a parser, a buffer, a JSON position) that do not
+  change the instance: all true.
+- **FDG4032.** Public structs without `IEquatable<T>`: polly's readonly argument structs and its `Outcome<TResult>` and
+  `ResiliencePropertyKey<TValue>`, serilog's `Alignment`, and a constants-only struct in internal-b. The rule text
+  states no exception, so all are true warnings, though polly's argument structs are never compared.
+- **No reports.** The other diagnostics report nothing on these samples; their tests cover the positive cases.
+  FDG4027 does report two mutable structs in internal-b's dependencies, which the tool does not count.

@@ -69,6 +69,57 @@ chapters:
       - section: "3.6.4"
         disposition: background
         note: "The opening text scopes the field guidelines to static public and protected fields (internal and private fields are not covered, and public or protected instance fields are disallowed by the member design guidelines in chapter 5). It is background for the field rules that follow."
+  - token: "4"
+    file: ch04.xhtml
+    rules: ch04-types.yaml
+    title: Type Design Guidelines
+    testProfile: off
+    references:
+      - { file: ch04-types-4-1-to-4-4, sections: ["4", "4.1", "4.2", "4.3", "4.4"] }
+      - { file: ch04-types-4-5-on, sections: ["4.5", "4.6", "4.7", "4.8", "4.9", "4.10", "4.11"] }
+    nonGuideline:
+      - section: "4"
+        disposition: background
+        note: "The chapter introduction and Figure 4-1 (the logical grouping of types: classes, interfaces, structs, enums, static classes, and the special reference types discussed elsewhere) are background for the whole chapter; FDG4001 follows them."
+      - section: "4.1"
+        disposition: rationale
+        note: "The narrative on top-down factoring of a large framework into namespaces is rationale for FDG4002 to FDG4006; the namespace naming guidelines are in section 3.4."
+      - section: "4.2"
+        disposition: rationale
+        note: "The comparison of reference and value types (allocation, arrays, boxing, assignment, parameter passing), footnote 1 on immutable types and the Mariani and Sells annotations are rationale for FDG4007 and FDG4008."
+      - section: "4.3"
+        disposition: rationale
+        note: "The narrative on evolving class-based and interface-based APIs (the Stream timeout example, the three StreamReader options, `CollectionContract<T>`), the Barton annotation on default interface methods and the Cwalina annotation on interfaces as contracts are rationale for FDG4009 to FDG4012. The Barton annotation's proto-guideline on default interface methods has no icon and is not a rule."
+      - section: "4.5"
+        disposition: rationale
+        note: "The definition of static classes, the C# and C++ examples and the narrative on their use (shortcuts, extension method holders) are rationale for FDG4016 to FDG4019."
+      - section: "4.6"
+        disposition: rationale
+        note: "The narrative on interfaces as the CLR's substitute for multiple inheritance and as a common API for value types (the Component, Boolean and String examples) is rationale for FDG4020 and FDG4021."
+      - section: "4.7"
+        disposition: background
+        note: "The introduction defines a struct as the general-purpose value type and points to section 4.8 for enums. It is background for FDG4026 to FDG4033."
+      - section: "4.8"
+        disposition: rationale
+        note: "The definitions of simple and flag enums with the Color and AttributeTargets examples, the Abrams and Clarke annotations and the narrative on enums replacing integer constants are rationale for FDG4034 to FDG4043."
+      - section: "4.8.1"
+        disposition: background
+        note: "The Richter annotation on using flag enums is background for FDG4044 to FDG4049."
+      - section: "4.8.2"
+        disposition: rationale
+        note: "The narrative on the compatibility risk of adding a value that an existing API returns is rationale for FDG4050."
+      - section: "4.9"
+        disposition: rationale
+        note: "The definition of nested types, the OuterType example and the narrative on when nested types suit implementation details are rationale for FDG4051 to FDG4056."
+      - section: "4.10"
+        disposition: background
+        note: "The introduction, which says several attributes should be applied to assemblies with public types, is background for FDG4057 to FDG4062."
+      - section: "4.11"
+        disposition: rationale
+        note: "The narrative on the gap between enums and strings (the RSACryptoServiceProvider.SignData example), footnote 6 and the HashAlgorithmName example of a strongly typed string are rationale for FDG4063 to FDG4070."
+      - section: "Summary"
+        disposition: background
+        note: "The chapter summary states no guideline."
   - token: "A"
     file: app01.xhtml
     rules: appA-coding-style.yaml

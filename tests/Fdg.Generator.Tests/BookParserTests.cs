@@ -40,6 +40,25 @@ public class BookParserTests
     }
 
     [Fact]
+    public void Known_icon_mismatches_take_the_strength_word()
+    {
+        BookChapter chapter = BookParser.Parse(Fixture("ch07.xhtml"), "7");
+
+        Assert.Equal(new[] { Strength.Do, Strength.Consider }, chapter.Rules.Select(r => r.Strength));
+        Assert.Equal(2, chapter.IconCount);
+    }
+
+    [Fact]
+    public void Known_icon_mismatches_apply_only_to_their_own_file()
+    {
+        BookFormatException exception = Assert.Throws<BookFormatException>(
+            () => BookParser.Parse(Fixture("ch08.xhtml"), "8"));
+
+        Assert.Contains("FDG8001", exception.Message);
+        Assert.Contains("check", exception.Message);
+    }
+
+    [Fact]
     public void Text_excludes_strength_and_icon()
     {
         Rule rule = ParseSample().Rules[0];

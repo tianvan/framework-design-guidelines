@@ -8,8 +8,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 2 Framework Design Fundamentals | 32 | 0 | 0 | 32 | 0 | 32 |
 | 3 Naming Guidelines | 87 | 34 | 8 | 45 | 0 | 87 |
+| 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 0 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 190 | 76 | 11 | 103 | 0 | 190 |
+| Total | 260 | 94 | 20 | 146 | 0 | 190 |
 
 ## Non-guideline content
 
@@ -39,6 +40,23 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 - **3.1.1** (background): Brad Abrams' annotation on the history of Table 3-1 (the dropped convention for instance field names) is background; it is kept in the body of FDG3002.
 - **3.4** (background): The narrative that introduces the namespace categories (application model, core, technology groups) is background for the rules of 3.4.1; the category definitions themselves are not guidelines.
 - **3.6.4** (background): The opening text scopes the field guidelines to static public and protected fields (internal and private fields are not covered, and public or protected instance fields are disallowed by the member design guidelines in chapter 5). It is background for the field rules that follow.
+
+### Chapter 4: Type Design Guidelines
+
+- **4** (background): The chapter introduction and Figure 4-1 (the logical grouping of types: classes, interfaces, structs, enums, static classes, and the special reference types discussed elsewhere) are background for the whole chapter; FDG4001 follows them.
+- **4.1** (rationale): The narrative on top-down factoring of a large framework into namespaces is rationale for FDG4002 to FDG4006; the namespace naming guidelines are in section 3.4.
+- **4.2** (rationale): The comparison of reference and value types (allocation, arrays, boxing, assignment, parameter passing), footnote 1 on immutable types and the Mariani and Sells annotations are rationale for FDG4007 and FDG4008.
+- **4.3** (rationale): The narrative on evolving class-based and interface-based APIs (the Stream timeout example, the three StreamReader options, `CollectionContract<T>`), the Barton annotation on default interface methods and the Cwalina annotation on interfaces as contracts are rationale for FDG4009 to FDG4012. The Barton annotation's proto-guideline on default interface methods has no icon and is not a rule.
+- **4.5** (rationale): The definition of static classes, the C# and C++ examples and the narrative on their use (shortcuts, extension method holders) are rationale for FDG4016 to FDG4019.
+- **4.6** (rationale): The narrative on interfaces as the CLR's substitute for multiple inheritance and as a common API for value types (the Component, Boolean and String examples) is rationale for FDG4020 and FDG4021.
+- **4.7** (background): The introduction defines a struct as the general-purpose value type and points to section 4.8 for enums. It is background for FDG4026 to FDG4033.
+- **4.8** (rationale): The definitions of simple and flag enums with the Color and AttributeTargets examples, the Abrams and Clarke annotations and the narrative on enums replacing integer constants are rationale for FDG4034 to FDG4043.
+- **4.8.1** (background): The Richter annotation on using flag enums is background for FDG4044 to FDG4049.
+- **4.8.2** (rationale): The narrative on the compatibility risk of adding a value that an existing API returns is rationale for FDG4050.
+- **4.9** (rationale): The definition of nested types, the OuterType example and the narrative on when nested types suit implementation details are rationale for FDG4051 to FDG4056.
+- **4.10** (background): The introduction, which says several attributes should be applied to assemblies with public types, is background for FDG4057 to FDG4062.
+- **4.11** (rationale): The narrative on the gap between enums and strings (the RSACryptoServiceProvider.SignData example), footnote 6 and the HashAlgorithmName example of a strongly typed string are rationale for FDG4063 to FDG4070.
+- **Summary** (background): The chapter summary states no guideline.
 
 ### Appendix A: C# Coding Style Conventions
 

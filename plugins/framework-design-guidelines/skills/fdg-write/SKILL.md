@@ -83,6 +83,8 @@ the repository's own `.editorconfig` says otherwise.
 Other references:
 
 - [references/ch02-fundamentals.md](references/ch02-fundamentals.md): design an API's main scenarios, entry points, layers and documentation
+- [references/ch04-types-4-1-to-4-4.md](references/ch04-types-4-1-to-4-4.md): choose between a class, struct, interface or abstract class, and organize types into namespaces
+- [references/ch04-types-4-5-on.md](references/ch04-types-4-5-on.md): design static classes, interfaces, structs, enums, nested types, assembly metadata and strongly typed strings
 
 Each reference lists, by section, every rule of its chapter that tools do not enforce. When a rule's wording is not
 enough, follow the `examples:` link at the end of its line to the book's explanation and code.

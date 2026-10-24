@@ -11,6 +11,16 @@ public static class BookParser
     private static readonly string[] CheckIcons = { "check.jpg", "check1.jpg" };
     private static readonly string[] CrossIcons = { "cross.jpg", "cross1.jpg" };
 
+    // Guidelines where the book prints the wrong icon; the strength word wins. Each is matched by file name,
+    // strength and the start of its rendered text, so any other icon/strength mismatch still fails.
+    private static readonly IconMismatch[] KnownIconMismatches =
+    {
+        new("ch04.xhtml", Strength.Avoid, "creating overloads across `System.String` and a strongly typed string"),
+        new("ch07.xhtml", Strength.Do, "report execution failures by throwing exceptions."),
+        new("ch07.xhtml", Strength.Consider, "terminating the process by calling `System.Environment.FailFast`"),
+        new("ch09.xhtml", Strength.DoNot, "return tasks in the `Created` state."),
+    };
+
     /// <param name="testProfileOn">False for a chapter that is off in the test profile: its rules start with test severity none.</param>
     public static BookChapter Parse(string xhtmlPath, string chapterToken, bool testProfileOn = true)
     {
@@ -20,7 +30,7 @@ public static class BookParser
         IElement root = document.Body ?? throw new BookFormatException($"{xhtmlPath}: no <body> element.");
 
         int iconCount = document.QuerySelectorAll("img").Count(img => IconName(img) is not null);
-        var walker = new Walker(chapterToken, isStyle: chapterToken == "A", testProfileOn);
+        var walker = new Walker(Path.GetFileName(xhtmlPath), chapterToken, isStyle: chapterToken == "A", testProfileOn);
         walker.Visit(root);
         IReadOnlyList<Rule> rules = walker.Finish();
 
@@ -47,6 +57,7 @@ public static class BookParser
 
     private sealed class Walker
     {
+        private readonly string _fileName;
         private readonly string _chapterToken;
         private readonly bool _isStyle;
         private readonly bool _testProfileOn;
@@ -58,8 +69,9 @@ public static class BookParser
         // The index of the guideline that introduced the last guideline table; blocks after the table belong to it.
         private int? _tableOwner;
 
-        public Walker(string chapterToken, bool isStyle, bool testProfileOn)
+        public Walker(string fileName, string chapterToken, bool isStyle, bool testProfileOn)
         {
+            _fileName = fileName;
             _chapterToken = chapterToken;
             _isStyle = isStyle;
             _testProfileOn = testProfileOn;
@@ -218,25 +230,34 @@ public static class BookParser
                 throw new BookFormatException($"{id}: unknown strength '{strengthText}'.");
             }
 
+            var copy = (IElement)paragraph.Clone(true);
+            copy.QuerySelector("span.middle")?.Remove();
+            copy.QuerySelector("strong")?.Remove();
+            string text = BlockRenderer.Inline(copy);
+
             bool iconIsCheck = Array.IndexOf(CheckIcons, iconName) >= 0;
-            if (iconIsCheck != strength.UsesCheckIcon())
+            if (iconIsCheck != strength.UsesCheckIcon() && !IsKnownIconMismatch(strength, text))
             {
                 string expected = strength.UsesCheckIcon() ? "check" : "cross";
                 throw new BookFormatException(
                     $"{id}: strength '{strengthText}' requires a {expected} icon but the book shows '{iconName}'.");
             }
 
-            var copy = (IElement)paragraph.Clone(true);
-            copy.QuerySelector("span.middle")?.Remove();
-            copy.QuerySelector("strong")?.Remove();
-
             _current = new PendingRule(
                 id,
                 strength,
-                BlockRenderer.Inline(copy),
+                text,
                 RowContext(paragraph),
                 _section,
                 _anchor);
+        }
+
+        private bool IsKnownIconMismatch(Strength strength, string text)
+        {
+            return KnownIconMismatches.Any(known =>
+                known.FileName == _fileName
+                && known.Strength == strength
+                && text.StartsWith(known.TextPrefix, StringComparison.Ordinal));
         }
 
         /// <summary>Table items take the first column of their row as context, unless they sit in it.</summary>
@@ -285,6 +306,8 @@ public static class BookParser
             _current = null;
         }
     }
+
+    private sealed record IconMismatch(string FileName, Strength Strength, string TextPrefix);
 
     private sealed record PendingRule(
         string Id,

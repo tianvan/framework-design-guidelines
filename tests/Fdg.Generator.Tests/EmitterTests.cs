@@ -321,6 +321,21 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Most_specific_prefix_wins_so_a_chapter_introduction_can_join_the_first_split()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-first", "9", "9.1"), Part("ch09-rest", "9.2", "9.3")),
+            r => r.Id == "FDG9001" ? r with { Section = "9" } : r);
+
+        IReadOnlyList<GeneratedFile> files = SkillReferenceEmitter.Emit(input);
+
+        string Content(string path) => files.Single(f => f.Path.EndsWith(path, StringComparison.Ordinal)).Content;
+        Assert.Contains("**FDG9001**", Content("references/ch09-first.md"));
+        Assert.DoesNotContain("**FDG9001**", Content("references/ch09-rest.md"));
+        Assert.Contains("## 9.2 Tool Checked", Content("references/ch09-rest.md"));
+    }
+
+    [Fact]
     public void Rule_matching_two_splits_fails()
     {
         GeneratorInput input = Split(_ => true, Part("ch09-a", "9.1", "9.2", "9.3"), Part("ch09-b", "9.1"));

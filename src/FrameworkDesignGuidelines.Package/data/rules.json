@@ -1813,6 +1813,1042 @@
       "naming": null
     },
     {
+      "id": "FDG4001",
+      "strength": "DO",
+      "text": "ensure that each type is a well-defined set of related members, not just a random collection of unrelated functionality.",
+      "section": "4",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4002",
+      "strength": "DO",
+      "text": "use namespaces to organize types into a hierarchy of related feature areas.",
+      "section": "4.1 Types and Namespaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4003",
+      "strength": "AVOID",
+      "text": "very deep namespace hierarchies. Such hierarchies are difficult to browse because the user has to backtrack often.",
+      "section": "4.1 Types and Namespaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4004",
+      "strength": "AVOID",
+      "text": "having too many namespaces.",
+      "section": "4.1 Types and Namespaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4005",
+      "strength": "AVOID",
+      "text": "having types designed for advanced scenarios in the same namespace as types intended for common programming tasks.",
+      "section": "4.1 Types and Namespaces",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4006",
+      "strength": "DO NOT",
+      "text": "define types without specifying their namespaces.",
+      "section": "4.1 Types and Namespaces",
+      "diagnostics": [
+        "CA1050"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4007",
+      "strength": "CONSIDER",
+      "text": "defining a struct instead of a class if instances of the type are small and commonly short-lived or are commonly embedded in other objects, especially arrays.",
+      "section": "4.2 Choosing Between Class and Struct",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4008",
+      "strength": "AVOID",
+      "text": "defining a struct unless the type has all of the following characteristics:",
+      "section": "4.2 Choosing Between Class and Struct",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4009",
+      "strength": "DO",
+      "text": "favor defining classes over interfaces.",
+      "section": "4.3 Choosing Between Class and Interface",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4010",
+      "strength": "DO",
+      "text": "use abstract classes instead of interfaces to decouple the contract from implementations.",
+      "section": "4.3 Choosing Between Class and Interface",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4011",
+      "strength": "DO",
+      "text": "define an interface if you need to provide a polymorphic hierarchy of value types.",
+      "section": "4.3 Choosing Between Class and Interface",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4012",
+      "strength": "CONSIDER",
+      "text": "defining interfaces to achieve a similar effect to that of multiple inheritance.",
+      "section": "4.3 Choosing Between Class and Interface",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4013",
+      "strength": "DO NOT",
+      "text": "define public or protected internal constructors in abstract types.",
+      "section": "4.4 Abstract Class Design",
+      "diagnostics": [
+        "FDG4013",
+        "CA1012"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4014",
+      "strength": "DO",
+      "text": "define a protected or an internal constructor in abstract classes.",
+      "section": "4.4 Abstract Class Design",
+      "diagnostics": [
+        "CA1012"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4015",
+      "strength": "DO",
+      "text": "provide at least one concrete type that inherits from each abstract class that you ship.",
+      "section": "4.4 Abstract Class Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4016",
+      "strength": "DO",
+      "text": "use static classes sparingly.",
+      "section": "4.5 Static Class Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4017",
+      "strength": "DO NOT",
+      "text": "treat static classes as a miscellaneous bucket.",
+      "section": "4.5 Static Class Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4018",
+      "strength": "DO NOT",
+      "text": "declare or override instance members in static classes.",
+      "section": "4.5 Static Class Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4019",
+      "strength": "DO",
+      "text": "declare static classes as sealed, abstract, and add a private instance constructor if your programming language does not have built-in support for static classes.",
+      "section": "4.5 Static Class Design",
+      "diagnostics": [
+        "CA1052"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4020",
+      "strength": "DO",
+      "text": "define an interface if you need some common API to be supported by a set of types that includes value types.",
+      "section": "4.6 Interface Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4021",
+      "strength": "CONSIDER",
+      "text": "defining an interface if you need to support its functionality on types that already inherit from some other type.",
+      "section": "4.6 Interface Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4022",
+      "strength": "AVOID",
+      "text": "using marker interfaces (interfaces with no members).",
+      "section": "4.6 Interface Design",
+      "diagnostics": [
+        "CA1040"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4023",
+      "strength": "DO",
+      "text": "provide at least one type that is an implementation of an interface.",
+      "section": "4.6 Interface Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4024",
+      "strength": "DO",
+      "text": "provide at least one API that consumes each interface you define (a method taking the interface as a parameter or a property typed as the interface).",
+      "section": "4.6 Interface Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4025",
+      "strength": "DO NOT",
+      "text": "add members to an interface that has previously shipped.",
+      "section": "4.6 Interface Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4026",
+      "strength": "DO NOT",
+      "text": "provide a default constructor for a struct.",
+      "section": "4.7 Struct Design",
+      "diagnostics": [
+        "FDG4026"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4027",
+      "strength": "DO NOT",
+      "text": "define mutable value types.",
+      "section": "4.7 Struct Design",
+      "diagnostics": [
+        "FDG4027"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4028",
+      "strength": "DO",
+      "text": "declare immutable value types with the `readonly` modifier.",
+      "section": "4.7 Struct Design",
+      "diagnostics": [
+        "IDE0250"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4029",
+      "strength": "DO",
+      "text": "declare nonmutating methods on mutable value types with the `readonly` modifier.",
+      "section": "4.7 Struct Design",
+      "diagnostics": [
+        "IDE0251"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4030",
+      "strength": "DO",
+      "text": "ensure that a state where all instance data is set to zero, false, or null (as appropriate) is valid.",
+      "section": "4.7 Struct Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4031",
+      "strength": "DO NOT",
+      "text": "define ref-like value types (`ref struct` types), other than for specialized low-level purposes where performance is critical.",
+      "section": "4.7 Struct Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4032",
+      "strength": "DO",
+      "text": "implement `IEquatable<T>` on value types.",
+      "section": "4.7 Struct Design",
+      "diagnostics": [
+        "FDG4032"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4033",
+      "strength": "DO NOT",
+      "text": "explicitly extend `System.ValueType`. In fact, most languages prevent this.",
+      "section": "4.7 Struct Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4034",
+      "strength": "DO",
+      "text": "use an enum to strongly type parameters, properties, and return values that represent sets of values.",
+      "section": "4.8 Enum Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4035",
+      "strength": "DO",
+      "text": "favor using an enum instead of static constants.",
+      "section": "4.8 Enum Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4036",
+      "strength": "DO NOT",
+      "text": "use an enum for open sets (such as the operating system version, names of your friends, etc.).",
+      "section": "4.8 Enum Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4037",
+      "strength": "DO NOT",
+      "text": "provide reserved enum values that are intended for future use.",
+      "section": "4.8 Enum Design",
+      "diagnostics": [
+        "CA1700"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4038",
+      "strength": "AVOID",
+      "text": "publicly exposing enums with only one value.",
+      "section": "4.8 Enum Design",
+      "diagnostics": [
+        "FDG4038"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4039",
+      "strength": "DO NOT",
+      "text": "include sentinel values in enums.",
+      "section": "4.8 Enum Design",
+      "diagnostics": [
+        "CA1069"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4040",
+      "strength": "DO",
+      "text": "provide a value of zero on simple enums.",
+      "section": "4.8 Enum Design",
+      "diagnostics": [
+        "CA1008"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4041",
+      "strength": "CONSIDER",
+      "text": "using `Int32` (the default in most programming languages) as the underlying type of an enum unless any of the following is true:",
+      "section": "4.8 Enum Design",
+      "diagnostics": [
+        "CA1028"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4042",
+      "strength": "DO",
+      "text": "name flag enums with plural nouns or noun phrases and simple enums with singular nouns or noun phrases.",
+      "section": "4.8 Enum Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4043",
+      "strength": "DO NOT",
+      "text": "extend `System.Enum` directly.",
+      "section": "4.8 Enum Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4044",
+      "strength": "DO",
+      "text": "apply the `System.FlagsAttribute` to flag enums. Do not apply this attribute to simple enums.",
+      "section": "4.8.1 Designing Flag Enums",
+      "diagnostics": [
+        "CA1027",
+        "CA2217"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4045",
+      "strength": "DO",
+      "text": "use powers of 2 for the flag enum values so they can be freely combined using the bitwise OR operation.",
+      "section": "4.8.1 Designing Flag Enums",
+      "diagnostics": [
+        "CA2217"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4046",
+      "strength": "CONSIDER",
+      "text": "providing special enum values for commonly used combinations of flags.",
+      "section": "4.8.1 Designing Flag Enums",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4047",
+      "strength": "AVOID",
+      "text": "creating flag enums where certain combinations of values are invalid.",
+      "section": "4.8.1 Designing Flag Enums",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4048",
+      "strength": "AVOID",
+      "text": "using flag enum values of zero unless the value represents “all flags are cleared” and is named appropriately, as prescribed by the next guideline.",
+      "section": "4.8.1 Designing Flag Enums",
+      "diagnostics": [
+        "CA1008"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4049",
+      "strength": "DO",
+      "text": "name the zero value of flag enums `None`. For a flag enum, the value must always mean “all flags are cleared.”",
+      "section": "4.8.1 Designing Flag Enums",
+      "diagnostics": [
+        "CA1008"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4050",
+      "strength": "CONSIDER",
+      "text": "adding values to enums, despite a small compatibility risk.",
+      "section": "4.8.2 Adding Values to Enums",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4051",
+      "strength": "DO",
+      "text": "use nested types when the relationship between the nested type and its outer type is such that member-accessibility semantics are desirable.",
+      "section": "4.9 Nested Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4052",
+      "strength": "DO NOT",
+      "text": "use public nested types as a logical grouping construct; use namespaces for this purpose.",
+      "section": "4.9 Nested Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4053",
+      "strength": "AVOID",
+      "text": "publicly exposed nested types. The only exception to this guideline is if variables of the nested type need to be declared only in rare scenarios such as subclassing or other advanced customization scenarios.",
+      "section": "4.9 Nested Types",
+      "diagnostics": [
+        "CA1034"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4054",
+      "strength": "DO NOT",
+      "text": "use nested types if the type is likely to be referenced outside of the containing type.",
+      "section": "4.9 Nested Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4055",
+      "strength": "DO NOT",
+      "text": "use nested types if they need to be instantiated by client code.",
+      "section": "4.9 Nested Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4056",
+      "strength": "DO NOT",
+      "text": "define a nested type as a member of an interface. Many languages do not support such a construct.",
+      "section": "4.9 Nested Types",
+      "diagnostics": [
+        "FDG4056"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4057",
+      "strength": "DO",
+      "text": "apply the `CLSCompliant(true)` attribute to assemblies with public types.",
+      "section": "4.10 Types and Assembly Metadata",
+      "diagnostics": [
+        "CA1014"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4058",
+      "strength": "DO",
+      "text": "apply `AssemblyVersionAttribute` to assemblies with public types.",
+      "section": "4.10 Types and Assembly Metadata",
+      "diagnostics": [
+        "CA1016"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4059",
+      "strength": "DO",
+      "text": "apply the following informational attributes to assemblies. These attributes are used by tools, such as Visual Studio, to inform the user of the assembly about its contents.",
+      "section": "4.10 Types and Assembly Metadata",
+      "diagnostics": [
+        "FDG4059"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4060",
+      "strength": "CONSIDER",
+      "text": "applying `ComVisible(false)` to your assembly. COM-callable APIs need to be designed explicitly. As a rule of thumb, .NET assemblies should not be visible to COM. If you do design the APIs to be COM-callable, you can apply `ComVisible(true)` either to the individual APIs or to the whole assembly.",
+      "section": "4.10 Types and Assembly Metadata",
+      "diagnostics": [
+        "CA1017"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4061",
+      "strength": "CONSIDER",
+      "text": "applying `AssemblyFileVersionAttribute` and `Assembly-CopyrightAttribute` to provide additional information about the assembly.",
+      "section": "4.10 Types and Assembly Metadata",
+      "diagnostics": [
+        "FDG4061"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4062",
+      "strength": "CONSIDER",
+      "text": "using the format `<V>.<S>.<B>.<R>` for the assembly file version, where `V` is the major version number, `S` is the servicing number, `B` is the build number, and `R` is the build revision number.",
+      "section": "4.10 Types and Assembly Metadata",
+      "diagnostics": [
+        "FDG4062"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4063",
+      "strength": "CONSIDER",
+      "text": "defining a strongly typed string value type when a base class supports a fixed set of inputs but a derived type could support more.",
+      "section": "4.11 Strongly Typed Strings",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4064",
+      "strength": "DO",
+      "text": "declare a strongly typed string as an immutable value type (`struct`) with a string constructor.",
+      "section": "4.11 Strongly Typed Strings",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4065",
+      "strength": "DO",
+      "text": "override `ToString()` on a strongly typed string to return the underlying string value.",
+      "section": "4.11 Strongly Typed Strings",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4066",
+      "strength": "CONSIDER",
+      "text": "exposing the underlying string value from a strongly typed string in a get-only property.",
+      "section": "4.11 Strongly Typed Strings",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4067",
+      "strength": "DO",
+      "text": "override equality operators for strongly typed string types.",
+      "section": "4.11 Strongly Typed Strings",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4068",
+      "strength": "DO",
+      "text": "allow null inputs to the constructor of a strongly typed string.",
+      "section": "4.11 Strongly Typed Strings",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4069",
+      "strength": "DO",
+      "text": "declare known values for a strongly typed string via static get-only properties on the type.",
+      "section": "4.11 Strongly Typed Strings",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG4070",
+      "strength": "AVOID",
+      "text": "creating overloads across `System.String` and a strongly typed string, unless the `System.String` overload was released in a previous version.",
+      "section": "4.11 Strongly Typed Strings",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
       "id": "FDGA001",
       "strength": "DO",
       "text": "place the opening brace on the next line, indented to the same level as the block statement.",
@@ -2948,7 +3984,20 @@
     }
   ],
   "registeredDiagnostics": [
+    "CA1008",
+    "CA1012",
+    "CA1014",
+    "CA1016",
+    "CA1017",
+    "CA1027",
+    "CA1028",
+    "CA1034",
+    "CA1040",
+    "CA1050",
+    "CA1052",
+    "CA1069",
     "CA1507",
+    "CA1700",
     "CA1707",
     "CA1708",
     "CA1710",
@@ -2960,6 +4009,7 @@
     "CA1720",
     "CA1721",
     "CA1724",
+    "CA2217",
     "FDG3003",
     "FDG3004",
     "FDG3013",
@@ -2968,6 +4018,15 @@
     "FDG3068",
     "FDG3075",
     "FDG3087",
+    "FDG4013",
+    "FDG4026",
+    "FDG4027",
+    "FDG4032",
+    "FDG4038",
+    "FDG4056",
+    "FDG4059",
+    "FDG4061",
+    "FDG4062",
     "FDGA003",
     "FDGA004",
     "FDGA023",
@@ -2981,11 +4040,20 @@
     "IDE0055",
     "IDE0065",
     "IDE0130",
+    "IDE0250",
+    "IDE0251",
     "IDE1006",
     "IDE2003"
   ],
   "breakingFixDiagnostics": [
+    "CA1008",
+    "CA1012",
+    "CA1027",
+    "CA1028",
+    "CA1052",
     "CA1707",
+    "CA2217",
+    "FDG4013",
     "IDE0130",
     "IDE1006"
   ]

@@ -68,7 +68,11 @@ public static class SkillReferenceEmitter
         foreach (Rule rule in file.Rules)
         {
             string number = RuleText.SectionNumber(rule);
-            ReferenceSplit[] matches = file.References.Where(r => r.Sections.Any(prefix => IsInSection(number, prefix))).ToArray();
+            // The most specific prefix wins, so a split can list the chapter number for the rules before its first section.
+            int MatchLength(ReferenceSplit split) =>
+                split.Sections.Where(prefix => IsInSection(number, prefix)).Select(prefix => prefix.Length).DefaultIfEmpty(-1).Max();
+            int best = file.References.Max(MatchLength);
+            ReferenceSplit[] matches = best < 0 ? [] : file.References.Where(r => MatchLength(r) == best).ToArray();
             if (matches.Length == 0)
             {
                 throw new GenerationException(

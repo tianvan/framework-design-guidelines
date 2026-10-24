@@ -38,6 +38,21 @@ internal static class AnalyzerVerifier<TAnalyzer>
     }
 
     /// <summary>
+    /// Verifies <paramref name="source"/> with <paramref name="expected"/> on top of the marked diagnostics, for
+    /// diagnostics without a source location (assembly-level checks).
+    /// </summary>
+    public static async Task VerifyWithAsync(string source, params DiagnosticResult[] expected)
+    {
+        foreach (ReferenceAssemblies referenceAssemblies in _referenceAssemblies)
+        {
+            foreach (LanguageVersion languageVersion in _languageVersions)
+            {
+                await VerifyAsync(source, referenceAssemblies, languageVersion, expected, []);
+            }
+        }
+    }
+
+    /// <summary>
     /// Verifies .NET 8 under the latest language version only, for features that C# 7.3 or .NET Framework lack
     /// (records, primary constructors, static abstract interface members).
     /// </summary>
@@ -53,6 +68,16 @@ internal static class AnalyzerVerifier<TAnalyzer>
         LanguageVersion languageVersion,
         params (string Path, string Text)[] extraSources)
     {
+        return VerifyAsync(source, referenceAssemblies, languageVersion, [], extraSources);
+    }
+
+    private static Task VerifyAsync(
+        string source,
+        ReferenceAssemblies referenceAssemblies,
+        LanguageVersion languageVersion,
+        DiagnosticResult[] expected,
+        (string Path, string Text)[] extraSources)
+    {
         var test = new Test(languageVersion)
         {
             TestCode = source.Replace("\r\n", "\n"),
@@ -64,6 +89,7 @@ internal static class AnalyzerVerifier<TAnalyzer>
         }
 
         test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", EditorConfig()));
+        test.ExpectedDiagnostics.AddRange(expected);
         return test.RunAsync();
     }
 
