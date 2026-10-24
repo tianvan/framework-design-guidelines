@@ -16,7 +16,8 @@ public static partial class BlockRenderer
 
     /// <summary>
     /// The text of a node as Markdown, with whitespace collapsed: code in backticks, emphasis in <c>*</c>,
-    /// strong in <c>**</c>, links to the web as <c>[text](href)</c> and line breaks as <c>&lt;br&gt;</c>.
+    /// strong in <c>**</c>, links to the web as <c>[text](href)</c>, line breaks as <c>&lt;br&gt;</c> and
+    /// footnote numbers as <c>&lt;sup&gt;N&lt;/sup&gt;</c>.
     /// Links within the book keep only their text.
     /// </summary>
     public static string Inline(INode node)
@@ -26,7 +27,7 @@ public static partial class BlockRenderer
         return Finish(builder.ToString());
     }
 
-    /// <summary>The text of a heading without any Markdown, since it becomes the section of a rule.</summary>
+    /// <summary>The text of a heading without any Markdown or footnote numbers, since it becomes the section of a rule.</summary>
     public static string Heading(IElement heading)
     {
         var copy = (IElement)heading.Clone(true);
@@ -151,6 +152,7 @@ public static partial class BlockRenderer
             case IElement { LocalName: "img" }:
                 break;
             case IElement { LocalName: "sup" } sup when IsFootnoteReference(sup):
+                builder.Append($"<sup>{Normalizer.Collapse(sup.TextContent)}</sup>");
                 break;
             case IElement { LocalName: "code" } code:
                 string inner = Normalizer.Collapse(code.TextContent);
@@ -178,7 +180,10 @@ public static partial class BlockRenderer
         }
     }
 
-    /// <summary>A footnote number such as <c>&lt;sup&gt;&lt;a href="#fn1"&gt;1&lt;/a&gt;&lt;/sup&gt;</c>; the footnotes themselves are not rules.</summary>
+    /// <summary>
+    /// A footnote number such as <c>&lt;sup&gt;&lt;a href="#fn1"&gt;1&lt;/a&gt;&lt;/sup&gt;</c>. Text keeps it as a
+    /// literal <c>&lt;sup&gt;1&lt;/sup&gt;</c>, without the link; headings drop it.
+    /// </summary>
     private static bool IsFootnoteReference(IElement sup)
     {
         return sup.Children.Length == 1

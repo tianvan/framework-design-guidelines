@@ -45,8 +45,8 @@ Table 3-2 shows capitalization for some of the most commonly used compound words
 | `Hashtable` | `hashtable` | `HashTable` |
 | `Id` | `id` | `ID` |
 | `Indexes` | `indexes` | `Indices` |
-| `Logoff` | `logoff` | `LogOut` |
-| `Logon` | `logon` | `LogIn` |
+| `Logoff`<sup>1</sup> | `logoff` | `LogOut` |
+| `Logon`<sup>1</sup> | `logon` | `LogIn`<sup>2</sup> |
 | `Metadata` | `metadata` | `MetaData, metaData` |
 | `Multipanel` | `multipanel` | `MultiPanel` |
 | `Multiview` | `multiview` | `MultiView` |

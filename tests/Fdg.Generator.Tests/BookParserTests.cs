@@ -232,16 +232,16 @@ public class BookParserTests
     [Fact]
     public void Markers_are_not_added_inside_inline_code()
     {
-        Assert.Equal("Call `GetValue` once. Then stop.", ParseFidelity().Body[2].Text);
+        Assert.StartsWith("Call `GetValue` once.", ParseFidelity().Body[2].Text);
     }
 
     [Fact]
-    public void Footnote_references_are_dropped()
+    public void Footnote_references_become_superscripts_in_text_and_are_dropped_from_sections()
     {
         Rule rule = ParseFidelity();
 
-        Assert.DoesNotContain("once.2", rule.Body[2].Text);
-        Assert.DoesNotContain("Type1", rule.Section);
+        Assert.Equal("Call `GetValue` once.<sup>2</sup> Then stop.", rule.Body[2].Text);
+        Assert.Equal("8.1 Fidelity Section for the Foo Type", rule.Section);
     }
 
     [Fact]
