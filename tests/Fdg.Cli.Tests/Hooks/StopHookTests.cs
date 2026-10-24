@@ -712,6 +712,50 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Breaking_diagnostic_on_a_new_local_in_an_existing_method_blocks()
+    {
+        CommitOrder("class Order {\n    void Ship() { }\n}\n");
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", "class Order {\n    void Ship() { int Bad_Name = 0; }\n}\n");
+        _builder.Sarif = _ => [new SarifResult("IDE1006", "warning", "Naming rule violation: Missing prefix: '_'", order, 2) { Column = 24 }];
+
+        Assert.Equal("block", Json(await TurnStopAsync(), "decision"));
+    }
+
+    [Fact]
+    public async Task Breaking_diagnostic_on_a_renamed_parameter_of_an_existing_method_blocks()
+    {
+        CommitOrder("class Order {\n    void Ship(int count) { }\n}\n");
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", "class Order {\n    void Ship(int Bad_Name) { }\n}\n");
+        _builder.Sarif = _ => [new SarifResult("IDE1006", "warning", "Naming rule violation: Missing prefix: '_'", order, 2) { Column = 19 }];
+
+        Assert.Equal("block", Json(await TurnStopAsync(), "decision"));
+    }
+
+    [Fact]
+    public async Task Breaking_diagnostic_blocks_when_the_baseline_cannot_be_read()
+    {
+        // If the baseline snapshot cannot be written (git failure) or read (IO), issues are blocking as new.
+        CommitOrder("class Order { void Ship() { } }\n");
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", "class Order { int count; void Ship() { } }\n");
+        // The first Stop records the changed lines; the second one finds the baseline gone (a directory is in its place).
+        await TurnStopAsync();
+        StateStore state = await StateAsync();
+        string baseline = state.BaselinePath("src/中文 App/Order.cs");
+        File.Delete(baseline);
+        Directory.CreateDirectory(baseline);
+        _builder.Sarif = _ => [new SarifResult("IDE1006", "warning", "Naming rule violation: Missing prefix: '_'", order, 1) { Column = 19 }];
+
+        string output = await TurnStopAsync(stopHookActive: true);
+
+        Assert.Equal("block", Json(output, "decision"));
+        Assert.Contains("src/中文 App/Order.cs:1 IDE1006", Json(output, "reason")!);
+        Assert.DoesNotContain("Existing API", Json(output, "reason")!);
+    }
+
+    [Fact]
     public async Task Existing_api_issues_count_against_the_20_issue_limit()
     {
         CommitOrder(string.Concat(Enumerable.Range(1, 15).Select(i => $"class C{i} {{ }}\n")));

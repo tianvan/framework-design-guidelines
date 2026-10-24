@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -35,9 +36,13 @@ public enum NamingFailure
 /// <param name="Kind">The syntax kind's name, for example <c>MethodDeclaration</c>; a field and a property are different kinds.</param>
 /// <param name="Signature">
 /// Tells overloads apart: the generic arity and the parameter types as written, with no whitespace; empty for a
-/// declaration without parameters.
+/// declaration without parameters. A type includes the parameters of its primary constructor.
 /// </param>
-public sealed record DeclarationKey(string Container, string Name, string Kind, string Signature = "");
+/// <param name="Part">
+/// Empty for the declaration itself; <c>parameter x</c> or <c>type parameter T</c> for a parameter or type parameter
+/// of it, which exists only if the other version has one of that name.
+/// </param>
+public sealed record DeclarationKey(string Container, string Name, string Kind, string Signature = "", string Part = "");
 
 /// <summary>
 /// Tells what an IDE1006 diagnostic is about: the kind of symbol declared at its position and how its name fails.
@@ -69,7 +74,7 @@ public static class DeclarationLocator
         }
 
         SyntaxNode root = tree.GetRoot();
-        if (HasSyntaxErrors(root))
+        if (HasSyntaxErrors(tree))
         {
             return null;
         }
@@ -86,12 +91,16 @@ public static class DeclarationLocator
 
     /// <summary>
     /// The innermost type or member declaration (type, method, constructor, property, indexer, event, field variable,
-    /// enum member, delegate) containing the 1-based line and column; parameters and type parameters belong to the
-    /// member or type that declares them. A position on the name of a namespace declaration gives the namespace.
+    /// enum member, delegate) whose declaration, not its code, contains the 1-based line and column. A parameter or
+    /// type parameter gives its owner's key with <see cref="DeclarationKey.Part"/> set. A position on the name of a
+    /// namespace declaration gives the namespace.
     /// </summary>
     /// <remarks>
-    /// Null when the source has syntax errors, when no such declaration contains the position, and when the position
-    /// is in a field or event field that declares several variables but not in one of them.
+    /// Null when the source has syntax errors; when no such declaration contains the position; when the position is
+    /// in code (a method or accessor body, an expression body, an initializer, a constructor initializer, top-level
+    /// statements), so a local, a lambda parameter or a pattern variable is never an existing API; when it is on an
+    /// attribute; and when it is in a field or event field that declares several variables but not in one of them.
+    /// Anywhere else in a declaration's header (modifiers, types, base list, constraints) it gives the declaration.
     /// </remarks>
     public static DeclarationKey? DeclarationAt(string source, int line, int column) =>
         DeclarationAt(Parse(source), line, column);
@@ -99,30 +108,34 @@ public static class DeclarationLocator
     /// <inheritdoc cref="DeclarationAt(string, int, int)"/>
     public static DeclarationKey? DeclarationAt(SyntaxTree tree, int line, int column)
     {
-        if (PositionOf(tree, line, column) is not int position)
+        if (PositionOf(tree, line, column) is not int position || HasSyntaxErrors(tree))
         {
             return null;
         }
 
-        SyntaxNode root = tree.GetRoot();
-        if (HasSyntaxErrors(root))
-        {
-            return null;
-        }
-
-        foreach (SyntaxNode node in root.FindToken(position).Parent!.AncestorsAndSelf())
+        string part = string.Empty;
+        foreach (SyntaxNode node in tree.GetRoot().FindToken(position).Parent!.AncestorsAndSelf())
         {
             switch (node)
             {
-                case BaseNamespaceDeclarationSyntax @namespace when @namespace.Name.Span.Contains(position):
-                    return KeyOf(@namespace);
+                case BlockSyntax or ArrowExpressionClauseSyntax or EqualsValueClauseSyntax or ConstructorInitializerSyntax
+                    or PrimaryConstructorBaseTypeSyntax or AttributeListSyntax or GlobalStatementSyntax:
+                    return null;
+                case ParameterSyntax parameter when part.Length == 0:
+                    part = "parameter " + parameter.Identifier.Text;
+                    break;
+                case TypeParameterSyntax typeParameter when part.Length == 0:
+                    part = "type parameter " + typeParameter.Identifier.Text;
+                    break;
+                case BaseNamespaceDeclarationSyntax @namespace:
+                    return @namespace.Name.Span.Contains(position) ? KeyOf(@namespace) : null;
                 case BaseFieldDeclarationSyntax field when field.Span.Contains(position):
                     // The variables of a field are keyed one by one; a position outside them is none of them.
                     return field.Declaration.Variables.Count == 1 ? KeyOf(field.Declaration.Variables[0]) : null;
                 default:
                     if (node.Span.Contains(position) && KeyOf(node) is DeclarationKey key)
                     {
-                        return key;
+                        return key with { Part = part };
                     }
 
                     break;
@@ -134,13 +147,40 @@ public static class DeclarationLocator
 
     /// <summary>Whether <paramref name="source"/> declares <paramref name="key"/>; false when it has syntax errors.</summary>
     public static bool Declares(string source, DeclarationKey key) =>
-        Declares(Parse(source), key);
+        DeclaredKeys(Parse(source))?.Contains(key) == true;
 
     /// <inheritdoc cref="Declares(string, DeclarationKey)"/>
-    public static bool Declares(SyntaxTree tree, DeclarationKey key)
+    public static bool Declares(SyntaxTree tree, DeclarationKey key) =>
+        DeclaredKeys(tree)?.Contains(key) == true;
+
+    /// <summary>
+    /// The key of every declaration in <paramref name="tree"/>, and for each of them one key per parameter and type
+    /// parameter, with <see cref="DeclarationKey.Part"/> set. Null when the tree has syntax errors. Callers that ask
+    /// about several positions can compute it once.
+    /// </summary>
+    public static IReadOnlySet<DeclarationKey>? DeclaredKeys(SyntaxTree tree)
     {
-        SyntaxNode root = tree.GetRoot();
-        return !HasSyntaxErrors(root) && root.DescendantNodes().Any(n => KeyOf(n) == key);
+        if (HasSyntaxErrors(tree))
+        {
+            return null;
+        }
+
+        var keys = new HashSet<DeclarationKey>();
+        foreach (SyntaxNode node in tree.GetRoot().DescendantNodes(n => n is not (BlockSyntax or ArrowExpressionClauseSyntax)))
+        {
+            if (KeyOf(node) is not DeclarationKey key)
+            {
+                continue;
+            }
+
+            keys.Add(key);
+            foreach (string part in PartsOf(node))
+            {
+                keys.Add(key with { Part = part });
+            }
+        }
+
+        return keys;
     }
 
     /// <summary>
@@ -174,8 +214,35 @@ public static class DeclarationLocator
         return column > textLine.Span.Length ? null : textLine.Start + column - 1;
     }
 
-    private static bool HasSyntaxErrors(SyntaxNode root) =>
-        root.GetDiagnostics().Any(d => d.Severity == DiagnosticSeverity.Error);
+    // Walking a tree for its diagnostics is done once per tree, however many positions are asked about.
+    private static readonly ConditionalWeakTable<SyntaxTree, object> SyntaxErrors = new();
+
+    private static bool HasSyntaxErrors(SyntaxTree tree) =>
+        (bool)SyntaxErrors.GetValue(
+            tree,
+            t => t.GetRoot().GetDiagnostics().Any(d => d.Severity == DiagnosticSeverity.Error));
+
+    /// <summary>The parameters and type parameters a declaration declares, as <see cref="DeclarationKey.Part"/> values.</summary>
+    private static IEnumerable<string> PartsOf(SyntaxNode node)
+    {
+        BaseParameterListSyntax? parameters = node switch
+        {
+            DelegateDeclarationSyntax @delegate => @delegate.ParameterList,
+            BaseMethodDeclarationSyntax method => method.ParameterList,
+            IndexerDeclarationSyntax indexer => indexer.ParameterList,
+            TypeDeclarationSyntax type => type.ParameterList,
+            _ => null,
+        };
+        TypeParameterListSyntax? typeParameters = node switch
+        {
+            DelegateDeclarationSyntax @delegate => @delegate.TypeParameterList,
+            MethodDeclarationSyntax method => method.TypeParameterList,
+            TypeDeclarationSyntax type => type.TypeParameterList,
+            _ => null,
+        };
+        return (parameters?.Parameters ?? []).Select(p => "parameter " + p.Identifier.Text)
+            .Concat((typeParameters?.Parameters ?? []).Select(t => "type parameter " + t.Identifier.Text));
+    }
 
     /// <summary>
     /// The key of a namespace, type or member declaration; null for any other node. Overloads differ in their
@@ -186,7 +253,9 @@ public static class DeclarationLocator
         (string Name, string Signature)? declared = node switch
         {
             BaseNamespaceDeclarationSyntax @namespace => (Compact(@namespace.Name), string.Empty),
-            BaseTypeDeclarationSyntax type => (type.Identifier.Text, Signature((type as TypeDeclarationSyntax)?.TypeParameterList, null)),
+            BaseTypeDeclarationSyntax type => (
+                type.Identifier.Text,
+                Signature((type as TypeDeclarationSyntax)?.TypeParameterList, (type as TypeDeclarationSyntax)?.ParameterList)),
             DelegateDeclarationSyntax @delegate => (@delegate.Identifier.Text, Signature(@delegate.TypeParameterList, @delegate.ParameterList)),
             MethodDeclarationSyntax method => (
                 Explicit(method.ExplicitInterfaceSpecifier) + method.Identifier.Text,
