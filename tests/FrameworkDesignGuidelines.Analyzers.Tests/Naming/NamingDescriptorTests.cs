@@ -16,6 +16,7 @@ public sealed class NamingDescriptorTests
         new EventHandlerParameterAnalyzer(),
         new CollectionPropertyNameAnalyzer(),
         new PublicResourceAnalyzer(),
+        new GeneralTypeNameAnalyzer(),
     ];
 
     [Fact]
@@ -23,7 +24,7 @@ public sealed class NamingDescriptorTests
     {
         DiagnosticDescriptor[] descriptors = _analyzers.SelectMany(analyzer => analyzer.SupportedDiagnostics).ToArray();
         Assert.Equal(
-            ["FDG3003", "FDG3004", "FDG3013", "FDG3051", "FDG3068", "FDG3075", "FDG3087"],
+            ["FDG3003", "FDG3004", "FDG3013", "FDG3033", "FDG3051", "FDG3068", "FDG3075", "FDG3087"],
             descriptors.Select(descriptor => descriptor.Id).Order());
         Assert.All(descriptors, descriptor => Assert.False(descriptor.IsEnabledByDefault));
         Assert.All(descriptors, descriptor => Assert.Equal("FrameworkDesignGuidelines.Naming", descriptor.Category));
@@ -39,7 +40,10 @@ public sealed class NamingDescriptorTests
                 public event Completion Done;
 
                 public int Naïve;
+            }
 
+            public class Message
+            {
                 public List<int> ValueList { get; set; }
             }
             """;
@@ -63,7 +67,7 @@ public sealed class NamingDescriptorTests
             .GetAnalyzerDiagnosticsAsync();
 
         Assert.Equal(
-            ["FDG3004", "FDG3013", "FDG3068", "FDG3075"],
+            ["FDG3004", "FDG3013", "FDG3033", "FDG3068", "FDG3075"],
             enabledDiagnostics.Select(diagnostic => diagnostic.Id).Order());
     }
 }

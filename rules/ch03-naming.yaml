@@ -1106,12 +1106,13 @@
         - Infrastructure namespaces
         - Core namespaces
         - Technology namespace groups
-  status: verified
+  status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG3033
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -1120,8 +1121,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: "Analyzer candidate rejected (gate 1): the book names four examples (Element, Node, Log, Message) but gives no list, and whether a type name is overly general depends on its namespace category and scenarios, so a check would have to guess intent."
+  analyzer:
+    message: 'Qualify the overly general type name ''{0}'''
+    category: Naming
+  notes: "FDG3033 reports an externally visible type (any kind, any arity) named exactly Element, Node, Log or Message, the names the rule text lists. Other overly general names are not detected."
 - id: FDG3034
   strength: DO NOT
   text: give the same name to multiple types across namespaces within a single application model.
@@ -1607,7 +1610,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Add the suffix ''Callback'' to the delegate ''{0}'', which no event uses'
+    message: 'Add the suffix ''Callback'' to the delegate ''{0}'', which no event in this assembly uses'
     category: Naming
   notes: "FDG3051 reports an externally visible delegate whose name ends with neither 'Callback' nor 'EventHandler' and that no event declared in the same compilation uses. A delegate named '...EventHandler' is left to FDG3050 and FDG3074."
 - id: FDG3052
@@ -2095,7 +2098,7 @@
   analyzer:
     message: 'Name the collection property ''{0}'' with a plural phrase instead of a ''List'' or ''Collection'' suffix'
     category: Naming
-  notes: "FDG3068 reports an externally visible property of an array or IEnumerable type (other than string) whose last word is 'List' or 'Collection', as in the book's bad example. It cannot tell whether the rest of the name is a plural phrase. Overrides and interface implementations are not reported."
+  notes: "FDG3068 reports an externally visible property of an array or IEnumerable type (other than string) whose last word is 'List' or 'Collection', as in the book's bad example. It cannot tell whether the rest of the name is a plural phrase. Overrides and interface implementations are not reported. Known limitation: a compound noun that ends in the word List, such as MailingList or WhiteList, is reported too; the rule text gives no list of such nouns to exclude."
 - id: FDG3069
   strength: DO
   text: name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value.
@@ -2664,7 +2667,7 @@
   autofix: no
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
@@ -2672,4 +2675,4 @@
   analyzer:
     message: 'Make the resource class ''{0}'' internal'
     category: Naming
-  notes: "FDG3087 reports an externally visible class marked [GeneratedCode(\"System.Resources.Tools.StronglyTypedResourceBuilder\", ...)], a resource class that a resource editor generated as public. Resources exposed through hand-written members are not detected."
+  notes: "FDG3087 reports an externally visible class marked [GeneratedCode(\"System.Resources.Tools.StronglyTypedResourceBuilder\", ...)], a resource class that a resource editor generated as public. Resources exposed through hand-written members are not detected. Library profile only: an application's resource classes are not public API, so this rule is off in the application profile."

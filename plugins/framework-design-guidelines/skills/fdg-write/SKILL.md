@@ -30,7 +30,6 @@ In `test` projects the Chapter 3 rules are off (test names such as `Method_WhenX
 - **FDG3009** DO favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the *X*-axis).
 - **FDG3015** DO NOT use any acronyms that are not widely accepted, and even if they are, only when necessary.
 - **FDG3011** DO NOT use Hungarian notation.
-- **FDG3033** DO NOT introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`.
 - **FDG3035** DO NOT give types names that would conflict with any type in the core namespaces.
 - **FDG3038** DO name classes and structs with nouns or noun phrases, using PascalCasing.
 - **FDG3039** DO name interfaces with adjective phrases, or occasionally with nouns or noun phrases.
@@ -49,7 +48,7 @@ In `test` projects the Chapter 3 rules are off (test names such as `Method_WhenX
 - **FDG3081** DO use descriptive parameter names.
 - **FDG3082** CONSIDER using names based on a parameter’s meaning rather than the parameter’s type.
 
-Casing that analyzers cannot see (they check only the first letter):
+Compound-word casing that analyzers cannot see (Table 3-2 in the book):
 
 - **FDG3006** DO NOT capitalize each word in so-called closed-form compound words.
 

@@ -39,10 +39,6 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG3029** DO NOT use organizational hierarchies as the basis for names in namespace hierarchies, because group names within corporations tend to be short-lived. Organize the hierarchy of namespaces around groups of related technologies.
 - **FDG3031** CONSIDER using plural namespace names where appropriate. — examples: examples/ch03-naming.md#fdg3031
 
-## 3.4.1 Namespaces and Type Name Conflicts
-
-- **FDG3033** DO NOT introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`. — examples: examples/ch03-naming.md#fdg3033
-
 ## 3.4.1.1 Application Model Namespaces
 
 - **FDG3034** DO NOT give the same name to multiple types across namespaces within a single application model. — examples: examples/ch03-naming.md#fdg3034

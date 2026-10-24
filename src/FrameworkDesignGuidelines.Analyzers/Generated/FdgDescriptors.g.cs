@@ -34,10 +34,19 @@ internal static class FdgDescriptors
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3013.md");
 
+    public static readonly DiagnosticDescriptor FDG3033 = new DiagnosticDescriptor(
+        id: "FDG3033",
+        title: "DO NOT introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`.",
+        messageFormat: "Qualify the overly general type name '{0}'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3033.md");
+
     public static readonly DiagnosticDescriptor FDG3051 = new DiagnosticDescriptor(
         id: "FDG3051",
         title: "DO add the suffix “Callback” to names of delegates other than those used as event handlers.",
-        messageFormat: "Add the suffix 'Callback' to the delegate '{0}', which no event uses",
+        messageFormat: "Add the suffix 'Callback' to the delegate '{0}', which no event in this assembly uses",
         category: "FrameworkDesignGuidelines.Naming",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: false,

@@ -182,6 +182,7 @@ dotnet_diagnostic.CA1724.severity = none
 dotnet_diagnostic.FDG3003.severity = none
 dotnet_diagnostic.FDG3004.severity = none
 dotnet_diagnostic.FDG3013.severity = none
+dotnet_diagnostic.FDG3033.severity = none
 dotnet_diagnostic.FDG3051.severity = none
 dotnet_diagnostic.FDG3068.severity = none
 dotnet_diagnostic.FDG3075.severity = none

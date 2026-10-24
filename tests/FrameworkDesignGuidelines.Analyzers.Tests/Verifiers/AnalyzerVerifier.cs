@@ -37,6 +37,15 @@ internal static class AnalyzerVerifier<TAnalyzer>
         }
     }
 
+    /// <summary>
+    /// Verifies .NET 8 under the latest language version only, for features that C# 7.3 or .NET Framework lack
+    /// (records, primary constructors, static abstract interface members).
+    /// </summary>
+    public static Task VerifyLatestAsync(string source, params (string Path, string Text)[] extraSources)
+    {
+        return VerifyAsync(source, ReferenceAssemblies.Net.Net80, LanguageVersion.Latest, extraSources);
+    }
+
     /// <summary>Verifies one reference assembly set and language version only.</summary>
     public static Task VerifyAsync(
         string source,

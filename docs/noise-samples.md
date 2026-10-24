@@ -124,13 +124,14 @@ counts. FDGA004 replaces IDE0011 (see the notes).
 
 Package 0.1.0 with the chapter 3 naming analyzers (Task 12), enabled by the profile globalconfigs (library for the
 open-source samples, application for the internal ones). Only the new diagnostics are counted. Every report was
-checked, because no diagnostic had more than 20.
+checked (20 in all), because no diagnostic had more than 20.
 
 | Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | FDG3003 | FDG3003 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
 | FDG3004 | FDG3004 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | None needed. |
 | FDG3013 | FDG3013 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | None needed. |
+| FDG3033 | FDG3033 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1 | None needed. |
 | FDG3051 | FDG3051 | 0 | 0 | 3 | 0 | 3 | 6 | 0 | 6 | None needed. |
 | FDG3068 | FDG3068 | 0 | 0 | 0 | 0 | 11 | 11 | 0 | 11 | None needed. |
 | FDG3075 | FDG3075 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
@@ -141,6 +142,8 @@ checked, because no diagnostic had more than 20.
 - **FDG3004.** An enum member named in capitals after the acronym (`XML`).
 - **FDG3013.** An enum member named in Chinese characters; the diagnostic reports only the first, because the members
   share a line and counts are deduplicated by line.
+- **FDG3033.** A public static class named `Log`, exactly one of the names the rule text lists. Added after the
+  cross-check (measured in a second run, with the other counts unchanged).
 - **FDG3051.** In newtonsoft-json, two delegates used as property types and one used as a constructor factory, none by
   an event. In internal-b, three generic overloads of one "value changed" delegate that no event in the project uses.
   The rule text names only event handlers as the exception, so all are true warnings.
@@ -148,6 +151,7 @@ checked, because no diagnostic had more than 20.
   several also camel-cased (which IDE1006 reports separately).
 - **No reports.** FDG3003, FDG3075 and FDG3087 report nothing on these samples; their tests cover the positive cases.
   The open-source samples follow the book's casing, and the internal projects declare no public resource classes and
-  no custom event handler delegates.
-- **Rejected at gate 1 (not measured).** FDG3033 (overly general type names) and FDG3069 (negative Boolean property
-  names): the book gives no word list, so a check would have to guess intent. Their notes say so.
+  no custom event handler delegates. FDG3087 is off in the application profile (library only), so it did not run on
+  the internal samples.
+- **Rejected at gate 1 (not measured).** FDG3069 (negative Boolean property names): the rule text gives one example
+  and no word list, so a check would have to guess intent. Its notes say so.

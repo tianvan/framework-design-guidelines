@@ -201,19 +201,6 @@ CONSIDER using plural namespace names where appropriate.
 
 For example, use `System.Collections` instead of `System.Collection`. Brand names and acronyms are exceptions to this rule, however. For example, use `System.IO` instead of `System.IOs`.
 
-## FDG3033
-
-DO NOT introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`.
-
-There is a very high probability that doing so will lead to type name conflicts in common scenarios. You should qualify the general type names (e.g., `FormElement`, `XmlNode`, `EventLog`, `SoapMessage`).
-
-There are specific guidelines for avoiding type name conflicts for different categories of namespaces. Namespaces can be divided into the following categories:
-
-- Application model namespaces
-- Infrastructure namespaces
-- Core namespaces
-- Technology namespace groups
-
 ## FDG3034
 
 DO NOT give the same name to multiple types across namespaces within a single application model.

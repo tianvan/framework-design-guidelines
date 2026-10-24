@@ -521,7 +521,9 @@
       "strength": "DO NOT",
       "text": "introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`.",
       "section": "3.4.1 Namespaces and Type Name Conflicts",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG3033"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -1357,7 +1359,7 @@
       "autofix": "no",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -2513,6 +2515,7 @@
     "FDG3003",
     "FDG3004",
     "FDG3013",
+    "FDG3033",
     "FDG3051",
     "FDG3068",
     "FDG3075",

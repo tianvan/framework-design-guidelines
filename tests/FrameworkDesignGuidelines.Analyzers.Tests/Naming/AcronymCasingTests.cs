@@ -146,4 +146,77 @@ public sealed class AcronymCasingTests
             }
             """);
     }
+
+    [Fact]
+    public Task Protected_members_of_sealed_types_are_not_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            public sealed class Sealed
+            {
+                protected internal void StartIo()
+                {
+                }
+            }
+
+            public struct Value
+            {
+                public void {|FDG3003:StartIo|}()
+                {
+                }
+            }
+
+            public class Open
+            {
+                protected void {|FDG3003:StopIo|}()
+                {
+                }
+
+                public sealed class Nested
+                {
+                    protected internal int HTMLLength;
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Implementations_of_static_abstract_interface_members_are_not_reported()
+    {
+        return Verifier.VerifyLatestAsync(
+            """
+            public interface {|FDG3004:IHTMLParser|}<TSelf>
+                where TSelf : IHTMLParser<TSelf>
+            {
+                static abstract TSelf {|FDG3004:ParseHTML|}(string {|FDG3004:rawHTML|});
+
+                static virtual void {|FDG3003:StartIo|}()
+                {
+                }
+            }
+
+            public sealed class Parser : IHTMLParser<Parser>
+            {
+                public static Parser ParseHTML(string rawHTML) => new Parser();
+
+                public static void StartIo()
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Record_and_primary_constructor_parameters_are_reported_once()
+    {
+        return Verifier.VerifyLatestAsync(
+            """
+            public record Page(string {|FDG3004:RawHTML|});
+
+            public class Reader(int {|FDG3003:maxIo|})
+            {
+                public int Limit => maxIo;
+            }
+            """);
+    }
 }
