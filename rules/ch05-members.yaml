@@ -3749,7 +3749,7 @@
     - kind: annotation
       text: Sometimes people try these sorts of things to squeeze out more performance. But remember that you aren’t helping anyone if it’s fast but nearly impossible to use correctly.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4218,7 +4218,7 @@
     - kind: annotation
       text: Swap always comes up in these discussions, but I have not written code that actually needed a swap function since college. Unless you’ve got a very good reason, avoid `out` and `ref` altogether.
       author: Chris Sells
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4332,7 +4332,7 @@
   body:
     - kind: paragraph
       text: Because many compilers turn the arguments to the member into a temporary array at the call site, the array might be a temporary object, and therefore any modifications to the array will be lost.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4683,7 +4683,7 @@
         public partial struct Range {
            public (int Offset, int Length) GetOffsetAndLength(int length);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4711,7 +4711,7 @@
   body:
     - kind: paragraph
       text: Named tuples in C# allow access to their elements via the same syntax as accessing a property or field on a descriptive type, so they should be named accordingly.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4742,7 +4742,7 @@
     - kind: annotation
       text: Named tuples are internally represented as structs. Having more than three fields would often make the named tuple instance size too big and negatively impact performance.
       author: Jan Kotas
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
