@@ -202,8 +202,9 @@ public sealed partial class HookRunner
         AutofixRecord? autofix = await RecordAutofixAsync(git, state, snapshot.Turn, projects, cancellationToken).ConfigureAwait(false);
 
         // 4-5. Filter on the lines the AI changed since the turn started, then report.
+        var moveSources = new MoveSources(git, state, snapshot, changes.Deleted);
         IReadOnlyDictionary<string, IReadOnlySet<int>> changedLines = await ComputeChangedLinesAsync(
-            git, state, snapshot, new MoveSources(git, state, snapshot, changes.Deleted), projects, cancellationToken).ConfigureAwait(false);
+            git, state, snapshot, moveSources, projects, cancellationToken).ConfigureAwait(false);
 
         var registered = new Dictionary<RulesManifest, IReadOnlySet<string>>(ReferenceEqualityComparer.Instance);
         foreach (RulesManifest manifest in projects.Select(p => p.Manifest))
@@ -220,16 +221,28 @@ public sealed partial class HookRunner
             }
         }
 
-        List<ReportedIssue> issues = ToIssues(git, diagnostics, changedLines, registered);
+        List<ReportedIssue> issues = await ToIssuesAsync(
+            git, state, snapshot, moveSources, diagnostics, changedLines, registered, cancellationToken).ConfigureAwait(false);
         if (issues.Count == 0)
         {
             return Finish(notes, []);
         }
 
+        // Issues on API that existed when the turn started are told to the user; the AI must not change that API.
+        int toFix = issues.Count(i => !i.ExistingApi);
+        if (toFix == 0)
+        {
+            return Finish(
+                notes,
+                [StopReport.Format(
+                    issues,
+                    $"FDG: {issues.Count} issue(s) on existing API in lines you changed; not blocking. Tell the user instead of changing the API.")]);
+        }
+
         // stop_hook_active false means the host is not continuing after a block, so this is a new turn even if
         // UserPromptSubmit never reset the count. A payload without the field keeps the count, so the limit holds.
         int blocks = input.StopHookActive == false ? 0 : state.ReadBlocks();
-        string count = $"FDG found {issues.Count} issue(s) in lines you changed this turn.";
+        string count = $"FDG found {toFix} issue(s) in lines you changed this turn.";
         if (blocks < settings.MaxBlocks)
         {
             state.WriteBlocks(blocks + 1);
@@ -488,14 +501,19 @@ public sealed partial class HookRunner
         return (result, logs);
     }
 
-    private static List<ReportedIssue> ToIssues(
+    private static async Task<List<ReportedIssue>> ToIssuesAsync(
         GitRepository git,
+        StateStore state,
+        TurnSnapshot snapshot,
+        MoveSources moveSources,
         IEnumerable<(ProjectWork Project, SarifDiagnostic Diagnostic)> diagnostics,
         IReadOnlyDictionary<string, IReadOnlySet<int>> changedLines,
-        IReadOnlyDictionary<RulesManifest, IReadOnlySet<string>> registered)
+        IReadOnlyDictionary<RulesManifest, IReadOnlySet<string>> registered,
+        CancellationToken cancellationToken)
     {
         var sourceLines = new Dictionary<string, string[]>(ProjectFiles.PathComparer);
         var trees = new Dictionary<string, SyntaxTree>(ProjectFiles.PathComparer);
+        var baselines = new Dictionary<string, SyntaxTree?>(ProjectFiles.PathComparer);
         var seen = new HashSet<(string, int, string, string)>();
         var issues = new List<ReportedIssue>();
         foreach ((ProjectWork project, SarifDiagnostic diagnostic) in diagnostics)
@@ -522,16 +540,66 @@ public sealed partial class HookRunner
             (NamingSymbolKind, NamingFailure)? naming = diagnostic.RuleId == DeclarationLocator.NamingDiagnosticId
                 ? NamingOf(diagnostic, trees)
                 : null;
+            bool existingApi = project.Manifest.BreakingFixDiagnostics.Contains(diagnostic.RuleId, StringComparer.OrdinalIgnoreCase) &&
+                await IsExistingApiAsync(git, state, snapshot, moveSources, path, diagnostic, trees, baselines, cancellationToken).ConfigureAwait(false);
             issues.Add(new ReportedIssue(
                 path,
                 diagnostic.Line,
                 diagnostic.RuleId,
                 diagnostic.Message,
                 source,
-                StopReport.RulesFor(project.Manifest, diagnostic.RuleId, diagnostic.Message, source, project.Info.Profile, naming)));
+                StopReport.RulesFor(project.Manifest, diagnostic.RuleId, diagnostic.Message, source, project.Info.Profile, naming),
+                existingApi));
         }
 
         return StopReport.Sort(issues).ToList();
+    }
+
+    /// <summary>
+    /// Whether the diagnostic is about a declaration the file already had at the start of the turn. False when the
+    /// baseline cannot be read, so the issue is reported as before.
+    /// </summary>
+    private static async Task<bool> IsExistingApiAsync(
+        GitRepository git,
+        StateStore state,
+        TurnSnapshot snapshot,
+        MoveSources moveSources,
+        string path,
+        SarifDiagnostic diagnostic,
+        Dictionary<string, SyntaxTree> trees,
+        Dictionary<string, SyntaxTree?> baselines,
+        CancellationToken cancellationToken)
+    {
+        if (!baselines.TryGetValue(diagnostic.FilePath, out SyntaxTree? baseline))
+        {
+            try
+            {
+                string baselinePath = await Snapshot.WriteBaselineAsync(git, state, snapshot, path, moveSources, cancellationToken)
+                    .ConfigureAwait(false);
+                baseline = DeclarationLocator.Parse(await File.ReadAllTextAsync(baselinePath, cancellationToken).ConfigureAwait(false));
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                baseline = null;
+            }
+
+            baselines.Add(diagnostic.FilePath, baseline);
+        }
+
+        return baseline is not null &&
+            ExistingApi.IsExisting(TreeOf(diagnostic.FilePath, trees), baseline, diagnostic.Line, diagnostic.Column);
+    }
+
+    /// <summary>The file's current text, parsed once; from the text rather than its lines, since Roslyn counts line breaks that ReadAllLines does not.</summary>
+    private static SyntaxTree TreeOf(string filePath, Dictionary<string, SyntaxTree> trees)
+    {
+        if (!trees.TryGetValue(filePath, out SyntaxTree? tree))
+        {
+            tree = DeclarationLocator.Parse(File.ReadAllText(filePath));
+            trees.Add(filePath, tree);
+        }
+
+        return tree;
     }
 
     /// <summary>What IDE1006 flagged: the kind of the declared symbol and how its name fails; null if either is unknown.</summary>
@@ -543,14 +611,7 @@ public sealed partial class HookRunner
             return null;
         }
 
-        // Parsed from the file's text rather than its lines, since Roslyn counts line breaks that ReadAllLines does not.
-        if (!trees.TryGetValue(diagnostic.FilePath, out SyntaxTree? tree))
-        {
-            tree = DeclarationLocator.Parse(File.ReadAllText(diagnostic.FilePath));
-            trees.Add(diagnostic.FilePath, tree);
-        }
-
-        NamingSymbolKind? kind = DeclarationLocator.NamingKindAt(tree, diagnostic.Line, diagnostic.Column);
+        NamingSymbolKind? kind = DeclarationLocator.NamingKindAt(TreeOf(diagnostic.FilePath, trees), diagnostic.Line, diagnostic.Column);
         return kind is null ? null : (kind.Value, failure.Value);
     }
 

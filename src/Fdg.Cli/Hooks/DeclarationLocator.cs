@@ -29,6 +29,16 @@ public enum NamingFailure
     Prefix,
 }
 
+/// <summary>Identifies a declaration across two versions of a file.</summary>
+/// <param name="Container">The names of the namespaces and types around it, outermost first, joined with dots.</param>
+/// <param name="Name">The declared name: <c>this</c> for an indexer, the operator token for an operator.</param>
+/// <param name="Kind">The syntax kind's name, for example <c>MethodDeclaration</c>; a field and a property are different kinds.</param>
+/// <param name="Signature">
+/// Tells overloads apart: the generic arity and the parameter types as written, with no whitespace; empty for a
+/// declaration without parameters.
+/// </param>
+public sealed record DeclarationKey(string Container, string Name, string Kind, string Signature = "");
+
 /// <summary>
 /// Tells what an IDE1006 diagnostic is about: the kind of symbol declared at its position and how its name fails.
 /// Both are read from the source and the message, so a rule is quoted only when both are certain.
@@ -53,25 +63,17 @@ public static class DeclarationLocator
     /// <inheritdoc cref="NamingKindAt(string, int, int)"/>
     public static NamingSymbolKind? NamingKindAt(SyntaxTree tree, int line, int column)
     {
-        SourceText text = tree.GetText();
-        if (line < 1 || line > text.Lines.Count || column < 1)
-        {
-            return null;
-        }
-
-        TextLine textLine = text.Lines[line - 1];
-        if (column > textLine.Span.Length)
+        if (PositionOf(tree, line, column) is not int position)
         {
             return null;
         }
 
         SyntaxNode root = tree.GetRoot();
-        if (root.GetDiagnostics().Any(d => d.Severity == DiagnosticSeverity.Error))
+        if (HasSyntaxErrors(root))
         {
             return null;
         }
 
-        int position = textLine.Start + column - 1;
         SyntaxToken token = root.FindToken(position);
         if (!token.IsKind(SyntaxKind.IdentifierToken) || !token.Span.Contains(position) ||
             token.Parent!.AncestorsAndSelf().Any(n => n is GlobalStatementSyntax))
@@ -80,6 +82,65 @@ public static class DeclarationLocator
         }
 
         return KindOf(token);
+    }
+
+    /// <summary>
+    /// The innermost type or member declaration (type, method, constructor, property, indexer, event, field variable,
+    /// enum member, delegate) containing the 1-based line and column; parameters and type parameters belong to the
+    /// member or type that declares them. A position on the name of a namespace declaration gives the namespace.
+    /// </summary>
+    /// <remarks>
+    /// Null when the source has syntax errors, when no such declaration contains the position, and when the position
+    /// is in a field or event field that declares several variables but not in one of them.
+    /// </remarks>
+    public static DeclarationKey? DeclarationAt(string source, int line, int column) =>
+        DeclarationAt(Parse(source), line, column);
+
+    /// <inheritdoc cref="DeclarationAt(string, int, int)"/>
+    public static DeclarationKey? DeclarationAt(SyntaxTree tree, int line, int column)
+    {
+        if (PositionOf(tree, line, column) is not int position)
+        {
+            return null;
+        }
+
+        SyntaxNode root = tree.GetRoot();
+        if (HasSyntaxErrors(root))
+        {
+            return null;
+        }
+
+        foreach (SyntaxNode node in root.FindToken(position).Parent!.AncestorsAndSelf())
+        {
+            switch (node)
+            {
+                case BaseNamespaceDeclarationSyntax @namespace when @namespace.Name.Span.Contains(position):
+                    return KeyOf(@namespace);
+                case BaseFieldDeclarationSyntax field when field.Span.Contains(position):
+                    // The variables of a field are keyed one by one; a position outside them is none of them.
+                    return field.Declaration.Variables.Count == 1 ? KeyOf(field.Declaration.Variables[0]) : null;
+                default:
+                    if (node.Span.Contains(position) && KeyOf(node) is DeclarationKey key)
+                    {
+                        return key;
+                    }
+
+                    break;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Whether <paramref name="source"/> declares <paramref name="key"/>; false when it has syntax errors.</summary>
+    public static bool Declares(string source, DeclarationKey key) =>
+        Declares(Parse(source), key);
+
+    /// <inheritdoc cref="Declares(string, DeclarationKey)"/>
+    public static bool Declares(SyntaxTree tree, DeclarationKey key)
+    {
+        SyntaxNode root = tree.GetRoot();
+        return !HasSyntaxErrors(root) && root.DescendantNodes().Any(n => KeyOf(n) == key);
     }
 
     /// <summary>
@@ -99,6 +160,97 @@ public static class DeclarationLocator
 
         return message.Contains("must begin with", StringComparison.OrdinalIgnoreCase) ? NamingFailure.Casing : null;
     }
+
+    /// <summary>The offset of the 1-based line and column, or null when they are not inside the text.</summary>
+    private static int? PositionOf(SyntaxTree tree, int line, int column)
+    {
+        SourceText text = tree.GetText();
+        if (line < 1 || line > text.Lines.Count || column < 1)
+        {
+            return null;
+        }
+
+        TextLine textLine = text.Lines[line - 1];
+        return column > textLine.Span.Length ? null : textLine.Start + column - 1;
+    }
+
+    private static bool HasSyntaxErrors(SyntaxNode root) =>
+        root.GetDiagnostics().Any(d => d.Severity == DiagnosticSeverity.Error);
+
+    /// <summary>
+    /// The key of a namespace, type or member declaration; null for any other node. Overloads differ in their
+    /// signature, so a new overload next to an existing one is not the existing one.
+    /// </summary>
+    private static DeclarationKey? KeyOf(SyntaxNode node)
+    {
+        (string Name, string Signature)? declared = node switch
+        {
+            BaseNamespaceDeclarationSyntax @namespace => (Compact(@namespace.Name), string.Empty),
+            BaseTypeDeclarationSyntax type => (type.Identifier.Text, Signature((type as TypeDeclarationSyntax)?.TypeParameterList, null)),
+            DelegateDeclarationSyntax @delegate => (@delegate.Identifier.Text, Signature(@delegate.TypeParameterList, @delegate.ParameterList)),
+            MethodDeclarationSyntax method => (
+                Explicit(method.ExplicitInterfaceSpecifier) + method.Identifier.Text,
+                Signature(method.TypeParameterList, method.ParameterList)),
+            ConstructorDeclarationSyntax constructor => (
+                constructor.Identifier.Text,
+                (constructor.Modifiers.Any(SyntaxKind.StaticKeyword) ? "static " : string.Empty) + Signature(null, constructor.ParameterList)),
+            DestructorDeclarationSyntax destructor => ("~" + destructor.Identifier.Text, string.Empty),
+            OperatorDeclarationSyntax @operator => (@operator.OperatorToken.Text, Signature(null, @operator.ParameterList)),
+            ConversionOperatorDeclarationSyntax conversion => (
+                conversion.ImplicitOrExplicitKeyword.Text + " " + Compact(conversion.Type),
+                Signature(null, conversion.ParameterList)),
+            PropertyDeclarationSyntax property => (Explicit(property.ExplicitInterfaceSpecifier) + property.Identifier.Text, string.Empty),
+            IndexerDeclarationSyntax indexer => (Explicit(indexer.ExplicitInterfaceSpecifier) + "this", Signature(null, indexer.ParameterList)),
+            EventDeclarationSyntax @event => (Explicit(@event.ExplicitInterfaceSpecifier) + @event.Identifier.Text, string.Empty),
+            VariableDeclaratorSyntax { Parent.Parent: BaseFieldDeclarationSyntax } variable => (variable.Identifier.Text, string.Empty),
+            EnumMemberDeclarationSyntax member => (member.Identifier.Text, string.Empty),
+            _ => null,
+        };
+        if (declared is not var (name, signature))
+        {
+            return null;
+        }
+
+        // The kind of a variable is the one of the field it belongs to.
+        SyntaxKind kind = node is VariableDeclaratorSyntax ? node.Parent!.Parent!.Kind() : node.Kind();
+        return new DeclarationKey(ContainerOf(node), name, kind.ToString(), signature);
+    }
+
+    /// <summary>The names of the namespaces and types around <paramref name="node"/>, outermost first, joined with dots.</summary>
+    private static string ContainerOf(SyntaxNode node) => string.Join(
+        '.',
+        node.Ancestors()
+            .Select(a => a switch
+            {
+                BaseNamespaceDeclarationSyntax @namespace => Compact(@namespace.Name),
+                BaseTypeDeclarationSyntax type => type.Identifier.Text,
+                _ => null,
+            })
+            .OfType<string>()
+            .Reverse());
+
+    /// <summary>The generic arity and the parameter types: <c>`1(int,ref string)</c>; empty for neither.</summary>
+    private static string Signature(TypeParameterListSyntax? typeParameters, BaseParameterListSyntax? parameters)
+    {
+        string arity = typeParameters is null ? string.Empty : "`" + typeParameters.Parameters.Count;
+        if (parameters is null)
+        {
+            return arity;
+        }
+
+        IEnumerable<string> types = parameters.Parameters.Select(p =>
+            string.Concat(p.Modifiers
+                .Where(m => m.Kind() is SyntaxKind.RefKeyword or SyntaxKind.OutKeyword or SyntaxKind.InKeyword or SyntaxKind.ReadOnlyKeyword)
+                .Select(m => m.Text + " ")) + (p.Type is null ? string.Empty : Compact(p.Type)));
+        return arity + "(" + string.Join(',', types) + ")";
+    }
+
+    private static string Explicit(ExplicitInterfaceSpecifierSyntax? specifier) =>
+        specifier is null ? string.Empty : Compact(specifier.Name) + ".";
+
+    /// <summary>The node's text without trivia and whitespace, so formatting does not make a different key.</summary>
+    private static string Compact(SyntaxNode node) =>
+        string.Concat(node.WithoutTrivia().ToString().Where(c => !char.IsWhiteSpace(c)));
 
     private static NamingSymbolKind? KindOf(SyntaxToken name)
     {

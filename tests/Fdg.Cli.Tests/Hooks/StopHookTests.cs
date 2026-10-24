@@ -626,6 +626,117 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Breaking_diagnostic_on_existing_api_does_not_block()
+    {
+        CommitOrder("class Order {\n    int count;\n    void Ship() { }\n}\n");
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", "class Order {\n    private int count;\n    void Ship() { }\n}\n");
+        _builder.Sarif = _ => [new SarifResult("IDE1006", "warning", "Naming rule violation: Missing prefix: '_'", order, 2) { Column = 17 }];
+
+        string output = await TurnStopAsync();
+
+        Assert.Null(Json(output, "decision"));
+        string message = Json(output, "systemMessage")!;
+        Assert.StartsWith(
+            "FDG: 1 issue(s) on existing API in lines you changed; not blocking. Tell the user instead of changing the API.\n" +
+            "Existing API: do not change it to fix this; tell the user.\n" +
+            "src/中文 App/Order.cs:2 IDE1006 Naming rule violation: Missing prefix: '_'\n",
+            message);
+        Assert.Equal(0, (await StateAsync()).ReadBlocks());
+    }
+
+    [Fact]
+    public async Task Existing_api_issues_are_listed_after_blocking_ones()
+    {
+        CommitOrder("class Order {\n    int count;\n    void Ship() { }\n}\n");
+        await TurnStartAsync();
+        string order = _repo.Write(
+            "src/中文 App/Order.cs",
+            "class Order {\n    private int count;\n    void Ship() { }\n    private int total;\n}\n");
+        _builder.Sarif = _ => [
+            new SarifResult("IDE1006", "warning", "Naming rule violation: Missing prefix: '_'", order, 2) { Column = 17 },
+            new SarifResult("IDE1006", "warning", "Naming rule violation: Missing prefix: '_'", order, 4) { Column = 17 },
+        ];
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal("block", Json(output, "decision"));
+        string reason = Json(output, "reason")!;
+        Assert.StartsWith("FDG found 1 issue(s) in lines you changed this turn. Fix them before finishing.\n", reason);
+        int created = reason.IndexOf("src/中文 App/Order.cs:4 IDE1006", StringComparison.Ordinal);
+        int marker = reason.IndexOf("Existing API: do not change it to fix this; tell the user.\n", StringComparison.Ordinal);
+        int existing = reason.IndexOf("src/中文 App/Order.cs:2 IDE1006", StringComparison.Ordinal);
+        Assert.InRange(created, 1, marker - 1);
+        Assert.InRange(marker, created + 1, existing - 1);
+    }
+
+    [Fact]
+    public async Task Non_breaking_diagnostic_on_existing_member_still_blocks()
+    {
+        CommitOrder("class Order {\n    int count;\n    void Ship() { }\n}\n");
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", "class Order {\n    private int count;\n    void Ship() { }\n}\n");
+        _builder.Sarif = _ => [new SarifResult("IDE0044", "warning", "Make field readonly", order, 2) { Column = 17 }];
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal("block", Json(output, "decision"));
+        string reason = Json(output, "reason")!;
+        Assert.StartsWith("FDG found 1 issue(s) in lines you changed this turn. Fix them before finishing.\n", reason);
+        Assert.DoesNotContain("Existing API", reason);
+    }
+
+    [Fact]
+    public async Task Breaking_diagnostic_on_a_new_overload_of_an_existing_method_blocks()
+    {
+        CommitOrder("class Order {\n    void Ship(int x) { }\n}\n");
+        await TurnStartAsync();
+        string order = _repo.Write(
+            "src/中文 App/Order.cs",
+            "class Order {\n    void Ship(int x) { }\n    void Ship(string Name) { }\n}\n");
+        _builder.Sarif = _ => [new SarifResult("IDE1006", "warning", "Naming rule violation: These words must begin with upper case characters: Name", order, 3) { Column = 23 }];
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal("block", Json(output, "decision"));
+    }
+
+    [Fact]
+    public async Task Breaking_diagnostic_in_a_file_created_this_turn_blocks()
+    {
+        await TurnStartAsync();
+        string created = _repo.Write("src/中文 App/Created.cs", "class Created {\n    int count;\n}\n");
+        _builder.Sarif = _ => [new SarifResult("IDE1006", "warning", "Naming rule violation: Missing prefix: '_'", created, 2) { Column = 9 }];
+
+        Assert.Equal("block", Json(await TurnStopAsync(), "decision"));
+    }
+
+    [Fact]
+    public async Task Existing_api_issues_count_against_the_20_issue_limit()
+    {
+        CommitOrder(string.Concat(Enumerable.Range(1, 15).Select(i => $"class C{i} {{ }}\n")));
+        await TurnStartAsync();
+        string order = _repo.Write(
+            "src/中文 App/Order.cs",
+            string.Concat(Enumerable.Range(1, 15).Select(i => $"class C{i} {{ }} // x\n")) +
+            string.Concat(Enumerable.Range(16, 10).Select(i => $"class C{i} {{ }}\n")));
+        _builder.Sarif = _ => Enumerable.Range(1, 25)
+            .Select(i => new SarifResult("CA1707", "warning", $"Remove the underscores {i}", order, i) { Column = 7 })
+            .ToArray();
+
+        string reason = Json(await TurnStopAsync(), "reason")!;
+
+        string[] listed = reason.Split('\n').Where(l => l.StartsWith("src/", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(20, listed.Length);
+        Assert.StartsWith("FDG found 10 issue(s)", reason);
+        // The 10 new classes (lines 16-25) come first, then the existing ones (lines 1-10 of 15) that still fit.
+        Assert.Equal(Enumerable.Range(16, 10), listed.Take(10).Select(LineOf));
+        Assert.Equal(Enumerable.Range(1, 10), listed.Skip(10).Select(LineOf));
+        Assert.Contains("\nExisting API: do not change it to fix this; tell the user.\n", reason);
+        Assert.EndsWith("\n... and 5 more.\n", reason);
+    }
+
+    [Fact]
     public async Task Third_stop_in_same_turn_allows_finish_with_system_message()
     {
         await TurnStartAsync();
@@ -1040,6 +1151,14 @@ public sealed class StopHookTests : IDisposable
         Assert.Equal(1, exitCode);
         Assert.StartsWith("FDG hook error: hook input is not JSON", stderr.ToString());
     }
+
+    private void CommitOrder(string content)
+    {
+        _repo.Write("src/中文 App/Order.cs", content);
+        _repo.CommitAll();
+    }
+
+    private static int LineOf(string issue) => int.Parse(issue.Split(':')[1].Split(' ')[0]);
 
     /// <summary>Lines <c>// line 1</c>..<c>// line n</c> with some lines replaced, LF-terminated.</summary>
     private static string Lines(int count, params (int Line, string Text)[] replacements) =>

@@ -6,20 +6,30 @@ namespace Fdg.Cli.Hooks;
 /// <summary>A diagnostic to report, with the rules it checks for the project's profile.</summary>
 /// <param name="DisplayPath">Relative to the repository root, with forward slashes.</param>
 /// <param name="SourceLine">The flagged line, trimmed; <see langword="null"/> when it cannot be read.</param>
+/// <param name="ExistingApi">
+/// The diagnostic is one whose fix breaks callers and it is about an API that already existed when the turn started
+/// (<see cref="Hooks.ExistingApi"/>): the AI is told to leave it to the user instead of changing it.
+/// </param>
 public sealed record ReportedIssue(
     string DisplayPath,
     int Line,
     string RuleId,
     string Message,
     string? SourceLine,
-    IReadOnlyList<RuleEntry> Rules);
+    IReadOnlyList<RuleEntry> Rules,
+    bool ExistingApi = false);
 
-/// <summary>The Stop hook's report: at most 20 issues sorted by file and line, each with at most two rules.</summary>
+/// <summary>
+/// The Stop hook's report: at most 20 issues, each with at most two rules. The issues to fix come first, sorted by file
+/// and line; the issues on existing API follow under <see cref="ExistingApiHeading"/>.
+/// </summary>
 public static class StopReport
 {
     public const int MaxIssues = 20;
 
     public const int MaxRulesPerIssue = 2;
+
+    public const string ExistingApiHeading = "Existing API: do not change it to fix this; tell the user.";
 
     private static readonly HashSet<string> IgnoredWords = new(StringComparer.Ordinal)
     {
@@ -33,8 +43,15 @@ public static class StopReport
     {
         var text = new StringBuilder();
         text.Append(header).Append('\n');
-        foreach (ReportedIssue issue in Sort(issues).Take(MaxIssues))
+        bool existingListed = false;
+        foreach (ReportedIssue issue in Sort(issues.Where(i => !i.ExistingApi)).Concat(Sort(issues.Where(i => i.ExistingApi))).Take(MaxIssues))
         {
+            if (issue.ExistingApi && !existingListed)
+            {
+                text.Append(ExistingApiHeading).Append('\n');
+                existingListed = true;
+            }
+
             text.Append(issue.DisplayPath).Append(':').Append(issue.Line).Append(' ')
                 .Append(issue.RuleId).Append(' ').Append(issue.Message).Append('\n');
             if (!string.IsNullOrEmpty(issue.SourceLine))
