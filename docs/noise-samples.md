@@ -46,7 +46,7 @@ file that is not committed; this page gives only counts and anonymized conclusio
 
 Package 0.1.0 (chapter 3 and appendix A). FP is false positives and True is true warnings among the spot-checked
 reports. The FDGA023 and CA1708 rows are re-measured after the treatments in their row; the notes give the first
-counts.
+counts. FDGA004 replaces IDE0011 (see the notes).
 
 | Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
@@ -58,9 +58,9 @@ counts.
 | CA1720 | FDG3016, FDG3017, FDG3018 | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | Over the threshold (n = 1). Already `suggestion` in every profile; no change. |
 | CA1724 | FDG3032 | 0 | 0 | 0 | 0 | 3 | 3 | 2 | 1 | Over the threshold (n = 3). No change yet; see the notes. |
 | FDGA003 | FDGA003 | 0 | 0 | 0 | 1 | 9 | 10 | 0 | 10 | None needed. |
+| FDGA004 | FDGA004 | 110 | 0 | 0 | 6 | 94 | 20 | 0 | 20 | R6: this project's analyzer, which exempts argument validation preambles (FDGA005), replaces IDE0011. |
 | FDGA023 | FDGA023 | 141 | 89 | 989 | 20 | 84 | 20 | 0 | 20 | R6: narrowed so that an enclosing operator expression no longer makes a list long. Under the threshold after the narrowing. |
 | IDE0008 | FDGA042 | 242 | 0 | 12 | 7 | 62 | 20 | 0 | 20 | None needed. |
-| IDE0011 | FDGA004 | 123 | 0 | 0 | 28 | 98 | 20 | 5 | 15 | Over the threshold. R7: lowered to `suggestion` in every profile. |
 | IDE0017 | FDGA043 | 0 | 0 | 37 | 0 | 33 | 20 | 0 | 20 | None needed. |
 | IDE0028 | FDGA044 | 0 | 0 | 11 | 0 | 143 | 20 | 0 | 20 | None needed. |
 | IDE0032 | FDGA046 | 2 | 0 | 38 | 0 | 36 | 20 | 0 | 20 | None needed. |
@@ -87,9 +87,16 @@ counts.
   newtonsoft-json reports are lists that are chopped one item per line but whose closing parenthesis is on its own
   line. The rule text does not say where the parenthesis goes, but the rule's example keeps it on the last item's
   line, so these are counted as true warnings; they are debatable.
-- **IDE0011.** All five false positives are an argument validation preamble (`if (x == null) throw ...;`), which
-  FDGA005 allows without braces. R7 treatment: FDGA004's IDE0011 is a `suggestion` in every profile, and FDGA004's
-  notes say why. The counts are unchanged, because suggestions are still reported.
+- **FDGA004 (was IDE0011).** IDE0011 first counted serilog 123, polly 0, newtonsoft-json 0, internal-a 28 and
+  internal-b 98, and 5 of 20 spot-checked reports were false positives: all an argument validation preamble
+  (`if (x == null) throw ...;`), which FDGA005 allows without braces. Lowering IDE0011 to `suggestion` (R7) would have
+  dropped its fix from `dotnet fdg fix` for the 95% of reports that are true warnings, so R6 applies instead: the
+  FDGA004 analyzer reports what IDE0011 reports and exempts the `if`...`throw` statements without `else` at the start
+  of a member, accessor, local function or lambda body, up to the first blank line or other statement. FDGA004 counts
+  serilog 110, internal-a 6 and internal-b 94, and the 20 spot-checked reports are all true warnings: their embedded
+  statement is a `return`, `continue`, assignment or call, or a `throw` inside a `catch` or after other code. One
+  borderline case is an `if`...`throw` that follows a guard call (`Guard.AgainstNull(name);`); the book says code
+  other than `if`...`throw` ends the preamble, so it is a true warning.
 - **CA1724.** Two of the three reports name a type the same as a framework namespace that the type is not in; the
   FDG3032 text covers only "a type in that namespace". The sample is too small for a decision, and FDG3032's notes
   deliberately include framework namespaces, so the mapping is left unchanged.

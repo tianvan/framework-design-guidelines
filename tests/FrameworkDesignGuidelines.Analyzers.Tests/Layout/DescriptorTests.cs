@@ -12,6 +12,7 @@ public sealed class DescriptorTests
     public async Task Descriptors_are_disabled_by_default()
     {
         Assert.False(FdgDescriptors.FDGA003.IsEnabledByDefault);
+        Assert.False(FdgDescriptors.FDGA004.IsEnabledByDefault);
         Assert.False(FdgDescriptors.FDGA023.IsEnabledByDefault);
 
         const string Source =
@@ -21,6 +22,7 @@ public sealed class DescriptorTests
                 void M()
                 {
                     try { M(); } catch { }
+                    if (Equals(null)) M();
                     Failed(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30);
                 }
 
@@ -35,7 +37,7 @@ public sealed class DescriptorTests
             [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         ImmutableArray<DiagnosticAnalyzer> analyzers =
-            [new SingleLineCatchFinallyAnalyzer(), new LongListWrappingAnalyzer()];
+            [new SingleLineCatchFinallyAnalyzer(), new OmittedBracesAnalyzer(), new LongListWrappingAnalyzer()];
 
         ImmutableArray<Diagnostic> diagnostics = await compilation
             .WithAnalyzers(analyzers)
@@ -48,6 +50,7 @@ public sealed class DescriptorTests
             new Dictionary<string, ReportDiagnostic>
             {
                 ["FDGA003"] = ReportDiagnostic.Warn,
+                ["FDGA004"] = ReportDiagnostic.Warn,
                 ["FDGA023"] = ReportDiagnostic.Warn,
             }));
         ImmutableArray<Diagnostic> enabledDiagnostics = await enabled
@@ -55,7 +58,7 @@ public sealed class DescriptorTests
             .GetAnalyzerDiagnosticsAsync();
 
         Assert.Equal(
-            ["FDGA003", "FDGA003", "FDGA023"],
+            ["FDGA003", "FDGA003", "FDGA004", "FDGA023"],
             enabledDiagnostics.Select(diagnostic => diagnostic.Id).Order());
     }
 }

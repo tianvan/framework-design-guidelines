@@ -15,7 +15,7 @@ This is a coding style convention. The book treats the appendix A conventions as
 - Severity: library suggestion, application suggestion, test suggestion
 - Status: verified
 
-IDE0011 (FDGA004) reports and adds braces in argument validation preambles too. The project accepts that conflict: braces everywhere is its readability goal.
+FDGA004 does not report the braceless if...throw statements of an argument validation preamble, and its code fix leaves them alone; adding braces to them anyway is allowed.
 
 ## From the book
 

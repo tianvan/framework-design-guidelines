@@ -16,6 +16,15 @@ internal static class FdgDescriptors
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDGA003.md");
 
+    public static readonly DiagnosticDescriptor FDGA004 = new DiagnosticDescriptor(
+        id: "FDGA004",
+        title: "AVOID omitting braces, even if the language allows it.",
+        messageFormat: "Enclose the embedded statement in braces",
+        category: "FrameworkDesignGuidelines.Layout",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDGA004.md");
+
     public static readonly DiagnosticDescriptor FDGA023 = new DiagnosticDescriptor(
         id: "FDGA023",
         title: "DO chop before the first argument or parameter, indent one indentation level, and include one argument or parameter per line when a method declaration or method invocation is exceedingly long.",

@@ -1403,13 +1403,13 @@
       "text": "omitting braces, even if the language allows it.",
       "section": "A.1.1 Brace Usage",
       "diagnostics": [
-        "IDE0011"
+        "FDGA004"
       ],
       "autofix": "yes",
       "severity": {
-        "library": "suggestion",
-        "application": "suggestion",
-        "test": "suggestion"
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
       },
       "naming": null
     },
@@ -2497,9 +2497,9 @@
     "CA1721",
     "CA1724",
     "FDGA003",
+    "FDGA004",
     "FDGA023",
     "IDE0008",
-    "IDE0011",
     "IDE0017",
     "IDE0028",
     "IDE0032",

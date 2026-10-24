@@ -187,6 +187,7 @@ internal static class CodeFixVerifier<TAnalyzer, TCodeFix>
     {
         return "root = true\n\n[*]\n"
             + "dotnet_diagnostic.FDGA003.severity = warning\n"
+            + "dotnet_diagnostic.FDGA004.severity = warning\n"
             + "dotnet_diagnostic.FDGA023.severity = warning\n"
             + (extra ?? string.Empty);
     }

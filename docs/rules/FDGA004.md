@@ -10,13 +10,15 @@ This is a coding style convention. The book treats the appendix A conventions as
 
 ## How it is checked
 
-- Check: sdk (partial coverage)
-- Diagnostics: IDE0011
+- Check: fdg (partial coverage)
+- Diagnostics: FDGA004
 - Automatic fix: yes
-- Severity: library suggestion, application suggestion, test suggestion
+- Severity: library warning, application warning, test warning
 - Status: verified
 
-IDE0011 does not know the argument validation preamble exception (FDGA005). planned-analyzer: braces, exempting argument validation preambles. Noise: IDE0011 is a suggestion because it reports argument validation preambles that FDGA005 allows (5 of 20 spot-checked reports, docs/noise-samples.md).
+Message: Enclose the embedded statement in braces
+
+FDGA004 reports the embedded statement of if, else, for, foreach, while, do, using, lock and fixed when it is not a block, as IDE0011 does, and exempts argument validation preambles (FDGA005): the run of if...throw statements without else at the start of a method, constructor, accessor, operator, local function or lambda body, up to the first blank line. Like IDE0011, it does not report an else if, a using, lock or fixed statement directly nested in one of the same kind, or an empty statement. IDE0011 is not mapped because it does not know the preamble exception.
 
 ## Options
 
