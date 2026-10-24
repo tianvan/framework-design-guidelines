@@ -5,11 +5,12 @@ namespace Fdg.Generator.Rules;
 
 /// <summary>
 /// Checks the mapping half of every rule: ids, check kind against diagnostics and coverage, autofix against the
-/// SDK's code fixes, analyzer, style flag, language requirements, and (through <see cref="ConfigValidator"/>) config.
+/// SDK's code fixes, analyzer, style flag, language requirements, test profile, and (through <see cref="ConfigValidator"/>) config.
 /// </summary>
 public static class MappingValidator
 {
     private const string AppendixWithStyle = "A";
+    private const string TestProfileNote = "Test profile:";
 
     public static IReadOnlyList<CheckError> Validate(
         IReadOnlyList<ChapterRules> chapters,
@@ -45,6 +46,13 @@ public static class MappingValidator
                 }
 
                 ValidateCheck(rule, catalog, Report);
+
+                if (!chapter.Chapter.TestProfileOn && rule.Mapping.Severity.Test != SeverityLevel.None
+                    && rule.Mapping.Notes?.Contains(TestProfileNote, StringComparison.Ordinal) != true)
+                {
+                    Report($"chapter {chapter.Chapter.Token} is off in the test profile; " +
+                        $"set severity.test to none or explain it in notes with \"{TestProfileNote}\".");
+                }
 
                 if (rule.Mapping.Alternative is not null && rule.Mapping.MinLanguage is null)
                 {

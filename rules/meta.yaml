@@ -4,6 +4,7 @@ chapters:
     file: ch03.xhtml
     rules: ch03-naming.yaml
     title: Naming Guidelines
+    testProfile: off
     nonGuideline:
       - section: "3.1.1"
         disposition: background
@@ -18,6 +19,7 @@ chapters:
     file: app01.xhtml
     rules: appA-coding-style.yaml
     title: C# Coding Style Conventions
+    testProfile: on
     nonGuideline:
       - section: "A"
         disposition: rationale

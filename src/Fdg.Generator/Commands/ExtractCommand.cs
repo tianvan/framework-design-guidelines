@@ -54,7 +54,7 @@ public static class ExtractCommand
         BookChapter extracted;
         try
         {
-            extracted = BookParser.Parse(Path.Combine(bookDir, chapter.File), chapter.Token);
+            extracted = BookParser.Parse(Path.Combine(bookDir, chapter.File), chapter.Token, chapter.TestProfileOn);
         }
         catch (Exception exception) when (exception is BookFormatException or IOException)
         {

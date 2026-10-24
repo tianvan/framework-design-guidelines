@@ -25,6 +25,12 @@ public sealed record ChapterMeta(string Token, string File, string Rules, string
     /// </summary>
     public IReadOnlyList<ReferenceSplit> References { get; init; } = Array.Empty<ReferenceSplit>();
 
+    /// <summary>
+    /// Whether the chapter's rules apply to test code (<c>testProfile: on</c>, the default). When off, the rules'
+    /// <c>severity.test</c> must be <c>none</c> unless the notes explain the exception.
+    /// </summary>
+    public bool TestProfileOn { get; init; } = true;
+
     /// <summary>The coverage-document entries for narrative text of this chapter; optional in <c>meta.yaml</c>.</summary>
     public IReadOnlyList<NonGuidelineEntry> NonGuideline { get; init; } = Array.Empty<NonGuidelineEntry>();
 }
@@ -54,6 +60,7 @@ public static class RuleLoader
             {
                 NonGuideline = c.NonGuideline.Select(e => ToEntry(c.Token, e)).ToList(),
                 References = (c.References ?? new()).Select(r => ToSplit(c.Token, r)).ToList(),
+                TestProfileOn = ToTestProfile(c.Token, c.TestProfile),
             }).ToList());
     }
 
@@ -87,6 +94,16 @@ public static class RuleLoader
             dto.Section,
             RuleYaml.ParseEnum<NonGuidelineDisposition>(dto.Disposition, $"nonGuideline disposition of chapter {chapter}"),
             dto.Note);
+    }
+
+    private static bool ToTestProfile(string chapter, string? value)
+    {
+        return value switch
+        {
+            null or "on" => true,
+            "off" => false,
+            _ => throw new FormatException($"meta.yaml: testProfile of chapter {chapter} must be on or off."),
+        };
     }
 
     private static ReferenceSplit ToSplit(string chapter, ReferenceSplitDto? dto)
@@ -126,6 +143,8 @@ public static class RuleLoader
         public List<NonGuidelineDto> NonGuideline { get; set; } = new();
 
         public List<ReferenceSplitDto?>? References { get; set; }
+
+        public string? TestProfile { get; set; }
     }
 
     private sealed class ReferenceSplitDto

@@ -113,6 +113,32 @@ public sealed class GeneratorCliTests : IDisposable, IClassFixture<InstalledSdkF
     }
 
     [Fact]
+    public void Extract_defaults_test_severity_to_none_in_chapters_off_for_tests()
+    {
+        File.WriteAllText(
+            Path.Combine(_rulesDir, "meta.yaml"),
+            "repositoryUrl: https://example.test/repo\n" +
+            "chapters:\n" +
+            "  - { token: \"9\", file: sample.xhtml, rules: ch09-sample.yaml, title: Sample Chapter, testProfile: off }\n");
+
+        var result = Extract();
+
+        Assert.Equal(0, result.ExitCode);
+        IReadOnlyList<Rule> rules = RuleLoader.LoadRules(Path.Combine(_rulesDir, "ch09-sample.yaml"));
+        Assert.All(rules, r => Assert.Equal(SeverityLevel.None, r.Mapping.Severity.Test));
+        Assert.All(rules, r => Assert.NotEqual(SeverityLevel.None, r.Mapping.Severity.Library));
+    }
+
+    [Fact]
+    public void Extract_keeps_test_severity_on_in_chapters_on_for_tests()
+    {
+        Extract();
+
+        IReadOnlyList<Rule> rules = RuleLoader.LoadRules(Path.Combine(_rulesDir, "ch09-sample.yaml"));
+        Assert.All(rules, r => Assert.NotEqual(SeverityLevel.None, r.Mapping.Severity.Test));
+    }
+
+    [Fact]
     public void Extract_never_overwrites()
     {
         Extract();

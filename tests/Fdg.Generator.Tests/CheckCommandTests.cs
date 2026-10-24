@@ -120,6 +120,64 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
         Assert.Empty(Check());
     }
 
+    private void SetChapterTestProfile(string value)
+    {
+        File.WriteAllText(
+            Path.Combine(_rulesDir, "meta.yaml"),
+            "repositoryUrl: https://example.test/repo\n" +
+            "chapters:\n" +
+            $"  - {{ token: \"9\", file: sample.xhtml, rules: ch09-sample.yaml, title: Sample Chapter, testProfile: {value} }}\n");
+    }
+
+    [Fact]
+    public void Test_severity_must_be_none_in_chapters_off_for_tests()
+    {
+        SetChapterTestProfile("off");
+        Map("FDG9002", m => m with { Severity = m.Severity with { Test = SeverityLevel.None } });
+
+        IReadOnlyList<string> errors = Check();
+
+        Assert.Equal(3, errors.Count);
+        Assert.All(errors, e => Assert.Contains("chapter 9 is off in the test profile", e));
+        Assert.DoesNotContain(errors, e => e.Contains("FDG9002"));
+        Assert.Equal(
+            $"{RulesFileName}:FDG9001: chapter 9 is off in the test profile; " +
+            "set severity.test to none or explain it in notes with \"Test profile:\".",
+            errors[0]);
+    }
+
+    [Fact]
+    public void Test_profile_exception_is_allowed_with_a_note()
+    {
+        SetChapterTestProfile("off");
+        foreach (string id in new[] { "FDG9001", "FDG9002", "FDG9003", "FDG9004" })
+        {
+            Map(id, m => m with { Notes = "Test profile: the rule also holds for test code." });
+        }
+
+        Assert.Empty(Check());
+    }
+
+    [Theory]
+    [InlineData("maybe")]
+    [InlineData("\"\"")]
+    public void Test_profile_value_must_be_on_or_off(string value)
+    {
+        SetChapterTestProfile(value);
+
+        string error = Assert.Single(Check());
+        Assert.StartsWith("meta.yaml:", error);
+        Assert.Contains("testProfile of chapter 9 must be on or off", error);
+    }
+
+    [Fact]
+    public void Chapters_are_on_for_tests_unless_the_meta_says_otherwise()
+    {
+        Assert.Empty(Check());
+        SetChapterTestProfile("on");
+        Assert.Empty(Check());
+    }
+
     [Fact]
     public void Schema_rejects_unknown_strength()
     {
@@ -243,11 +301,11 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
     [Fact]
     public void Consider_with_warning_severity_is_allowed_but_default_is_suggestion()
     {
-        RuleMapping defaults = RuleMapping.CreateDefault(Strength.Consider, style: false);
+        RuleMapping defaults = RuleMapping.CreateDefault(Strength.Consider, style: false, testProfileOn: true);
         Assert.Equal(new ProfileSeverity(SeverityLevel.Suggestion, SeverityLevel.Suggestion, SeverityLevel.Suggestion), defaults.Severity);
         Assert.Equal(
             new ProfileSeverity(SeverityLevel.Warning, SeverityLevel.Warning, SeverityLevel.Warning),
-            RuleMapping.CreateDefault(Strength.Avoid, style: false).Severity);
+            RuleMapping.CreateDefault(Strength.Avoid, style: false, testProfileOn: true).Severity);
         Rule consider = Assert.Single(RuleLoader.LoadRules(RulesPath), r => r.Strength == Strength.Consider);
         Assert.Equal(defaults.Severity, consider.Mapping.Severity);
 

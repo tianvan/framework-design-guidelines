@@ -11,7 +11,8 @@ public static class BookParser
     private static readonly string[] CheckIcons = { "check.jpg", "check1.jpg" };
     private static readonly string[] CrossIcons = { "cross.jpg", "cross1.jpg" };
 
-    public static BookChapter Parse(string xhtmlPath, string chapterToken)
+    /// <param name="testProfileOn">False for a chapter that is off in the test profile: its rules start with test severity none.</param>
+    public static BookChapter Parse(string xhtmlPath, string chapterToken, bool testProfileOn = true)
     {
         // The files contain named entities and &#13; line ends, so the lenient HTML parser is used.
         using FileStream stream = File.OpenRead(xhtmlPath);
@@ -19,7 +20,7 @@ public static class BookParser
         IElement root = document.Body ?? throw new BookFormatException($"{xhtmlPath}: no <body> element.");
 
         int iconCount = document.QuerySelectorAll("img").Count(img => IconName(img) is not null);
-        var walker = new Walker(chapterToken, isStyle: chapterToken == "A");
+        var walker = new Walker(chapterToken, isStyle: chapterToken == "A", testProfileOn);
         walker.Visit(root);
         IReadOnlyList<Rule> rules = walker.Finish();
 
@@ -48,6 +49,7 @@ public static class BookParser
     {
         private readonly string _chapterToken;
         private readonly bool _isStyle;
+        private readonly bool _testProfileOn;
         private readonly List<Rule> _rules = new();
         private string? _section;
         private string? _anchor;
@@ -56,10 +58,11 @@ public static class BookParser
         // The index of the guideline that introduced the last guideline table; blocks after the table belong to it.
         private int? _tableOwner;
 
-        public Walker(string chapterToken, bool isStyle)
+        public Walker(string chapterToken, bool isStyle, bool testProfileOn)
         {
             _chapterToken = chapterToken;
             _isStyle = isStyle;
+            _testProfileOn = testProfileOn;
         }
 
         public IReadOnlyList<Rule> Finish()
@@ -278,7 +281,7 @@ public static class BookParser
                 _current.Section,
                 _current.Anchor,
                 _current.Body,
-                RuleMapping.CreateDefault(_current.Strength, _isStyle)));
+                RuleMapping.CreateDefault(_current.Strength, _isStyle, _testProfileOn)));
             _current = null;
         }
     }
