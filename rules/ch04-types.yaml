@@ -19,7 +19,7 @@
 
         On the flip side, sometimes types do end up being dumping grounds for various loosely related functions. .NET offers several types like this, such as `Marshal`, `GC`, `Console`, `Math`, and `Application`. You will note that all members of these types are static, so it is not possible to create any instances of these types. Programmers seem to be OK with this. Fortunately, these types’ methods are separated a bit into separate types. It would be awful if all these methods were defined in just one type!
       author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -50,7 +50,7 @@
 
         I consider type-name conflicts in a single framework to indicate sloppy design. Types with identical names should either be merged to allow for better integration between parts of the library or be renamed to improve code readability and searchability.
       author: Krzysztof Cwalina
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -73,7 +73,7 @@
   section: 4.1 Types and Namespaces
   anchor: sec4_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -101,7 +101,7 @@
     - kind: annotation
       text: As an example of a problem, the runtime serializer types are defined under the `System.Runtime.Serialization` namespace and its subnamespaces. However, the `Serializable` and `NonSerialized` attributes are incorrectly defined in the `System` namespace. Because these types are not in the same namespace, developers don’t realize that they are closely related. In fact, I have run into many developers who apply the `Serializable` attribute to a class that they are serializing with the `System.Xml. Serialization`’s `XmlSerializer` type. However, the `XmlSerializer` completely ignores the `Serializable` attribute; applying the attribute gives no value and just bloats your assembly’s metadata.
       author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -138,7 +138,7 @@
     - kind: annotation
       text: I agree with this guideline, but I’d like to further add that the more advanced classes should be in a namespace that is under the namespace that contains the simple types. For example, the simple types might be in `System.Mail`, and the more advanced types should be in `System.Mail.Advanced`.
       author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -180,7 +180,7 @@
     - kind: annotation
       text: Namespaces are a language thing. The CLR doesn’t know anything about them, really. As far as the CLR is concerned, the name of the class really is something like `MyNameSpace.MyOtherNameSpace.MyAmazingType`. The compilers give you syntax (e.g., “using”) so that you don’t have to type those long class names all the time. So the CLR is never confused about class names because everything is always fully qualified.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -204,7 +204,7 @@
   section: 4.2 Choosing Between Class and Struct
   anchor: sec4_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -247,7 +247,7 @@
 
         Private types have the flexibility of using performance analysis data to change from a struct to a class, or vice versa, from build to build. But for public types, you have to make a decision and stick with it.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -278,7 +278,7 @@
     - kind: annotation
       text: I agree with Krzysztof in general. However, you do need to think about some other things. There are some special base classes, such as `MarshalByRefObject`. If your library type provides an abstract base class that isn’t itself derived from `MarshalByRefObject`, then types that derive from your abstract base class cannot live in a different `AppDomain`.
       author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -312,7 +312,7 @@
     - kind: annotation
       text: What Brian is describing here is the Template Method Pattern, discussed more in section 9.9.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -351,7 +351,7 @@
     - kind: annotation
       text: Another sign that you’ve got a well-defined interface is that the interface does exactly one thing. If you have an interface that has a grab bag of functionality, that’s a warning sign. You’ll end up regretting it because in the next version of your product you’ll want to add new functionality to this rich interface, but you can’t.
       author: Brian Pepin
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -390,7 +390,7 @@
 
         If we compare this to `ICryptoTransform`, that interface isn’t describing a capability; it’s instead defining a set of related actions. When we added `System.Span<T>` in .NET Core 2.0, we found that we couldn’t add Span support to symmetric cryptography because we used an interface instead of an abstract base class. It may have taken 15 years to realize that it was a mistake to have that type as an interface, but it *was* nonetheless a mistake.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -429,7 +429,7 @@
           protected Claim() {
           }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -448,7 +448,7 @@
   analyzer:
     message: Make the constructor of the abstract class '{0}' protected instead of protected internal
     category: Types
-  notes: "CA1012 reports a public constructor on an externally visible abstract type; FDG4013 reports the protected internal constructors that CA1012 does not (footnote 2). Changing a constructor's accessibility changes the public API: FDG4013 has no code fix, and CA1012's fix is breaking."
+  notes: "CA1012 reports a public constructor on an externally visible abstract type; FDG4013 reports the protected internal constructors that CA1012 does not (footnote 2). Changing a constructor's accessibility changes the public API: FDG4013 has no code fix, and CA1012's fix is breaking. Abstract types that are not externally visible are not checked: their constructors are not visible to users, which is the book's reason."
 - id: FDG4014
   strength: DO
   text: define a protected or an internal constructor in abstract classes.
@@ -477,7 +477,7 @@
     - kind: annotation
       text: Many languages (such as C#) will insert a protected constructor if you do not. It is a good practice to define the constructor explicitly in the source so that it can be more easily documented and maintained over time.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -509,7 +509,7 @@
     - kind: annotation
       text: My rule of thumb for testing a type or set of types is to have three people write three apps against it based on scenarios you hope to support. If the client code is pretty in all three cases, you’ve done a good job. Otherwise, you should consider refactoring until pretty happens.
       author: Chris Sells
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -534,7 +534,7 @@
   body:
     - kind: paragraph
       text: Static classes should be used only as supporting classes for the object-oriented core of the framework.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -559,7 +559,7 @@
   body:
     - kind: paragraph
       text: There should be a clear charter for each class. When your description of the class involves “and” or a new sentence, you need another class.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -584,7 +584,7 @@
   body:
     - kind: paragraph
       text: This is enforced by the C# compiler.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -616,7 +616,7 @@
     - kind: annotation
       text: Make sure that you do not attempt to define a static structure, because structures (value types) can always be instantiated, no matter what. Only classes can be static.
       author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -640,7 +640,7 @@
   section: 4.6 Interface Design
   anchor: sec4_6
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -663,7 +663,7 @@
   section: 4.6 Interface Design
   anchor: sec4_6
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -723,7 +723,7 @@
           // use reflection to serialize all public properties
            ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -749,7 +749,7 @@
   body:
     - kind: paragraph
       text: Doing this helps to validate the design of the interface. For example, `System.Collections.Generic.List<T>` is an implementation of the `System.Collections.Generic.IList<T>` interface.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -774,7 +774,7 @@
   body:
     - kind: paragraph
       text: Doing this helps to validate the interface design. For example, `List<T>.Sort` consumes the `IComparer<T>` interface.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -801,7 +801,7 @@
       text: Doing so would break implementations of the interface. You should create a new interface to avoid versioning problems.
     - kind: paragraph
       text: Except for the situations described in these guidelines, you should, in general, choose classes rather than interfaces in designing managed code reusable libraries.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -826,7 +826,7 @@
   body:
     - kind: paragraph
       text: Many CLR languages do not allow developers to define default constructors on value types. Users of these languages are often surprised to learn that `default(SomeStruct)` and `new SomeStruct()` don’t necessarily produce the same value. Even if your language does allow defining a default constructor on a value type, it probably isn’t worth the confusion it would cause if you did it.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -870,7 +870,7 @@
            public int FiveDigitCode { get; } // get-only properties
            public int PlusFourExtension { get; }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -926,7 +926,7 @@
     - kind: annotation
       text: Be careful when marking an existing struct as `readonly`. Existing structs that appear to be immutable may be mutable in very subtle ways. We learned this lesson hard way when `Nullable<T>` was marked as `readonly` in .NET Core. We quickly found that it broke existing code that depended on the `GetHashCode` and `Equals` methods mutating the `T` for caching, and the change was rolled back.
       author: Jan Kotas
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -981,7 +981,7 @@
            // (if they don't mutate)
            public override readonly string ToString() { ... }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1039,7 +1039,7 @@
             return (_value+1).ToString();
           }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1072,7 +1072,7 @@
 
         The usability concerns and occasional inconsistency with the rest of the platform are why `ref structs` have a “DO NOT” guidance, and almost every one of them involves long discussion in API review.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1097,7 +1097,7 @@
   body:
     - kind: paragraph
       text: The `Object.Equals` method on value types causes boxing, and its default implementation is not very efficient, because it uses reflection. `IEquatable<T>.Equals` can have much better performance and can be implemented so that it will not cause boxing. See section 8.6 for guidelines on implementing `IEquatable<T>`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1125,7 +1125,7 @@
   body:
     - kind: paragraph
       text: In general, structs can be very useful, but they should be used only for small, single, immutable values that will not be boxed frequently.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1148,7 +1148,7 @@
   section: 4.8 Enum Design
   anchor: sec4_8
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1193,7 +1193,7 @@
     - kind: annotation
       text: An enum is a structure with a set of static constants. The reason to follow this guideline is because you will get some additional compiler and reflection support if you define an enum versus manually defining a structure with static constants.
       author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1216,7 +1216,7 @@
   section: 4.8 Enum Design
   anchor: sec4_8
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1252,7 +1252,7 @@
           ReservedForFutureUse1,
           ReservedForFutureUse2,
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1318,7 +1318,7 @@
                                   FileMode.Open)
         ```
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1375,7 +1375,7 @@
     - kind: annotation
       text: 'You can get yourself into a lot of trouble by trying to be too clever with enums. Sentinel values are a great example of this: People write code like the example shown, but they use the sentinel value `LastValue` instead of `Rectangular`, as recommended. When a new value comes along and `LastValue` is updated, their program “automatically” does the right thing and accepts the new input value without giving an `ArgumentOutOfRangeException`. That sounds grand except for all that we didn’t show—the part that’s doing the actual work and that might not yet expect or even handle the new value. By avoiding sentinel values you will be forced to revisit all the right places to ensure that the new value really is going to work. The few minutes you spend visiting those call sites will be more than repaid in time you save avoiding bugs.'
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1417,7 +1417,7 @@
     - kind: annotation
       text: Remember that class and struct fields are initialized to their zero-value by default. When it would be hard to describe a “default” state, or when it’s important that the caller express an intentional value, consider naming the zero value “Undefined” and treating it as an invalid value.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1457,7 +1457,7 @@
     - kind: annotation
       text: Keep in mind that it is a binary breaking change to change the size of the enum type once you have shipped, so choose wisely— with an eye toward the future. Our experience has been that `Int32` is usually the right choice; thus we made it the default.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1473,7 +1473,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1028 reports an externally visible enum whose underlying type is not Int32; Int64 flag enums are not reported. The interop exception cannot be detected; such reports are not violations. Changing the underlying type is a binary breaking change (the Abrams annotation), so the fix is breaking.
+  notes: CA1028 reports an externally visible enum whose underlying type is not Int32; Int64 flag enums are not reported. The interop and space-saving exceptions (the second and third items of the list) cannot be detected; such reports are not violations. Changing the underlying type is a binary breaking change (the Abrams annotation), so the fix is breaking.
 - id: FDG4042
   strength: DO
   text: name flag enums with plural nouns or noun phrases and simple enums with singular nouns or noun phrases.
@@ -1483,7 +1483,7 @@
   body:
     - kind: paragraph
       text: See section 3.5.3 for details.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1510,7 +1510,7 @@
       text: '`System.Enum` is a special type used by the CLR to create user-defined enumerations. Most programming languages provide a programming element that gives you access to this functionality. For example, in C# the `enum` keyword is used to define an enumeration.'
     - kind: paragraph
       text: Simple enums works well for a closed set of alternatives. When multiple values need to be expressed concurrently, consider a flag enum (section 4.8.1). When the set of alternatives should be open to allow for derived types to add new capabilities, consider the strongly typed string approach discussed in section 4.11.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1539,7 +1539,7 @@
         public enum AttributeTargets {
            ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1592,7 +1592,7 @@
 
         Since I find hexadecimal nicer when matching the values against file contents or memory views, I’ll usually have my IDE do a value replacement before committing the code.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1626,7 +1626,7 @@
            Write = 2,
            ReadWrite = Read | Write
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1706,7 +1706,7 @@
                                           Visibilities visibility,
                                           MemberScopes scope);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1755,7 +1755,7 @@
 
         We support this special conversion in order to provide programmers with a consistent way of writing the default value of an enum type, which by CLR decree is “all bits zero” for any value type.
       author: Anders Hejlsberg
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1795,7 +1795,7 @@
         - A very good default value (when there is such a default)
         - An error value that is checked by your APIs (when there is no good default value and you want to ensure that users set something)
       author: Vance Morrison
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1837,7 +1837,7 @@
 
         In general, it is safe to add members to flag enums. Compared to regular enums, it is much harder to write code against them that would be broken by the presence of new values.
       author: Anthony Moore
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1876,7 +1876,7 @@
           private class OrderEnumerator : IEnumerator<Order> {
           }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1899,7 +1899,7 @@
   section: 4.9 Nested Types
   anchor: sec4_9
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1928,7 +1928,7 @@
     - kind: annotation
       text: The main scenario where we expose nested types in the Base Class Libraries is for struct-based enumerators (which also violate the guideline of not making mutable structs). We feel that these are generally OK because (a) they help with performance by avoiding heap-based allocation and interface dispatch and (b) they’re almost always used in a foreach statement and most callers aren’t aware that a struct enumerator was involved.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1954,7 +1954,7 @@
   body:
     - kind: paragraph
       text: For example, an enum passed to a method defined on a class should not be defined as a nested type in the class.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1969,7 +1969,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: Whether a type is likely to be referenced outside its containing type is a design judgment; not machine-checkable. Visible nested types are reported under FDG4053.
+  notes: Whether a type is likely to be referenced outside its containing type is a design judgment; not machine-checkable. Visible nested types other than enums are reported under FDG4053; CA1034 does not report nested enums, which is this rule's example.
 - id: FDG4055
   strength: DO NOT
   text: use nested types if they need to be instantiated by client code.
@@ -1981,7 +1981,7 @@
       text: If a type has a public constructor, it probably should not be nested.
     - kind: paragraph
       text: If a type can be instantiated, that seems to indicate the type has a place in the framework on its own (you can create it, work with it, and destroy it without ever using the outer type), and thus should not be nested. Inner types should not be widely reused outside of the outer type without any relationship whatsoever to the outer type.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2006,7 +2006,7 @@
   body:
     - kind: paragraph
       text: In general, use nested types sparingly, and avoid their exposure as public types.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2053,13 +2053,13 @@
 
           public void Write(long value); // CLS-compliant alternative
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1014
-    coverage: full
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -2069,7 +2069,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Library only: the text scopes it to assemblies with public types, for use by all .NET languages. CA1014 reports an assembly with externally visible types and no CLSCompliantAttribute, without a source location. CA1014 has no code fix.'
+  notes: 'Library only: the text scopes it to assemblies with public types, for use by all .NET languages. CA1014 reports an assembly with externally visible types and no CLSCompliantAttribute, without a source location. CA1014 has no code fix. CLSCompliant(false) on the assembly also satisfies CA1014, though the rule asks for true.'
 - id: FDG4058
   strength: DO
   text: apply `AssemblyVersionAttribute` to assemblies with public types.
@@ -2079,7 +2079,7 @@
   body:
     - kind: code
       text: '[assembly:AssemblyVersion(...)]'
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2109,7 +2109,7 @@
         [assembly:AssemblyCompany("Microsoft Corporation")]
         [assembly:AssemblyProduct("Microsoft .NET Framework")]
         [assembly:AssemblyDescription(...)]
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2127,7 +2127,7 @@
   analyzer:
     message: Apply {0} to the assembly
     category: Types
-  notes: 'Library only: the attributes inform the users of an assembly through tools. FDG4059 reports, once per attribute and without a source location, an assembly with externally visible types that lacks AssemblyTitleAttribute, AssemblyCompanyAttribute, AssemblyProductAttribute or AssemblyDescriptionAttribute, the four the book lists. SDK-style projects generate the first three, and AssemblyDescription only when the Description property is set.'
+  notes: 'Library only: the attributes inform the users of an assembly through tools. FDG4059 reports, once per attribute and without a source location, an assembly with externally visible types that lacks AssemblyTitleAttribute, AssemblyCompanyAttribute, AssemblyProductAttribute or AssemblyDescriptionAttribute, the four the book lists. SDK-style projects generate the first three, and AssemblyDescription only when the Description property is set. These assembly-level diagnostics have no source location, so they appear only in build output and never in the Stop hook.'
 - id: FDG4060
   strength: CONSIDER
   text: applying `ComVisible(false)` to your assembly. COM-callable APIs need to be designed explicitly. As a rule of thumb, .NET assemblies should not be visible to COM. If you do design the APIs to be COM-callable, you can apply `ComVisible(true)` either to the individual APIs or to the whole assembly.
@@ -2135,7 +2135,7 @@
   section: 4.10 Types and Assembly Metadata
   anchor: sec4_10
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2159,7 +2159,7 @@
   section: 4.10 Types and Assembly Metadata
   anchor: sec4_10
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2177,7 +2177,7 @@
   analyzer:
     message: Apply {0} to the assembly
     category: Types
-  notes: 'Library only: the attributes inform the users of an assembly. FDG4061 reports, once per attribute and without a source location, an assembly with externally visible types that lacks AssemblyFileVersionAttribute or AssemblyCopyrightAttribute. SDK-style projects generate the file version, and the copyright only when the Copyright property is set.'
+  notes: 'Library only: the attributes inform the users of an assembly. FDG4061 reports, once per attribute and without a source location, an assembly with externally visible types that lacks AssemblyFileVersionAttribute or AssemblyCopyrightAttribute. SDK-style projects generate the file version, and the copyright only when the Copyright property is set. These assembly-level diagnostics have no source location, so they appear only in build output and never in the Stop hook.'
 - id: FDG4062
   strength: CONSIDER
   text: using the format `<V>.<S>.<B>.<R>` for the assembly file version, where `V` is the major version number, `S` is the servicing number, `B` is the build number, and `R` is the build revision number.
@@ -2189,7 +2189,7 @@
       text: 'For example, this is how the version attribute is applied in `System.Core.dll`, which shipped as part of .NET Framework 3.5:'
     - kind: code
       text: '[assembly:AssemblyFileVersion("3.5.21022.8")]'
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2221,7 +2221,7 @@
       text: A strongly typed string provides the most benefit when most code treats it as if it were an enum, such as HTTP header names or cryptographic digest algorithms. When the number of possible values is too large, such as all possible filenames, the value in a strongly typed string is reduced to just parameter consistency via type checking.
     - kind: paragraph
       text: A variation of strongly typed strings is used in .NET for the `JsonEncodedText` type, where the type indicates that the value has already been processed by a string escaping/normalization process. This is a valuable approach, but does not represent a strongly typed string.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2246,7 +2246,7 @@
   body:
     - kind: paragraph
       text: The strongly typed string type should follow other guidance for immutable value types, such as using the `readonly` modifier on the type and implementing `IEquatable<T>`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2269,7 +2269,7 @@
   section: 4.11 Strongly Typed Strings
   anchor: sec4_11
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2302,7 +2302,7 @@
       text: There is not a prescriptive guideline for the name of the property. If no obvious name presents itself, remember that “Value” is preferred to “String” (section 3.2.3).
     - kind: paragraph
       text: For more information on overloading `ToString()`, see section 8.9.3.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2329,7 +2329,7 @@
       text: Overriding the equality operators allows for a strongly typed string type to syntactically look like either a string or an enum in common code patterns.
     - kind: paragraph
       text: Strongly typed strings should use ordinal string equality by default. However, when a specific domain represents case-insensitive content, the `IEquatable<T>` behavior can be based on other string comparisons.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2358,7 +2358,7 @@
       text: |-
         // This should always succeed.
         HashAlgorithmName newName = new HashAlgorithmName(cur.Name);
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2383,7 +2383,7 @@
   body:
     - kind: paragraph
       text: The enum-like IntelliSense experience is a very strong motivator for strongly typed string types.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2410,7 +2410,7 @@
       text: The existence of an overload that accepts a `System.String` instance instead of a strongly typed string can save a few characters at the call site for callers that have only the underlying string value available, but it forces developers new to your API to understand the difference between the two methods.
     - kind: paragraph
       text: If you have recently defined a strongly typed string type to help clarify valid inputs to a method, adding an overload that accepts the strongly typed string provides value. In that case, consider marking the original `System.String`-based overload as `[EditorBrowsable(EditorBrowsableState.Advanced)]`, `[EditorBrowsable(EditorBrowsableState. Never)]`, or `[Obsolete]`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment

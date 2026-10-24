@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis.Testing;
 using Verifier = FrameworkDesignGuidelines.Analyzers.Tests.Verifiers.AnalyzerVerifier<
     FrameworkDesignGuidelines.Analyzers.Types.ValueTypeEquatableAnalyzer>;
 
@@ -29,6 +30,19 @@ public sealed class ValueTypeEquatableTests
                 }
             }
             """);
+    }
+
+    [Fact]
+    public Task Generic_struct_is_named_with_its_type_parameters()
+    {
+        return Verifier.VerifyWithAsync(
+            """
+            public struct {|#0:Gen2|}<T>
+            {
+                public T Value;
+            }
+            """,
+            new DiagnosticResult(FdgDescriptors.FDG4032).WithLocation(0).WithArguments("Gen2<T>"));
     }
 
     [Fact]

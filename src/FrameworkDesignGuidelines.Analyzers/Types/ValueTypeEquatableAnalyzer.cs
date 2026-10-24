@@ -38,7 +38,8 @@ public sealed class ValueTypeEquatableAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(FdgDescriptors.FDG4032, location, type.Name));
+        context.ReportDiagnostic(Diagnostic.Create(
+            FdgDescriptors.FDG4032, location, type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
     }
 
     private static bool IsEquatableOf(INamedTypeSymbol @interface, INamedTypeSymbol equatable, INamedTypeSymbol type)

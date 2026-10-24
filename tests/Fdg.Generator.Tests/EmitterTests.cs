@@ -321,7 +321,7 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
-    public void Most_specific_prefix_wins_so_a_chapter_introduction_can_join_the_first_split()
+    public void Chapter_number_prefix_matches_only_the_chapter_introduction()
     {
         GeneratorInput input = Edit(
             Split(_ => true, Part("ch09-first", "9", "9.1"), Part("ch09-rest", "9.2", "9.3")),
@@ -333,6 +333,28 @@ public sealed class EmitterTests : IDisposable
         Assert.Contains("**FDG9001**", Content("references/ch09-first.md"));
         Assert.DoesNotContain("**FDG9001**", Content("references/ch09-rest.md"));
         Assert.Contains("## 9.2 Tool Checked", Content("references/ch09-rest.md"));
+    }
+
+    [Fact]
+    public void Chapter_number_prefix_does_not_cover_an_omitted_section()
+    {
+        GeneratorInput input = Split(_ => true, Part("a", "9", "9.1"), Part("b", "9.2"));
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("(section 9.3) matches no reference split.", exception.Message);
+    }
+
+    [Fact]
+    public void Nested_prefixes_in_two_splits_fail()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-a", "9.1", "9.2", "9.3"), Part("ch09-b", "9.1.2")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.1.2 Foo" } : r);
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("matches more than one reference split (ch09-a, ch09-b)", exception.Message);
     }
 
     [Fact]

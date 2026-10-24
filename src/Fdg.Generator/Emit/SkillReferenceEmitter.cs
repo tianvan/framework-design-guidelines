@@ -68,11 +68,7 @@ public static class SkillReferenceEmitter
         foreach (Rule rule in file.Rules)
         {
             string number = RuleText.SectionNumber(rule);
-            // The most specific prefix wins, so a split can list the chapter number for the rules before its first section.
-            int MatchLength(ReferenceSplit split) =>
-                split.Sections.Where(prefix => IsInSection(number, prefix)).Select(prefix => prefix.Length).DefaultIfEmpty(-1).Max();
-            int best = file.References.Max(MatchLength);
-            ReferenceSplit[] matches = best < 0 ? [] : file.References.Where(r => MatchLength(r) == best).ToArray();
+            ReferenceSplit[] matches = file.References.Where(r => r.Sections.Any(prefix => IsInSection(number, prefix))).ToArray();
             if (matches.Length == 0)
             {
                 throw new GenerationException(
@@ -99,10 +95,13 @@ public static class SkillReferenceEmitter
         return file.References.Select(r => new ReferencePart(r.File, rulesBySplit[r], SectionRange(r))).ToList();
     }
 
-    /// <summary>Whether the section number is the prefix itself or a section below it: <c>5.1</c> matches <c>5.1.2</c>, not <c>5.10</c>.</summary>
+    /// <summary>
+    /// Whether the section number is the prefix itself or a section below it: <c>5.1</c> matches <c>5.1.2</c>, not <c>5.10</c>.
+    /// A bare chapter number such as <c>4</c> matches only the chapter introduction, so it cannot cover an omitted section.
+    /// </summary>
     private static bool IsInSection(string number, string prefix)
     {
-        return number == prefix || number.StartsWith(prefix + ".", StringComparison.Ordinal);
+        return number == prefix || (prefix.Contains('.') && number.StartsWith(prefix + ".", StringComparison.Ordinal));
     }
 
     /// <summary>The first and last section of the split in numeric order, however <c>meta.yaml</c> lists them.</summary>

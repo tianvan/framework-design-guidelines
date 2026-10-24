@@ -220,7 +220,11 @@ the new analyzers are counted. Every report was checked, except FDG4032 (37; 20 
 - **CA1050.** Public types declared outside any namespace in internal-b (models and HTTP parameter holders).
 - **CA1052.** Public classes with only static members, neither static nor sealed: HTTP parameter builders and a user
   holder. All true. Their fix (make the class static) is breaking, so on API that already existed they do not block.
-- **CA1028.** `sbyte` enums with no interop use; true warnings of a CONSIDER rule (suggestion).
+- **CA1028.** Six `sbyte` enums of two to eight values, re-judged against all three exceptions of the FDG4041 list.
+  None is a flags enum or used for unmanaged interop. None falls under the space-saving exception either: each is a
+  single auto-property of an effect class with one instance per slide effect, not a field of a frequently instantiated
+  structure, an array element or bulk-serialized data, and the class's size is rounded up to a DWORD anyway. All six
+  are true reports of a CONSIDER rule (suggestion).
 - **IDE0251.** Members of internal mutable structs (an enumerator, a parser, a buffer, a JSON position) that do not
   change the instance: all true.
 - **FDG4032.** Public structs without `IEquatable<T>`: polly's readonly argument structs and its `Outcome<TResult>` and

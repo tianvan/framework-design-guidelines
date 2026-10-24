@@ -14,7 +14,7 @@ namespace FrameworkDesignGuidelines.Analyzers.Types;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class FileVersionFormatAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly Regex _fourNumbers = new(@"^\d+\.\d+\.\d+\.\d+$", RegexOptions.CultureInvariant);
+    private static readonly Regex _fourNumbers = new(@"^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\z", RegexOptions.CultureInvariant);
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
         ImmutableArray.Create(FdgDescriptors.FDG4062);

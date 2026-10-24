@@ -28,6 +28,20 @@ public sealed class FileVersionFormatTests
             """);
     }
 
+    [Theory]
+    [InlineData(@"1.2.3.4\n")]
+    [InlineData("١.٢.٣.٤")]
+    public Task Trailing_newline_and_non_ascii_digits_are_reported(string version)
+    {
+        // The Win32 file version needs ASCII digits and nothing after the fourth number.
+        return Verifier.VerifyAsync(
+            $$"""
+            using System.Reflection;
+
+            [assembly: {|FDG4062:AssemblyFileVersion("{{version}}")|}]
+            """);
+    }
+
     [Fact]
     public Task File_version_from_a_constant_is_checked()
     {

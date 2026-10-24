@@ -58,6 +58,32 @@ public class BookParserTests
         Assert.Contains("check", exception.Message);
     }
 
+    [Theory]
+    [InlineData("<strong>DO</strong> report execution failures by throwing exceptions.", "<strong>DO</strong> report execution failures by returning error codes.", "FDG7001")]
+    [InlineData("<strong>DO</strong> report execution failures", "<strong>CONSIDER</strong> report execution failures", "FDG7001")]
+    [InlineData("<strong>CONSIDER</strong> terminating", "<strong>DO</strong> terminating", "FDG7002")]
+    public void Known_icon_mismatches_need_both_the_strength_and_the_text(string original, string replacement, string id)
+    {
+        // The same file (ch07.xhtml) with either the text or the strength changed is an ordinary mismatch again.
+        string source = File.ReadAllText(Fixture("ch07.xhtml"));
+        Assert.Contains(original, source);
+        string directory = Directory.CreateTempSubdirectory("fdg-book-").FullName;
+        try
+        {
+            string path = Path.Combine(directory, "ch07.xhtml");
+            File.WriteAllText(path, source.Replace(original, replacement));
+
+            BookFormatException exception = Assert.Throws<BookFormatException>(() => BookParser.Parse(path, "7"));
+
+            Assert.Contains(id, exception.Message);
+            Assert.Contains("requires a check icon", exception.Message);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     [Fact]
     public void Text_excludes_strength_and_icon()
     {
