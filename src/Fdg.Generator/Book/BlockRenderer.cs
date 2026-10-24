@@ -266,6 +266,8 @@ public static partial class BlockRenderer
             string marker = list.LocalName == "ol" ? $"{number++}." : "-";
             var head = new StringBuilder();
             var tail = new List<string>();
+            // Block content in an item has to start at the column of the item text, or Markdown reads it as a paragraph continuation.
+            string contentIndent = indent + new string(' ', marker.Length + 1);
             foreach (INode child in item.ChildNodes)
             {
                 if (child is IElement { LocalName: "ul" or "ol" } nested)
@@ -274,12 +276,13 @@ public static partial class BlockRenderer
                 }
                 else if (child is IElement { LocalName: "pre" } pre)
                 {
-                    tail.AddRange(Normalizer.Code(pre.TextContent).Split('\n').Select(l => $"{indent}  {l}"));
+                    tail.Add($"{contentIndent}```");
+                    tail.AddRange(Normalizer.Code(pre.TextContent).Split('\n').Select(l => l.Length == 0 ? l : contentIndent + l));
+                    tail.Add($"{contentIndent}```");
                 }
                 else if (child is IElement { LocalName: "div" } sidebar && sidebar.ClassList.Contains("sidebar"))
                 {
-                    string quoteIndent = indent + new string(' ', marker.Length + 1);
-                    tail.AddRange(Quote(Annotation(sidebar)).Select(l => quoteIndent + l));
+                    tail.AddRange(Quote(Annotation(sidebar)).Select(l => contentIndent + l));
                 }
                 else if (child is IElement element && IsCodeLink(element))
                 {

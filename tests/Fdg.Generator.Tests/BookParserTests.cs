@@ -1,3 +1,5 @@
+using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
 using Fdg.Generator.Book;
 using Fdg.Generator.Rules;
 
@@ -270,11 +272,33 @@ public class BookParserTests
         Assert.Equal(
             "- an *emphasized* item\n" +
             "- an item with code\n" +
+            "  ```\n" +
             "  int x = 1;\n" +
+            "  ```\n" +
             "- an item with a note\n" +
             "  > **Brad Abrams**\n" +
             "  >\n" +
             "  > A nested *note*.",
             list.Text);
+    }
+
+    [Fact]
+    public void Code_in_a_list_item_is_fenced_at_the_content_column_of_the_item()
+    {
+        IElement list = new HtmlParser().ParseDocument(
+            "<ol><li><p>outer</p><ul><li><p>inner</p><pre>int a;\nint b;</pre></li></ul><pre>int c;</pre></li></ol>")
+            .QuerySelector("ol")!;
+
+        Assert.Equal(
+            "1. outer\n" +
+            "  - inner\n" +
+            "    ```\n" +
+            "    int a;\n" +
+            "    int b;\n" +
+            "    ```\n" +
+            "   ```\n" +
+            "   int c;\n" +
+            "   ```",
+            BlockRenderer.List(list).Text);
     }
 }
