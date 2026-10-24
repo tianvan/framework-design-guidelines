@@ -66,7 +66,9 @@ public static class StopReport
     /// The rules a diagnostic checks under <paramref name="profile"/>, most relevant first, at most
     /// <see cref="MaxRulesPerIssue"/>. For IDE1006, if any of its rules carries naming tags, the tags decide: only the
     /// rules that list the symbol kind and the failure of <paramref name="naming"/> are quoted, and none when it is
-    /// <see langword="null"/> because the position or the message could not be read. Otherwise the rules sharing more
+    /// <see langword="null"/> because the position or the message could not be read; the narrower a rule's tags (the
+    /// fewer symbol kinds and failures it lists), the earlier it comes, so the rule written for this kind of symbol
+    /// beats the general one. Otherwise the rules sharing more
     /// words with the message and the flagged line come first and the manifest's order is kept among equals. When
     /// there are more than <see cref="MaxRulesPerIssue"/>, only rules whose text has a word of the message that is
     /// not in the flagged line are kept, so a message that names no rule's subject quotes no rule rather than a wrong one.
@@ -113,7 +115,8 @@ public static class StopReport
         string[] words = Words(message + " " + sourceLine);
         return rules
             .Select((rule, index) => (Rule: rule, Index: index, Score: words.Count(w => rule.Text.Contains(w, StringComparison.OrdinalIgnoreCase))))
-            .OrderByDescending(r => r.Score)
+            .OrderBy(r => tagged ? r.Rule.Naming!.Symbols.Count + r.Rule.Naming.Failures.Count : 0)
+            .ThenByDescending(r => r.Score)
             .ThenBy(r => r.Index)
             .Select(r => r.Rule)
             .Take(MaxRulesPerIssue)

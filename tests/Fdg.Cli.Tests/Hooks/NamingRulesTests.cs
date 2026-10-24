@@ -36,6 +36,12 @@ public sealed class NamingRulesTests
     }
 
     [Fact]
+    public void Private_field_casing_quotes_the_most_specific_rules_first()
+    {
+        Assert.Equal(["FDGA054", "FDG3005"], Quoted(NamingSymbolKind.PrivateField, NamingFailure.Casing));
+    }
+
+    [Fact]
     public void Upper_case_parameter_quotes_parameter_rules_only()
     {
         string[] quoted = Quoted(NamingSymbolKind.Parameter, NamingFailure.Casing);
@@ -65,6 +71,7 @@ public sealed class NamingRulesTests
     [InlineData(NamingSymbolKind.ConstLocal, "FDGA053")]
     [InlineData(NamingSymbolKind.Local, "FDGA056")]
     [InlineData(NamingSymbolKind.PrivateField, "FDGA054")]
+    [InlineData(NamingSymbolKind.VisibleField, "FDG3077")]
     [InlineData(NamingSymbolKind.TypeParameter, "FDG3001")]
     public void Each_symbol_kind_finds_its_rule(NamingSymbolKind kind, string expected)
     {
@@ -80,9 +87,7 @@ public sealed class NamingRulesTests
     [Fact]
     public void Lower_case_public_field_quotes_the_visible_field_rules()
     {
-        string[] quoted = Quoted(NamingSymbolKind.VisibleField, NamingFailure.Casing);
-
-        Assert.All(quoted, id => Assert.Contains(id, new[] { "FDG3001", "FDG3077", "FDG3079", "FDGA052" }));
+        Assert.Equal(["FDG3077", "FDG3079"], Quoted(NamingSymbolKind.VisibleField, NamingFailure.Casing));
     }
 
     [Fact]
