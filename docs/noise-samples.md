@@ -222,7 +222,7 @@ the new analyzers are counted. Every report was checked, except FDG4032 (37; 20 
   holder. All true. Their fix (make the class static) is breaking, so on API that already existed they do not block.
 - **CA1028.** Six `sbyte` enums of two to eight values, re-judged against all three exceptions of the FDG4041 list.
   None is a flags enum or used for unmanaged interop. None falls under the space-saving exception either: each is a
-  single auto-property of an effect class with one instance per slide effect, not a field of a frequently instantiated
+  single auto-property of a class with only a few instances, not a field of a frequently instantiated
   structure, an array element or bulk-serialized data, and the class's size is rounded up to a DWORD anyway. All six
   are true reports of a CONSIDER rule (suggestion).
 - **IDE0251.** Members of internal mutable structs (an enumerator, a parser, a buffer, a JSON position) that do not
