@@ -9,8 +9,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 2 Framework Design Fundamentals | 32 | 0 | 0 | 32 | 0 | 32 |
 | 3 Naming Guidelines | 87 | 34 | 8 | 45 | 0 | 87 |
 | 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 70 |
+| 5 Member Design | 133 | 9 | 11 | 113 | 0 | 0 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 260 | 94 | 20 | 146 | 0 | 260 |
+| Total | 393 | 103 | 31 | 259 | 0 | 260 |
 
 ## Non-guideline content
 
@@ -57,6 +58,19 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 - **4.10** (background): The introduction, which says several attributes should be applied to assemblies with public types, is background for FDG4057 to FDG4062.
 - **4.11** (rationale): The narrative on the gap between enums and strings (the RSACryptoServiceProvider.SignData example), footnote 6 and the HashAlgorithmName example of a strongly typed string are rationale for FDG4063 to FDG4070.
 - **Summary** (background): The chapter summary states no guideline.
+
+### Chapter 5: Member Design
+
+- **5** (background): The chapter introduction (methods, properties, events, constructors and fields are members; members can be virtual or nonvirtual, concrete or abstract, static or instance; chapter 6 adds the guidelines for extensibility) is background for the whole chapter.
+- **5.1** (background): The section introduction lists the member kinds that the general guidelines of 5.1 cover. It states no guideline.
+- **5.1.1** (rationale): The definition of member overloading and its signature rules, the WriteLine example, the Rector annotation and the DateTime example are rationale for FDG5001 to FDG5016; operator overloading is covered in section 5.7.
+- **5.1.2** (background): The definition of explicit interface member implementation and its example are background for FDG5017 to FDG5022.
+- **5.1.3** (rationale): The narrative on the two API styles, properties and methods, and when each reads better is rationale for FDG5023 to FDG5025.
+- **5.2** (background): The section introduction (properties are smart fields, with the syntax of fields and the flexibility of methods) is background for FDG5026 to FDG5031.
+- **5.2.1** (background): The definition of an indexer and the String example are background for FDG5032 to FDG5040.
+- **5.2.2** (background): The TextChanged example of a property change notification event is background for FDG5041 and FDG5042.
+- **5.3** (background): The section introduction (type constructors and instance constructors, the Customer example, default constructors, and constructors as the most natural way to create instances) is background for FDG5043 to FDG5052.
+- **5.3.1** (background): The definition of a type (static) constructor and when the runtime runs it is background for FDG5053 to FDG5055.
 
 ### Appendix A: C# Coding Style Conventions
 

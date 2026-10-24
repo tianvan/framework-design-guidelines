@@ -48,3 +48,14 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
   sdk CA1034, partial; library only. Chosen for its exception (rarely declared types, struct enumerators), which CA1034 cannot detect.
 - [ ] FDG4070 AVOID creating overloads across `System.String` and a strongly typed string, unless the `System.String` overload was released in a previous version.
   judgment. Chosen because the book shows the check icon here and the strength word (AVOID) is used; its exception needs the shipped API.
+
+## Chapter 5: Member Design (5.1 to 5.3)
+
+- [ ] FDG5003 AVOID being inconsistent in the ordering of parameters in overloaded members. Parameters with the same name should appear in the same position in all overloads.
+  fdg FDG5003, partial; no autofix. Chosen because noise narrowed the new analyzer three times on rules stated elsewhere in the book (CancellationToken last, overloads with more type parameters, exception constructors), on top of the `params` and `out` cases of the body.
+- [ ] FDG5022 DO provide a protected virtual member that offers the same functionality as the explicitly implemented member if the functionality is meant to be specialized by derived classes.
+  sdk CA1033, partial; breaking. Chosen because the text is conditional (only if derived classes are meant to specialize it), which CA1033 cannot see, and its fix adds a member or unseals the type.
+- [ ] FDG5035 AVOID indexers with parameter types other than `System.Int32`, `System.Int64`, `System.String`, `System.Range`, `System.Index`, or an enum, except on dictionary-like types.
+  sdk CA1043, partial; no autofix. Chosen for its exception (dictionary-like types), which CA1043 cannot detect, and because CA1043 accepts `Object` and `Int16`, which the text does not list.
+- [ ] FDG5046 DO use the same name for constructor parameters and a property if the constructor parameters are used just to set the property.
+  fdg FDG5046, partial; no autofix. Chosen because the new analyzer decides "used just to set the property" from the syntax (one use, `P = p` or `P = p ?? throw`), and because renaming a public parameter breaks callers that use named arguments.

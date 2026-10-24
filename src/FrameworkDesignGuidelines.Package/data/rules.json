@@ -2849,6 +2849,1909 @@
       "naming": null
     },
     {
+      "id": "FDG5001",
+      "strength": "DO",
+      "text": "try to use descriptive parameter names to indicate the default used by shorter overloads.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5002",
+      "strength": "DO NOT",
+      "text": "arbitrarily vary parameter names in overloads. If a parameter in one overload represents the same input as a parameter in another overload, the parameters should have the same name.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5003",
+      "strength": "AVOID",
+      "text": "being inconsistent in the ordering of parameters in overloaded members. Parameters with the same name should appear in the same position in all overloads.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [
+        "FDG5003"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5004",
+      "strength": "DO",
+      "text": "make only the longest overload virtual (if extensibility is required). Shorter overloads should simply call through to a longer overload.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [
+        "FDG5004"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5005",
+      "strength": "DO NOT",
+      "text": "use `ref`, `out`, or `in` modifiers to overload members.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [
+        "FDG5005"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5006",
+      "strength": "DO NOT",
+      "text": "have overloads with parameters at the same position and similar types, yet with different semantics.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5007",
+      "strength": "DO",
+      "text": "allow `null` to be passed for optional arguments.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5008",
+      "strength": "DO NOT",
+      "text": "have overloads with a generic type parameter in one method and a specific type in another.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [
+        "FDG5008"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5009",
+      "strength": "CONSIDER",
+      "text": "using default parameters on the longest overload of a method.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5010",
+      "strength": "DO",
+      "text": "provide a simple overload, with no default parameters, for any method with two or more defaulted parameters.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [
+        "FDG5010"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5011",
+      "strength": "DO NOT",
+      "text": "use default parameters, for any parameter type other than `CancellationToken`, on interface methods or virtual methods on classes.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [
+        "FDG5011"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5012",
+      "strength": "DO NOT",
+      "text": "change the default value for a parameter once it has been publicly released.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5013",
+      "strength": "DO NOT",
+      "text": "have two overloads of a method with “compatible” required parameters that both use default parameters.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [
+        "FDG5013"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5014",
+      "strength": "AVOID",
+      "text": "having two overloads of the same method that both use default parameters.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5015",
+      "strength": "DO NOT",
+      "text": "have different defaults for the same parameter in two overloads of the same method.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [
+        "FDG5015"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5016",
+      "strength": "DO",
+      "text": "move all default parameters to the new, longer overload when adding optional parameters to an existing method.",
+      "section": "5.1.1 Member Overloading",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5017",
+      "strength": "AVOID",
+      "text": "implementing interface members explicitly without having a strong reason to do so.",
+      "section": "5.1.2 Implementing Interface Members Explicitly",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5018",
+      "strength": "CONSIDER",
+      "text": "implementing interface members explicitly if the members are intended to be called only through the interface.",
+      "section": "5.1.2 Implementing Interface Members Explicitly",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5019",
+      "strength": "CONSIDER",
+      "text": "implementing interface members explicitly to simulate variance (change parameters or return types in “overridden” members).",
+      "section": "5.1.2 Implementing Interface Members Explicitly",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5020",
+      "strength": "CONSIDER",
+      "text": "implementing interface members explicitly to hide a member and add an equivalent member with a better name.",
+      "section": "5.1.2 Implementing Interface Members Explicitly",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5021",
+      "strength": "DO NOT",
+      "text": "use explicit members as a security boundary.",
+      "section": "5.1.2 Implementing Interface Members Explicitly",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5022",
+      "strength": "DO",
+      "text": "provide a protected virtual member that offers the same functionality as the explicitly implemented member if the functionality is meant to be specialized by derived classes.",
+      "section": "5.1.2 Implementing Interface Members Explicitly",
+      "diagnostics": [
+        "CA1033"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5023",
+      "strength": "CONSIDER",
+      "text": "using a property if the member represents a logical attribute of the type.",
+      "section": "5.1.3 Choosing Between Properties and Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5024",
+      "strength": "DO",
+      "text": "use a property, rather than a method, if the value of the property is stored in the process memory and the property would just provide access to the value.",
+      "section": "5.1.3 Choosing Between Properties and Methods",
+      "diagnostics": [
+        "CA1024"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5025",
+      "strength": "DO",
+      "text": "use a method, rather than a property, in the following situations:",
+      "section": "5.1.3 Choosing Between Properties and Methods",
+      "diagnostics": [
+        "CA1819"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5026",
+      "strength": "DO",
+      "text": "create get-only properties if the caller should not be able to change the value of the property.",
+      "section": "5.2 Property Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5027",
+      "strength": "DO NOT",
+      "text": "provide set-only properties or properties with the setter having broader accessibility than the getter.",
+      "section": "5.2 Property Design",
+      "diagnostics": [
+        "CA1044"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5028",
+      "strength": "DO",
+      "text": "provide sensible default values for all properties, ensuring that the defaults do not result in a security hole or terribly inefficient code.",
+      "section": "5.2 Property Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5029",
+      "strength": "DO",
+      "text": "allow properties to be set in any order, even if this results in a temporary invalid state of the object.",
+      "section": "5.2 Property Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5030",
+      "strength": "DO",
+      "text": "preserve the previous value if a property setter throws an exception.",
+      "section": "5.2 Property Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5031",
+      "strength": "AVOID",
+      "text": "throwing exceptions from property getters.",
+      "section": "5.2 Property Design",
+      "diagnostics": [
+        "CA1065"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5032",
+      "strength": "CONSIDER",
+      "text": "using indexers to provide access to data stored in an internal array.",
+      "section": "5.2.1 Indexed Property Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5033",
+      "strength": "CONSIDER",
+      "text": "providing indexers on types representing collections of items.",
+      "section": "5.2.1 Indexed Property Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5034",
+      "strength": "AVOID",
+      "text": "using indexed properties with more than one parameter.",
+      "section": "5.2.1 Indexed Property Design",
+      "diagnostics": [
+        "FDG5034"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5035",
+      "strength": "AVOID",
+      "text": "indexers with parameter types other than `System.Int32`, `System.Int64`, `System.String`, `System.Range`, `System.Index`, or an enum, except on dictionary-like types.",
+      "section": "5.2.1 Indexed Property Design",
+      "diagnostics": [
+        "CA1043"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5036",
+      "strength": "DO",
+      "text": "use the name `Item` for indexed properties unless there is an obviously better name (e.g., see the `Chars` property on `System.String`).",
+      "section": "5.2.1 Indexed Property Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5037",
+      "strength": "DO NOT",
+      "text": "provide both an indexer and methods that are semantically equivalent.",
+      "section": "5.2.1 Indexed Property Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5038",
+      "strength": "DO NOT",
+      "text": "provide more than one family of overloaded indexers in one type.",
+      "section": "5.2.1 Indexed Property Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5039",
+      "strength": "DO NOT",
+      "text": "use nondefault indexed properties.",
+      "section": "5.2.1 Indexed Property Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5040",
+      "strength": "DO",
+      "text": "return the declaring type from an indexer that accepts `System.Range`.",
+      "section": "5.2.1 Indexed Property Design",
+      "diagnostics": [
+        "FDG5040"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5041",
+      "strength": "CONSIDER",
+      "text": "raising change notification events when property values in high-level APIs (usually designer components) are modified.",
+      "section": "5.2.2 Property Change Notification Events",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5042",
+      "strength": "CONSIDER",
+      "text": "raising change notification events when the value of a property changes via external forces.",
+      "section": "5.2.2 Property Change Notification Events",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5043",
+      "strength": "CONSIDER",
+      "text": "providing simple, ideally default, constructors.",
+      "section": "5.3 Constructor Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5044",
+      "strength": "CONSIDER",
+      "text": "using a static factory method instead of a constructor if the semantics of the desired operation do not map directly to the construction of a new instance, or if following the constructor design guidelines feels unnatural.",
+      "section": "5.3 Constructor Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5045",
+      "strength": "DO",
+      "text": "use constructor parameters as shortcuts for setting main properties.",
+      "section": "5.3 Constructor Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5046",
+      "strength": "DO",
+      "text": "use the same name for constructor parameters and a property if the constructor parameters are used just to set the property.",
+      "section": "5.3 Constructor Design",
+      "diagnostics": [
+        "FDG5046"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5047",
+      "strength": "CONSIDER",
+      "text": "adding a property for each parameter in a constructor.",
+      "section": "5.3 Constructor Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5048",
+      "strength": "DO",
+      "text": "minimal work in the constructor.",
+      "section": "5.3 Constructor Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5049",
+      "strength": "DO",
+      "text": "throw exceptions from instance constructors, if appropriate.",
+      "section": "5.3 Constructor Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5050",
+      "strength": "DO",
+      "text": "explicitly declare the public default constructor in classes, if such a constructor is required.",
+      "section": "5.3 Constructor Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5051",
+      "strength": "AVOID",
+      "text": "explicitly defining default constructors on structs.",
+      "section": "5.3 Constructor Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5052",
+      "strength": "AVOID",
+      "text": "calling virtual members on an object inside its constructor.",
+      "section": "5.3 Constructor Design",
+      "diagnostics": [
+        "CA2214"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5053",
+      "strength": "DO",
+      "text": "make static constructors private.",
+      "section": "5.3.1 Type Constructor Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5054",
+      "strength": "DO NOT",
+      "text": "throw exceptions from static constructors.",
+      "section": "5.3.1 Type Constructor Guidelines",
+      "diagnostics": [
+        "CA1065"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5055",
+      "strength": "CONSIDER",
+      "text": "initializing static fields inline rather than explicitly using static constructors, because the runtime is able to optimize the performance of types that don’t have an explicitly defined static constructor.",
+      "section": "5.3.1 Type Constructor Guidelines",
+      "diagnostics": [
+        "CA1810",
+        "CA2207"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5056",
+      "strength": "DO",
+      "text": "use the term “raise” for events rather than “fire” or “trigger.”",
+      "section": "5.4 Event Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5057",
+      "strength": "DO",
+      "text": "use `System.EventHandler<T>` instead of manually creating new delegates to be used as event handlers.",
+      "section": "5.4 Event Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5058",
+      "strength": "CONSIDER",
+      "text": "using a subclass of `EventArgs` as the event argument, unless you are absolutely sure the event will never need to carry any data to the event handling method, in which case you can use the `EventArgs` type directly.",
+      "section": "5.4 Event Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5059",
+      "strength": "DO",
+      "text": "use a protected virtual method to raise each event. This is applicable only to nonstatic events on unsealed classes—not to structs, sealed classes, or static events.",
+      "section": "5.4 Event Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5060",
+      "strength": "DO",
+      "text": "take one parameter to the protected method that raises an event.",
+      "section": "5.4 Event Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5061",
+      "strength": "DO NOT",
+      "text": "pass `null` as the sender when raising a nonstatic event.",
+      "section": "5.4 Event Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5062",
+      "strength": "DO",
+      "text": "pass `null` as the sender when raising a static event.",
+      "section": "5.4 Event Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5063",
+      "strength": "DO NOT",
+      "text": "pass `null` as the event data parameter when raising an event.",
+      "section": "5.4 Event Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5064",
+      "strength": "CONSIDER",
+      "text": "raising events that the end user can cancel. This guideline applies only to pre-events.",
+      "section": "5.4 Event Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5065",
+      "strength": "DO NOT",
+      "text": "provide instance fields that are public or protected.",
+      "section": "5.5 Field Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5066",
+      "strength": "DO",
+      "text": "use constant fields for constants that will never change.",
+      "section": "5.5 Field Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5067",
+      "strength": "CONSIDER",
+      "text": "using public `static readonly` fields for predefined object instances.",
+      "section": "5.5 Field Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5068",
+      "strength": "DO NOT",
+      "text": "assign instances of mutable types to public or protected `readonly` fields.",
+      "section": "5.5 Field Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5069",
+      "strength": "AVOID",
+      "text": "frivolously defining extension methods, especially on types outside your library or framework.",
+      "section": "5.6 Extension Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5070",
+      "strength": "CONSIDER",
+      "text": "using extension methods to provide helper functionality relevant to every implementation of an interface.",
+      "section": "5.6 Extension Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5071",
+      "strength": "CONSIDER",
+      "text": "using extension methods when an instance method would introduce an unwanted dependency.",
+      "section": "5.6 Extension Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5072",
+      "strength": "CONSIDER",
+      "text": "using generic extension methods when an instance method on a generic type is not well defined for all possible type parameters.",
+      "section": "5.6 Extension Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5073",
+      "strength": "DO",
+      "text": "throw an `ArgumentNullException` when the `this` parameter in an extension method is `null`.",
+      "section": "5.6 Extension Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5074",
+      "strength": "AVOID",
+      "text": "defining extension methods on `System.Object`.",
+      "section": "5.6 Extension Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5075",
+      "strength": "CONSIDER",
+      "text": "naming the type that holds extension methods for its functionality—for example, use “Routing” instead of “[ExtendedType] Extensions.”",
+      "section": "5.6 Extension Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5076",
+      "strength": "DO NOT",
+      "text": "put extension methods in the same namespace as the extended type unless the intention is to add methods to interfaces, for generic type restriction, or for dependency management.",
+      "section": "5.6 Extension Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5077",
+      "strength": "AVOID",
+      "text": "defining two or more extension methods with the same signature, even if they reside in different namespaces.",
+      "section": "5.6 Extension Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5078",
+      "strength": "CONSIDER",
+      "text": "defining extension methods in the same namespace as the extended type if the type is an interface and if the extension methods are meant to be used in most or all cases.",
+      "section": "5.6 Extension Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5079",
+      "strength": "CONSIDER",
+      "text": "defining extension methods in the same namespace as the extended type if the type is generic and if the extension methods apply stronger type parameter restrictions than the extended type does.",
+      "section": "5.6 Extension Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5080",
+      "strength": "DO NOT",
+      "text": "define extension methods implementing a feature in namespaces normally associated with other features. Instead, define them in the namespace associated with the feature they belong to.",
+      "section": "5.6 Extension Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5081",
+      "strength": "AVOID",
+      "text": "defining operator overloads, except in types that should feel like primitive (built-in) types.",
+      "section": "5.7 Operator Overloads",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5082",
+      "strength": "CONSIDER",
+      "text": "defining operator overloads in a type that should feel like a primitive type.",
+      "section": "5.7 Operator Overloads",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5083",
+      "strength": "DO",
+      "text": "define operator overloads in structs that represent numbers (such as `System.Decimal`).",
+      "section": "5.7 Operator Overloads",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5084",
+      "strength": "DO NOT",
+      "text": "be cute when defining operator overloads.",
+      "section": "5.7 Operator Overloads",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5085",
+      "strength": "DO NOT",
+      "text": "provide operator overloads unless at least one of the operands is of the type defining the overload.",
+      "section": "5.7 Operator Overloads",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5086",
+      "strength": "DO",
+      "text": "overload operators in a symmetric fashion.",
+      "section": "5.7 Operator Overloads",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5087",
+      "strength": "DO",
+      "text": "provide methods with friendly names that correspond to each overloaded operator.",
+      "section": "5.7 Operator Overloads",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5088",
+      "strength": "DO NOT",
+      "text": "provide a conversion operator if such a conversion is not clearly expected by the end users.",
+      "section": "5.7.2 Conversion Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5089",
+      "strength": "DO NOT",
+      "text": "define conversion operators outside of a type’s domain.",
+      "section": "5.7.2 Conversion Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5090",
+      "strength": "DO NOT",
+      "text": "provide an implicit conversion operator if the conversion is potentially lossy.",
+      "section": "5.7.2 Conversion Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5091",
+      "strength": "DO NOT",
+      "text": "provide an implicit conversion operator if the conversion requires nontrivial work.",
+      "section": "5.7.2 Conversion Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5092",
+      "strength": "DO NOT",
+      "text": "throw exceptions from implicit conversion operators.",
+      "section": "5.7.2 Conversion Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5093",
+      "strength": "DO",
+      "text": "throw `System.InvalidCastException` if a call to a cast operator results in a lossy conversion and the contract of the operator does not allow lossy conversions.",
+      "section": "5.7.2 Conversion Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5094",
+      "strength": "DO",
+      "text": "only implement inequality operators on types that implement `IComparable<T>`.",
+      "section": "5.7.3 Inequality Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5095",
+      "strength": "DO",
+      "text": "implement inequality operators consistent with the `IComparable<T>` implementation.",
+      "section": "5.7.3 Inequality Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5096",
+      "strength": "DO",
+      "text": "implement `operator <=` on types that implement `operator <` and `IEquatable<T>`.",
+      "section": "5.7.3 Inequality Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5097",
+      "strength": "DO",
+      "text": "return a Boolean value from custom inequality operators.",
+      "section": "5.7.3 Inequality Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5098",
+      "strength": "DO",
+      "text": "define inequality operators consistent with their mathematical properties.",
+      "section": "5.7.3 Inequality Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5099",
+      "strength": "AVOID",
+      "text": "defining inequality operators against different types.",
+      "section": "5.7.3 Inequality Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5100",
+      "strength": "DO",
+      "text": "use the least derived parameter type that provides the functionality required by the member.",
+      "section": "5.8 Parameter Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5101",
+      "strength": "DO NOT",
+      "text": "use reserved parameters.",
+      "section": "5.8 Parameter Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5102",
+      "strength": "DO NOT",
+      "text": "have publicly exposed methods that take pointers, arrays of pointers, or multidimensional arrays as parameters.",
+      "section": "5.8 Parameter Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5103",
+      "strength": "DO",
+      "text": "place all `out` parameters following all of the by-value and `ref` parameters (excluding parameter arrays), even if it results in an inconsistency in parameter ordering between overloads (see section 5.1.1).",
+      "section": "5.8 Parameter Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5104",
+      "strength": "DO",
+      "text": "be consistent in naming parameters when overriding members or implementing interface members.",
+      "section": "5.8 Parameter Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5105",
+      "strength": "DO",
+      "text": "use enums if a member would otherwise have two or more Boolean parameters.",
+      "section": "5.8.1 Choosing Between Enum and Boolean Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5106",
+      "strength": "DO NOT",
+      "text": "use Boolean parameters unless you are absolutely sure there will never be a need for more than two values.",
+      "section": "5.8.1 Choosing Between Enum and Boolean Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5107",
+      "strength": "CONSIDER",
+      "text": "using Booleans for constructor parameters that are truly two-state values and are simply used to initialize Boolean properties.",
+      "section": "5.8.1 Choosing Between Enum and Boolean Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5108",
+      "strength": "DO",
+      "text": "validate arguments passed to public, protected, or explicitly implemented members. Throw `System.ArgumentException`, or one of its subclasses, if the validation fails.",
+      "section": "5.8.2 Validating Arguments",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5109",
+      "strength": "DO",
+      "text": "throw `ArgumentNullException` if a null argument is passed and the member does not support null arguments.",
+      "section": "5.8.2 Validating Arguments",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5110",
+      "strength": "DO",
+      "text": "validate enum parameters.",
+      "section": "5.8.2 Validating Arguments",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5111",
+      "strength": "DO NOT",
+      "text": "use `Enum.IsDefined` for enum range checks.",
+      "section": "5.8.2 Validating Arguments",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5112",
+      "strength": "DO",
+      "text": "be aware that mutable arguments might have changed after they were validated.",
+      "section": "5.8.2 Validating Arguments",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5113",
+      "strength": "AVOID",
+      "text": "using `out` or `ref` parameters except when implementing patterns that require them, such as the Try pattern (section 7.5.2).",
+      "section": "5.8.3 Parameter Passing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5114",
+      "strength": "DO NOT",
+      "text": "pass reference types by reference (`ref` or `in`).",
+      "section": "5.8.3 Parameter Passing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5115",
+      "strength": "DO NOT",
+      "text": "pass value types by read-only reference (`in`).",
+      "section": "5.8.3 Parameter Passing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5116",
+      "strength": "CONSIDER",
+      "text": "adding the `params` keyword to array parameters if you expect the end users to pass arrays with a small number of elements.",
+      "section": "5.8.4 Members with Variable Number of Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5117",
+      "strength": "AVOID",
+      "text": "using params arrays if the caller would almost always have the input already in an array.",
+      "section": "5.8.4 Members with Variable Number of Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5118",
+      "strength": "DO NOT",
+      "text": "use params arrays if the array is modified by the member taking the params array parameter.",
+      "section": "5.8.4 Members with Variable Number of Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5119",
+      "strength": "CONSIDER",
+      "text": "using the `params` keyword in a simple overload, even if a more complex overload could not use it.",
+      "section": "5.8.4 Members with Variable Number of Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5120",
+      "strength": "DO",
+      "text": "try to order parameters to make it possible to use the `params` keyword.",
+      "section": "5.8.4 Members with Variable Number of Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5121",
+      "strength": "CONSIDER",
+      "text": "providing special overloads and code paths for calls with a small number of arguments in extremely performance-sensitive APIs.",
+      "section": "5.8.4 Members with Variable Number of Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5122",
+      "strength": "DO",
+      "text": "be aware that `null` could be passed as a params array argument.",
+      "section": "5.8.4 Members with Variable Number of Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5123",
+      "strength": "DO NOT",
+      "text": "use the `varargs` methods, otherwise known as the ellipsis.",
+      "section": "5.8.4 Members with Variable Number of Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5124",
+      "strength": "DO",
+      "text": "provide an alternative for any member that takes a pointer argument, because pointers are not CLS-compliant.",
+      "section": "5.8.5 Pointer Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5125",
+      "strength": "AVOID",
+      "text": "doing expensive argument checking for pointer arguments.",
+      "section": "5.8.5 Pointer Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5126",
+      "strength": "DO",
+      "text": "follow common pointer-related conventions when designing members with pointers.",
+      "section": "5.8.5 Pointer Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5127",
+      "strength": "DO",
+      "text": "prefer descriptive types over tuples, `System.Tuple<T1, ...>`, and `System.ValueTuple<T1, ...>`; they improve discoverability and can better evolve over time.",
+      "section": "5.9 Using Tuples in Member Signatures",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5128",
+      "strength": "DO",
+      "text": "prefer named tuples over unnamed tuples (including `System.Tuple<T1, ...>` and `System.ValueTuple<T1, ...>`).",
+      "section": "5.9 Using Tuples in Member Signatures",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5129",
+      "strength": "DO",
+      "text": "name elements of a named tuple using PascalCase, as if they were properties.",
+      "section": "5.9 Using Tuples in Member Signatures",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5130",
+      "strength": "DO NOT",
+      "text": "use tuples with more than three fields.",
+      "section": "5.9 Using Tuples in Member Signatures",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5131",
+      "strength": "DO NOT",
+      "text": "use tuples as method parameters.",
+      "section": "5.9 Using Tuples in Member Signatures",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5132",
+      "strength": "DO NOT",
+      "text": "define extension methods over tuples.",
+      "section": "5.9 Using Tuples in Member Signatures",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG5133",
+      "strength": "CONSIDER",
+      "text": "adding an appropriate `Deconstruct` method to any type that was chosen as an alternative to a tuple.",
+      "section": "5.9 Using Tuples in Member Signatures",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
       "id": "FDGA001",
       "strength": "DO",
       "text": "place the opening brace on the next line, indented to the same level as the block statement.",
@@ -3989,12 +5892,17 @@
     "CA1014",
     "CA1016",
     "CA1017",
+    "CA1024",
     "CA1027",
     "CA1028",
+    "CA1033",
     "CA1034",
     "CA1040",
+    "CA1043",
+    "CA1044",
     "CA1050",
     "CA1052",
+    "CA1065",
     "CA1069",
     "CA1507",
     "CA1700",
@@ -4009,6 +5917,10 @@
     "CA1720",
     "CA1721",
     "CA1724",
+    "CA1810",
+    "CA1819",
+    "CA2207",
+    "CA2214",
     "CA2217",
     "FDG3003",
     "FDG3004",
@@ -4027,6 +5939,17 @@
     "FDG4059",
     "FDG4061",
     "FDG4062",
+    "FDG5003",
+    "FDG5004",
+    "FDG5005",
+    "FDG5008",
+    "FDG5010",
+    "FDG5011",
+    "FDG5013",
+    "FDG5015",
+    "FDG5034",
+    "FDG5040",
+    "FDG5046",
     "FDGA003",
     "FDGA004",
     "FDGA023",
@@ -4050,6 +5973,7 @@
     "CA1012",
     "CA1027",
     "CA1028",
+    "CA1033",
     "CA1052",
     "CA1707",
     "CA2217",

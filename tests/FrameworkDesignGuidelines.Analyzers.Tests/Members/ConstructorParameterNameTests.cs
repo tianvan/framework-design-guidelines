@@ -1,0 +1,147 @@
+using Microsoft.CodeAnalysis.Testing;
+using Verifier = FrameworkDesignGuidelines.Analyzers.Tests.Verifiers.AnalyzerVerifier<
+    FrameworkDesignGuidelines.Analyzers.Members.ConstructorParameterNameAnalyzer>;
+
+namespace FrameworkDesignGuidelines.Analyzers.Tests.Members;
+
+public sealed class ConstructorParameterNameTests
+{
+    [Fact]
+    public Task Parameter_that_only_sets_a_differently_named_property_is_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+
+            public class EventLog
+            {
+                public EventLog(string {|FDG5046:name|}, string {|FDG5046:machine|}, string {|FDG5046:src|})
+                {
+                    LogName = name;
+                    this.MachineName = machine;
+                    Source = src ?? throw new ArgumentNullException(nameof(src));
+                }
+
+                public EventLog(int {|FDG5046:size|}) => Capacity = size;
+
+                public string LogName { get; set; }
+
+                public string MachineName { get; set; }
+
+                public string Source { get; }
+
+                public int Capacity { get; }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Message_names_the_parameter_and_the_property()
+    {
+        return Verifier.VerifyWithAsync(
+            """
+            public class EventLog
+            {
+                public EventLog(string {|#0:name|})
+                {
+                    LogName = name;
+                }
+
+                public string LogName { get; }
+            }
+            """,
+            new DiagnosticResult(FdgDescriptors.FDG5046).WithLocation(0).WithArguments("name", "LogName"));
+    }
+
+    [Fact]
+    public Task Matching_names_other_uses_fields_and_hidden_constructors_are_not_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+
+            public class Base
+            {
+                public Base(string text)
+                {
+                }
+            }
+
+            public class EventLog : Base
+            {
+                private readonly string machine;
+
+                public EventLog(string logName, string machine, string src, int count, string text)
+                    : base(text)
+                {
+                    LogName = logName;
+                    this.machine = machine;
+                    Source = src.Trim();
+                    Size = count;
+                    Total = count * 2;
+                    Description = text;
+                }
+
+                internal EventLog(string name)
+                    : base(name)
+                {
+                    LogName = name;
+                }
+
+                public string LogName { get; set; }
+
+                public string Source { get; }
+
+                public int Size { get; }
+
+                public int Total { get; }
+
+                public string Description { get; }
+
+                public static string Shared { get; set; }
+            }
+
+            public class Statics
+            {
+                public Statics(string value)
+                {
+                    EventLog.Shared = value;
+                }
+            }
+
+            internal class Hidden
+            {
+                public Hidden(string name)
+                {
+                    LogName = name;
+                }
+
+                public string LogName { get; }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Primary_constructor_parameter_that_only_initializes_a_property_is_checked()
+    {
+        // C# 12 adds primary constructors to classes and structs; positional record parameters are properties.
+        return Verifier.VerifyLatestAsync(
+            """
+            public class EventLog(string {|FDG5046:name|}, string machineName, int size)
+            {
+                public string LogName { get; } = name;
+
+                public string MachineName { get; } = machineName;
+
+                public int Capacity { get; } = size;
+
+                public int Double => size * 2;
+            }
+
+            public record Entry(string Message)
+            {
+                public string Text { get; } = Message;
+            }
+            """);
+    }
+}

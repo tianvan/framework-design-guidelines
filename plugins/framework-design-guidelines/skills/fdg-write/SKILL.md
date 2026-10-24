@@ -85,6 +85,11 @@ Other references:
 - [references/ch02-fundamentals.md](references/ch02-fundamentals.md): design an API's main scenarios, entry points, layers and documentation
 - [references/ch04-types-4-1-to-4-4.md](references/ch04-types-4-1-to-4-4.md): choose between a class, struct, interface or abstract class, and organize types into namespaces
 - [references/ch04-types-4-5-on.md](references/ch04-types-4-5-on.md): design static classes, interfaces, structs, enums, nested types, assembly metadata and strongly typed strings
+- [references/ch05-members-general.md](references/ch05-members-general.md): design member overloads, explicit interface implementations, and choose between a property and a method
+- [references/ch05-members-properties-constructors.md](references/ch05-members-properties-constructors.md): design properties, indexers, property change events, constructors and static constructors
+- [references/ch05-members-events-fields.md](references/ch05-members-events-fields.md): design events, event handlers and fields
+- [references/ch05-members-extensions-operators.md](references/ch05-members-extensions-operators.md): design extension methods and operator overloads, including conversion and inequality operators
+- [references/ch05-members-parameters.md](references/ch05-members-parameters.md): design parameters (enums versus booleans, argument validation, ref, out, params, pointers) and tuples in member signatures
 
 Each reference lists, by section, every rule of its chapter that tools do not enforce. When a rule's wording is not
 enough, follow the `examples:` link at the end of its line to the book's explanation and code.

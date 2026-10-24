@@ -160,6 +160,105 @@ internal static class FdgDescriptors
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4062.md");
 
+    public static readonly DiagnosticDescriptor FDG5003 = new DiagnosticDescriptor(
+        id: "FDG5003",
+        title: "AVOID being inconsistent in the ordering of parameters in overloaded members. Parameters with the same name should appear in the same position in all overloads.",
+        messageFormat: "Put the parameter '{0}' at the same position in every overload of '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5003.md");
+
+    public static readonly DiagnosticDescriptor FDG5004 = new DiagnosticDescriptor(
+        id: "FDG5004",
+        title: "DO make only the longest overload virtual (if extensibility is required). Shorter overloads should simply call through to a longer overload.",
+        messageFormat: "Make only the longest overload of '{0}' virtual and have this overload call it",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5004.md");
+
+    public static readonly DiagnosticDescriptor FDG5005 = new DiagnosticDescriptor(
+        id: "FDG5005",
+        title: "DO NOT use `ref`, `out`, or `in` modifiers to overload members.",
+        messageFormat: "Do not overload '{0}' on the '{1}' modifier of the parameter '{2}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5005.md");
+
+    public static readonly DiagnosticDescriptor FDG5008 = new DiagnosticDescriptor(
+        id: "FDG5008",
+        title: "DO NOT have overloads with a generic type parameter in one method and a specific type in another.",
+        messageFormat: "The overload of '{0}' that takes '{1}' cannot be called when '{1}' is '{2}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5008.md");
+
+    public static readonly DiagnosticDescriptor FDG5010 = new DiagnosticDescriptor(
+        id: "FDG5010",
+        title: "DO provide a simple overload, with no default parameters, for any method with two or more defaulted parameters.",
+        messageFormat: "Provide a simple overload of '{0}' without default parameters",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5010.md");
+
+    public static readonly DiagnosticDescriptor FDG5011 = new DiagnosticDescriptor(
+        id: "FDG5011",
+        title: "DO NOT use default parameters, for any parameter type other than `CancellationToken`, on interface methods or virtual methods on classes.",
+        messageFormat: "Do not give the parameter '{0}' of the virtual or interface member '{1}' a default value",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5011.md");
+
+    public static readonly DiagnosticDescriptor FDG5013 = new DiagnosticDescriptor(
+        id: "FDG5013",
+        title: "DO NOT have two overloads of a method with “compatible” required parameters that both use default parameters.",
+        messageFormat: "Another overload of '{0}' with compatible required parameters also uses default parameters",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5013.md");
+
+    public static readonly DiagnosticDescriptor FDG5015 = new DiagnosticDescriptor(
+        id: "FDG5015",
+        title: "DO NOT have different defaults for the same parameter in two overloads of the same method.",
+        messageFormat: "The parameter '{0}' has a different default value in another overload of '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5015.md");
+
+    public static readonly DiagnosticDescriptor FDG5034 = new DiagnosticDescriptor(
+        id: "FDG5034",
+        title: "AVOID using indexed properties with more than one parameter.",
+        messageFormat: "Use methods instead of the indexer of '{0}' with more than one parameter",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5034.md");
+
+    public static readonly DiagnosticDescriptor FDG5040 = new DiagnosticDescriptor(
+        id: "FDG5040",
+        title: "DO return the declaring type from an indexer that accepts `System.Range`.",
+        messageFormat: "Return '{0}' from '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5040.md");
+
+    public static readonly DiagnosticDescriptor FDG5046 = new DiagnosticDescriptor(
+        id: "FDG5046",
+        title: "DO use the same name for constructor parameters and a property if the constructor parameters are used just to set the property.",
+        messageFormat: "Name the parameter '{0}' like the property '{1}' that it sets",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5046.md");
+
     public static readonly DiagnosticDescriptor FDGA003 = new DiagnosticDescriptor(
         id: "FDGA003",
         title: "DO place the closing brace on its own line, except the end of a `do`..`while` statement.",
