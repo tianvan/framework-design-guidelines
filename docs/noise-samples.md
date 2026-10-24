@@ -156,7 +156,7 @@ checked (20 in all), because no diagnostic had more than 20.
 - **Rejected at gate 1 (not measured).** FDG3069 (negative Boolean property names): the rule text gives one example
   and no word list, so a check would have to guess intent. Its notes say so.
 
-## Chapter 2
+## Chapter 2 mappings
 
 Chapter 2 (Framework Design Fundamentals, FDG2001 to FDG2032) maps no SDK diagnostic and adds no analyzer: all 32
 rules are judgment rules about the design process and the consumer experience of an API. No new diagnostics, so

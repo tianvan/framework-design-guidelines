@@ -151,7 +151,7 @@
       "autofix": "no",
       "severity": {
         "library": "warning",
-        "application": "none",
+        "application": "warning",
         "test": "none"
       },
       "naming": null
