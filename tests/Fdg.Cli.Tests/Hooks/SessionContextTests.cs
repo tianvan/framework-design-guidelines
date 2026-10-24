@@ -296,8 +296,6 @@ public sealed class SessionContextTests : IDisposable
         Assert.Equal(
             ["FDG setup issue: .NET SDK 7.0.410 is older than 8.0.100. Run /fdg-setup to fix."],
             Issues(Build()!));
-        _sdkVersion = "10.0.100-rc.2";
-        Assert.Empty(Issues(Build()!));
 
         var failing = new FakeProcessRunner().Respond(
             args => args is ["--version"],
@@ -338,8 +336,20 @@ public sealed class SessionContextTests : IDisposable
         Project("src/A/A.csproj", "application");
         _sdkVersion = "7.0.410";
 
-        string issue = Assert.Single(Issues(Build()!));
-        Assert.DoesNotContain("10.0.100", issue);
+        Assert.Equal(
+            ["FDG setup issue: .NET SDK 7.0.410 is older than 8.0.100. Run /fdg-setup to fix."],
+            Issues(Build()!));
+    }
+
+    [Fact]
+    public void Prerelease_sdk_is_compared_by_its_numeric_part()
+    {
+        Project("src/A/A.csproj", "application");
+        _sdkVersion = "9.0.100-rc.1.24452.12";
+
+        Assert.Equal(
+            ["FDG setup issue: .NET SDK 9.0.100-rc.1.24452.12 is older than 10.0.100: some rules need SDK 10.0.100 or later."],
+            Issues(Build()!));
     }
 
     [Fact]
