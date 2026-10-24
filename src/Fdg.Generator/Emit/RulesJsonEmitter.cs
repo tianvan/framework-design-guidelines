@@ -48,6 +48,13 @@ public static class RulesJsonEmitter
                 ["application"] = RuleText.Level(mapping.Severity.Application),
                 ["test"] = RuleText.Level(mapping.Severity.Test),
             },
+            ["naming"] = mapping.Naming is null
+                ? null
+                : new JsonObject
+                {
+                    ["symbols"] = Strings(mapping.Naming.Symbols),
+                    ["failures"] = Strings(mapping.Naming.Failures),
+                },
         };
     }
 

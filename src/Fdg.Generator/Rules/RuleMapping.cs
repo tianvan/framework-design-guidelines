@@ -6,6 +6,12 @@ public sealed record ProfileSeverity(SeverityLevel Library, SeverityLevel Applic
 
 public sealed record AnalyzerInfo(string Message, string Category);
 
+/// <summary>
+/// Which IDE1006 violations a naming rule explains: the kinds of symbol it applies to
+/// (<c>namespace</c>, <c>type</c>, <c>privateField</c>, ...) and the failures it covers (<c>casing</c>, <c>prefix</c>).
+/// </summary>
+public sealed record NamingTags(IReadOnlyList<string> Symbols, IReadOnlyList<string> Failures);
+
 /// <summary>The hand- or AI-authored half of a rule: everything except the book's own words.</summary>
 public sealed record RuleMapping(
     RuleStatus Status,
@@ -17,7 +23,8 @@ public sealed record RuleMapping(
     string? MinLanguage,
     string? Alternative,
     AnalyzerInfo? Analyzer,
-    string? Notes)
+    string? Notes,
+    NamingTags? Naming = null)
 {
     /// <summary>
     /// The skeleton the extractor writes: a draft judgment rule with strength-based severity. In a chapter that is

@@ -14,7 +14,7 @@ This is a coding style convention. The book treats the appendix A conventions as
 - Diagnostics: IDE1006
 - Automatic fix: yes
 - Severity: library warning, application warning, test suggestion
-- Status: verified
+- Status: draft
 
 Naming rules cannot select [ThreadStatic] fields, so IDE1006 reports 't_' fields; suppress it there. The fix renames private and internal fields only; check reflection or serialization that uses field names.
 

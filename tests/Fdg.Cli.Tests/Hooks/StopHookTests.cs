@@ -125,9 +125,9 @@ public sealed class StopHookTests : IDisposable
     public async Task Only_registered_diagnostics_on_changed_lines_are_reported()
     {
         await TurnStartAsync();
-        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "private int count;")));
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (1, "class Order {"), (4, "    private int count;"), (10, "}")));
         _builder.Sarif = _ => [
-            new SarifResult("IDE1006", "warning", "Naming rule violation: Missing prefix: '_'", order, 4),
+            new SarifResult("IDE1006", "warning", "Naming rule violation: Missing prefix: '_'", order, 4) { Column = 17 },
             new SarifResult("IDE1006", "warning", "Naming rule violation: on an unchanged line", order, 7),
         ];
 
@@ -140,8 +140,8 @@ public sealed class StopHookTests : IDisposable
             + "    private int count;\n",
             Before(Json(output, "reason")!, "    FDG"));
         Assert.Contains("    FDGA055 DO use a prefix", Json(output, "reason")!);
-        // Each diagnostic lists at most two of its rules.
-        Assert.Equal(2, Json(output, "reason")!.Split('\n').Count(l => l.StartsWith("    FDG", StringComparison.Ordinal)));
+        // The prefix of a private field is explained by one rule only.
+        Assert.Single(Json(output, "reason")!.Split('\n'), l => l.StartsWith("    FDG", StringComparison.Ordinal));
         HookFormatCall format = Assert.Single(_formatter.Calls);
         Assert.Equal(["Order.cs"], format.IncludeFiles);
         Assert.Contains("FDGA003", format.Diagnostics);
@@ -153,10 +153,10 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
-    public async Task Diagnostic_of_many_rules_without_a_matching_word_in_its_message_quotes_no_rule()
+    public async Task Diagnostic_whose_declaration_cannot_be_located_quotes_no_rule()
     {
-        // The pilot's case: IDE1006 checks 13 rules; "characters", "case" and "public" used to pull in FDG3005 and
-        // FDG3079 for a method name that is not PascalCase.
+        // IDE1006 checks 13 rules; the flagged line is a fragment that does not parse, so the kind of symbol is unknown
+        // and no rule is quoted.
         await TurnStartAsync();
         string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "public static string describe_failure(")));
         _builder.Sarif = _ => [
@@ -175,6 +175,30 @@ public sealed class StopHookTests : IDisposable
             + "src/中文 App/Order.cs:4 IDE1006 Naming rule violation: These words must begin with upper case characters: describe_failure\n"
             + "    public static string describe_failure(\n",
             reason);
+    }
+
+    [Fact]
+    public async Task Lower_case_method_quotes_the_casing_rules_of_methods()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write(
+            "src/中文 App/Order.cs",
+            Lines(10, (1, "class Order {"), (4, "    public static string describe_failure() => \"\";"), (10, "}")));
+        _builder.Sarif = _ => [
+            new SarifResult(
+                "IDE1006",
+                "warning",
+                "Naming rule violation: These words must begin with upper case characters: describe_failure",
+                order,
+                4) { Column = 26 },
+        ];
+
+        string reason = Json(await TurnStopAsync(), "reason")!;
+
+        string[] quoted = reason.Split('\n').Where(l => l.StartsWith("    FDG", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(2, quoted.Length);
+        Assert.Contains(quoted, l => l.StartsWith("    FDG3001 ", StringComparison.Ordinal));
+        Assert.Contains(quoted, l => l.StartsWith("    FDGA052 ", StringComparison.Ordinal));
     }
 
     [Fact]

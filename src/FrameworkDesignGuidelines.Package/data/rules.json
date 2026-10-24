@@ -15,6 +15,19 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
+      },
+      "naming": {
+        "symbols": [
+          "namespace",
+          "type",
+          "typeParameter",
+          "method",
+          "property",
+          "event"
+        ],
+        "failures": [
+          "casing"
+        ]
       }
     },
     {
@@ -30,6 +43,14 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
+      },
+      "naming": {
+        "symbols": [
+          "parameter"
+        ],
+        "failures": [
+          "casing"
+        ]
       }
     },
     {
@@ -43,7 +64,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3004",
@@ -56,7 +78,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3005",
@@ -71,6 +94,16 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
+      },
+      "naming": {
+        "symbols": [
+          "parameter",
+          "local",
+          "privateField"
+        ],
+        "failures": [
+          "casing"
+        ]
       }
     },
     {
@@ -84,7 +117,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3007",
@@ -99,7 +133,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3008",
@@ -112,7 +147,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3009",
@@ -125,7 +161,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3010",
@@ -140,7 +177,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3011",
@@ -153,7 +191,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3012",
@@ -168,7 +207,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3013",
@@ -181,7 +221,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3014",
@@ -194,7 +235,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3015",
@@ -207,7 +249,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3016",
@@ -222,7 +265,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3017",
@@ -237,7 +281,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3018",
@@ -252,7 +297,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3019",
@@ -265,7 +311,8 @@
         "library": "warning",
         "application": "none",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3020",
@@ -278,7 +325,8 @@
         "library": "warning",
         "application": "none",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3021",
@@ -291,7 +339,8 @@
         "library": "suggestion",
         "application": "none",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3022",
@@ -304,7 +353,8 @@
         "library": "warning",
         "application": "none",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3023",
@@ -319,7 +369,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3024",
@@ -332,7 +383,8 @@
         "library": "warning",
         "application": "none",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3025",
@@ -345,7 +397,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3026",
@@ -358,7 +411,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3027",
@@ -371,7 +425,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3028",
@@ -384,7 +439,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3029",
@@ -397,7 +453,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3030",
@@ -412,6 +469,14 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
+      },
+      "naming": {
+        "symbols": [
+          "namespace"
+        ],
+        "failures": [
+          "casing"
+        ]
       }
     },
     {
@@ -425,7 +490,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3032",
@@ -440,7 +506,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3033",
@@ -453,7 +520,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3034",
@@ -466,7 +534,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3035",
@@ -479,7 +548,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3036",
@@ -492,7 +562,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3037",
@@ -505,7 +576,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3038",
@@ -518,7 +590,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3039",
@@ -531,7 +604,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3040",
@@ -544,7 +618,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3041",
@@ -557,7 +632,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3042",
@@ -572,7 +648,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3043",
@@ -585,7 +662,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3044",
@@ -598,7 +676,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3045",
@@ -611,7 +690,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3046",
@@ -626,7 +706,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3047",
@@ -639,7 +720,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3048",
@@ -655,7 +737,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3049",
@@ -670,7 +753,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3050",
@@ -685,7 +769,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3051",
@@ -698,7 +783,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3052",
@@ -713,7 +799,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3053",
@@ -728,7 +815,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3054",
@@ -741,7 +829,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3055",
@@ -756,7 +845,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3056",
@@ -771,7 +861,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3057",
@@ -786,7 +877,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3058",
@@ -801,7 +893,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3059",
@@ -816,7 +909,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3060",
@@ -829,7 +923,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3061",
@@ -842,7 +937,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3062",
@@ -857,7 +953,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3063",
@@ -872,7 +969,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3064",
@@ -887,7 +985,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3065",
@@ -900,7 +999,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3066",
@@ -913,7 +1013,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3067",
@@ -928,7 +1029,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3068",
@@ -941,7 +1043,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3069",
@@ -954,7 +1057,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3070",
@@ -967,7 +1071,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3071",
@@ -980,7 +1085,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3072",
@@ -993,7 +1099,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3073",
@@ -1008,7 +1115,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3074",
@@ -1023,7 +1131,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3075",
@@ -1036,7 +1145,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3076",
@@ -1051,7 +1161,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3077",
@@ -1066,6 +1177,14 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
+      },
+      "naming": {
+        "symbols": [
+          "visibleField"
+        ],
+        "failures": [
+          "casing"
+        ]
       }
     },
     {
@@ -1079,7 +1198,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3079",
@@ -1095,6 +1215,14 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
+      },
+      "naming": {
+        "symbols": [
+          "visibleField"
+        ],
+        "failures": [
+          "casing"
+        ]
       }
     },
     {
@@ -1110,6 +1238,14 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
+      },
+      "naming": {
+        "symbols": [
+          "parameter"
+        ],
+        "failures": [
+          "casing"
+        ]
       }
     },
     {
@@ -1123,7 +1259,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3082",
@@ -1136,7 +1273,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3083",
@@ -1149,7 +1287,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3084",
@@ -1162,7 +1301,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3085",
@@ -1175,7 +1315,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3086",
@@ -1188,7 +1329,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDG3087",
@@ -1201,7 +1343,8 @@
         "library": "warning",
         "application": "warning",
         "test": "none"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA001",
@@ -1216,7 +1359,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA002",
@@ -1231,7 +1375,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA003",
@@ -1247,7 +1392,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA004",
@@ -1262,7 +1408,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA005",
@@ -1275,7 +1422,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "suggestion"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA006",
@@ -1288,7 +1436,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA007",
@@ -1301,7 +1450,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA008",
@@ -1316,7 +1466,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA009",
@@ -1331,7 +1482,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA010",
@@ -1346,7 +1498,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA011",
@@ -1361,7 +1514,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA012",
@@ -1376,7 +1530,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA013",
@@ -1391,7 +1546,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA014",
@@ -1406,7 +1562,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA015",
@@ -1421,7 +1578,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA016",
@@ -1436,7 +1594,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA017",
@@ -1451,7 +1610,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA018",
@@ -1466,7 +1626,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA019",
@@ -1481,7 +1642,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA020",
@@ -1496,7 +1658,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA021",
@@ -1511,7 +1674,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA022",
@@ -1524,7 +1688,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA023",
@@ -1539,7 +1704,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA024",
@@ -1552,7 +1718,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA025",
@@ -1567,7 +1734,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA026",
@@ -1580,7 +1748,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA027",
@@ -1595,7 +1764,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA028",
@@ -1610,7 +1780,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA029",
@@ -1625,7 +1796,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA030",
@@ -1640,7 +1812,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA031",
@@ -1655,7 +1828,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA032",
@@ -1670,7 +1844,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA033",
@@ -1685,7 +1860,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA034",
@@ -1700,7 +1876,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA035",
@@ -1715,7 +1892,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA036",
@@ -1730,7 +1908,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA037",
@@ -1745,7 +1924,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA038",
@@ -1758,7 +1938,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA039",
@@ -1771,7 +1952,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA040",
@@ -1784,7 +1966,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA041",
@@ -1797,7 +1980,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA042",
@@ -1812,7 +1996,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA043",
@@ -1827,7 +2012,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA044",
@@ -1842,7 +2028,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA045",
@@ -1855,7 +2042,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "suggestion"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA046",
@@ -1870,7 +2058,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA047",
@@ -1883,7 +2072,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA048",
@@ -1898,7 +2088,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA049",
@@ -1913,7 +2104,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA050",
@@ -1926,7 +2118,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA051",
@@ -1939,7 +2132,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA052",
@@ -1954,6 +2148,20 @@
         "library": "warning",
         "application": "warning",
         "test": "suggestion"
+      },
+      "naming": {
+        "symbols": [
+          "namespace",
+          "type",
+          "typeParameter",
+          "method",
+          "property",
+          "event",
+          "visibleField"
+        ],
+        "failures": [
+          "casing"
+        ]
       }
     },
     {
@@ -1969,6 +2177,15 @@
         "library": "warning",
         "application": "warning",
         "test": "suggestion"
+      },
+      "naming": {
+        "symbols": [
+          "constField",
+          "constLocal"
+        ],
+        "failures": [
+          "casing"
+        ]
       }
     },
     {
@@ -1984,6 +2201,14 @@
         "library": "warning",
         "application": "warning",
         "test": "suggestion"
+      },
+      "naming": {
+        "symbols": [
+          "privateField"
+        ],
+        "failures": [
+          "casing"
+        ]
       }
     },
     {
@@ -1999,6 +2224,14 @@
         "library": "warning",
         "application": "warning",
         "test": "suggestion"
+      },
+      "naming": {
+        "symbols": [
+          "privateField"
+        ],
+        "failures": [
+          "prefix"
+        ]
       }
     },
     {
@@ -2014,6 +2247,14 @@
         "library": "warning",
         "application": "warning",
         "test": "suggestion"
+      },
+      "naming": {
+        "symbols": [
+          "local"
+        ],
+        "failures": [
+          "casing"
+        ]
       }
     },
     {
@@ -2029,6 +2270,14 @@
         "library": "warning",
         "application": "warning",
         "test": "suggestion"
+      },
+      "naming": {
+        "symbols": [
+          "parameter"
+        ],
+        "failures": [
+          "casing"
+        ]
       }
     },
     {
@@ -2042,7 +2291,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA059",
@@ -2055,7 +2305,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA060",
@@ -2068,7 +2319,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA061",
@@ -2081,7 +2333,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA062",
@@ -2094,7 +2347,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA063",
@@ -2107,7 +2361,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA064",
@@ -2120,7 +2375,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA065",
@@ -2133,7 +2389,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA066",
@@ -2146,7 +2403,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA067",
@@ -2161,7 +2419,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA068",
@@ -2174,7 +2433,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA069",
@@ -2187,7 +2447,8 @@
         "library": "suggestion",
         "application": "suggestion",
         "test": "suggestion"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA070",
@@ -2202,7 +2463,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     },
     {
       "id": "FDGA071",
@@ -2215,7 +2477,8 @@
         "library": "warning",
         "application": "warning",
         "test": "warning"
-      }
+      },
+      "naming": null
     }
   ],
   "registeredDiagnostics": [

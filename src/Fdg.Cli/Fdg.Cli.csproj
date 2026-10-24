@@ -20,6 +20,10 @@
     <PackageProjectUrl>https://github.com/tianvan/framework-design-guidelines</PackageProjectUrl>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
   <!-- Fallback manifest for projects whose package copy of rules.json cannot be read. -->
   <ItemGroup>
     <EmbeddedResource Include="..\FrameworkDesignGuidelines.Package\data\rules.json" Link="Rules\rules.json" LogicalName="Fdg.Cli.Rules.rules.json" />

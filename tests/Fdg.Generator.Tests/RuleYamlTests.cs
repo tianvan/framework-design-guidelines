@@ -69,4 +69,23 @@ public class RuleYamlTests
 
         Assert.Equal(yaml, RuleYaml.Serialize(loaded));
     }
+
+    [Fact]
+    public void Naming_tags_round_trip_and_are_omitted_when_null()
+    {
+        IReadOnlyList<Rule> rules = SampleRules();
+        Assert.DoesNotContain("naming:", RuleYaml.Serialize(rules));
+
+        var tags = new NamingTags(new[] { "privateField", "local" }, new[] { "casing" });
+        Rule tagged = rules[0] with { Mapping = rules[0].Mapping with { Naming = tags } };
+
+        string yaml = RuleYaml.Serialize(new[] { tagged, rules[1] });
+        IReadOnlyList<Rule> loaded = RuleYaml.Deserialize(yaml);
+
+        Assert.Equal(1, yaml.Split("naming:").Length - 1);
+        Assert.Equal(new[] { "privateField", "local" }, loaded[0].Mapping.Naming!.Symbols);
+        Assert.Equal(new[] { "casing" }, loaded[0].Mapping.Naming!.Failures);
+        Assert.Null(loaded[1].Mapping.Naming);
+        Assert.Equal(yaml, RuleYaml.Serialize(loaded));
+    }
 }

@@ -5,7 +5,15 @@ namespace Fdg.Cli.Hooks;
 /// <summary>One result of a SARIF log.</summary>
 /// <param name="Level"><c>error</c>, <c>warning</c>, <c>note</c> or <c>none</c>.</param>
 /// <param name="FilePath">Full local path, percent-decoded.</param>
-public sealed record SarifDiagnostic(string RuleId, string Level, string Message, string FilePath, int Line, bool Suppressed);
+/// <param name="Column">1-based; 1 when the result has none.</param>
+public sealed record SarifDiagnostic(
+    string RuleId,
+    string Level,
+    string Message,
+    string FilePath,
+    int Line,
+    int Column,
+    bool Suppressed);
 
 /// <summary>Reads the SARIF 2.1 logs Roslyn writes for <c>ErrorLog=...,version=2.1</c>.</summary>
 public static class SarifReader
@@ -62,12 +70,15 @@ public static class SarifReader
             return null;
         }
 
-        int line = physical.TryGetProperty("region", out JsonElement region) &&
-            region.TryGetProperty("startLine", out JsonElement startLine) &&
-            startLine.TryGetInt32(out int value)
-            ? value
-            : 0;
-        return new SarifDiagnostic(ruleId, level, message, ToLocalPath(uri, baseDirectory), line, suppressed);
+        int line = 0;
+        int column = 1;
+        if (physical.TryGetProperty("region", out JsonElement region))
+        {
+            line = Int(region, "startLine") ?? 0;
+            column = Int(region, "startColumn") ?? 1;
+        }
+
+        return new SarifDiagnostic(ruleId, level, message, ToLocalPath(uri, baseDirectory), line, column, suppressed);
     }
 
     /// <summary>
@@ -83,6 +94,9 @@ public static class SarifReader
 
         return Path.GetFullPath(Uri.UnescapeDataString(uri), baseDirectory);
     }
+
+    private static int? Int(JsonElement element, string name) =>
+        element.TryGetProperty(name, out JsonElement value) && value.TryGetInt32(out int number) ? number : null;
 
     private static string? String(JsonElement element, string name) =>
         element.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String

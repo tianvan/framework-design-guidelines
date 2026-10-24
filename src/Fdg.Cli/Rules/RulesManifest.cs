@@ -85,4 +85,11 @@ public sealed record RuleEntry(
     string Section,
     IReadOnlyList<string> Diagnostics,
     string Autofix,
-    IReadOnlyDictionary<string, string> Severity);
+    IReadOnlyDictionary<string, string> Severity,
+    NamingTags? Naming = null);
+
+/// <summary>
+/// Which IDE1006 violations a naming rule explains: the kinds of symbol it applies to
+/// (<c>namespace</c>, <c>type</c>, <c>privateField</c>, ...) and the failures it covers (<c>casing</c>, <c>prefix</c>).
+/// </summary>
+public sealed record NamingTags(IReadOnlyList<string> Symbols, IReadOnlyList<string> Failures);

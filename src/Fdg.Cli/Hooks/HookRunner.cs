@@ -18,6 +18,9 @@ public sealed partial class HookRunner
     // Each dotnet format loads a whole workspace into memory, so only a few run at once.
     private const int MaxParallelFormats = 4;
 
+    /// <summary>The diagnostic whose rules the symbol kind and failure of the flagged name select.</summary>
+    private const string NamingDiagnostic = "IDE1006";
+
     private static readonly TimeSpan CleanupGrace = TimeSpan.FromSeconds(2);
 
     private static readonly TimeSpan StaleSessionAge = TimeSpan.FromDays(7);
@@ -517,16 +520,32 @@ public sealed partial class HookRunner
             }
 
             string? source = diagnostic.Line >= 1 && diagnostic.Line <= lines.Length ? lines[diagnostic.Line - 1].Trim() : null;
+            (NamingSymbolKind, NamingFailure)? naming = diagnostic.RuleId == NamingDiagnostic
+                ? NamingOf(diagnostic, lines)
+                : null;
             issues.Add(new ReportedIssue(
                 path,
                 diagnostic.Line,
                 diagnostic.RuleId,
                 diagnostic.Message,
                 source,
-                StopReport.RulesFor(project.Manifest, diagnostic.RuleId, diagnostic.Message, source, project.Info.Profile)));
+                StopReport.RulesFor(project.Manifest, diagnostic.RuleId, diagnostic.Message, source, project.Info.Profile, naming)));
         }
 
         return StopReport.Sort(issues).ToList();
+    }
+
+    /// <summary>What IDE1006 flagged: the kind of the declared symbol and how its name fails; null if either is unknown.</summary>
+    private static (NamingSymbolKind, NamingFailure)? NamingOf(SarifDiagnostic diagnostic, string[] lines)
+    {
+        NamingFailure? failure = DeclarationLocator.ClassifyNamingFailure(diagnostic.Message);
+        if (failure is null)
+        {
+            return null;
+        }
+
+        NamingSymbolKind? kind = DeclarationLocator.NamingKindAt(string.Join("\n", lines), diagnostic.Line, diagnostic.Column);
+        return kind is null ? null : (kind.Value, failure.Value);
     }
 
     /// <summary>

@@ -536,6 +536,23 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Rules_json_carries_naming_tags()
+    {
+        var tags = new NamingTags(new[] { "parameter", "local" }, new[] { "casing" });
+        GeneratorInput input = Edit(Input(), OnRule("FDG9003", m => m with { Naming = tags }));
+
+        JsonObject json = JsonNode.Parse(RulesJsonEmitter.Emit(input))!.AsObject();
+        JsonObject[] rules = json["rules"]!.AsArray().Select(n => n!.AsObject()).ToArray();
+
+        JsonObject naming = rules.Single(r => r["id"]!.GetValue<string>() == "FDG9003")["naming"]!.AsObject();
+        Assert.Equal(new[] { "parameter", "local" }, naming["symbols"]!.AsArray().Select(n => n!.GetValue<string>()));
+        Assert.Equal(new[] { "casing" }, naming["failures"]!.AsArray().Select(n => n!.GetValue<string>()));
+        Assert.Equal(1, json["protocol"]!.GetValue<int>());
+        Assert.All(rules.Where(r => r["id"]!.GetValue<string>() != "FDG9003"), r => Assert.Null(r["naming"]));
+        Assert.All(rules, r => Assert.True(r.ContainsKey("naming")));
+    }
+
+    [Fact]
     public void Rules_json_describes_each_rule()
     {
         JsonObject json = JsonNode.Parse(RulesJsonEmitter.Emit(Input()))!.AsObject();

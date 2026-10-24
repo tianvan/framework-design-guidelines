@@ -237,6 +237,32 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
     }
 
     [Fact]
+    public void Naming_tags_require_IDE1006()
+    {
+        var tags = new NamingTags(new[] { "privateField" }, new[] { "prefix" });
+        Map("FDG9001", m => Sdk(m, "IDE1006") with { Naming = tags });
+        Map("FDG9002", m => Sdk(m, "CA1716") with { Naming = tags });
+
+        string error = Assert.Single(Check());
+
+        Assert.StartsWith($"{RulesFileName}:FDG9002: ", error);
+        Assert.Contains("IDE1006", error);
+        Assert.Contains("naming", error);
+    }
+
+    [Fact]
+    public void Schema_rejects_unknown_naming_symbols_and_empty_lists()
+    {
+        Map("FDG9001", m => Sdk(m, "IDE1006") with { Naming = new NamingTags(new[] { "field" }, new[] { "suffix" }) });
+        Map("FDG9002", m => Sdk(m, "IDE1006") with { Naming = new NamingTags(Array.Empty<string>(), Array.Empty<string>()) });
+
+        IReadOnlyList<string> errors = Check();
+
+        Assert.Contains(errors, e => e.Contains("FDG9001") && e.Contains("naming"));
+        Assert.Contains(errors, e => e.Contains("FDG9002") && e.Contains("naming"));
+    }
+
+    [Fact]
     public void Judgment_kind_must_not_list_diagnostics()
     {
         Map("FDG9001", m => m with { Check = new CheckInfo(CheckKind.Judgment, new[] { "CA1707" }, CoverageLevel.None) });

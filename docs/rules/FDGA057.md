@@ -14,7 +14,7 @@ This is a coding style convention. The book treats the appendix A conventions as
 - Diagnostics: IDE1006
 - Automatic fix: not applied automatically (the fix can break callers)
 - Severity: library warning, application warning, test suggestion
-- Status: verified
+- Status: draft
 
 ## Options
 

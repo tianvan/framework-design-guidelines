@@ -1736,7 +1736,7 @@
                 ...
             }
         }
-  status: verified
+  status: draft
   style: true
   check:
     kind: sdk
@@ -1762,6 +1762,17 @@
   alternative: null
   analyzer: null
   notes: IDE1006 checks the first letter only.
+  naming:
+    symbols:
+      - namespace
+      - type
+      - typeParameter
+      - method
+      - property
+      - event
+      - visibleField
+    failures:
+      - casing
 - id: FDGA053
   strength: DO
   text: use PascalCasing for const locals and const fields except for interop code, where it should match the name from the called code exactly.
@@ -1783,7 +1794,7 @@
                 ...
             }
         }
-  status: verified
+  status: draft
   style: true
   check:
     kind: sdk
@@ -1811,6 +1822,12 @@
   alternative: null
   analyzer: null
   notes: Interop names such as ERROR_MORE_DATA start with an uppercase letter and pass.
+  naming:
+    symbols:
+      - constField
+      - constLocal
+    failures:
+      - casing
 - id: FDGA054
   strength: DO
   text: use camelCasing for private and internal fields.
@@ -1818,7 +1835,7 @@
   section: A.2 Naming Conventions
   anchor: secA_2
   body: []
-  status: verified
+  status: draft
   style: true
   check:
     kind: sdk
@@ -1835,6 +1852,11 @@
   alternative: null
   analyzer: null
   notes: Checked through the naming rules configured by FDGA055. The fix renames private and internal fields only; check reflection or serialization that uses field names.
+  naming:
+    symbols:
+      - privateField
+    failures:
+      - casing
 - id: FDGA055
   strength: DO
   text: use a prefix “_” (underscore) for private and internal instance fields, “s_” for private and internal static fields, and “t_” for private and internal thread-static fields.
@@ -1855,7 +1877,7 @@
 
             private int _instanceId;
         }
-  status: verified
+  status: draft
   style: true
   check:
     kind: sdk
@@ -1885,6 +1907,11 @@
   alternative: null
   analyzer: null
   notes: Naming rules cannot select [ThreadStatic] fields, so IDE1006 reports 't_' fields; suppress it there. The fix renames private and internal fields only; check reflection or serialization that uses field names.
+  naming:
+    symbols:
+      - privateField
+    failures:
+      - prefix
 - id: FDGA056
   strength: DO
   text: use camelCasing for local variables.
@@ -1892,7 +1919,7 @@
   section: A.2 Naming Conventions
   anchor: secA_2
   body: []
-  status: verified
+  status: draft
   style: true
   check:
     kind: sdk
@@ -1914,6 +1941,11 @@
   alternative: null
   analyzer: null
   notes: null
+  naming:
+    symbols:
+      - local
+    failures:
+      - casing
 - id: FDGA057
   strength: DO
   text: use camelCasing for parameters.
@@ -1921,7 +1953,7 @@
   section: A.2 Naming Conventions
   anchor: secA_2
   body: []
-  status: verified
+  status: draft
   style: true
   check:
     kind: sdk
@@ -1943,6 +1975,11 @@
   alternative: null
   analyzer: null
   notes: null
+  naming:
+    symbols:
+      - parameter
+    failures:
+      - casing
 - id: FDGA058
   strength: DO NOT
   text: use Hungarian notation (i.e., do not encode the type of a variable in its name).

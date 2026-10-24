@@ -63,21 +63,39 @@ public static class StopReport
         .ThenBy(i => i.Message, StringComparer.Ordinal);
 
     /// <summary>
-    /// The rules a diagnostic checks under <paramref name="profile"/>, most relevant first. One diagnostic such as
-    /// IDE1006 can check many rules; the ones sharing more words with the message and the flagged line (for
-    /// "Missing prefix" on a private field, the private-field prefix rule) come first, otherwise the manifest's
-    /// order is kept. When there are more than <see cref="MaxRulesPerIssue"/>, only rules whose text has a word of
-    /// the message that is not in the flagged line (such as "prefix", but not the flagged name) are kept, so a
-    /// diagnostic like "must begin with upper case characters" quotes no rule rather than a wrong one.
+    /// The rules a diagnostic checks under <paramref name="profile"/>, most relevant first, at most
+    /// <see cref="MaxRulesPerIssue"/>. If any of them carries naming tags (IDE1006), the tags decide: only the rules
+    /// that list the symbol kind and the failure of <paramref name="naming"/> are quoted, and none when it is
+    /// <see langword="null"/> because the position or the message could not be read. Otherwise the rules sharing more
+    /// words with the message and the flagged line come first and the manifest's order is kept among equals. When
+    /// there are more than <see cref="MaxRulesPerIssue"/>, only rules whose text has a word of the message that is
+    /// not in the flagged line are kept, so a message that names no rule's subject quotes no rule rather than a wrong one.
     /// </summary>
+    /// <param name="naming">What the diagnostic is about, from <see cref="DeclarationLocator"/>.</param>
     public static IReadOnlyList<RuleEntry> RulesFor(
         RulesManifest manifest,
         string ruleId,
         string message,
         string? sourceLine,
-        string? profile)
+        string? profile,
+        (NamingSymbolKind Kind, NamingFailure Failure)? naming)
     {
         RuleEntry[] rules = manifest.Rules.Where(r => r.Diagnostics.Contains(ruleId)).ToArray();
+        bool tagged = rules.Any(r => r.Naming is not null);
+        if (tagged)
+        {
+            if (naming is not var (kind, failure))
+            {
+                return [];
+            }
+
+            string symbol = CamelCase(kind);
+            string failureText = CamelCase(failure);
+            rules = rules
+                .Where(r => r.Naming is { } tags && tags.Symbols.Contains(symbol) && tags.Failures.Contains(failureText))
+                .ToArray();
+        }
+
         RuleEntry[] active = profile is null
             ? rules
             : rules.Where(r => !r.Severity.TryGetValue(profile, out string? severity) || severity != "none").ToArray();
@@ -86,7 +104,7 @@ public static class StopReport
             rules = active;
         }
 
-        if (rules.Length > MaxRulesPerIssue)
+        if (!tagged && rules.Length > MaxRulesPerIssue)
         {
             string[] signal = Words(message).Except(Words(sourceLine ?? string.Empty)).ToArray();
             rules = rules.Where(r => TextWords(r.Text).Overlaps(signal)).ToArray();
@@ -98,7 +116,15 @@ public static class StopReport
             .OrderByDescending(r => r.Score)
             .ThenBy(r => r.Index)
             .Select(r => r.Rule)
+            .Take(MaxRulesPerIssue)
             .ToArray();
+    }
+
+    private static string CamelCase<T>(T value)
+        where T : struct, Enum
+    {
+        string name = value.ToString();
+        return char.ToLowerInvariant(name[0]) + name[1..];
     }
 
     /// <summary>The text's words: its runs of ASCII letters, lower-cased.</summary>
