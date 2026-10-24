@@ -309,3 +309,59 @@ five samples) and FDG5010 (32; 20 checked).
 - **CA1044 and CA1819.** Set-only compatibility properties of one class and array-typed auto-properties of model
   classes in internal-b. All true.
 - **No reports.** The other diagnostics report nothing on these samples; their tests cover the positive cases.
+
+## Chapter 5 (5.4 to 5.7) mappings and analyzers
+
+Package 0.1.0 with the mappings of sections 5.4 to 5.7 and the new event, field, extension method and operator
+analyzers, enabled by the profile globalconfigs (library for the open-source samples, application for the internal
+ones). Only the newly mapped SDK diagnostics and the new analyzers are counted. Every report was checked, except CA1062
+(56; 20 checked: all 9 of serilog and 11 of internal-b).
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| CA1003 | FDG5057 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| CA1051 | FDG5065 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| CA1062 | FDG5073 | 9 | 0 | 0 | 0 | 47 | 20 | 0 | 20 | None needed (see notes). |
+| CA1065 | FDG5092 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | None needed (see notes). |
+| CA1802 | FDG5066 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| CA2225 | FDG5087 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+| FDG5059 | FDG5059 | 1 | 0 | 2 | 0 | 8 | 11 | 0 | 11 | None needed. |
+| FDG5060 | FDG5060 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | None needed. |
+| FDG5061 | FDG5061 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5062 | FDG5062 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5063 | FDG5063 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5068 | FDG5068 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5074 | FDG5074 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5075 | FDG5075 | 1 | 1 | 2 | 0 | 0 | 4 | 0 | 4 | Narrowed before this run (see notes). |
+| FDG5076 | FDG5076 | 0 | 12 | 0 | 0 | 0 | 12 | 0 | 12 | None needed. |
+| FDG5077 | FDG5077 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5094 | FDG5094 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5096 | FDG5096 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5097 | FDG5097 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+| FDG5099 | FDG5099 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 reports. |
+
+### Notes
+
+- **polly's configuration.** polly's own globalconfig files set CA1003, CA1051, CA1062, CA1802 and CA2225 to `none`
+  and take precedence over the package, so polly's zeros for those diagnostics measure polly's configuration.
+- **CA1062.** None of the 56 reports is on the `this` parameter of an extension method: they are parameters of public
+  static and instance methods, constructors, a property setter and an operator, dereferenced without a null check.
+  They are outside FDG5073 but are true warnings under the argument validation guidelines of section 5.8.2, so they
+  are counted as true. CA1062 stays mapped to FDG5073, the only rule of this round that it checks.
+- **CA1065.** The same `Dispose` report as in the 5.1 to 5.3 run. It is outside FDG5092 (implicit conversion
+  operators), and a true warning under section 9.4.1.
+- **FDG5059.** Instance events of unsealed public classes with no protected virtual `On` method: serilog's level
+  switch change event, two newtonsoft-json events (one raised from an internal nonvirtual `OnError`, one from no `On`
+  method), and in internal-b six `PropertyChanged` events and two other change events of public classes. All true.
+- **FDG5060.** internal-b has a protected nonvirtual `On` method without parameters for one of those change events.
+  True.
+- **FDG5075, narrowing.** A first run reported 13 classes. Nine were polly classes named
+  `[Feature][ExtendedType]Extensions` (one per resilience strategy), which name the class for its functionality and
+  are no longer reported; the analyzer now reports only `Extensions` alone or after the name of a type that the class
+  extends. The 4 reports left (serilog's `LoggerExtensions` on `ILogger`, polly's builder extensions class, and two
+  newtonsoft-json classes named `Extensions`) are true.
+- **FDG5076.** polly declares its strategy extension methods (`AddRetry`, `AddCircuitBreaker` and others) and one
+  legacy helper in the root namespace, beside the builder and property types they extend, which are classes of the
+  same assembly. None is an interface, a generic restriction or a dependency split, so all 12 are true.
+- **No reports.** The other diagnostics report nothing on these samples; their tests cover the positive cases. Under
+  Ruling 21 an analyzer with 0 reports passes the false positive gate.

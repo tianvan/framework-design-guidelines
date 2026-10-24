@@ -144,7 +144,7 @@ public static class MappingValidator
             }
         }
 
-        if (check.Kind == CheckKind.Sdk && mapping.Autofix != AutofixKind.No
+        if (check.Kind == CheckKind.Sdk && mapping.Autofix == AutofixKind.Yes
             && known.Count == check.Diagnostics.Count && !known.Any(d => d.HasCodeFix))
         {
             report($"autofix {RuleYaml.EnumText(mapping.Autofix)} needs a code fix, but none of " +

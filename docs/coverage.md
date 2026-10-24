@@ -9,9 +9,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 2 Framework Design Fundamentals | 32 | 0 | 0 | 32 | 0 | 32 |
 | 3 Naming Guidelines | 87 | 34 | 8 | 45 | 0 | 87 |
 | 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 70 |
-| 5 Member Design | 133 | 9 | 11 | 113 | 0 | 55 |
+| 5 Member Design | 133 | 15 | 25 | 93 | 0 | 55 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 393 | 103 | 31 | 259 | 0 | 315 |
+| Total | 393 | 109 | 45 | 239 | 0 | 315 |
 
 ## Non-guideline content
 
@@ -71,6 +71,13 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 - **5.2.2** (background): The TextChanged example of a property change notification event and the Mariani and Sells annotations are background for FDG5041 and FDG5042.
 - **5.3** (background): The section introduction (type constructors and instance constructors, the Customer example, default constructors, and constructors as the most natural way to create instances) is background for FDG5043 to FDG5052.
 - **5.3.1** (background): The definition of a type (static) constructor and when the runtime runs it is background for FDG5053 to FDG5055.
+- **5.4** (background): The section introduction (events as the most common callbacks, event handlers and event handling methods, the sender and event arguments convention, pre-events and post-events, and the AlarmClock example) is background for FDG5056 to FDG5064; FDG5064 relies on the definition of pre-events.
+- **5.5** (rationale): The encapsulation principle (fields should be private so that they can change without breaking other code), with constant and static read-only fields excluded, is rationale for FDG5065 to FDG5068. CA2211 is not mapped, because no guideline states the principle for static fields.
+- **5.6** (background): The definition of extension methods, the StringExtensions example and the requirement that the holding class be static and its namespace imported are background for FDG5069 to FDG5080.
+- **5.7** (rationale): The System.Decimal example, the warning that operator overloads are often abused and the Sells annotation (operators do not show up in IntelliSense) are rationale for FDG5081 to FDG5087.
+- **5.7.1** (background): The section only says that overloading operator == is complicated and refers to sections 8.9.1 and 8.13, whose rules cover it (CA1046 and CA2231 belong there).
+- **5.7.2** (background): The definition of implicit and explicit conversion operators and the RangedInt32 example are background for FDG5088 to FDG5093.
+- **5.7.3** (background): The section introduction (inequality operators should be consistent with the built-in operators; != belongs with == in section 8.13) is background for FDG5094 to FDG5099.
 
 ### Appendix A: C# Coding Style Conventions
 

@@ -18,6 +18,12 @@ public sealed class MembersDescriptorTests
         new MultiParameterIndexerAnalyzer(),
         new RangeIndexerAnalyzer(),
         new ConstructorParameterNameAnalyzer(),
+        new EventRaisingMethodAnalyzer(),
+        new EventInvocationAnalyzer(),
+        new MutableReadOnlyFieldAnalyzer(),
+        new ExtensionMethodAnalyzer(),
+        new DuplicateExtensionMethodAnalyzer(),
+        new InequalityOperatorAnalyzer(),
     ];
 
     [Fact]
@@ -27,7 +33,8 @@ public sealed class MembersDescriptorTests
         Assert.Equal(
             [
                 "FDG5003", "FDG5004", "FDG5005", "FDG5008", "FDG5010", "FDG5011", "FDG5013", "FDG5015", "FDG5034",
-                "FDG5040", "FDG5046",
+                "FDG5040", "FDG5046", "FDG5059", "FDG5060", "FDG5061", "FDG5062", "FDG5063", "FDG5068", "FDG5074",
+                "FDG5075", "FDG5076", "FDG5077", "FDG5094", "FDG5096", "FDG5097", "FDG5099",
             ],
             descriptors.Select(descriptor => descriptor.Id).Order());
         Assert.All(descriptors, descriptor => Assert.False(descriptor.IsEnabledByDefault));

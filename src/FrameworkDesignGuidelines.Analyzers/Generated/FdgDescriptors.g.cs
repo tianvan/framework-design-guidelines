@@ -259,6 +259,132 @@ internal static class FdgDescriptors
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5046.md");
 
+    public static readonly DiagnosticDescriptor FDG5059 = new DiagnosticDescriptor(
+        id: "FDG5059",
+        title: "DO use a protected virtual method to raise each event. This is applicable only to nonstatic events on unsealed classes—not to structs, sealed classes, or static events.",
+        messageFormat: "Add a protected virtual method 'On{0}' that raises the event '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5059.md");
+
+    public static readonly DiagnosticDescriptor FDG5060 = new DiagnosticDescriptor(
+        id: "FDG5060",
+        title: "DO take one parameter to the protected method that raises an event.",
+        messageFormat: "The method '{0}' that raises an event should take one parameter",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5060.md");
+
+    public static readonly DiagnosticDescriptor FDG5061 = new DiagnosticDescriptor(
+        id: "FDG5061",
+        title: "DO NOT pass `null` as the sender when raising a nonstatic event.",
+        messageFormat: "Do not pass null as the sender when raising the instance event '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5061.md");
+
+    public static readonly DiagnosticDescriptor FDG5062 = new DiagnosticDescriptor(
+        id: "FDG5062",
+        title: "DO pass `null` as the sender when raising a static event.",
+        messageFormat: "Pass null as the sender when raising the static event '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5062.md");
+
+    public static readonly DiagnosticDescriptor FDG5063 = new DiagnosticDescriptor(
+        id: "FDG5063",
+        title: "DO NOT pass `null` as the event data parameter when raising an event.",
+        messageFormat: "Do not pass null as the event data when raising the event '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5063.md");
+
+    public static readonly DiagnosticDescriptor FDG5068 = new DiagnosticDescriptor(
+        id: "FDG5068",
+        title: "DO NOT assign instances of mutable types to public or protected `readonly` fields.",
+        messageFormat: "The public or protected readonly field '{0}' has the mutable type '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5068.md");
+
+    public static readonly DiagnosticDescriptor FDG5074 = new DiagnosticDescriptor(
+        id: "FDG5074",
+        title: "AVOID defining extension methods on `System.Object`.",
+        messageFormat: "Do not define the extension method '{0}' on System.Object",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5074.md");
+
+    public static readonly DiagnosticDescriptor FDG5075 = new DiagnosticDescriptor(
+        id: "FDG5075",
+        title: "CONSIDER naming the type that holds extension methods for its functionality—for example, use “Routing” instead of “[ExtendedType] Extensions.”",
+        messageFormat: "Name the class '{0}' that holds extension methods for its functionality",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5075.md");
+
+    public static readonly DiagnosticDescriptor FDG5076 = new DiagnosticDescriptor(
+        id: "FDG5076",
+        title: "DO NOT put extension methods in the same namespace as the extended type unless the intention is to add methods to interfaces, for generic type restriction, or for dependency management.",
+        messageFormat: "Move the extension method '{0}' out of the namespace of the type '{1}' it extends",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5076.md");
+
+    public static readonly DiagnosticDescriptor FDG5077 = new DiagnosticDescriptor(
+        id: "FDG5077",
+        title: "AVOID defining two or more extension methods with the same signature, even if they reside in different namespaces.",
+        messageFormat: "The extension method '{0}' has the same signature as an extension method in '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5077.md");
+
+    public static readonly DiagnosticDescriptor FDG5094 = new DiagnosticDescriptor(
+        id: "FDG5094",
+        title: "DO only implement inequality operators on types that implement `IComparable<T>`.",
+        messageFormat: "Implement IComparable<{0}> on '{0}', which defines inequality operators",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5094.md");
+
+    public static readonly DiagnosticDescriptor FDG5096 = new DiagnosticDescriptor(
+        id: "FDG5096",
+        title: "DO implement `operator <=` on types that implement `operator <` and `IEquatable<T>`.",
+        messageFormat: "Define operator <= on '{0}', which defines operator < and implements IEquatable<{0}>",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5096.md");
+
+    public static readonly DiagnosticDescriptor FDG5097 = new DiagnosticDescriptor(
+        id: "FDG5097",
+        title: "DO return a Boolean value from custom inequality operators.",
+        messageFormat: "Return a Boolean value from the inequality operator '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5097.md");
+
+    public static readonly DiagnosticDescriptor FDG5099 = new DiagnosticDescriptor(
+        id: "FDG5099",
+        title: "AVOID defining inequality operators against different types.",
+        messageFormat: "Do not define the inequality operator '{0}' against the type '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5099.md");
+
     public static readonly DiagnosticDescriptor FDGA003 = new DiagnosticDescriptor(
         id: "FDGA003",
         title: "DO place the closing brace on its own line, except the end of a `do`..`while` statement.",

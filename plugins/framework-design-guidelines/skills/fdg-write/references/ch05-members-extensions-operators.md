@@ -10,11 +10,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG5070** CONSIDER using extension methods to provide helper functionality relevant to every implementation of an interface. — examples: examples/ch05-members-extensions-operators.md#fdg5070
 - **FDG5071** CONSIDER using extension methods when an instance method would introduce an unwanted dependency. — examples: examples/ch05-members-extensions-operators.md#fdg5071
 - **FDG5072** CONSIDER using generic extension methods when an instance method on a generic type is not well defined for all possible type parameters. — examples: examples/ch05-members-extensions-operators.md#fdg5072
-- **FDG5073** DO throw an `ArgumentNullException` when the `this` parameter in an extension method is `null`. — examples: examples/ch05-members-extensions-operators.md#fdg5073
-- **FDG5074** AVOID defining extension methods on `System.Object`. — examples: examples/ch05-members-extensions-operators.md#fdg5074
 - **FDG5075** CONSIDER naming the type that holds extension methods for its functionality—for example, use “Routing” instead of “[ExtendedType] Extensions.” — examples: examples/ch05-members-extensions-operators.md#fdg5075
-- **FDG5076** DO NOT put extension methods in the same namespace as the extended type unless the intention is to add methods to interfaces, for generic type restriction, or for dependency management. — examples: examples/ch05-members-extensions-operators.md#fdg5076
-- **FDG5077** AVOID defining two or more extension methods with the same signature, even if they reside in different namespaces. — examples: examples/ch05-members-extensions-operators.md#fdg5077
 - **FDG5078** CONSIDER defining extension methods in the same namespace as the extended type if the type is an interface and if the extension methods are meant to be used in most or all cases.
 - **FDG5079** CONSIDER defining extension methods in the same namespace as the extended type if the type is generic and if the extension methods apply stronger type parameter restrictions than the extended type does. — examples: examples/ch05-members-extensions-operators.md#fdg5079
 - **FDG5080** DO NOT define extension methods implementing a feature in namespaces normally associated with other features. Instead, define them in the namespace associated with the feature they belong to. — examples: examples/ch05-members-extensions-operators.md#fdg5080
@@ -27,7 +23,6 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG5084** DO NOT be cute when defining operator overloads. — examples: examples/ch05-members-extensions-operators.md#fdg5084
 - **FDG5085** DO NOT provide operator overloads unless at least one of the operands is of the type defining the overload. — examples: examples/ch05-members-extensions-operators.md#fdg5085
 - **FDG5086** DO overload operators in a symmetric fashion. — examples: examples/ch05-members-extensions-operators.md#fdg5086
-- **FDG5087** DO provide methods with friendly names that correspond to each overloaded operator. — examples: examples/ch05-members-extensions-operators.md#fdg5087
 
 ## 5.7.2 Conversion Operators
 
@@ -35,14 +30,9 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG5089** DO NOT define conversion operators outside of a type’s domain. — examples: examples/ch05-members-extensions-operators.md#fdg5089
 - **FDG5090** DO NOT provide an implicit conversion operator if the conversion is potentially lossy. — examples: examples/ch05-members-extensions-operators.md#fdg5090
 - **FDG5091** DO NOT provide an implicit conversion operator if the conversion requires nontrivial work. — examples: examples/ch05-members-extensions-operators.md#fdg5091
-- **FDG5092** DO NOT throw exceptions from implicit conversion operators. — examples: examples/ch05-members-extensions-operators.md#fdg5092
 - **FDG5093** DO throw `System.InvalidCastException` if a call to a cast operator results in a lossy conversion and the contract of the operator does not allow lossy conversions. — examples: examples/ch05-members-extensions-operators.md#fdg5093
 
 ## 5.7.3 Inequality Operators
 
-- **FDG5094** DO only implement inequality operators on types that implement `IComparable<T>`.
 - **FDG5095** DO implement inequality operators consistent with the `IComparable<T>` implementation. — examples: examples/ch05-members-extensions-operators.md#fdg5095
-- **FDG5096** DO implement `operator <=` on types that implement `operator <` and `IEquatable<T>`. — examples: examples/ch05-members-extensions-operators.md#fdg5096
-- **FDG5097** DO return a Boolean value from custom inequality operators.
 - **FDG5098** DO define inequality operators consistent with their mathematical properties. — examples: examples/ch05-members-extensions-operators.md#fdg5098
-- **FDG5099** AVOID defining inequality operators against different types. — examples: examples/ch05-members-extensions-operators.md#fdg5099

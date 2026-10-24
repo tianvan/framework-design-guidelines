@@ -3678,8 +3678,10 @@
       "strength": "DO",
       "text": "use `System.EventHandler<T>` instead of manually creating new delegates to be used as event handlers.",
       "section": "5.4 Event Design",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "CA1003"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3706,7 +3708,9 @@
       "strength": "DO",
       "text": "use a protected virtual method to raise each event. This is applicable only to nonstatic events on unsealed classes—not to structs, sealed classes, or static events.",
       "section": "5.4 Event Design",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG5059"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -3720,8 +3724,10 @@
       "strength": "DO",
       "text": "take one parameter to the protected method that raises an event.",
       "section": "5.4 Event Design",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5060"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3734,7 +3740,9 @@
       "strength": "DO NOT",
       "text": "pass `null` as the sender when raising a nonstatic event.",
       "section": "5.4 Event Design",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG5061"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -3748,7 +3756,9 @@
       "strength": "DO",
       "text": "pass `null` as the sender when raising a static event.",
       "section": "5.4 Event Design",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG5062"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -3762,7 +3772,9 @@
       "strength": "DO NOT",
       "text": "pass `null` as the event data parameter when raising an event.",
       "section": "5.4 Event Design",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG5063"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -3790,11 +3802,13 @@
       "strength": "DO NOT",
       "text": "provide instance fields that are public or protected.",
       "section": "5.5 Field Design",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "CA1051"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -3804,8 +3818,10 @@
       "strength": "DO",
       "text": "use constant fields for constants that will never change.",
       "section": "5.5 Field Design",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "CA1802"
+      ],
+      "autofix": "yes",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3832,8 +3848,10 @@
       "strength": "DO NOT",
       "text": "assign instances of mutable types to public or protected `readonly` fields.",
       "section": "5.5 Field Design",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5068"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3902,7 +3920,9 @@
       "strength": "DO",
       "text": "throw an `ArgumentNullException` when the `this` parameter in an extension method is `null`.",
       "section": "5.6 Extension Methods",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA1062"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -3916,11 +3936,13 @@
       "strength": "AVOID",
       "text": "defining extension methods on `System.Object`.",
       "section": "5.6 Extension Methods",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5074"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -3930,11 +3952,13 @@
       "strength": "CONSIDER",
       "text": "naming the type that holds extension methods for its functionality—for example, use “Routing” instead of “[ExtendedType] Extensions.”",
       "section": "5.6 Extension Methods",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5075"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -3944,8 +3968,10 @@
       "strength": "DO NOT",
       "text": "put extension methods in the same namespace as the extended type unless the intention is to add methods to interfaces, for generic type restriction, or for dependency management.",
       "section": "5.6 Extension Methods",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5076"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3958,8 +3984,10 @@
       "strength": "AVOID",
       "text": "defining two or more extension methods with the same signature, even if they reside in different namespaces.",
       "section": "5.6 Extension Methods",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5077"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -4098,11 +4126,13 @@
       "strength": "DO",
       "text": "provide methods with friendly names that correspond to each overloaded operator.",
       "section": "5.7 Operator Overloads",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA2225"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -4168,7 +4198,9 @@
       "strength": "DO NOT",
       "text": "throw exceptions from implicit conversion operators.",
       "section": "5.7.2 Conversion Operators",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA1065"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -4196,7 +4228,9 @@
       "strength": "DO",
       "text": "only implement inequality operators on types that implement `IComparable<T>`.",
       "section": "5.7.3 Inequality Operators",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG5094"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -4224,7 +4258,9 @@
       "strength": "DO",
       "text": "implement `operator <=` on types that implement `operator <` and `IEquatable<T>`.",
       "section": "5.7.3 Inequality Operators",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG5096"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -4238,8 +4274,10 @@
       "strength": "DO",
       "text": "return a Boolean value from custom inequality operators.",
       "section": "5.7.3 Inequality Operators",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5097"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -4266,8 +4304,10 @@
       "strength": "AVOID",
       "text": "defining inequality operators against different types.",
       "section": "5.7.3 Inequality Operators",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG5099"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -5887,6 +5927,7 @@
     }
   ],
   "registeredDiagnostics": [
+    "CA1003",
     "CA1008",
     "CA1012",
     "CA1014",
@@ -5901,7 +5942,9 @@
     "CA1043",
     "CA1044",
     "CA1050",
+    "CA1051",
     "CA1052",
+    "CA1062",
     "CA1065",
     "CA1069",
     "CA1507",
@@ -5917,11 +5960,13 @@
     "CA1720",
     "CA1721",
     "CA1724",
+    "CA1802",
     "CA1810",
     "CA1819",
     "CA2207",
     "CA2214",
     "CA2217",
+    "CA2225",
     "FDG3003",
     "FDG3004",
     "FDG3013",
@@ -5950,6 +5995,20 @@
     "FDG5034",
     "FDG5040",
     "FDG5046",
+    "FDG5059",
+    "FDG5060",
+    "FDG5061",
+    "FDG5062",
+    "FDG5063",
+    "FDG5068",
+    "FDG5074",
+    "FDG5075",
+    "FDG5076",
+    "FDG5077",
+    "FDG5094",
+    "FDG5096",
+    "FDG5097",
+    "FDG5099",
     "FDGA003",
     "FDGA004",
     "FDGA023",
@@ -5969,6 +6028,7 @@
     "IDE2003"
   ],
   "breakingFixDiagnostics": [
+    "CA1003",
     "CA1008",
     "CA1012",
     "CA1024",
@@ -5976,6 +6036,7 @@
     "CA1028",
     "CA1033",
     "CA1043",
+    "CA1051",
     "CA1052",
     "CA1065",
     "CA1707",
@@ -5992,6 +6053,14 @@
     "FDG5034",
     "FDG5040",
     "FDG5046",
+    "FDG5060",
+    "FDG5068",
+    "FDG5074",
+    "FDG5075",
+    "FDG5076",
+    "FDG5077",
+    "FDG5097",
+    "FDG5099",
     "IDE0130",
     "IDE1006"
   ]

@@ -363,6 +363,15 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
     }
 
     [Fact]
+    public void Breaking_autofix_does_not_require_a_code_fix()
+    {
+        // Ruling 24: a fix that changes a public signature or name is breaking whether or not a tool performs it.
+        Map("FDG9001", m => Sdk(m, "CA1716") with { Autofix = AutofixKind.Breaking });
+
+        Assert.Empty(Check());
+    }
+
+    [Fact]
     public void Style_flag_is_reserved_for_appendix_a()
     {
         Map("FDG9001", m => m with { Style = true });

@@ -2108,7 +2108,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: the text is about the wording of documentation. An analyzer would have to read prose, where "fire" and "trigger" also have other meanings.'
 - id: FDG5057
   strength: DO
   text: use `System.EventHandler<T>` instead of manually creating new delegates to be used as event handlers.
@@ -2132,10 +2132,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - CA1003
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2144,7 +2145,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1003 reports an externally visible delegate with the shape of an event handler (void, an object sender and an EventArgs subclass), and an externally visible event whose delegate type does not have that shape; in a probe with SDK 10.0.402 it reported the delegate in the first case and each event in the second. It does not know the exception in the body: a new event in a feature area that already uses custom handlers (the System.Windows.Forms example) may keep them, so a report there is not a violation. CA1003 has no code fix, and replacing the delegate type of a public event changes the public API, so the fix is breaking.'
 - id: FDG5058
   strength: CONSIDER
   text: using a subclass of `EventArgs` as the event argument, unless you are absolutely sure the event will never need to carry any data to the event handling method, in which case you can use the `EventArgs` type directly.
@@ -2178,7 +2179,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Analyzer candidate rejected: an event of type EventHandler or EventHandler<EventArgs> is easy to find, but the text allows EventArgs when the author is sure the event will never carry data, which symbols do not show, so no report could be judged a violation from the code.'
 - id: FDG5059
   strength: DO
   text: use a protected virtual method to raise each event. This is applicable only to nonstatic events on unsealed classes—not to structs, sealed classes, or static events.
@@ -2210,9 +2211,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG5059
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -2221,8 +2223,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Add a protected virtual method ''On{0}'' that raises the event ''{0}'''
+    category: Members
+  notes: 'FDG5059 reports an externally visible instance event declared in an unsealed class when neither the class nor a base class has a protected (or protected internal) virtual, abstract or override method named "On" followed by the event name, the convention the body gives. Structs, sealed and static classes and static events are not reported, as the text says. Override, abstract and explicitly implemented events are not reported: they declare no new event that the class can raise. A raising method with another name is reported; the body names the convention. Adding a protected virtual method changes no existing signature, so the fix is not breaking, but there is no code fix.'
 - id: FDG5060
   strength: DO
   text: take one parameter to the protected method that raises an event.
@@ -2240,10 +2244,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5060
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2251,8 +2256,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'The method ''{0}'' that raises an event should take one parameter'
+    category: Members
+  notes: 'FDG5060 reports an externally visible protected (or protected internal) method named "On" followed by the name of an event of its class or a base class, when it does not take exactly one parameter. Overrides are not reported; their parameters come from the base method. A raising method with another name is not seen. The name e and the event argument type, which the body adds, are not checked. Changing the parameters of a protected method changes the public API, so the fix is breaking.'
 - id: FDG5061
   strength: DO NOT
   text: pass `null` as the sender when raising a nonstatic event.
@@ -2263,9 +2270,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG5061
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -2274,8 +2282,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Do not pass null as the sender when raising the instance event ''{0}'''
+    category: Members
+  notes: 'FDG5061 reports a call that raises an instance field-like event directly (Event(...) or Event?.Invoke(...)) with a constant null as the first argument, when the event''s delegate takes an object sender first. An event raised through a local copy of the delegate (the handler variable of the AlarmClock example) is not seen. The fix changes a call, not a signature; there is no code fix.'
 - id: FDG5062
   strength: DO
   text: pass `null` as the sender when raising a static event.
@@ -2290,9 +2300,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG5062
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -2301,8 +2312,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Pass null as the sender when raising the static event ''{0}'''
+    category: Members
+  notes: 'FDG5062 reports a call that raises a static field-like event directly (Event(...) or Event?.Invoke(...)) with a first argument that is not a constant null, when the event''s delegate takes an object sender first. An event raised through a local copy of the delegate, as in the body''s example, is not seen. The fix changes a call, not a signature; there is no code fix.'
 - id: FDG5063
   strength: DO NOT
   text: pass `null` as the event data parameter when raising an event.
@@ -2315,9 +2328,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG5063
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -2326,8 +2340,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Do not pass null as the event data when raising the event ''{0}'''
+    category: Members
+  notes: 'FDG5063 reports a call that raises a field-like event directly (Event(...) or Event?.Invoke(...)) with a constant null as the second argument, when the event''s delegate takes an EventArgs or a subclass second. An event raised through a local copy of the delegate is not seen, nor a null passed through a variable. The fix changes a call, not a signature; there is no code fix.'
 - id: FDG5064
   strength: CONSIDER
   text: raising events that the end user can cancel. This guideline applies only to pre-events.
@@ -2357,7 +2373,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether an event is a pre-event, and whether the user should be able to cancel it, is a design judgment.'
 - id: FDG5065
   strength: DO NOT
   text: provide instance fields that are public or protected.
@@ -2403,19 +2419,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - CA1051
+    coverage: full
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the body''s reasons are versioning (a field cannot become a property while keeping binary compatibility). CA1051 reports public and protected instance fields of externally visible types; in a probe with SDK 10.0.402 it reported fields of structs and readonly fields too, and no static fields, as the text says. CA1051 has no code fix, and making a public field a property changes the public API, so the fix is breaking.'
 - id: FDG5066
   strength: DO
   text: use constant fields for constants that will never change.
@@ -2434,10 +2451,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: sdk
+    diagnostics:
+      - CA1802
+    coverage: partial
+  autofix: yes
   severity:
     library: warning
     application: warning
@@ -2446,7 +2464,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1802 reports a static readonly field of a primitive type or string that is initialized with a constant and could be const. With its default api_surface it reports only fields that are not externally visible (a probe with SDK 10.0.402 reported internal and private fields and not a public one), where the body''s compatibility risk does not arise because every caller is in the same assembly; do not widen api_surface, since a public value that may change in a later version should stay static readonly. Instance fields and constants that are not fields are not seen. The code fix makes the field const, which changes no public API.'
 - id: FDG5067
   strength: CONSIDER
   text: using public `static readonly` fields for predefined object instances.
@@ -2496,7 +2514,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether a type has predefined instances, and whether static readonly fields or get-only properties suit them, is a design choice. CA2211 (non-constant visible static fields) is not mapped: no guideline of 5.5 states it; the section introduction exempts constant and static readonly fields from the rule that fields be private.'
 - id: FDG5068
   strength: DO NOT
   text: assign instances of mutable types to public or protected `readonly` fields.
@@ -2519,10 +2537,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5068
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2530,8 +2549,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'The public or protected readonly field ''{0}'' has the mutable type ''{1}'''
+    category: Members
+  notes: 'FDG5068 reports an externally visible readonly field, static or instance, whose type is an array, a mutable collection of System.Collections, System.Collections.Generic or System.Collections.ObjectModel (ArrayList, Hashtable, List<T>, Dictionary<TKey, TValue>, HashSet<T>, Queue<T>, Stack<T>, LinkedList<T>, SortedDictionary<TKey, TValue>, SortedList<TKey, TValue>, SortedSet<T>, Collection<T>, ObservableCollection<T>), System.Text.StringBuilder, or System.IO.Stream or a subclass: the arrays, collections and streams that the body names. Other mutable types are not known. Changing the type of a public field or replacing it with a property changes the public API, so the fix is breaking.'
 - id: FDG5069
   strength: AVOID
   text: frivolously defining extension methods, especially on types outside your library or framework.
@@ -2580,7 +2601,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether an extension method is frivolous, and whether the extended type belongs to the library, are design judgments. FDG5074 reports extension methods on System.Object.'
 - id: FDG5070
   strength: CONSIDER
   text: using extension methods to provide helper functionality relevant to every implementation of an interface.
@@ -2615,7 +2636,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether a helper is relevant to every implementation of an interface is a design judgment.'
 - id: FDG5071
   strength: CONSIDER
   text: using extension methods when an instance method would introduce an unwanted dependency.
@@ -2640,7 +2661,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether an instance method would add an unwanted dependency is a design judgment about layering.'
 - id: FDG5072
   strength: CONSIDER
   text: using generic extension methods when an instance method on a generic type is not well defined for all possible type parameters.
@@ -2683,7 +2704,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether an instance method is well defined for every type argument is a design judgment.'
 - id: FDG5073
   strength: DO
   text: throw an `ArgumentNullException` when the `this` parameter in an extension method is `null`.
@@ -2706,9 +2727,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1062
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -2718,7 +2740,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1062 reports a parameter of an externally visible method, the this parameter of an extension method included, that is dereferenced without a null check. It does not report a this parameter that the method never dereferences, which the body asks to validate too, nor one passed on to another method. It also reports the other parameters of every externally visible method; those reports belong to argument validation in 5.8.2, not to this rule. Do not set exclude_extension_method_this_parameter. CA1062 has no code fix; adding the check changes no signature.'
 - id: FDG5074
   strength: AVOID
   text: defining extension methods on `System.Object`.
@@ -2748,19 +2770,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5074
+    coverage: full
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Do not define the extension method ''{0}'' on System.Object'
+    category: Members
+  notes: 'Library only: the reason is callers in VB and other languages that cannot call such methods with extension syntax. FDG5074 reports an externally visible extension method whose this parameter is System.Object. Changing the extended type changes the public API, so the fix is breaking.'
 - id: FDG5075
   strength: CONSIDER
   text: naming the type that holds extension methods for its functionality—for example, use “Routing” instead of “[ExtendedType] Extensions.”
@@ -2815,19 +2840,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5075
+    coverage: partial
+  autofix: breaking
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Name the class ''{0}'' that holds extension methods for its functionality'
+    category: Members
+  notes: 'Library only: the reason is the experience in languages without extension syntax, where callers see the class name. FDG5075 reports an externally visible static class named "[ExtendedType]Extensions", the pattern of the text: "Extensions" alone, or after the name of a type that one of its extension methods extends (for an interface, with or without its leading I). A name that adds the functionality before the extended type ("[Feature][ExtendedType]Extensions") names the class for its functionality and is not reported. A class named for its extended type in another way (a Helpers suffix, for example) is not seen. Renaming a public class changes the public API, so the fix is breaking.'
 - id: FDG5076
   strength: DO NOT
   text: put extension methods in the same namespace as the extended type unless the intention is to add methods to interfaces, for generic type restriction, or for dependency management.
@@ -2840,10 +2868,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5076
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2851,8 +2880,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Move the extension method ''{0}'' out of the namespace of the type ''{1}'' it extends'
+    category: Members
+  notes: 'FDG5076 reports an externally visible extension method declared in the namespace of the type it extends when that type is declared in the same assembly, is not an interface, and the method does not restrict a generic type: the extended type is not generic, or every type argument is a type parameter of the method without constraints. The three exceptions of the text are interfaces, generic type restriction and dependency management; for the last the body says the extension methods are in a different assembly, and since symbols do not show why an assembly extends another assembly''s type in that type''s namespace, extended types from other assemblies are not reported at all. Moving a public class to another namespace changes the public API, so the fix is breaking.'
 - id: FDG5077
   strength: AVOID
   text: defining two or more extension methods with the same signature, even if they reside in different namespaces.
@@ -2909,10 +2940,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5077
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2920,8 +2952,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'The extension method ''{0}'' has the same signature as an extension method in ''{1}'''
+    category: Members
+  notes: 'FDG5077 reports externally visible extension methods of one assembly that have the same name, the same number of type parameters and the same parameter types, this parameter included, in different classes. Methods in other assemblies are not seen. The Mariani annotation describes namespaces that offer the same services as mutually exclusive flavors; such pairs are reported, and the text keeps them under AVOID. Renaming or removing a public method changes the public API, so the fix is breaking.'
 - id: FDG5078
   strength: CONSIDER
   text: defining extension methods in the same namespace as the extended type if the type is an interface and if the extension methods are meant to be used in most or all cases.
@@ -2944,7 +2978,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether extension methods are meant for most or all uses is a design judgment. FDG5076 does not report extension methods on interfaces, the case this rule allows.'
 - id: FDG5079
   strength: CONSIDER
   text: defining extension methods in the same namespace as the extended type if the type is generic and if the extension methods apply stronger type parameter restrictions than the extended type does.
@@ -2985,7 +3019,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: it recommends a choice that is not wrong when not taken. FDG5076 does not report extension methods that restrict a generic type, the case this rule allows.'
 - id: FDG5080
   strength: DO NOT
   text: define extension methods implementing a feature in namespaces normally associated with other features. Instead, define them in the namespace associated with the feature they belong to.
@@ -3020,7 +3054,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: which namespace a feature belongs to is a design judgment. FDG5076 reports extension methods in the namespace of the extended type.'
 - id: FDG5081
   strength: AVOID
   text: defining operator overloads, except in types that should feel like primitive (built-in) types.
@@ -3043,7 +3077,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether a type should feel like a primitive type is a design judgment. CA2225 (named alternates) is mapped to FDG5087.'
 - id: FDG5082
   strength: CONSIDER
   text: defining operator overloads in a type that should feel like a primitive type.
@@ -3068,7 +3102,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether a type should feel like a primitive type is a design judgment.'
 - id: FDG5083
   strength: DO
   text: define operator overloads in structs that represent numbers (such as `System.Decimal`).
@@ -3091,7 +3125,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether a struct represents a number is a design judgment. A type that implements the generic math interfaces (INumber<T> and others) must already declare their operators, which the compiler enforces.'
 - id: FDG5084
   strength: DO NOT
   text: be cute when defining operator overloads.
@@ -3116,7 +3150,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether the result of an operator is immediately obvious is a design judgment.'
 - id: FDG5085
   strength: DO NOT
   text: provide operator overloads unless at least one of the operands is of the type defining the overload.
@@ -3152,7 +3186,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: the C# compiler enforces it, as the body says (CS0563), so C# code cannot break it.'
 - id: FDG5086
   strength: DO
   text: overload operators in a symmetric fashion.
@@ -3180,7 +3214,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: the C# compiler already requires the pairs == and !=, < and >, <= and >=, and true and false (CS0216). CA2226 is not mapped: it checks only those pairs, and in a probe with SDK 10.0.402 it did not report an operator + without an operator -. Analyzer candidate rejected: beyond those pairs, which operators form a family depends on the type (the Mariani annotation says not all of them make sense).'
 - id: FDG5087
   strength: DO
   text: provide methods with friendly names that correspond to each overloaded operator.
@@ -3248,19 +3282,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA2225
+    coverage: full
   autofix: no
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the reason is languages that do not support operator overloading; an application''s code is used from one language. CA2225 reports an operator of an externally visible type that has no method with the friendly name (for example Add for op_Addition, ToXxx or FromXxx for conversions); in a probe with SDK 10.0.402 it accepted CompareTo or Compare for the comparison operators, as Table 5-1 lists CompareTo. Adding a method changes no signature, but the code fix adds a method whose body must still be written, so it is not a safe fix.'
 - id: FDG5088
   strength: DO NOT
   text: provide a conversion operator if such a conversion is not clearly expected by the end users.
@@ -3285,7 +3320,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether users expect a conversion needs user research or prior art, as the body says.'
 - id: FDG5089
   strength: DO NOT
   text: define conversion operators outside of a type’s domain.
@@ -3315,7 +3350,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: what lies outside a type''s domain is a design judgment.'
 - id: FDG5090
   strength: DO NOT
   text: provide an implicit conversion operator if the conversion is potentially lossy.
@@ -3340,7 +3375,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether a conversion between custom types loses information depends on their ranges, which symbols do not show.'
 - id: FDG5091
   strength: DO NOT
   text: provide an implicit conversion operator if the conversion requires nontrivial work.
@@ -3365,7 +3400,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether a conversion is more than a small amount of constant-time work depends on its implementation.'
 - id: FDG5092
   strength: DO NOT
   text: throw exceptions from implicit conversion operators.
@@ -3381,9 +3416,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+      - CA1065
+    coverage: partial
   autofix: no
   severity:
     library: warning
@@ -3393,7 +3429,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1065 reports an exception thrown directly in an implicit conversion operator; in a probe with SDK 10.0.402 it reported an ArgumentException thrown there. Exceptions from methods that the operator calls are not seen. CA1065 also reports other members, such as Equals, GetHashCode, property getters and finalizers, which FDG5031 and FDG5054 cover in part and this rule does not. The fix changes behavior, not a signature; CA1065 has no code fix.'
 - id: FDG5093
   strength: DO
   text: throw `System.InvalidCastException` if a call to a cast operator results in a lossy conversion and the contract of the operator does not allow lossy conversions.
@@ -3424,7 +3460,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether the contract of an operator allows lossy conversions is a design decision, and whether a conversion loses information depends on the values.'
 - id: FDG5094
   strength: DO
   text: only implement inequality operators on types that implement `IComparable<T>`.
@@ -3435,9 +3471,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG5094
+    coverage: full
   autofix: no
   severity:
     library: warning
@@ -3446,8 +3483,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Implement IComparable<{0}> on ''{0}'', which defines inequality operators'
+    category: Members
+  notes: 'FDG5094 reports, once per type, an externally visible class or struct that declares operator <, >, <= or >= and does not implement IComparable<T> with T the type itself. Interfaces are not reported. The body says that a type with the operators has an easy basis for implementing the interface; adding an interface changes no existing signature, so the fix is not breaking, but there is no code fix. CA1036 is not mapped: it asks a type that implements IComparable to define all the comparison operators, the opposite direction, which the text does not ask.'
 - id: FDG5095
   strength: DO
   text: implement inequality operators consistent with the `IComparable<T>` implementation.
@@ -3476,7 +3515,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: whether the operators agree with CompareTo is behavior. FDG5094 reports types with inequality operators that do not implement IComparable<T>.'
 - id: FDG5096
   strength: DO
   text: implement `operator <=` on types that implement `operator <` and `IEquatable<T>`.
@@ -3489,9 +3528,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+      - FDG5096
+    coverage: full
   autofix: no
   severity:
     library: warning
@@ -3500,8 +3540,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Define operator <= on ''{0}'', which defines operator < and implements IEquatable<{0}>'
+    category: Members
+  notes: 'FDG5096 reports an externally visible class or struct that declares operator < and implements IEquatable<T> with T the type itself, but declares no operator <=. The report is on operator <. Records implement IEquatable<T> implicitly and are reported the same way. Adding an operator changes no existing signature, so the fix is not breaking, but there is no code fix.'
 - id: FDG5097
   strength: DO
   text: return a Boolean value from custom inequality operators.
@@ -3512,10 +3554,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5097
+    coverage: full
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -3523,8 +3566,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Return a Boolean value from the inequality operator ''{0}'''
+    category: Members
+  notes: 'FDG5097 reports an operator <, >, <= or >= of an externally visible class or struct whose return type is not bool. Interfaces (the generic math operator interfaces, for example) are not reported. Changing the return type of a public operator changes the public API, so the fix is breaking.'
 - id: FDG5098
   strength: DO
   text: define inequality operators consistent with their mathematical properties.
@@ -3564,7 +3609,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not checked: the transitive, reversal, irreflexive and asymmetric properties are behavior. FDG5097 reports inequality operators that do not return bool, the point of the last example.'
 - id: FDG5099
   strength: AVOID
   text: defining inequality operators against different types.
@@ -3604,10 +3649,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG5099
+    coverage: full
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -3615,8 +3661,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: 'Do not define the inequality operator ''{0}'' against the type ''{1}'''
+    category: Members
+  notes: 'FDG5099 reports an operator <, >, <= or >= of an externally visible class or struct with a parameter whose type is not the declaring type or Nullable<T> of it. Interfaces are not reported. The body''s alternative is a conversion operator or a converting member, so removing the operator changes the public API and the fix is breaking.'
 - id: FDG5100
   strength: DO
   text: use the least derived parameter type that provides the functionality required by the member.

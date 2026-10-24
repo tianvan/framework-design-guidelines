@@ -77,49 +77,6 @@ In addition to making use of generic constraints to restrict applicable types, s
 public static bool IsWhiteSpace(this ReadOnlySpan<char> span) {...}
 ```
 
-## FDG5073
-
-DO throw an `ArgumentNullException` when the `this` parameter in an extension method is `null`.
-
-Extension methods are just static methods with some extra “syntactic sugar” in C# and some other languages, and they should perform argument validation like any other method. The guidance for `NullReferenceException` from section 7.3.5 says it should never be thrown from a publicly callable method, and that also applies to extension methods even when invoked in “instance” syntax.
-
-Silently operating on `null` inputs, and throwing no exception at all, generally confuses developers debugging “impossible” states in their program—when the actually failing code is “clearly” unreachable, because if this was a `null` value the previous statement would have thrown instead. Even if the method would be well behaved with a `null` input as a simple static method, once the `this` modifier is added the method should throw an exception for a `null` first argument.
-
-```csharp
-// This should throw an ArgumentNullException
-SomeExtensions.SomeMethod(null);
-
-// This is the same at runtime,
-// so it should throw the same kind of exception.
-((SomeType)null).SomeMethod();
-```
-
-## FDG5074
-
-AVOID defining extension methods on `System.Object`.
-
-VB users will not be able to call such methods on object references using the extension method syntax, because VB does not support calling such methods. In VB, declaring a reference as `Object` forces all method invocations on it to be late bound (the actual member called is determined at runtime), while bindings to extension methods are determined at compile-time (early bound). For example:
-
-```csharp
-// C# declaration of the extension method
-public static class SomeExtensions{
-  static void SomeMethod(this object o){...}
-}
-
-' VB will fail to compile as VB.NET does not support calling extension
-' methods on reference types as Object
-Dim o As Object = ...
-o.SomeMethod();
-```
-
-VB users will have to call the method using the regular static method call syntax.
-
-```csharp
-SomeExtensions.SomeMethod(o)
-```
-
-Note that this guideline applies to other languages where the same binding behavior is present, or where extension methods are not supported.
-
 ## FDG5075
 
 CONSIDER naming the type that holds extension methods for its functionality—for example, use “Routing” instead of “[ExtendedType] Extensions.”
@@ -166,59 +123,6 @@ public static class SomeCollectionNestedOperations {
 > As an example, I’ve had some frustrating experiences with using APIs that enthusiastically use extensions. On a multilanguage project I found that a pleasant and intuitive object model in one language was awkward in a language without support for extension methods. I’ve also had cases where I was misled about the type of an instance because some local code was injecting extensions into it.
 >
 > Please use extension methods with caution.
-
-## FDG5076
-
-DO NOT put extension methods in the same namespace as the extended type unless the intention is to add methods to interfaces, for generic type restriction, or for dependency management.
-
-Of course, in the case of dependency management, the type with the extension methods would be in a different assembly.
-
-## FDG5077
-
-AVOID defining two or more extension methods with the same signature, even if they reside in different namespaces.
-
-For example, if two different namespaces defined the same extension method on the same type, it would be impossible to import both namespaces in the same file. The compiler would report an ambiguity if one of the methods was called.
-
-```csharp
-namespace A {
-  public static class AExtensions {
-    public static void ExtensionMethod(this Foo foo){...}
-  }
-}
-namespace B {
-  public static class BExtensions {
-    public static void ExtensionMethod(this Foo foo){...}
-  }
-}
-```
-
-> **Rico Mariani:** There can be reasons to violate this guideline. For example, there might be a framework that allowed developers to choose
->
-> ```
-> using SomeType.Routing.SpeedOptimized;
-> ```
->
-> or
->
-> ```
-> using SomeType.Routing.SpaceOptimized;
-> ```
->
-> In this case, both namespaces could offer the same services, and developers simply choose which flavor to use.
->
-> The key here is that a natural mutual exclusion exists for a given consumer of the extension so that it avoids the ambiguity. If you tried to use both, you would want to see the error so that you would realize you have a conflict.
-
-> **Mircea Trofin:** Such a situation may occur when using a mix of third-party libraries. To resolve it, import in a file only one namespace defining extension methods on a type, and use fully qualified static method calls for extension methods defined on the same type in a different namespace.
->
-> ```
-> using A;
-> ...
-> T someObj = ...
-> someObj.ExtentionMethod(); //this calls AExtensions.ExtensionMethod
-> // To avoid compilation errors,
-> // we call explicitly the extension method defined in namespace B
-> B.BExtensions.ExtensionMethod(someObj);
-> ```
 
 ## FDG5079
 
@@ -296,67 +200,6 @@ For example, if you overload `operator==`, you should also overload `operator!=`
 
 > **Rico Mariani:** More generally, if you haven’t defined a whole family of overloads (because maybe they don’t all make sense), there’s a good chance that operator overloading isn’t really the best way to express your class. Remember—there are no bonus points for using fewer characters in your method calls.
 
-## FDG5087
-
-DO provide methods with friendly names that correspond to each overloaded operator.
-
-Many languages do not support operator overloading. For this reason, it is recommended that types that overload operators include a secondary method with an appropriate domain-specific name that provides equivalent functionality. The operator method is generally implemented as a call to the named method, especially if the named method is virtual. The following example illustrates this point.
-
-```csharp
-public struct DateTimeOffset {
-  public static TimeSpan operator-(
-    DateTimeOffset left, DateTimeOffset right)
-    => left.Subtract(right);
-
-  public TimeSpan Subtract(DateTimeOffset value) { ... }
- }
-```
-
-Table 5-1 lists the .NET operators and the corresponding friendly method names.
-
-**Table 5-1: Operators and Corresponding Method Names**
-
-| C# Operator Symbol | Metadata Name | Friendly Name |
-| --- | --- | --- |
-| N/A | `op_Implicit` | `To<TypeName>/From<TypeName>` |
-| N/A | `op_Explicit` | `To<TypeName>/From<TypeName>` |
-| `+` (binary) | `op_Addition` | `Add` |
-| `-` (binary) | `op_Subtraction` | `Subtract` |
-| `*` (binary) | `op_Multiply` | `Multiply` |
-| `/` | `op_Division` | `Divide` |
-| `%` | `op_Modulus` | `Mod` or `Remainder` |
-| `^` | `op_ExclusiveOr` | `Xor` |
-| `&` (binary) | `op_BitwiseAnd` | `BitwiseAnd` |
-| `\|` | `op_BitwiseOr` | `BitwiseOr` |
-| `&&` | `op_LogicalAnd` | `And` |
-| `\|\|` | `op_LogicalOr` | `Or` |
-| `=` | `op_Assign` | `Assign` |
-| `<<` | `op_LeftShift` | `LeftShift` |
-| `>>` | `op_RightShift` | `RightShift` |
-| N/A | `op_SignedRightShift` | `SignedRightShift` |
-| N/A | `op_UnsignedRightShift` | `UnsignedRightShift` |
-| `==` | `op_Equality` | `Equals` |
-| `!=` | `op_Inequality` | `Equals` |
-| `>` | `op_GreaterThan` | `CompareTo` |
-| `<` | `op_LessThan` | `CompareTo` |
-| `>=` | `op_GreaterThanOrEqual` | `CompareTo` |
-| `<=` | `op_LessThanOrEqual` | `CompareTo` |
-| `*=` | `op_MultiplicationAssignment` | `Multiply` |
-| `-=` | `op_SubtractionAssignment` | `Subtract` |
-| `^=` | `op_ExclusiveOrAssignment` | `Xor` |
-| `<<=` | `op_LeftShiftAssignment` | `LeftShift` |
-| `%=` | `op_ModulusAssignment` | `Mod` |
-| `+=` | `op_AdditionAssignment` | `Add` |
-| `&=` | `op_BitwiseAndAssignment` | `BitwiseAnd` |
-| `\|=` | `op_BitwiseOrAssignment` | `BitwiseOr` |
-| `,` | `op_Comma` | `Comma` |
-| `/=` | `op_DivisionAssignment` | `Divide` |
-| `--` | `op_Decrement` | `Decrement` |
-| `++` | `op_Increment` | `Increment` |
-| `-` (unary) | `op_UnaryNegation` | `Negate` |
-| `+` (unary) | `op_UnaryPlus` | `Plus` |
-| `~` | `op_OnesComplement` | `OnesComplement` |
-
 ## FDG5088
 
 DO NOT provide a conversion operator if such a conversion is not clearly expected by the end users.
@@ -387,14 +230,6 @@ DO NOT provide an implicit conversion operator if the conversion requires nontri
 
 Since implicit conversions are usually not visible in calling code, the potential performance costs of the method will be hidden from anyone reading the code. If a conversion requires more than a small amount of constant-time work, it should instead be exposed as a named method.
 
-## FDG5092
-
-DO NOT throw exceptions from implicit conversion operators.
-
-It is very difficult for end users to understand what is happening, because they might not be aware that a conversion is taking place.
-
-> **Stephen Toub:** From a performance perspective, implicit conversions should also avoid allocations or otherwise having nontrivial overhead. Just as with boxing, if an implicit conversion is expensive, it’s likely developers will end up paying these costs without realizing it.
-
 ## FDG5093
 
 DO throw `System.InvalidCastException` if a call to a cast operator results in a lossy conversion and the contract of the operator does not allow lossy conversions.
@@ -419,12 +254,6 @@ public static bool operator <(SomeType left, SomeType right) =>
    left.CompareTo(right) < 0;
 ```
 
-## FDG5096
-
-DO implement `operator <=` on types that implement `operator <` and `IEquatable<T>`.
-
-When both “less than” and “equal” are defined, then “less than or equal” should be well defined.
-
 ## FDG5098
 
 DO define inequality operators consistent with their mathematical properties.
@@ -444,40 +273,4 @@ Using the inequality operators for a projective map, or for any purpose other th
 // Almost everyone believes that the type of x here is Boolean.
 // Therefore it should be for any inequality operator you define.
 var x = a < b;
-```
-
-## FDG5099
-
-AVOID defining inequality operators against different types.
-
-The *reversal* property of inequality says that for any `a < b` that returns `true`, `b > a` should also return `true`. Therefore, to be consistent with the expected inequality behaviors, you need to define both `ThisType < ThatType` and `ThatType > ThisType`. The *asymmetric* property, and the guidance for implementing operators symmetrically, means that you also have to define `ThisType > ThatType` and `ThatType < ThisType`. The *transitive* property says you also have to define `ThisType > ThisType` and `ThisType < ThisType` if you haven’t already. Finally, the guidance about implementing `IComparable<T>` says that both `ThisType` and `ThatType` should be `IComparable<T>` against each other (and themselves)—a task that can be accomplished only when `ThisType` and `ThatType` are in the same assembly.
-
-Rather than implementing six different operators (and even more if `<=` is supported), two interfaces, and two methods, consider making use of a conversion operator (section 5.7.2) or a method or property that converts one type to another. For example, `DateTimeOffset` and `DateTime` can be compared via inequality:
-
-```csharp
-DateTimeOffset a = GetDateTimeOffset();
-DateTime b = GetDateTime();
-
-// This compiles and behaves as expected
-if (a < b) {
-  ...
-}
-```
-
-`DateTimeOffset` doesn’t define an `operator <` to compare against a `DateTime`, but instead has an implicit conversion operator to convert a `DateTime` into a `DateTimeOffset` and an `operator <` to compare two `DateTimeOffset` values:
-
-```csharp
-public partial struct DateTimeOffset {
- public static implicit operator DateTimeOffset(DateTime dateTime) {...}
-
- public static operator <(DateTimeOffset left, DateTimeOffset right){...}
-}
-```
-
-`DateTimeOffset` values can be compared to `DateTime` values (the other direction) by using the `DateTimeOffset.UtcDateTime` property.
-
-```csharp
-public partial struct DateTimeOffset {
- public DateTime UtcDateTime { get { ... } }
-}
 ```

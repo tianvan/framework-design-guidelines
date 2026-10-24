@@ -59,3 +59,16 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
   sdk CA1043, partial; no autofix. Chosen for its exception (dictionary-like types), which CA1043 cannot detect, and because CA1043 accepts `Object` and `Int16`, which the text does not list.
 - [ ] FDG5046 DO use the same name for constructor parameters and a property if the constructor parameters are used just to set the property.
   fdg FDG5046, partial; no autofix. Chosen because the new analyzer decides "used just to set the property" from the syntax (one use, `P = p` or `P = p ?? throw`), and because renaming a public parameter breaks callers that use named arguments.
+
+## Chapter 5: Member Design (5.4 to 5.7)
+
+- [ ] FDG5057 DO use `System.EventHandler<T>` instead of manually creating new delegates to be used as event handlers.
+  sdk CA1003, partial; breaking. Chosen because the body exempts new events in a feature area that already uses custom handlers, which CA1003 cannot see, and because replacing the delegate type of a public event is breaking with no code fix.
+- [ ] FDG5059 DO use a protected virtual method to raise each event. This is applicable only to nonstatic events on unsealed classes—not to structs, sealed classes, or static events.
+  fdg FDG5059, partial; no autofix. Chosen because the new analyzer finds the raising method by the "On" plus event name convention of the body, and leaves out override, abstract and explicitly implemented events on top of the exceptions in the text.
+- [ ] FDG5073 DO throw an `ArgumentNullException` when the `this` parameter in an extension method is `null`.
+  sdk CA1062, partial; no autofix. Chosen because CA1062 reports only a dereferenced parameter, and also reports every other parameter of public methods, which belongs to argument validation in 5.8.2; on the noise samples none of its reports was on an extension method.
+- [ ] FDG5075 CONSIDER naming the type that holds extension methods for its functionality—for example, use “Routing” instead of “[ExtendedType] Extensions.”
+  fdg FDG5075, partial; breaking. Chosen because the analyzer reports only the "[ExtendedType]Extensions" pattern and lets "[Feature][ExtendedType]Extensions" pass, a reading of the text that removed 9 of 13 reports on the samples.
+- [ ] FDG5076 DO NOT put extension methods in the same namespace as the extended type unless the intention is to add methods to interfaces, for generic type restriction, or for dependency management.
+  fdg FDG5076, partial; breaking. Chosen for its three exceptions: interfaces and generic restriction are read from symbols, and dependency management is approximated by leaving out every extended type from another assembly.

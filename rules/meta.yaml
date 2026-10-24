@@ -162,6 +162,27 @@ chapters:
       - section: "5.3.1"
         disposition: background
         note: "The definition of a type (static) constructor and when the runtime runs it is background for FDG5053 to FDG5055."
+      - section: "5.4"
+        disposition: background
+        note: "The section introduction (events as the most common callbacks, event handlers and event handling methods, the sender and event arguments convention, pre-events and post-events, and the AlarmClock example) is background for FDG5056 to FDG5064; FDG5064 relies on the definition of pre-events."
+      - section: "5.5"
+        disposition: rationale
+        note: "The encapsulation principle (fields should be private so that they can change without breaking other code), with constant and static read-only fields excluded, is rationale for FDG5065 to FDG5068. CA2211 is not mapped, because no guideline states the principle for static fields."
+      - section: "5.6"
+        disposition: background
+        note: "The definition of extension methods, the StringExtensions example and the requirement that the holding class be static and its namespace imported are background for FDG5069 to FDG5080."
+      - section: "5.7"
+        disposition: rationale
+        note: "The System.Decimal example, the warning that operator overloads are often abused and the Sells annotation (operators do not show up in IntelliSense) are rationale for FDG5081 to FDG5087."
+      - section: "5.7.1"
+        disposition: background
+        note: "The section only says that overloading operator == is complicated and refers to sections 8.9.1 and 8.13, whose rules cover it (CA1046 and CA2231 belong there)."
+      - section: "5.7.2"
+        disposition: background
+        note: "The definition of implicit and explicit conversion operators and the RangedInt32 example are background for FDG5088 to FDG5093."
+      - section: "5.7.3"
+        disposition: background
+        note: "The section introduction (inequality operators should be consistent with the built-in operators; != belongs with == in section 8.13) is background for FDG5094 to FDG5099."
   - token: "A"
     file: app01.xhtml
     rules: appA-coding-style.yaml
