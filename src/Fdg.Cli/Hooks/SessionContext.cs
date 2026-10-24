@@ -25,8 +25,8 @@ public sealed class SessionContext
     private const string Header = "This repository follows Framework Design Guidelines (3rd ed.).";
 
     private const string StyleLine =
-        "- Write in .NET BCL style: Allman braces, one statement per line, parameter/argument lists that exceed the line " +
-        "limit chopped before the first item, one per line.";
+        "- Write in .NET BCL style: Allman braces, one statement per line, parameter/argument lists that are wrapped or " +
+        "exceed the line limit chopped before the first item, one per line.";
 
     private const string AutofixLine =
         "- Layout and machine-checkable rules are auto-fixed and checked at the end of each turn; only fix the FDG/CA/IDE " +

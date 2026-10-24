@@ -14,11 +14,11 @@ This is a coding style convention. The book treats the appendix A conventions as
 - Diagnostics: FDGA023
 - Automatic fix: yes
 - Severity: library warning, application warning, test warning
-- Status: verified
+- Status: draft
 
 Message: Place each argument or parameter of a long list on its own line, starting on the line after the opening parenthesis
 
-A list is long when its line exceeds max_line_length (default 120).
+A list is long when its line exceeds max_line_length (default 120). Scope: A parameter or argument list that spans more than one line is treated as exceedingly long, because the author chose to wrap it; it must then be chopped before the first item, indented one level, with one item per line, and a list whose first item stays on the opening line violates the rule even if no line passes the length guide.
 
 ## From the book
 

@@ -795,6 +795,163 @@ public sealed class LongListWrappingTests
             """);
     }
 
+    [Fact]
+    public Task Multi_line_list_not_chopped_before_first_item_is_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M{|FDGA023:(|}int a,
+                    int b)
+                {
+                    Report{|FDGA023:(|}a, b,
+                        3);
+                }
+
+                static void Report(
+                    int a,
+                    int b,
+                    int c)
+                {
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M(
+                    int a,
+                    int b)
+                {
+                    Report(
+                        a,
+                        b,
+                        3);
+                }
+
+                static void Report(
+                    int a,
+                    int b,
+                    int c)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Code_fix_chops_a_manually_wrapped_list()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M()
+                {
+                    var widget = new Widget{|FDGA023:(|}1, // the first
+                                            2,
+                                            3);
+                    Report{|FDGA023:(|}
+                        1, 2,
+                        3);
+                    Report{|FDGA023:(|}1, 2, 3
+                    );
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+
+                sealed class Widget
+                {
+                    public Widget(int a, int b, int c)
+                    {
+                    }
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M()
+                {
+                    var widget = new Widget(
+                        1, // the first
+                        2,
+                        3);
+                    Report(
+                        1,
+                        2,
+                        3);
+                    Report(
+                        1,
+                        2,
+                        3);
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+
+                sealed class Widget
+                {
+                    public Widget(int a, int b, int c)
+                    {
+                    }
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Single_line_list_within_limit_is_not_reported()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            class C
+            {
+                void M(int a, int b)
+                {
+                    Report(a, b, 3);
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Chopped_list_is_not_reported()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            class C
+            {
+                void M(
+                    int a,
+                    int b)
+                {
+                    Report(
+                        a,
+                        b, // the second
+                        3);
+                    Report(
+                        a,
+                        b,
+                        3 // the last
+                        );
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """);
+    }
+
     private static void AssertHasLineLongerThan(int length, string source)
     {
         Assert.Contains(source.Split('\n'), line => line.TrimEnd('\r').Length > length);

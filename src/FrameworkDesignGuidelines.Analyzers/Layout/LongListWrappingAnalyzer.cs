@@ -8,9 +8,10 @@ using Microsoft.CodeAnalysis.Text;
 namespace FrameworkDesignGuidelines.Analyzers.Layout;
 
 /// <summary>
-/// FDGA023: a parameter or argument list on a line longer than <c>max_line_length</c> must be chopped:
-/// a line break after the opening parenthesis, one item per line indented one level from the line of the
-/// opening parenthesis, and the closing parenthesis right after the last item.
+/// FDGA023: a parameter or argument list that is exceedingly long must be chopped: a line break after the
+/// opening parenthesis, one item per line indented one level from the line of the opening parenthesis, and the
+/// closing parenthesis right after the last item. A list is exceedingly long when its line is longer than
+/// <c>max_line_length</c>, or when the author wrapped it over several lines.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
@@ -60,7 +61,8 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
     /// <summary>
     /// True when the list is already chopped: the first item starts on a line after the opening parenthesis,
     /// every item starts its own line at one indentation level past the opening parenthesis's line, and the
-    /// closing parenthesis is on the line where the last item ends.
+    /// closing parenthesis is on the line where the last item ends, or on the next line when a line comment
+    /// ends the last item's line.
     /// </summary>
     internal static bool IsChopped(SourceText text, ListShape shape)
     {
@@ -86,7 +88,14 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
         }
 
         SyntaxToken last = shape.Items[shape.Items.Count - 1].GetLastToken();
-        return LayoutText.GetLineNumber(text, last.Span.End) == LayoutText.GetLineNumber(text, shape.Close.SpanStart);
+        return LayoutText.GetLineNumber(text, last.Span.End) == LayoutText.GetLineNumber(text, shape.Close.SpanStart)
+            || last.TrailingTrivia.Any(SyntaxKind.SingleLineCommentTrivia);
+    }
+
+    /// <summary>True when the list is written over more than one line.</summary>
+    private static bool IsWrapped(SourceText text, ListShape shape)
+    {
+        return LayoutText.GetLineNumber(text, shape.Open.SpanStart) != LayoutText.GetLineNumber(text, shape.Close.SpanStart);
     }
 
     private static void AnalyzeList(SyntaxNodeAnalysisContext context)
@@ -100,7 +109,9 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
         SourceText text = tree.GetText(context.CancellationToken);
         TextLine line = text.Lines.GetLineFromPosition(shape.Open.SpanStart);
         int maxLength = LineLength.Get(context.Options.AnalyzerConfigOptionsProvider.GetOptions(tree));
-        if (line.Span.Length <= maxLength || IsChopped(text, shape) || HasEarlierListOnLine(context.Node.SyntaxTree.GetRoot(context.CancellationToken), shape, line))
+        if ((line.Span.Length <= maxLength && !IsWrapped(text, shape))
+            || IsChopped(text, shape)
+            || HasEarlierListOnLine(context.Node.SyntaxTree.GetRoot(context.CancellationToken), shape, line))
         {
             return;
         }
