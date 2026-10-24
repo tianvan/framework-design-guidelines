@@ -82,7 +82,7 @@
       text: In some specific cases, this otherwise very strict guideline can be broken. For example, a `params` array parameter has to be the last parameter in a parameter list. If a `params` array parameter appears in an overloaded member, the API designer might need to make a trade-off and either settle for inconsistent parameter ordering or not use the `params` modifier. For more information on the `params` array parameters, see section 5.8.4.
     - kind: paragraph
       text: Another case where the guideline might need to be violated is when the parameter list contains `out` parameters. These parameters should typically appear at the end of the parameter list, which again means that the API designer might need to settle for a slightly inconsistent order of parameters in overloads with `out` parameters. See section 5.8 for more information on `out` parameters.
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
@@ -100,7 +100,7 @@
   analyzer:
     message: Put the parameter '{0}' at the same position in every overload of '{1}'
     category: Members
-  notes: 'FDG5003 reports a parameter of an externally visible method or constructor whose position differs from that of the parameter with the same name in another overload declared in the same type. `params` arrays and `out` parameters are left out, as the body allows, and so are CancellationToken parameters, which section 9.2.2 keeps last. Two constructors of an exception type are not compared when either starts with `string message`: section 7.4 fixes the common forms `(string message)` and `(string message, Exception innerException)`. Overrides and interface implementations take their signature from another member and are not reported, and overloads inherited from a base type are not compared. There is no code fix; moving a parameter changes the public signature, so the fix is breaking.'
+  notes: FDG5003 reports a parameter of an externally visible method or constructor whose position differs from that of the parameter with the same name in another overload declared in the same type. `params` arrays and `out` parameters are left out, as the body allows, and so are CancellationToken parameters, which section 9.2.2 keeps last. In constructors of an exception type, a leading `string message` and a trailing `Exception innerException` (or `inner`) are left out before positions are compared, because section 7.4 fixes where the common forms `(string message)` and `(string message, Exception innerException)` put them; the parameters between them are compared. Overrides and interface implementations take their signature from another member and are not reported, and overloads inherited from a base type are not compared. There is no code fix; moving a parameter changes the public signature, so the fix is breaking.
 - id: FDG5004
   strength: DO
   text: make only the longest overload virtual (if extensibility is required). Shorter overloads should simply call through to a longer overload.
@@ -480,7 +480,7 @@
       text: |-
         - Changing the last required parameter of a method to be a default parameter is generally not a breaking change, but would cause the override to provide a different set of defaults.
         - The guidance for adding a new default parameter to an existing method (provided next) calls for removing the defaults from the current method overload, which can result in ambiguous method compile-time failures due to the overrides that have yet to be updated.
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
@@ -498,7 +498,7 @@
   analyzer:
     message: Do not give the parameter '{0}' of the virtual or interface member '{1}' a default value
     category: Members
-  notes: 'FDG5011 reports a parameter with a default value, other than one of type CancellationToken, on an externally visible interface member or on a virtual, abstract or override method of a class. The Template Method Pattern of the body (a nonvirtual public method with the defaults that calls a protected virtual method without them) and extension methods are not reported. An override is reported only when the member it overrides is declared in source: the defaults of an override of a referenced member repeat ones the user cannot change. There is no code fix; removing a default value breaks callers that omit the argument, so the fix is breaking.'
+  notes: FDG5011 reports a parameter with a default value, other than one of type CancellationToken, on an externally visible interface member or on a virtual, abstract or override method of a class. The Template Method Pattern of the body (a nonvirtual public method with the defaults that calls a protected virtual method without them) and extension methods are not reported. An override of a member declared in a referenced assembly is not reported for a default that repeats the explicit default of the overridden member, since it only follows a declaration the user cannot change; an override that adds or changes a default is reported. There is no code fix; removing a default value breaks callers that omit the argument, so the fix is breaking.
 - id: FDG5012
   strength: DO NOT
   text: change the default value for a parameter once it has been publicly released.
@@ -1204,14 +1204,14 @@
     - kind: annotation
       text: Another pattern to avoid is blocking the thread inside of a property, because of either I/O or some synchronization operation. This is the extreme example of “doing too much work” inside of a property. In the worst case (deadlock), the property may never actually return to the caller. If the property accesses shared state, it may be necessary to acquire a lock to access it safely, but anything more complicated (like waiting on a `WaitHandle`) is an indication that a method is a better design choice.
       author: Joe Duffy
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1065
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1220,7 +1220,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1065 reports an exception created in a property getter, except InvalidOperationException, NotSupportedException and their subclasses, and, in an indexer getter, also ArgumentException and KeyNotFoundException, which the indexer exception of the body allows. The exceptions it allows are still to be avoided, and exceptions thrown by called methods are not seen. Static constructors are FDG5054. CA1065 has no code fix. CA1065 also reports Equals, GetHashCode, ToString, operators, finalizers and Dispose, which sections 8.9 and 9.4.1 cover; the one noise-sample report (Dispose) belongs there.
+  notes: CA1065 reports an exception created in a property getter, except InvalidOperationException, NotSupportedException and their subclasses, and, in an indexer getter, also ArgumentException and KeyNotFoundException, which the indexer exception of the body allows. The exceptions it allows are still to be avoided, and exceptions thrown by called methods are not seen. Static constructors are FDG5054. CA1065 has no code fix, and the redesign the body asks for (a method instead of the property) removes the property, which changes the public API, so the fix is breaking. CA1065 also reports Equals, GetHashCode, ToString, operators, finalizers and Dispose, which sections 8.9 and 9.4.1 cover; the one noise-sample report (Dispose) belongs there.
 - id: FDG5032
   strength: CONSIDER
   text: using indexers to provide access to data stored in an internal array.

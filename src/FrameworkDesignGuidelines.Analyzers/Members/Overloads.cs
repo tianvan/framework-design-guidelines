@@ -65,7 +65,6 @@ internal static class Overloads
     {
         return method.Parameters.Any(parameter => parameter.IsOptional);
     }
-
 }
 
 /// <summary>

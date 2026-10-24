@@ -3300,7 +3300,7 @@
       "diagnostics": [
         "CA1065"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -5977,6 +5977,7 @@
     "CA1033",
     "CA1043",
     "CA1052",
+    "CA1065",
     "CA1707",
     "CA1819",
     "CA2217",

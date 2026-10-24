@@ -9,10 +9,10 @@ namespace FrameworkDesignGuidelines.Analyzers.Members;
 /// FDG5003: a parameter keeps its position in every overload, declared in the same type, that has a parameter with
 /// the same name. <c>params</c> arrays and <c>out</c> parameters are left out, as the rule's body allows, and so are
 /// <c>CancellationToken</c> parameters, which section 9.2 keeps last. Of two overloads that disagree, the one with
-/// more parameters is reported (the later one on a tie), unless it overrides or implements another member. A pair of
-/// exception constructors is not compared when either starts with <c>string message</c>: section 7.4 asks for the
-/// common constructors <c>(string message)</c> and <c>(string message, Exception innerException)</c>, which fixes
-/// where those parameters go.
+/// more parameters is reported (the later one on a tie), unless it overrides or implements another member. In exception
+/// constructors, a leading <c>string message</c> and a trailing <c>Exception innerException</c> are left out before the
+/// positions are compared: section 7.4 asks for the common constructors <c>(string message)</c> and
+/// <c>(string message, Exception innerException)</c>, which fixes where those two go.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class OverloadParameterOrderAnalyzer : DiagnosticAnalyzer
@@ -43,10 +43,14 @@ public sealed class OverloadParameterOrderAnalyzer : DiagnosticAnalyzer
 
                     IMethodSymbol target = family[index];
                     IMethodSymbol other = index == i ? family[j] : family[i];
-                    foreach (IParameterSymbol parameter in target.Parameters.Where(IsCompared))
+                    (int start, int end) = ComparedRange(target);
+                    (int otherStart, int otherEnd) = ComparedRange(other);
+                    for (int k = start; k < end; k++)
                     {
-                        if (other.Parameters.FirstOrDefault(p => p.Name == parameter.Name && IsCompared(p)) is { } match
-                            && match.Ordinal != parameter.Ordinal
+                        IParameterSymbol parameter = target.Parameters[k];
+                        if (IsCompared(parameter)
+                            && IndexOf(other, parameter.Name, otherStart, otherEnd) is { } match
+                            && match - otherStart != k - start
                             && reported.Add(parameter)
                             && NamingSymbols.SourceLocation(parameter) is { } location)
                         {
@@ -61,11 +65,6 @@ public sealed class OverloadParameterOrderAnalyzer : DiagnosticAnalyzer
 
     private static int? Target(OverloadFamily family, int earlier, int later)
     {
-        if (IsCommonExceptionConstructor(family[earlier]) || IsCommonExceptionConstructor(family[later]))
-        {
-            return null;
-        }
-
         bool earlierInherited = family.IsInherited(earlier);
         bool laterInherited = family.IsInherited(later);
         if (earlierInherited != laterInherited)
@@ -82,14 +81,39 @@ public sealed class OverloadParameterOrderAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    /// True for a constructor of an exception type whose first parameter is <c>string message</c>, the start of the
-    /// common constructors of section 7.4.
+    /// The range of parameters whose positions are compared. For a constructor of an exception type, a leading
+    /// <c>string message</c> and a trailing <c>Exception innerException</c> (or <c>inner</c>) are left out, where the
+    /// common constructors of section 7.4 put them, and positions are counted from after the message.
     /// </summary>
-    private static bool IsCommonExceptionConstructor(IMethodSymbol method)
+    private static (int Start, int End) ComparedRange(IMethodSymbol method)
     {
-        return method.MethodKind == MethodKind.Constructor
-            && method.Parameters.FirstOrDefault() is { Name: "message", Type.SpecialType: SpecialType.System_String }
-            && IsException(method.ContainingType);
+        ImmutableArray<IParameterSymbol> parameters = method.Parameters;
+        if (method.MethodKind != MethodKind.Constructor || !IsException(method.ContainingType))
+        {
+            return (0, parameters.Length);
+        }
+
+        int start = parameters.Length > 0
+            && parameters[0] is { Name: "message", Type.SpecialType: SpecialType.System_String } ? 1 : 0;
+        int end = parameters.Length > start
+            && parameters[parameters.Length - 1] is { Name: "innerException" or "inner" } last
+            && last.Type is INamedTypeSymbol innerType && IsException(innerType)
+            ? parameters.Length - 1
+            : parameters.Length;
+        return (start, end);
+    }
+
+    private static int? IndexOf(IMethodSymbol method, string name, int start, int end)
+    {
+        for (int k = start; k < end; k++)
+        {
+            if (method.Parameters[k].Name == name)
+            {
+                return IsCompared(method.Parameters[k]) ? k : null;
+            }
+        }
+
+        return null;
     }
 
     private static bool IsCompared(IParameterSymbol parameter)

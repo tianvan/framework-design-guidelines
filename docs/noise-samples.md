@@ -268,14 +268,17 @@ five samples) and FDG5010 (32; 20 checked).
 - **polly's configuration.** polly's own globalconfig files set CA1024, CA1043, CA1810, CA1819 and CA2207 to `none`
   and take precedence over the package, so polly's zeros for those diagnostics measure polly's configuration.
 - **FDG5003, narrowing.** A first run reported 177 parameters. Two groups follow rules the book states elsewhere and
-  are left out: `CancellationToken` parameters kept last (section 9.2.2; 18 reports), and pairs of exception
-  constructors where either starts with `string message`, whose common forms section 7.4 fixes (7 reports). An
-  intermediate run also left out overloads with different numbers of type parameters; the book allows no such
-  exception, so that was undone and those reports (such as `Add(Func<Exception> generator, int weight)` beside
-  `Add<TException>(int weight)`) are counted again.
+  are left out: `CancellationToken` parameters kept last (section 9.2.2; 18 reports), and, in exception
+  constructors, a leading `string message` and a trailing `Exception innerException`, where the common forms of
+  section 7.4 put them (7 reports). The parameters between them are still compared; an earlier version skipped every
+  pair of exception constructors where either started with `string message`, and the change did not alter the count
+  on these samples. An intermediate run also left out overloads with different numbers of type parameters; the book
+  allows no such exception, so that was undone and those reports (such as
+  `Add(Func<Exception> generator, int weight)` beside `Add<TException>(int weight)`) are counted again.
 - **FDG5003.** The 20 checked reports are all true: an overload that inserts a parameter (an exception, a level, a
-  type, a context, a callback) in front of a parameter that the shorter overload has first. In serilog this is the shape of every logging method (`Write(level, messageTemplate)` beside
-  `Write(level, exception, messageTemplate)`). internal-a has the same shape in six extension methods of one static
+  type, a context, a callback) in front of a parameter that the shorter overload has first. In serilog this is the
+  shape of every logging method (`Write(level, messageTemplate)` beside `Write(level, exception, messageTemplate)`).
+  internal-a has the same shape in six extension methods of one static
   class, and internal-b in three static methods of two helper classes and three constructors of one class.
   Reordering changes public signatures, so FDG5003 is `autofix: breaking`: on API that already exists the reports do
   not block, and new API is held to the rule.
@@ -290,7 +293,9 @@ five samples) and FDG5010 (32; 20 checked).
   that takes the required parameters and one of the defaulted ones; the body asks for an overload for users who need
   only the defaults, so these are true.
 - **FDG5011.** Default values on interface members, on abstract methods and on the overrides that repeat them, and
-  one on a virtual generic method. All true.
+  one on a virtual generic method. All true. FDG5011 now also reports an override of a member from a referenced
+  assembly when the override adds or changes a default, and not when it repeats the overridden default; the count on
+  these samples did not change.
 - **FDG5046.** polly's `resilienceEvent` sets `Event`; internal-b has constructor parameters with short or prefixed
   names (`s`, an abbreviation, a leading underscore, a different word) that only set a property. All true.
 - **CA1024.** Five parameterless `Get` methods in internal-b. Four return a constant or map a field through a
@@ -299,6 +304,8 @@ five samples) and FDG5010 (32; 20 checked).
 - **CA1065.** The one report is a `Dispose` method that throws `InvalidOperationException` when disposed out of
   order. It is outside FDG5031 (property getters) and FDG5054 (static constructors), but it is a true warning under
   section 9.4.1, which asks not to throw from `Dispose` except in critical situations. Both rules stay warnings.
+  FDG5031 is `autofix: breaking` (the redesign the body asks for replaces the property with a method), so CA1065 is a
+  breaking-fix diagnostic and its reports on existing API do not block.
 - **CA1044 and CA1819.** Set-only compatibility properties of one class and array-typed auto-properties of model
   classes in internal-b. All true.
 - **No reports.** The other diagnostics report nothing on these samples; their tests cover the positive cases.

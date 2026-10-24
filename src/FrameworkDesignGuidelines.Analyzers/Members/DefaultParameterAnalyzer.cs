@@ -9,9 +9,9 @@ namespace FrameworkDesignGuidelines.Analyzers.Members;
 /// The default parameter rules of section 5.1.1, over the externally visible methods and constructors of a type:
 /// FDG5010, a member with two or more default parameters has an overload without defaults and with no more
 /// parameters than its required ones; FDG5011, interface members and virtual, abstract or override methods give no
-/// parameter a default value except a <c>CancellationToken</c>, and an override is reported only when the member it
-/// overrides is declared in source; FDG5013, two overloads with defaults do not have
-/// compatible required parameters; FDG5015, a parameter has the same default value in every overload.
+/// parameter a default value except a <c>CancellationToken</c>, and an override of a member declared in a referenced
+/// assembly is not reported for a default that repeats the overridden one; FDG5013, two overloads with defaults do
+/// not have compatible required parameters; FDG5015, a parameter has the same default value in every overload.
 /// Members that override or implement another one are reported by FDG5011 only.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -71,14 +71,16 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
             TypeKind.Class => method.IsVirtual || method.IsAbstract || method.IsOverride,
             _ => false,
         };
-        if (!isVirtual || (method.IsOverride && !IsRootInSource(method)))
+        if (!isVirtual)
         {
             return;
         }
 
+        bool referencedRoot = method.IsOverride && !IsRootInSource(method);
         foreach (IParameterSymbol parameter in method.Parameters)
         {
             if (parameter.IsOptional && !Overloads.IsCancellationToken(parameter.Type)
+                && !(referencedRoot && RepeatsOverriddenDefault(method, parameter))
                 && NamingSymbols.SourceLocation(parameter) is { } location)
             {
                 context.ReportDiagnostic(Diagnostic.Create(
@@ -137,8 +139,7 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
 
     /// <summary>
     /// True when the method that <paramref name="method"/> overrides, followed back to the first declaration, is in
-    /// source. The defaults of an override of a referenced member repeat the referenced ones, which the user cannot
-    /// change, and removing them would break callers that leave the argument out.
+    /// source.
     /// </summary>
     private static bool IsRootInSource(IMethodSymbol method)
     {
@@ -149,6 +150,20 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
         }
 
         return root.Locations.Any(location => location.IsInSource);
+    }
+
+    /// <summary>
+    /// True when the overridden method gives <paramref name="parameter"/> the same explicit default. An override of a
+    /// referenced member that repeats its default only follows a declaration the user cannot change; one that adds or
+    /// changes a default creates the disagreement the rule is about.
+    /// </summary>
+    private static bool RepeatsOverriddenDefault(IMethodSymbol method, IParameterSymbol parameter)
+    {
+        return method.OverriddenMethod is { } overridden
+            && parameter.Ordinal < overridden.Parameters.Length
+            && overridden.Parameters[parameter.Ordinal] is { HasExplicitDefaultValue: true } original
+            && parameter.HasExplicitDefaultValue
+            && Equals(original.ExplicitDefaultValue, parameter.ExplicitDefaultValue);
     }
 
     /// <summary>

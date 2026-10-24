@@ -83,6 +83,22 @@ public sealed class OverloadParameterOrderTests
                 {
                 }
             }
+
+            public class ParseException : Exception
+            {
+                public ParseException(string message, int line, string path)
+                {
+                }
+
+                public ParseException(string message, string {|FDG5003:path|}, int {|FDG5003:line|})
+                {
+                }
+
+                public ParseException(
+                    string message, int {|FDG5003:line|}, string {|FDG5003:path|}, Exception innerException)
+                {
+                }
+            }
             """);
     }
 

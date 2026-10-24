@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Verifier = FrameworkDesignGuidelines.Analyzers.Tests.Verifiers.AnalyzerVerifier<
     FrameworkDesignGuidelines.Analyzers.Members.DefaultParameterAnalyzer>;
@@ -274,7 +275,7 @@ public sealed class DefaultParameterTests
     }
 
     [Fact]
-    public Task Overrides_of_members_from_referenced_assemblies_are_not_reported_by_FDG5011()
+    public Task Overrides_that_add_a_default_to_a_member_from_a_referenced_assembly_are_reported()
     {
         return Verifier.VerifyAsync(
             """
@@ -309,9 +310,42 @@ public sealed class DefaultParameterTests
                     System.ComponentModel.ITypeDescriptorContext context,
                     System.Globalization.CultureInfo culture,
                     object value,
-                    System.Type destinationType = null) => null;
+                    System.Type {|FDG5011:destinationType|} = null) => null;
             }
             """);
+    }
+
+    [Theory]
+    [InlineData(LanguageVersion.CSharp7_3)]
+    [InlineData(LanguageVersion.Latest)]
+    public Task Overrides_that_repeat_the_default_of_a_member_from_a_referenced_assembly_are_not_reported(
+        LanguageVersion languageVersion)
+    {
+        // ArrayPool<T>.Return(T[] array, bool clearArray = false) is in the .NET 8 reference assemblies.
+        return Verifier.VerifyAsync(
+            """
+            using System.Buffers;
+
+            public sealed class Pool : ArrayPool<byte>
+            {
+                public override byte[] Rent(int minimumLength) => new byte[minimumLength];
+
+                public override void Return(byte[] array, bool clearArray = false)
+                {
+                }
+            }
+
+            public sealed class OtherPool : ArrayPool<int>
+            {
+                public override int[] Rent(int minimumLength) => new int[minimumLength];
+
+                public override void Return(int[] array, bool {|FDG5011:clearArray|} = true)
+                {
+                }
+            }
+            """,
+            ReferenceAssemblies.Net.Net80,
+            languageVersion);
     }
 
     [Fact]
