@@ -13,6 +13,11 @@ public static class VerifySourceCommand
 
     public static int Run(IReadOnlyList<string> args, TextWriter output, TextWriter error)
     {
+        return ToolErrors.Run("verify-source", error, () => Execute(args, output, error));
+    }
+
+    private static int Execute(IReadOnlyList<string> args, TextWriter output, TextWriter error)
+    {
         if (!CommandOptions.TryParse(args, AllowedOptions, out CommandOptions options, out string message)
             || !options.TryRequire("book", out string bookDir, out message)
             || !RulesDirectory.TryResolve(options.Get("rules"), out string rulesDir, out message))

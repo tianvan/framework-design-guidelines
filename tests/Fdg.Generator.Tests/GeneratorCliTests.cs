@@ -1,14 +1,21 @@
+using System.ComponentModel;
+using System.Text.Json;
+using Fdg.Generator.Book;
+using Fdg.Generator.Commands;
 using Fdg.Generator.Rules;
+using YamlDotNet.Core;
 
 namespace Fdg.Generator.Tests;
 
-public sealed class GeneratorCliTests : IDisposable
+public sealed class GeneratorCliTests : IDisposable, IClassFixture<InstalledSdkFixture>
 {
+    private readonly InstalledSdkFixture _sdk;
     private readonly string _rulesDir;
     private readonly string _bookDir = Path.Combine(AppContext.BaseDirectory, "fixtures", "book");
 
-    public GeneratorCliTests()
+    public GeneratorCliTests(InstalledSdkFixture sdk)
     {
+        _sdk = sdk;
         _rulesDir = Path.Combine(Path.GetTempPath(), "fdg-gen-tests-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_rulesDir);
         File.WriteAllText(
@@ -60,6 +67,35 @@ public sealed class GeneratorCliTests : IDisposable
     private (int ExitCode, string Output, string Error) Verify()
     {
         return Run("verify-source", "--book", _bookDir, "--rules", _rulesDir);
+    }
+
+    private (int ExitCode, string Output, string Error) Check(params string[] extra)
+    {
+        return Run(new[] { "check", "--rules", _rulesDir, "--sdk", _sdk.Directory }.Concat(extra).ToArray());
+    }
+
+    /// <summary>Gives the rules directory the schema and the profiles that <c>check</c> reads.</summary>
+    private void AddSchemaAndProfiles()
+    {
+        foreach (string name in new[] { "rules.schema.json", "profiles.yaml" })
+        {
+            File.Copy(Path.Combine(AppContext.BaseDirectory, "rules", name), Path.Combine(_rulesDir, name));
+        }
+    }
+
+    private void WriteMalformedYaml(string fileName)
+    {
+        File.WriteAllText(Path.Combine(_rulesDir, fileName), "- id: [unclosed");
+    }
+
+    /// <summary>A failed tool run: exit code 2 and one "&lt;command&gt; failed: ..." line without a stack trace.</summary>
+    private static void AssertOneLine(string command, (int ExitCode, string Output, string Error) result)
+    {
+        string error = result.Error.Trim();
+        Assert.Equal(2, result.ExitCode);
+        Assert.DoesNotContain("\n", error);
+        Assert.DoesNotContain("   at ", error);
+        Assert.StartsWith($"{command} failed: ", error);
     }
 
     [Fact]
@@ -252,5 +288,140 @@ public sealed class GeneratorCliTests : IDisposable
         Assert.Equal(1, result.ExitCode);
         Assert.Contains("already exists; extraction never overwrites", result.Error);
         Assert.Equal(before, File.ReadAllText(path));
+    }
+
+    [Theory]
+    [InlineData("verify-source")]
+    [InlineData("extract")]
+    public void Malformed_yaml_gives_one_line(string command)
+    {
+        Extract();
+        WriteMalformedYaml("ch09-sample.yaml");
+
+        // Without --update, extract refuses to touch an existing file and never reads it.
+        var result = command == "extract" ? Update() : Verify();
+
+        AssertOneLine(command, result);
+    }
+
+    [Theory]
+    [InlineData("verify-source")]
+    [InlineData("extract")]
+    public void Malformed_meta_gives_one_line(string command)
+    {
+        WriteMalformedYaml("meta.yaml");
+
+        var result = command == "extract" ? Extract() : Verify();
+
+        AssertOneLine(command, result);
+    }
+
+    [Fact]
+    public void Check_with_a_book_reports_malformed_yaml_without_a_stack_trace()
+    {
+        Extract();
+        AddSchemaAndProfiles();
+        WriteMalformedYaml("ch09-sample.yaml");
+
+        var result = Check("--book", _bookDir);
+
+        // check lists the file as a problem, then its verify-source step fails on it.
+        Assert.Equal(2, result.ExitCode);
+        Assert.DoesNotContain("   at ", result.Error);
+        Assert.Contains("ch09-sample.yaml:-: invalid YAML", result.Error);
+        Assert.StartsWith("verify-source failed: ", result.Error.Trim().Split('\n')[^1]);
+    }
+
+    [Fact]
+    public void Check_with_a_missing_schema_gives_one_line()
+    {
+        Extract();
+        AddSchemaAndProfiles();
+        File.Delete(Path.Combine(_rulesDir, "rules.schema.json"));
+
+        var result = Check();
+
+        AssertOneLine("check", result);
+        Assert.Contains("rules.schema.json", result.Error);
+    }
+
+    [Fact]
+    public void Check_with_an_unusable_sdk_directory_gives_one_line()
+    {
+        string emptySdk = Path.Combine(_rulesDir, "empty-sdk");
+        Directory.CreateDirectory(emptySdk);
+
+        var result = Run("check", "--rules", _rulesDir, "--sdk", emptySdk);
+
+        string error = result.Error.Trim();
+        Assert.Equal(2, result.ExitCode);
+        Assert.DoesNotContain("\n", error);
+        Assert.DoesNotContain("   at ", error);
+        Assert.Contains("SDK", error);
+    }
+}
+
+public sealed class ToolErrorsTests
+{
+    private static (int ExitCode, string Error) Run(Func<int> body)
+    {
+        var error = new StringWriter();
+        int exitCode = ToolErrors.Run("demo", error, body);
+        return (exitCode, error.ToString());
+    }
+
+    [Theory]
+    [InlineData(typeof(YamlException))]
+    [InlineData(typeof(FormatException))]
+    [InlineData(typeof(JsonException))]
+    [InlineData(typeof(BookFormatException))]
+    [InlineData(typeof(IOException))]
+    [InlineData(typeof(FileNotFoundException))]
+    [InlineData(typeof(UnauthorizedAccessException))]
+    [InlineData(typeof(Win32Exception))]
+    [InlineData(typeof(InvalidOperationException))]
+    public void Expected_failures_become_one_line(Type type)
+    {
+        var exception = (Exception)Activator.CreateInstance(type, "something is wrong")!;
+
+        var result = Run(() => throw exception);
+
+        Assert.Equal(2, result.ExitCode);
+        Assert.Equal($"demo failed: something is wrong{Environment.NewLine}", result.Error);
+    }
+
+    [Fact]
+    public void Line_breaks_in_the_message_become_spaces()
+    {
+        var result = Run(() => throw new InvalidOperationException("first\r\nsecond\nthird\r"));
+
+        Assert.Equal(2, result.ExitCode);
+        Assert.Equal($"demo failed: first second third{Environment.NewLine}", result.Error);
+    }
+
+    [Theory]
+    [InlineData(typeof(ArgumentException))]
+    [InlineData(typeof(NullReferenceException))]
+    [InlineData(typeof(KeyNotFoundException))]
+    public void Other_exceptions_are_bugs_and_propagate(Type type)
+    {
+        var exception = (Exception)Activator.CreateInstance(type, "a bug")!;
+        var error = new StringWriter();
+
+        Exception thrown = Assert.Throws(type, () => { ToolErrors.Run("demo", error, () => throw exception); });
+
+        Assert.Same(exception, thrown);
+        Assert.Equal(string.Empty, error.ToString());
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void The_exit_code_of_the_body_is_kept(int exitCode)
+    {
+        var result = Run(() => exitCode);
+
+        Assert.Equal(exitCode, result.ExitCode);
+        Assert.Equal(string.Empty, result.Error);
     }
 }

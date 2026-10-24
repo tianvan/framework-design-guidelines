@@ -17,6 +17,11 @@ public static class CheckCommand
 
     public static int Run(IReadOnlyList<string> args, TextWriter output, TextWriter error)
     {
+        return ToolErrors.Run("check", error, () => Execute(args, output, error));
+    }
+
+    private static int Execute(IReadOnlyList<string> args, TextWriter output, TextWriter error)
+    {
         if (!CommandOptions.TryParse(args, AllowedOptions, out CommandOptions options, out string message)
             || !RulesDirectory.TryResolve(options.Get("rules"), out string rulesDir, out message))
         {
