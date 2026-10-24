@@ -14,7 +14,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Layout;
 /// </summary>
 /// <remarks>
 /// Like IDE0011, an <c>else if</c> is not itself reported (its <c>if</c> is), nor a <c>using</c>, <c>lock</c> or
-/// <c>fixed</c> statement whose embedded statement is another statement of the same kind.
+/// <c>fixed</c> statement whose embedded statement is another statement of the same kind, nor a statement with a
+/// preprocessor directive between its keyword and the end of its embedded statement.
 /// </remarks>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class OmittedBracesAnalyzer : DiagnosticAnalyzer
@@ -68,7 +69,32 @@ public sealed class OmittedBracesAnalyzer : DiagnosticAnalyzer
         bool isElseIf = owner is ElseClauseSyntax && statement is IfStatementSyntax;
         bool isStacked = owner is UsingStatementSyntax or LockStatementSyntax or FixedStatementSyntax
             && statement.RawKind == owner.RawKind;
-        return !isElseIf && !isStacked && !IsInPreamble(owner);
+        return !isElseIf && !isStacked && !ContainsDirective(keyword, statement) && !IsInPreamble(owner);
+    }
+
+    /// <summary>
+    /// True when a preprocessor directive lies between the keyword and the end of the embedded statement. IDE0011 does
+    /// not report these either: braces added there could end up in only one branch of an <c>#if</c>.
+    /// </summary>
+    private static bool ContainsDirective(SyntaxToken keyword, StatementSyntax statement)
+    {
+        for (SyntaxToken token = keyword;
+            token.SpanStart <= statement.Span.End && !token.IsKind(SyntaxKind.None);
+            token = token.GetNextToken())
+        {
+            if ((token != keyword && token.LeadingTrivia.Any(trivia => trivia.IsDirective))
+                || (token.Span.End < statement.Span.End && token.TrailingTrivia.Any(trivia => trivia.IsDirective)))
+            {
+                return true;
+            }
+
+            if (token.Span.End >= statement.Span.End)
+            {
+                break;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

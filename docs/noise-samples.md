@@ -38,6 +38,7 @@ file that is not committed; this page gives only counts and anonymized conclusio
   `.editorconfig` (it turns off IDE0007 and IDE0008 and sets its own static field naming) and its own globalconfig files,
   which take precedence over the package's; one CA1708 key conflicts with the package
   (`MultipleGlobalAnalyzerKeys`). polly's low counts therefore measure polly's configuration as much as the package.
+  The override listing also names each sample's `*.globalconfig` files and `dotnet_analyzer_diagnostic.*` entries.
   serilog has an `.editorconfig` with no diagnostic or naming entries; newtonsoft-json has none; the internal
   application overrides nothing that applies.
 - **Restore.** Package restore came from nuget.org.
@@ -58,8 +59,8 @@ counts. FDGA004 replaces IDE0011 (see the notes).
 | CA1720 | FDG3016, FDG3017, FDG3018 | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | Over the threshold (n = 1). Already `suggestion` in every profile; no change. |
 | CA1724 | FDG3032 | 0 | 0 | 0 | 0 | 3 | 3 | 2 | 1 | Over the threshold (n = 3). No change yet; see the notes. |
 | FDGA003 | FDGA003 | 0 | 0 | 0 | 1 | 9 | 10 | 0 | 10 | None needed. |
-| FDGA004 | FDGA004 | 110 | 0 | 0 | 6 | 94 | 20 | 0 | 20 | R6: this project's analyzer, which exempts argument validation preambles (FDGA005), replaces IDE0011. |
-| FDGA023 | FDGA023 | 141 | 89 | 989 | 20 | 84 | 20 | 0 | 20 | R6: narrowed so that an enclosing operator expression no longer makes a list long. Under the threshold after the narrowing. |
+| FDGA004 | FDGA004 | 109 | 0 | 0 | 6 | 94 | 20 | 0 | 20 | R6: this project's analyzer, which exempts argument validation preambles (FDGA005), replaces IDE0011. |
+| FDGA023 | FDGA023 | 141 | 89 | 986 | 20 | 84 | 20 | 0 | 20 | R6: narrowed so that an enclosing operator expression no longer makes a list long. Under the threshold after the narrowing. |
 | IDE0008 | FDGA042 | 242 | 0 | 12 | 7 | 62 | 20 | 0 | 20 | None needed. |
 | IDE0017 | FDGA043 | 0 | 0 | 37 | 0 | 33 | 20 | 0 | 20 | None needed. |
 | IDE0028 | FDGA044 | 0 | 0 | 11 | 0 | 143 | 20 | 0 | 20 | None needed. |
@@ -82,7 +83,9 @@ counts. FDGA004 replaces IDE0011 (see the notes).
   long only when its line stays longer than `max_line_length` after the outermost enclosing conditional, `||`, `&&` or
   `??` expression on the line is reduced to the list's own invocation, including the fluent chain it is part of. The
   re-measurement removed 121 reports, all on such lines (the estimate of 78 missed some `&&` and `==` conditions), and
-  added none. A fresh spot check of 20 found no false positives. Lines where the operator is inside the list itself (43
+  added none. A fresh spot check of 20 found no false positives. A later fix also exempts a list nested in the
+  arguments of such a call (`flag ? Outer(Inner(a, b), c) : Other(a)`), which removed 3 more newtonsoft-json reports,
+  counted by (file, line, column), and added none. Lines where the operator is inside the list itself (43
   reports, for example `F(a ?? b, c, d)`) are still reported, because the list is what makes the line long. About 12
   newtonsoft-json reports are lists that are chopped one item per line but whose closing parenthesis is on its own
   line. The rule text does not say where the parenthesis goes, but the rule's example keeps it on the last item's
@@ -92,8 +95,10 @@ counts. FDGA004 replaces IDE0011 (see the notes).
   (`if (x == null) throw ...;`), which FDGA005 allows without braces. Lowering IDE0011 to `suggestion` (R7) would have
   dropped its fix from `dotnet fdg fix` for the 95% of reports that are true warnings, so R6 applies instead: the
   FDGA004 analyzer reports what IDE0011 reports and exempts the `if`...`throw` statements without `else` at the start
-  of a member, accessor, local function or lambda body, up to the first blank line or other statement. FDGA004 counts
-  serilog 110, internal-a 6 and internal-b 94, and the 20 spot-checked reports are all true warnings: their embedded
+  of a member, accessor, local function or lambda body, up to the first blank line or other statement. Like IDE0011,
+  it does not report a statement with a preprocessor directive inside it (one serilog `if` whose embedded statement is
+  split by `#if`). FDGA004 counts serilog 109, internal-a 6 and internal-b 94, and the 20 spot-checked reports (taken
+  before the directive exception, which removed one report that was not among them) are all true warnings: their embedded
   statement is a `return`, `continue`, assignment or call, or a `throw` inside a `catch` or after other code. One
   borderline case is an `if`...`throw` that follows a guard call (`Guard.AgainstNull(name);`); the book says code
   other than `if`...`throw` ends the preamble, so it is a true warning.

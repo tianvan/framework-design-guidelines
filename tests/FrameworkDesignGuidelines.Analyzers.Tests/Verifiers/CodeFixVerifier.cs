@@ -40,7 +40,8 @@ internal static class CodeFixVerifier<TAnalyzer, TCodeFix>
         string? extraEditorConfig = null,
         string endOfLine = "\n",
         int? fixAllIterations = null,
-        bool checkFormatter = true)
+        bool checkFormatter = true,
+        bool allowUnsafe = false)
     {
         // Raw string literals take the line endings of this file, which depend on the checkout (core.autocrlf).
         source = NormalizeEndOfLine(source, endOfLine);
@@ -50,7 +51,7 @@ internal static class CodeFixVerifier<TAnalyzer, TCodeFix>
         {
             foreach (LanguageVersion languageVersion in _languageVersions)
             {
-                var test = new Test(languageVersion)
+                var test = new Test(languageVersion, allowUnsafe)
                 {
                     TestCode = source,
                     FixedCode = fixedSource,
@@ -70,7 +71,7 @@ internal static class CodeFixVerifier<TAnalyzer, TCodeFix>
         }
 
         TestFileMarkupParser.GetSpans(source, out string plainSource, out ImmutableDictionary<string, ImmutableArray<TextSpan>> _);
-        string fixedAll = await FixAllUntilCleanAsync(plainSource, editorConfig);
+        string fixedAll = await FixAllUntilCleanAsync(plainSource, editorConfig, allowUnsafe);
         AssertEndOfLine(endOfLine, fixedAll);
         Assert.Equal(fixedSource, fixedAll);
 
@@ -111,10 +112,10 @@ internal static class CodeFixVerifier<TAnalyzer, TCodeFix>
     }
 
     /// <summary>Applies the fix's FixAll (document scope) until the analyzer reports nothing.</summary>
-    private static async Task<string> FixAllUntilCleanAsync(string source, string editorConfig)
+    private static async Task<string> FixAllUntilCleanAsync(string source, string editorConfig, bool allowUnsafe)
     {
         using var workspace = new AdhocWorkspace();
-        Document document = CreateDocument(workspace, source, editorConfig);
+        Document document = CreateDocument(workspace, source, editorConfig, allowUnsafe);
         var analyzer = new TAnalyzer();
         var codeFix = new TCodeFix();
         for (int pass = 0; pass < MaxFixAllPasses; pass++)
@@ -154,7 +155,7 @@ internal static class CodeFixVerifier<TAnalyzer, TCodeFix>
         throw new InvalidOperationException($"Diagnostics remain after {MaxFixAllPasses} FixAll passes.");
     }
 
-    private static Document CreateDocument(AdhocWorkspace workspace, string text, string editorConfig)
+    private static Document CreateDocument(AdhocWorkspace workspace, string text, string editorConfig, bool allowUnsafe = false)
     {
         string directory = Path.Combine(Path.GetTempPath(), "fdg-analyzer-tests");
         var projectId = ProjectId.CreateNewId();
@@ -167,7 +168,7 @@ internal static class CodeFixVerifier<TAnalyzer, TCodeFix>
                 "Test",
                 LanguageNames.CSharp,
                 filePath: Path.Combine(directory, "Test.csproj"),
-                compilationOptions: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                compilationOptions: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: allowUnsafe),
                 metadataReferences: [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]))
             .AddAnalyzerConfigDocument(
                 DocumentId.CreateNewId(projectId),
@@ -213,10 +214,17 @@ internal static class CodeFixVerifier<TAnalyzer, TCodeFix>
     private sealed class Test : CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
     {
         private readonly LanguageVersion _languageVersion;
+        private readonly bool _allowUnsafe;
 
-        public Test(LanguageVersion languageVersion)
+        public Test(LanguageVersion languageVersion, bool allowUnsafe)
         {
             _languageVersion = languageVersion;
+            _allowUnsafe = allowUnsafe;
+        }
+
+        protected override CompilationOptions CreateCompilationOptions()
+        {
+            return ((CSharpCompilationOptions)base.CreateCompilationOptions()).WithAllowUnsafe(_allowUnsafe);
         }
 
         protected override ParseOptions CreateParseOptions()

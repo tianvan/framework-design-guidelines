@@ -124,7 +124,7 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
         int maxLength = LineLength.Get(context.Options.AnalyzerConfigOptionsProvider.GetOptions(tree));
         if ((line.Span.Length <= maxLength && !IsWrapped(text, shape))
             || IsChopped(text, shape)
-            || IsLongOnlyThroughOperator(text, context.Node, shape, line, maxLength)
+            || IsExemptThroughOperator(text, context.Node, line, maxLength)
             || HasEarlierListOnLine(tree.GetRoot(context.CancellationToken), text, shape, line, maxLength))
         {
             return;
@@ -170,6 +170,26 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
             && line.Span.Length - LengthOnLine(operatorExpression, line) + LengthOnLine(chain, line) <= maxLength;
     }
 
+    /// <summary>
+    /// True when <paramref name="list"/>, or a list enclosing it that opens on the same line, is long only through an
+    /// operator: a list nested in the arguments of such a call is no longer than the call itself.
+    /// </summary>
+    private static bool IsExemptThroughOperator(SourceText text, SyntaxNode list, TextLine line, int maxLength)
+    {
+        for (SyntaxNode? node = list; node is not null && node.SpanStart >= line.Start; node = node.Parent)
+        {
+            if (node is ArgumentListSyntax
+                && TryGetList(node, out ListShape shape)
+                && shape.Open.SpanStart >= line.Start
+                && IsLongOnlyThroughOperator(text, node, shape, line, maxLength))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>True when <paramref name="parent"/> continues the fluent chain that ends at <paramref name="node"/>.</summary>
     private static bool IsChainLink(SyntaxNode parent, SyntaxNode node)
     {
@@ -205,7 +225,7 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
                 && token.Parent is SyntaxNode list
                 && TryGetList(list, out ListShape earlier)
                 && earlier.Open == token
-                && !IsLongOnlyThroughOperator(text, list, earlier, line, maxLength))
+                && !IsExemptThroughOperator(text, list, line, maxLength))
             {
                 return true;
             }

@@ -1,3 +1,5 @@
+#Requires -Version 7.2
+
 <#
 .SYNOPSIS
 Counts the diagnostics a FrameworkDesignGuidelines.Analyzers package reports on sample projects.
@@ -171,8 +173,10 @@ function Initialize-RemoteSample([object] $Sample, [string] $Directory)
     return $null
 }
 
-# Lists the .editorconfig files that apply to the project and the dotnet_diagnostic.* and dotnet_naming_* entries
-# they set: those from the project directory up to the first root = true, and those below the project directory.
+# Lists the .editorconfig files that apply to the project, from the project directory up to the first root = true
+# and below the project directory, the globalconfig files of the sample (*.globalconfig and .globalconfig anywhere in
+# the sample root, which a build may pass to the compiler), and the dotnet_diagnostic.*,
+# dotnet_analyzer_diagnostic.* and dotnet_naming_* entries they set.
 function Get-EditorConfigOverrides([string] $SampleRoot, [string] $ProjectDirectory)
 {
     $files = [System.Collections.Generic.List[string]]::new()
@@ -199,9 +203,19 @@ function Get-EditorConfigOverrides([string] $SampleRoot, [string] $ProjectDirect
             ForEach-Object { $files.Add($_.FullName) }
     }
 
+    $globalConfigs = [System.Collections.Generic.List[string]]::new()
+    if (Test-Path -LiteralPath $SampleRoot)
+    {
+        Get-ChildItem -LiteralPath $SampleRoot -Recurse -File -Force |
+            Where-Object { ($_.Name -eq '.globalconfig' -or $_.Extension -eq '.globalconfig') -and $_.FullName -notmatch '[\\/](bin|obj|\.git)[\\/]' } |
+            Sort-Object FullName |
+            ForEach-Object { $globalConfigs.Add($_.FullName) }
+    }
+
     $diagnostic = [System.Collections.Generic.List[string]]::new()
+    $analyzerDiagnostic = [System.Collections.Generic.List[string]]::new()
     $naming = [System.Collections.Generic.List[string]]::new()
-    foreach ($file in $files)
+    foreach ($file in @($files) + @($globalConfigs))
     {
         foreach ($line in Get-Content -LiteralPath $file)
         {
@@ -209,6 +223,10 @@ function Get-EditorConfigOverrides([string] $SampleRoot, [string] $ProjectDirect
             if ($entry -match '^dotnet_diagnostic\.')
             {
                 $diagnostic.Add($entry)
+            }
+            elseif ($entry -match '^dotnet_analyzer_diagnostic\.')
+            {
+                $analyzerDiagnostic.Add($entry)
             }
             elseif ($entry -match '^dotnet_naming_')
             {
@@ -219,7 +237,9 @@ function Get-EditorConfigOverrides([string] $SampleRoot, [string] $ProjectDirect
 
     return [ordered]@{
         editorconfig = @($files | ForEach-Object { Get-RelativePath $SampleRoot $_ })
+        globalconfig = @($globalConfigs | ForEach-Object { Get-RelativePath $SampleRoot $_ })
         dotnetDiagnostic = @($diagnostic)
+        dotnetAnalyzerDiagnostic = @($analyzerDiagnostic)
         dotnetNaming = @($naming)
     }
 }
@@ -307,6 +327,11 @@ foreach ($samplesFile in $Samples)
             throw "Sample name '$($sample.name)' must be letters, digits, '.', '_' or '-'."
         }
 
+        if ($sample.name -eq 'overrides')
+        {
+            throw "Sample name 'overrides' is reserved for the overrides field of -Out."
+        }
+
         if ($sampleList.Where({ $_.name -eq $sample.name }).Count -gt 0)
         {
             throw "Sample name '$($sample.name)' is listed twice."
@@ -316,15 +341,35 @@ foreach ($samplesFile in $Samples)
     }
 }
 
-# WorkRoot and every output stay outside this repository and outside every local sample.
-$protectedRoots = @($repositoryRoot) + @($sampleList | Where-Object { Get-Property $_ 'path' } | ForEach-Object { Get-FullPath $_.path })
+# Returns the nearest directory at or above $Path that contains .git, or $null. Uses the file system only, so that no
+# git command runs in a local sample.
+function Get-RepositoryRoot([string] $Path)
+{
+    $directory = [System.IO.DirectoryInfo]::new($Path)
+    while ($null -ne $directory)
+    {
+        if (Test-Path -LiteralPath (Join-Path $directory.FullName '.git'))
+        {
+            return $directory.FullName
+        }
+
+        $directory = $directory.Parent
+    }
+
+    return $null
+}
+
+# WorkRoot and every output stay outside this repository, outside every local sample and outside the repository
+# that contains a local sample.
+$localPaths = @($sampleList | Where-Object { Get-Property $_ 'path' } | ForEach-Object { Get-FullPath $_.path })
+$protectedRoots = @($repositoryRoot) + $localPaths + @($localPaths | ForEach-Object { Get-RepositoryRoot $_ } | Where-Object { $_ })
 foreach ($protectedRoot in $protectedRoots)
 {
     foreach ($outputPath in @($workRootPath, $outPath))
     {
         if (Test-IsUnder $outputPath $protectedRoot)
         {
-            throw "'$outputPath' is inside '$protectedRoot'; WorkRoot and Out must be outside the repository and every local sample."
+            throw "'$outputPath' is inside '$protectedRoot'; WorkRoot and Out must be outside the repository, every local sample and its repository."
         }
     }
 }

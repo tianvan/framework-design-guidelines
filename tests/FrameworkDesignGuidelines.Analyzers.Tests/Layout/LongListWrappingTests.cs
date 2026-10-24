@@ -500,6 +500,28 @@ public sealed class LongListWrappingTests
     }
 
     [Fact]
+    public Task List_nested_in_an_exempt_call_is_not_reported()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            class C
+            {
+                int M(bool flag, int value, int token)
+                {
+                    return flag ? Outer(Inner(value, token), token) : Other(value);
+                }
+
+                static int Outer(int a, int b) => a;
+
+                static int Inner(int a, int b) => a;
+
+                static int Other(int a) => a;
+            }
+            """,
+            extraEditorConfig: "max_line_length = 60\n");
+    }
+
+    [Fact]
     public Task Long_invocation_in_an_operator_is_reported()
     {
         return Verifier.VerifyAsync(

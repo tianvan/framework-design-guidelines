@@ -529,6 +529,100 @@ public sealed class OmittedBracesTests
     }
 
     [Fact]
+    public Task Embedded_statement_with_preprocessor_directives_is_not_reported()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            class C
+            {
+                void M(bool condition)
+                {
+                    M(condition);
+                    if (condition)
+            #if DEBUG
+                        M(false);
+            #else
+                        M(true);
+            #endif
+                    while (condition)
+                        // one call
+            #region Call
+                        M(false);
+            #endregion
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Fixed_and_deconstruction_foreach_get_braces()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                unsafe void M(int[] values, (int Key, int Value)[] pairs)
+                {
+                    {|FDGA004:fixed|} (int* pointer = values)
+                        *pointer = 0;
+                    {|FDGA004:foreach|} (var (key, value) in pairs)
+                        values[key] = value;
+                }
+            }
+            """,
+            """
+            class C
+            {
+                unsafe void M(int[] values, (int Key, int Value)[] pairs)
+                {
+                    fixed (int* pointer = values)
+                    {
+                        *pointer = 0;
+                    }
+                    foreach (var (key, value) in pairs)
+                    {
+                        values[key] = value;
+                    }
+                }
+            }
+            """,
+            allowUnsafe: true);
+    }
+
+    [Fact]
+    public Task If_and_else_both_get_braces()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                int M(bool condition)
+                {
+                    M(condition);
+                    {|FDGA004:if|} (condition) return 1; {|FDGA004:else|} return 2;
+                }
+            }
+            """,
+            """
+            class C
+            {
+                int M(bool condition)
+                {
+                    M(condition);
+                    if (condition)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return 2;
+                    }
+                }
+            }
+            """);
+    }
+
+    [Fact]
     public Task Crlf_line_endings_are_kept()
     {
         return Verifier.VerifyAsync(
