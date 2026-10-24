@@ -82,7 +82,7 @@
       text: In some specific cases, this otherwise very strict guideline can be broken. For example, a `params` array parameter has to be the last parameter in a parameter list. If a `params` array parameter appears in an overloaded member, the API designer might need to make a trade-off and either settle for inconsistent parameter ordering or not use the `params` modifier. For more information on the `params` array parameters, see section 5.8.4.
     - kind: paragraph
       text: Another case where the guideline might need to be violated is when the parameter list contains `out` parameters. These parameters should typically appear at the end of the parameter list, which again means that the API designer might need to settle for a slightly inconsistent order of parameters in overloads with `out` parameters. See section 5.8 for more information on `out` parameters.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -480,7 +480,7 @@
       text: |-
         - Changing the last required parameter of a method to be a default parameter is generally not a breaking change, but would cause the override to provide a different set of defaults.
         - The guidance for adding a new default parameter to an existing method (provided next) calls for removing the defaults from the current method overload, which can result in ambiguous method compile-time failures due to the overrides that have yet to be updated.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1204,7 +1204,7 @@
     - kind: annotation
       text: Another pattern to avoid is blocking the thread inside of a property, because of either I/O or some synchronization operation. This is the extreme example of “doing too much work” inside of a property. In the worst case (deadlock), the property may never actually return to the caller. If the property accesses shared state, it may be necessary to acquire a lock to access it safely, but anything more complicated (like waiting on a `WaitHandle`) is an indication that a method is a better design choice.
       author: Joe Duffy
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
