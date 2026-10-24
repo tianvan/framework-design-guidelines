@@ -286,19 +286,43 @@ public class BookParserTests
     public void Code_in_a_list_item_is_fenced_at_the_content_column_of_the_item()
     {
         IElement list = new HtmlParser().ParseDocument(
-            "<ol><li><p>outer</p><ul><li><p>inner</p><pre>int a;\nint b;</pre></li></ul><pre>int c;</pre></li></ol>")
+            "<ol><li><p>outer</p><ul><li><p>inner</p><pre>int a;\n\nint b;</pre></li></ul><pre>int c;</pre></li></ol>")
             .QuerySelector("ol")!;
 
         Assert.Equal(
             "1. outer\n" +
-            "  - inner\n" +
-            "    ```\n" +
-            "    int a;\n" +
-            "    int b;\n" +
-            "    ```\n" +
+            "   - inner\n" +
+            "     ```\n" +
+            "     int a;\n" +
+            "\n" +
+            "     int b;\n" +
+            "     ```\n" +
             "   ```\n" +
             "   int c;\n" +
             "   ```",
+            BlockRenderer.List(list).Text);
+    }
+
+    [Fact]
+    public void List_item_children_keep_document_order()
+    {
+        IElement list = new HtmlParser().ParseDocument(
+            "<ul><li><p>head</p><p class=\"codelink1\"><a href=\"x.xhtml#p\">Click here to view code image</a></p>" +
+            "<pre>int x;</pre><p>after the code</p><ul><li><p>nested</p></li></ul><p>after the list</p></li>" +
+            "<li><p>next</p></li></ul>")
+            .QuerySelector("ul")!;
+
+        Assert.Equal(
+            "- head\n" +
+            "  ```\n" +
+            "  int x;\n" +
+            "  ```\n" +
+            "\n" +
+            "  after the code\n" +
+            "  - nested\n" +
+            "\n" +
+            "  after the list\n" +
+            "- next",
             BlockRenderer.List(list).Text);
     }
 }

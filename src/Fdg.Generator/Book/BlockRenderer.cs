@@ -99,7 +99,7 @@ public static partial class BlockRenderer
     public static Block List(IElement list)
     {
         var lines = new List<string>();
-        AppendList(list, 0, lines);
+        AppendList(list, string.Empty, lines);
         return new Block(BlockKind.List, string.Join('\n', lines));
     }
 
@@ -257,45 +257,74 @@ public static partial class BlockRenderer
         return lines.Select(l => l.Length == 0 ? ">" : $"> {l}");
     }
 
-    private static void AppendList(IElement list, int depth, List<string> lines)
+    /// <summary>
+    /// Appends the items of a list. The first paragraph of an item stays on the marker line; every later child follows
+    /// in document order at the content column of the item, so that Markdown keeps it inside the item.
+    /// </summary>
+    private static void AppendList(IElement list, string indent, List<string> lines)
     {
-        string indent = new(' ', depth * 2);
         int number = 1;
         foreach (IElement item in list.Children.Where(c => c.LocalName == "li"))
         {
             string marker = list.LocalName == "ol" ? $"{number++}." : "-";
-            var head = new StringBuilder();
-            var tail = new List<string>();
-            // Block content in an item has to start at the column of the item text, or Markdown reads it as a paragraph continuation.
             string contentIndent = indent + new string(' ', marker.Length + 1);
-            foreach (INode child in item.ChildNodes)
+            string? head = null;
+            var tail = new List<string>();
+            var run = new StringBuilder();
+
+            // Ends the paragraph being collected; a later paragraph needs a blank line before it to stay a paragraph.
+            void Flush(bool force)
             {
-                if (child is IElement { LocalName: "ul" or "ol" } nested)
+                string text = Finish(run.ToString());
+                run.Clear();
+                if (head is null)
                 {
-                    AppendList(nested, depth + 1, tail);
+                    if (text.Length > 0 || force)
+                    {
+                        head = text;
+                    }
                 }
-                else if (child is IElement { LocalName: "pre" } pre)
+                else if (text.Length > 0)
                 {
-                    tail.Add($"{contentIndent}```");
-                    tail.AddRange(Normalizer.Code(pre.TextContent).Split('\n').Select(l => l.Length == 0 ? l : contentIndent + l));
-                    tail.Add($"{contentIndent}```");
-                }
-                else if (child is IElement { LocalName: "div" } sidebar && sidebar.ClassList.Contains("sidebar"))
-                {
-                    tail.AddRange(Quote(Annotation(sidebar)).Select(l => contentIndent + l));
-                }
-                else if (child is IElement element && IsCodeLink(element))
-                {
-                    continue;
-                }
-                else
-                {
-                    AppendInline(child, head);
-                    head.Append(' ');
+                    tail.Add(string.Empty);
+                    tail.Add(contentIndent + text);
                 }
             }
 
-            lines.Add($"{indent}{marker} {Finish(head.ToString())}");
+            foreach (INode child in item.ChildNodes)
+            {
+                switch (child)
+                {
+                    case IElement { LocalName: "ul" or "ol" } nested:
+                        Flush(force: true);
+                        AppendList(nested, contentIndent, tail);
+                        break;
+                    case IElement { LocalName: "pre" } pre:
+                        Flush(force: true);
+                        tail.Add($"{contentIndent}```");
+                        tail.AddRange(Normalizer.Code(pre.TextContent).Split('\n')
+                            .Select(l => l.Length == 0 ? l : contentIndent + l));
+                        tail.Add($"{contentIndent}```");
+                        break;
+                    case IElement { LocalName: "div" } sidebar when sidebar.ClassList.Contains("sidebar"):
+                        Flush(force: true);
+                        tail.AddRange(Quote(Annotation(sidebar)).Select(l => contentIndent + l));
+                        break;
+                    case IElement element when IsCodeLink(element):
+                        break;
+                    case IElement { LocalName: "p" } paragraph:
+                        Flush(force: false);
+                        AppendInline(paragraph, run);
+                        Flush(force: false);
+                        break;
+                    default:
+                        AppendInline(child, run);
+                        break;
+                }
+            }
+
+            Flush(force: false);
+            lines.Add($"{indent}{marker} {head}".TrimEnd());
             lines.AddRange(tail);
         }
     }
