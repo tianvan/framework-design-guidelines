@@ -245,6 +245,172 @@ public sealed class EmitterTests : IDisposable
             line);
     }
 
+    /// <summary>The sample chapter with the given reference splits; <paramref name="keep"/> restricts it to some rules.</summary>
+    private GeneratorInput Split(Func<Rule, bool> keep, params ReferenceSplit[] splits)
+    {
+        GeneratorInput input = Input();
+        return input with
+        {
+            Files = input.Files.Select(f => f with { Rules = f.Rules.Where(keep).ToList(), References = splits }).ToList(),
+        };
+    }
+
+    private static ReferenceSplit Part(string file, params string[] sections)
+    {
+        return new ReferenceSplit(file, sections);
+    }
+
+    [Fact]
+    public void Splits_chapter_references_by_section_prefix()
+    {
+        GeneratorInput input = Split(r => r.Section.StartsWith("9.1", StringComparison.Ordinal) || r.Section.StartsWith("9.2", StringComparison.Ordinal),
+            Part("ch09-first", "9.1"),
+            Part("ch09-second", "9.2"));
+
+        IReadOnlyList<GeneratedFile> files = SkillReferenceEmitter.Emit(input);
+
+        string Content(string path) => files.Single(f => f.Path.EndsWith(path, StringComparison.Ordinal)).Content;
+        string first = Content("references/ch09-first.md");
+        string second = Content("references/ch09-second.md");
+        string firstExamples = Content("references/examples/ch09-first.md");
+        string secondExamples = Content("references/examples/ch09-second.md");
+        Assert.Equal(4, files.Count);
+        Assert.Contains("# Chapter 9: Sample Chapter — 9.1", first);
+        Assert.Contains("# Chapter 9: Sample Chapter — 9.2", second);
+        Assert.Contains("**FDG9001**", first);
+        Assert.Contains("examples/ch09-first.md#fdg9001", first);
+        Assert.DoesNotContain("**FDG9001**", second);
+        Assert.Contains("## FDG9001", firstExamples);
+        Assert.DoesNotContain("## FDG9001", secondExamples);
+        Assert.DoesNotContain("9.2 Tool Checked", first);
+        Assert.Contains("## 9.2 Tool Checked", second);
+    }
+
+    [Fact]
+    public void Split_title_spans_the_first_to_the_last_section()
+    {
+        GeneratorInput input = Split(_ => true, Part("ch09-all", "9.1", "9.2", "9.3"));
+
+        string main = SkillReferenceEmitter.Emit(input).Single(f => f.Path.EndsWith("references/ch09-all.md", StringComparison.Ordinal)).Content;
+
+        Assert.Contains("# Chapter 9: Sample Chapter — 9.1–9.3", main);
+    }
+
+    [Fact]
+    public void Section_prefix_matches_on_dot_boundary()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-first", "9.1"), Part("ch09-rest", "9.2", "9.3")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.10 Foo" } : r);
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("Chapter 9: rule FDG9001 (section 9.10) matches no reference split.", exception.Message);
+    }
+
+    [Fact]
+    public void Prefix_matches_deeper_sections()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-first", "9.1"), Part("ch09-rest", "9.2", "9.3")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.1.2 Foo" } : r);
+
+        string main = SkillReferenceEmitter.Emit(input).Single(f => f.Path.EndsWith("references/ch09-first.md", StringComparison.Ordinal)).Content;
+
+        Assert.Contains("**FDG9001**", main);
+    }
+
+    [Fact]
+    public void Rule_matching_two_splits_fails()
+    {
+        GeneratorInput input = Split(_ => true, Part("ch09-a", "9.1", "9.2", "9.3"), Part("ch09-b", "9.1"));
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("matches more than one reference split (ch09-a, ch09-b)", exception.Message);
+    }
+
+    [Fact]
+    public void Oversized_reference_file_fails_generation()
+    {
+        string huge = new('x', SkillReferenceEmitter.MaxReferenceBytes);
+        GeneratorInput input = Edit(
+            Input(),
+            r => r.Id == "FDG9001" ? r with { Body = new[] { new Block(BlockKind.Paragraph, huge) } } : r);
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Matches(@"references/examples/ch09-sample\.md is \d+ bytes; the limit is 32768\. Split the chapter with references in meta\.yaml\.", exception.Message);
+    }
+
+    [Fact]
+    public void Oversize_is_measured_in_utf8_bytes()
+    {
+        string wide = new('é', SkillReferenceEmitter.MaxReferenceBytes / 2);
+        GeneratorInput input = Edit(
+            Input(),
+            r => r.Id == "FDG9001" ? r with { Body = new[] { new Block(BlockKind.Paragraph, wide) } } : r);
+
+        Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+    }
+
+    [Fact]
+    public void Chapter_without_splits_keeps_one_file_per_chapter()
+    {
+        string[] paths = SkillReferenceEmitter.Emit(Input()).Select(f => f.Path).ToArray();
+
+        Assert.Equal(
+            new[]
+            {
+                "plugins/framework-design-guidelines/skills/fdg-write/references/ch09-sample.md",
+                "plugins/framework-design-guidelines/skills/fdg-write/references/examples/ch09-sample.md",
+            },
+            paths);
+    }
+
+    [Fact]
+    public void Meta_references_reach_the_rule_files()
+    {
+        string rules = TempDir();
+        foreach (string path in Directory.GetFiles(_fixtureRules))
+        {
+            File.Copy(path, Path.Combine(rules, Path.GetFileName(path)));
+        }
+
+        string meta = Path.Combine(rules, "meta.yaml");
+        File.WriteAllText(
+            meta,
+            File.ReadAllText(meta) + """
+                    references:
+                      - file: ch09-a
+                        sections: ["9.1", "9.2"]
+                      - file: ch09-b
+                        sections: ["9.3"]
+
+                """);
+
+        GeneratorInput input = GeneratorInput.Load(rules, "0.1.0");
+
+        ReferenceSplit[] expected = { Part("ch09-a", "9.1", "9.2"), Part("ch09-b", "9.3") };
+        Assert.Equal(expected.Select(r => r.File), input.Files.Single().References.Select(r => r.File));
+        Assert.Equal(expected.Select(r => r.Sections), input.Files.Single().References.Select(r => r.Sections));
+        Assert.Equal(expected.Select(r => r.File), input.Meta.Chapters.Single().References.Select(r => r.File));
+    }
+
+    [Fact]
+    public void Section_text_is_escaped_where_it_becomes_markdown()
+    {
+        GeneratorInput input = Edit(Input(), r => r.Id == "FDG9001" ? r with { Section = "9.1 IComparable<T> and IEquatable<T>" } : r);
+
+        string main = ReferenceMain(input);
+        string page = RuleDocEmitter.Emit(input).Single(f => f.Path == "docs/rules/FDG9001.md").Content;
+
+        Assert.Contains("## 9.1 IComparable&lt;T> and IEquatable&lt;T>", main);
+        Assert.Contains("section 9.1 IComparable&lt;T> and IEquatable&lt;T>.", page);
+        Assert.DoesNotContain("IComparable<T>", main);
+        Assert.DoesNotContain("IComparable<T>", page);
+    }
+
     [Fact]
     public void Skill_reference_groups_rules_by_section_and_links_examples()
     {

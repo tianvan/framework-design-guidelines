@@ -154,6 +154,22 @@ public sealed class SkillLintTests
         }
     }
 
+    /// <summary>A second guard besides the generator: the checked-in references stay small enough to load.</summary>
+    [Fact]
+    public void Every_reference_file_is_at_most_32_KB()
+    {
+        string[] files = Directory.GetFiles(FdgWriteReferences, "*.md", SearchOption.AllDirectories);
+
+        Assert.NotEmpty(files);
+        foreach (string file in files)
+        {
+            long bytes = new FileInfo(file).Length;
+            Assert.True(
+                bytes <= SkillReferenceEmitter.MaxReferenceBytes,
+                $"{Relative(file)} is {bytes} bytes (max {SkillReferenceEmitter.MaxReferenceBytes}).");
+        }
+    }
+
     [Fact]
     public void Every_rule_id_mentioned_in_skills_exists_in_rules()
     {

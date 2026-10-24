@@ -54,6 +54,23 @@ internal static class RuleText
             : "ch" + file.Chapter;
     }
 
+    /// <summary>The section number, the first word of a rule's <c>Section</c>, such as <c>5.2.1</c>.</summary>
+    public static string SectionNumber(Rule rule)
+    {
+        string section = rule.Section.Trim();
+        int space = section.IndexOf(' ', StringComparison.Ordinal);
+        return space < 0 ? section : section[..space];
+    }
+
+    /// <summary>
+    /// Section text is plain text and can hold generic names such as <c>IComparable&lt;T&gt;</c>; escapes the
+    /// <c>&lt;</c> so Markdown does not swallow <c>&lt;T&gt;</c> as an HTML tag.
+    /// </summary>
+    public static string EscapeMarkdown(string text)
+    {
+        return text.Replace("<", "&lt;", StringComparison.Ordinal);
+    }
+
     /// <summary>Renders a rule's body blocks as Markdown, separated by blank lines.</summary>
     public static string RenderBody(IReadOnlyList<Block> body)
     {

@@ -13,8 +13,17 @@ public enum NonGuidelineDisposition
 
 public sealed record NonGuidelineEntry(string Section, NonGuidelineDisposition Disposition, string Note);
 
+/// <summary>One pair of skill reference files of a chapter: <c>references/&lt;File&gt;.md</c> holds the rules of the listed sections.</summary>
+public sealed record ReferenceSplit(string File, IReadOnlyList<string> Sections);
+
 public sealed record ChapterMeta(string Token, string File, string Rules, string Title)
 {
+    /// <summary>
+    /// How the chapter's skill references are split by section prefix; optional in <c>meta.yaml</c>. Empty: one pair of
+    /// files for the whole chapter.
+    /// </summary>
+    public IReadOnlyList<ReferenceSplit> References { get; init; } = Array.Empty<ReferenceSplit>();
+
     /// <summary>The coverage-document entries for narrative text of this chapter; optional in <c>meta.yaml</c>.</summary>
     public IReadOnlyList<NonGuidelineEntry> NonGuideline { get; init; } = Array.Empty<NonGuidelineEntry>();
 }
@@ -41,6 +50,7 @@ public static class RuleLoader
             dto.Chapters.Select(c => new ChapterMeta(c.Token, c.File, c.Rules, c.Title)
             {
                 NonGuideline = c.NonGuideline.Select(e => ToEntry(c.Token, e)).ToList(),
+                References = c.References.Select(r => ToSplit(c.Token, r)).ToList(),
             }).ToList());
     }
 
@@ -58,6 +68,7 @@ public static class RuleLoader
             {
                 RulesFile = c.Rules,
                 NonGuideline = c.NonGuideline,
+                References = c.References,
             })
             .ToList();
     }
@@ -73,6 +84,16 @@ public static class RuleLoader
             dto.Section,
             RuleYaml.ParseEnum<NonGuidelineDisposition>(dto.Disposition, $"nonGuideline disposition of chapter {chapter}"),
             dto.Note);
+    }
+
+    private static ReferenceSplit ToSplit(string chapter, ReferenceSplitDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.File) || dto.Sections.Count == 0 || dto.Sections.Any(string.IsNullOrWhiteSpace))
+        {
+            throw new FormatException($"meta.yaml: a references entry of chapter {chapter} needs a file and at least one section.");
+        }
+
+        return new ReferenceSplit(dto.File, dto.Sections.ToList());
     }
 
     private sealed class MetaDto
@@ -93,6 +114,15 @@ public static class RuleLoader
         public string Title { get; set; } = string.Empty;
 
         public List<NonGuidelineDto> NonGuideline { get; set; } = new();
+
+        public List<ReferenceSplitDto> References { get; set; } = new();
+    }
+
+    private sealed class ReferenceSplitDto
+    {
+        public string File { get; set; } = string.Empty;
+
+        public List<string> Sections { get; set; } = new();
     }
 
     private sealed class NonGuidelineDto

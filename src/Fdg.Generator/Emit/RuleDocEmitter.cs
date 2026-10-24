@@ -18,7 +18,7 @@ public static class RuleDocEmitter
         text.Append(Header.Markdown).Append("\n\n");
         text.Append($"# {rule.Id}\n\n");
         text.Append($"> {RuleText.Statement(rule)}\n\n");
-        text.Append($"Framework Design Guidelines, 3rd edition, section {rule.Section}.");
+        text.Append($"Framework Design Guidelines, 3rd edition, section {RuleText.EscapeMarkdown(rule.Section)}.");
         if (rule.Context is not null)
         {
             text.Append($" Applies to: {rule.Context}.");
