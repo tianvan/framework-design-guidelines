@@ -1094,7 +1094,11 @@ git commit -am "feat(gen): register the preface, chapter 1 and appendices B and 
 - fdg-review 的 SKILL.md 和 `fdg-reviewer.md`：
   - 按被评审代码涉及的主题，读取路由表中对应的文件；
   - 评审库的改动时，基线为用户指定的值，默认为 `git merge-base HEAD <默认分支>`，其中默认分支取 `git symbolic-ref refs/remotes/origin/HEAD`，没有时用 `main`；按附录 D 逐条对照；
-  - 写一句：附录 C 的 API 规范示例只作为评审公开 API 的背景。附录 C 的原文不打包进插件（我的决定：它不是准则，没有规则数据作为来源）。
+  - 附录 C 的原文不打包进插件，因为它不是准则，没有规则数据作为来源（用户 2026-10-24 同意）。
+  - fdg-review 用我们自己的话写 3–5 行要点，一句原书原文都不复制。
+    - 内容：一份 API 规范应包含场景示例代码、目标与非目标、API 与行为、问答。
+    - 用途：评审库的公开 API 时，按第 2 章中相应的规则检查这几部分是否齐全，并引用规则编号。
+    - 校验：这几行没有规则原文，也就不受逐字校验约束；`SkillLintTests` 的 `Every_rule_id_mentioned_in_skills_exists_in_rules` 会检查其中引用的编号确实存在。
 - `SessionContext`：在现有的 fdg-write 提示后加一句 `Before designing or changing types, members, exception handling or common patterns, read the fdg-write skill.`。
 
 - [ ] **Step 1: 修改 SkillLintTests 和 SessionContextTests，运行，确认失败**
