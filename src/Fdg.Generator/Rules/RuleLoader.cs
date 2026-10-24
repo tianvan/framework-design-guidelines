@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -35,6 +36,8 @@ public static class RuleLoader
 {
     private const string MetaFileName = "meta.yaml";
 
+    private static readonly Regex SplitStem = new("^[a-z0-9-]+$");
+
     private static readonly IDeserializer MetaDeserializer = new DeserializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
         .Build();
@@ -50,7 +53,7 @@ public static class RuleLoader
             dto.Chapters.Select(c => new ChapterMeta(c.Token, c.File, c.Rules, c.Title)
             {
                 NonGuideline = c.NonGuideline.Select(e => ToEntry(c.Token, e)).ToList(),
-                References = c.References.Select(r => ToSplit(c.Token, r)).ToList(),
+                References = (c.References ?? new()).Select(r => ToSplit(c.Token, r)).ToList(),
             }).ToList());
     }
 
@@ -86,14 +89,21 @@ public static class RuleLoader
             dto.Note);
     }
 
-    private static ReferenceSplit ToSplit(string chapter, ReferenceSplitDto dto)
+    private static ReferenceSplit ToSplit(string chapter, ReferenceSplitDto? dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.File) || dto.Sections.Count == 0 || dto.Sections.Any(string.IsNullOrWhiteSpace))
+        if (dto is null || string.IsNullOrWhiteSpace(dto.File) || dto.Sections is null || dto.Sections.Count == 0
+            || dto.Sections.Any(string.IsNullOrWhiteSpace))
         {
             throw new FormatException($"meta.yaml: a references entry of chapter {chapter} needs a file and at least one section.");
         }
 
-        return new ReferenceSplit(dto.File, dto.Sections.ToList());
+        if (!SplitStem.IsMatch(dto.File))
+        {
+            throw new FormatException(
+                $"meta.yaml: reference file '{dto.File}' of chapter {chapter} must contain only lowercase letters, digits and '-'.");
+        }
+
+        return new ReferenceSplit(dto.File, dto.Sections.Select(s => s!).ToList());
     }
 
     private sealed class MetaDto
@@ -115,14 +125,14 @@ public static class RuleLoader
 
         public List<NonGuidelineDto> NonGuideline { get; set; } = new();
 
-        public List<ReferenceSplitDto> References { get; set; } = new();
+        public List<ReferenceSplitDto?>? References { get; set; }
     }
 
     private sealed class ReferenceSplitDto
     {
-        public string File { get; set; } = string.Empty;
+        public string? File { get; set; }
 
-        public List<string> Sections { get; set; } = new();
+        public List<string?>? Sections { get; set; }
     }
 
     private sealed class NonGuidelineDto

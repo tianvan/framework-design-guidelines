@@ -19,10 +19,17 @@ public static class SkillReferenceEmitter
     public static IReadOnlyList<GeneratedFile> Emit(GeneratorInput input)
     {
         var files = new List<GeneratedFile>();
+        var stems = new Dictionary<string, string>();
         foreach (RuleFile file in input.Files)
         {
             foreach (ReferencePart part in Parts(file))
             {
+                if (!stems.TryAdd(part.Stem, RuleText.ChapterLabel(file.Chapter)))
+                {
+                    throw new GenerationException(
+                        $"{RuleText.ChapterLabel(file.Chapter)}: reference file '{part.Stem}' is already used by {stems[part.Stem]}.");
+                }
+
                 files.Add(Checked(part.Stem + ".md", Index(file, part)));
                 files.Add(Checked("examples/" + part.Stem + ".md", Examples(file, part)));
             }
@@ -77,6 +84,14 @@ public static class SkillReferenceEmitter
             rulesBySplit[matches[0]].Add(rule);
         }
 
+        foreach (ReferenceSplit split in file.References)
+        {
+            if (rulesBySplit[split].Count == 0)
+            {
+                throw new GenerationException($"{RuleText.ChapterLabel(file.Chapter)}: reference split '{split.File}' matches no rule.");
+            }
+        }
+
         return file.References.Select(r => new ReferencePart(r.File, rulesBySplit[r], SectionRange(r))).ToList();
     }
 
@@ -86,11 +101,37 @@ public static class SkillReferenceEmitter
         return number == prefix || number.StartsWith(prefix + ".", StringComparison.Ordinal);
     }
 
+    /// <summary>The first and last section of the split in numeric order, however <c>meta.yaml</c> lists them.</summary>
     private static string SectionRange(ReferenceSplit split)
     {
-        string first = split.Sections[0];
-        string last = split.Sections[^1];
+        string[] sorted = split.Sections.Order(SectionOrder.Instance).ToArray();
+        string first = sorted[0];
+        string last = sorted[^1];
         return first == last ? first : $"{first}–{last}";
+    }
+
+    /// <summary>Orders section numbers by their dotted parts, so <c>5.2</c> comes before <c>5.10</c>.</summary>
+    private sealed class SectionOrder : IComparer<string>
+    {
+        public static readonly SectionOrder Instance = new();
+
+        public int Compare(string? x, string? y)
+        {
+            string[] a = (x ?? string.Empty).Split('.');
+            string[] b = (y ?? string.Empty).Split('.');
+            for (int i = 0; i < Math.Min(a.Length, b.Length); i++)
+            {
+                int result = int.TryParse(a[i], out int left) && int.TryParse(b[i], out int right)
+                    ? left.CompareTo(right)
+                    : string.CompareOrdinal(a[i], b[i]);
+                if (result != 0)
+                {
+                    return result;
+                }
+            }
+
+            return a.Length.CompareTo(b.Length);
+        }
     }
 
     /// <summary>

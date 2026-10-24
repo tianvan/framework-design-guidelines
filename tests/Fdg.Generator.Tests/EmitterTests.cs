@@ -397,6 +397,67 @@ public sealed class EmitterTests : IDisposable
         Assert.Equal(expected.Select(r => r.File), input.Meta.Chapters.Single().References.Select(r => r.File));
     }
 
+    private MetaFile LoadMetaWith(string references)
+    {
+        string rules = TempDir();
+        File.WriteAllText(
+            Path.Combine(rules, "meta.yaml"),
+            "repositoryUrl: x\nchapters:\n  - token: \"9\"\n    file: s.xhtml\n    rules: ch09-sample.yaml\n    title: T\n" + references);
+        return RuleLoader.LoadMeta(rules);
+    }
+
+    [Theory]
+    [InlineData("    references:\n      - file: ch09-a\n")]
+    [InlineData("    references:\n      - file: ch09-a\n        sections:\n")]
+    [InlineData("    references:\n      - file: ch09-a\n        sections: []\n")]
+    [InlineData("    references:\n      - sections: [\"9.1\"]\n")]
+    [InlineData("    references:\n      -\n")]
+    [InlineData("    references: [{ file: Bad_Name, sections: [\"9.1\"] }]\n")]
+    [InlineData("    references: [{ file: ../x, sections: [\"9.1\"] }]\n")]
+    public void Invalid_meta_references_fail_with_a_format_exception(string references)
+    {
+        Assert.Throws<FormatException>(() => LoadMetaWith(references));
+    }
+
+    [Fact]
+    public void Null_meta_references_mean_no_split()
+    {
+        Assert.Empty(LoadMetaWith("    references:\n").Chapters.Single().References);
+    }
+
+    [Fact]
+    public void Reference_stem_used_twice_fails_generation()
+    {
+        GeneratorInput duplicate = Split(_ => true, Part("ch09-a", "9.1", "9.2"), Part("ch09-a", "9.3"));
+        GeneratorInput first = Input();
+        RuleFile other = first.Files.Single() with { Chapter = "10" };
+        GeneratorInput clash = first with { Files = new[] { first.Files.Single(), other } };
+
+        Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(duplicate));
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(clash));
+        Assert.Contains("Chapter 10: reference file 'ch09-sample' is already used by Chapter 9.", exception.Message);
+    }
+
+    [Fact]
+    public void Split_matching_no_rule_fails_generation()
+    {
+        GeneratorInput input = Split(_ => true, Part("ch09-a", "9.1", "9.2", "9.3"), Part("ch09-empty", "9.4"));
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Equal("Chapter 9: reference split 'ch09-empty' matches no rule.", exception.Message);
+    }
+
+    [Fact]
+    public void Split_title_orders_sections_numerically()
+    {
+        GeneratorInput input = Split(_ => true, Part("ch09-all", "9.3", "9.1", "9.2"));
+
+        string main = SkillReferenceEmitter.Emit(input).Single(f => f.Path.EndsWith("references/ch09-all.md", StringComparison.Ordinal)).Content;
+
+        Assert.Contains("# Chapter 9: Sample Chapter — 9.1–9.3", main);
+    }
+
     [Fact]
     public void Section_text_is_escaped_where_it_becomes_markdown()
     {
