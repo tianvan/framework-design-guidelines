@@ -52,7 +52,7 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
 ## Chapter 5: Member Design (5.1 to 5.3)
 
 - [ ] FDG5003 AVOID being inconsistent in the ordering of parameters in overloaded members. Parameters with the same name should appear in the same position in all overloads.
-  fdg FDG5003, partial; no autofix. Chosen because noise narrowed the new analyzer three times on rules stated elsewhere in the book (CancellationToken last, overloads with more type parameters, exception constructors), on top of the `params` and `out` cases of the body.
+  fdg FDG5003, partial; breaking. Chosen because the analyzer leaves out cases that rules elsewhere in the book fix (CancellationToken last in 9.2.2, the common exception constructors of 7.4) on top of the `params` and `out` cases of the body, and because reordering public parameters is breaking with no code fix.
 - [ ] FDG5022 DO provide a protected virtual member that offers the same functionality as the explicitly implemented member if the functionality is meant to be specialized by derived classes.
   sdk CA1033, partial; breaking. Chosen because the text is conditional (only if derived classes are meant to specialize it), which CA1033 cannot see, and its fix adds a member or unseals the type.
 - [ ] FDG5035 AVOID indexers with parameter types other than `System.Int32`, `System.Int64`, `System.String`, `System.Range`, `System.Index`, or an enum, except on dictionary-like types.

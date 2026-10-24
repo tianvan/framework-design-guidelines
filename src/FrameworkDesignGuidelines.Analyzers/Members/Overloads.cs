@@ -12,7 +12,7 @@ internal static class Overloads
     /// its externally visible instance constructors, each in declaration order. A family can have a single member.
     /// Implicit declarations and explicit interface implementations are left out.
     /// </summary>
-    public static IEnumerable<ImmutableArray<IMethodSymbol>> Families(INamedTypeSymbol type)
+    public static IEnumerable<OverloadFamily> Families(INamedTypeSymbol type)
     {
         return type.GetMembers()
             .OfType<IMethodSymbol>()
@@ -20,7 +20,7 @@ internal static class Overloads
                 && !method.IsImplicitlyDeclared
                 && NamingSymbols.IsExternallyVisible(method))
             .GroupBy(method => method.Name, StringComparer.Ordinal)
-            .Select(family => family.ToImmutableArray());
+            .Select(family => new OverloadFamily(family.ToImmutableArray()));
     }
 
     /// <summary>The name a diagnostic gives a family: the method name, or the type's name for constructors.</summary>
@@ -66,17 +66,43 @@ internal static class Overloads
         return method.Parameters.Any(parameter => parameter.IsOptional);
     }
 
-    /// <summary>
-    /// The member of a pair to report: a member that overrides or implements another one takes its signature from
-    /// it, so the other member is reported; otherwise <paramref name="later"/>. Null when both are inherited.
-    /// </summary>
-    public static IMethodSymbol? Target(IMethodSymbol earlier, IMethodSymbol later)
+}
+
+/// <summary>
+/// One overload family, with <see cref="NamingSymbols.IsInherited"/> worked out once for each member, since the
+/// analyzers ask it for every pair.
+/// </summary>
+internal sealed class OverloadFamily
+{
+    private readonly ImmutableArray<bool> inherited;
+
+    public OverloadFamily(ImmutableArray<IMethodSymbol> methods)
     {
-        if (!NamingSymbols.IsInherited(later))
+        Methods = methods;
+        inherited = methods.Select(NamingSymbols.IsInherited).ToImmutableArray();
+    }
+
+    public ImmutableArray<IMethodSymbol> Methods { get; }
+
+    public int Length => Methods.Length;
+
+    public IMethodSymbol this[int index] => Methods[index];
+
+    /// <summary>True when the member at <paramref name="index"/> overrides or implements another member.</summary>
+    public bool IsInherited(int index) => inherited[index];
+
+    /// <summary>
+    /// The index of the member of a pair to report: a member that overrides or implements another one takes its
+    /// signature from it, so the other member is reported; otherwise <paramref name="later"/>. Null when both are
+    /// inherited.
+    /// </summary>
+    public int? Target(int earlier, int later)
+    {
+        if (!inherited[later])
         {
             return later;
         }
 
-        return NamingSymbols.IsInherited(earlier) ? null : earlier;
+        return inherited[earlier] ? null : earlier;
     }
 }

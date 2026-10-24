@@ -8,9 +8,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Members;
 /// <summary>
 /// FDG5004: in a family of overloads that extend one another, only the longest is virtual. A virtual or abstract
 /// method of a class is reported when another overload in the same type starts with the same parameters (names,
-/// types and modifiers) and adds more with the same accessibility. A public method that extends to a protected one is
-/// not reported: callers cannot call the protected overload, so they are not overloads for them. Overrides follow
-/// their base member and are not reported.
+/// types and modifiers) and adds more, whatever the accessibility of either: the rule is for overriders, who see
+/// protected overloads too. Overrides follow their base member and are not reported.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class VirtualOverloadAnalyzer : DiagnosticAnalyzer
@@ -33,12 +32,12 @@ public sealed class VirtualOverloadAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        foreach (ImmutableArray<IMethodSymbol> family in Overloads.Families(type))
+        foreach (OverloadFamily family in Overloads.Families(type))
         {
-            foreach (IMethodSymbol method in family)
+            foreach (IMethodSymbol method in family.Methods)
             {
                 if ((method.IsVirtual || method.IsAbstract) && !method.IsOverride
-                    && family.Any(longer => Extends(longer, method))
+                    && family.Methods.Any(longer => Extends(longer, method))
                     && NamingSymbols.SourceLocation(method) is { } location)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(FdgDescriptors.FDG5004, location, method.Name));
@@ -49,8 +48,7 @@ public sealed class VirtualOverloadAnalyzer : DiagnosticAnalyzer
 
     private static bool Extends(IMethodSymbol longer, IMethodSymbol shorter)
     {
-        if (longer.Parameters.Length <= shorter.Parameters.Length
-            || longer.DeclaredAccessibility != shorter.DeclaredAccessibility)
+        if (longer.Parameters.Length <= shorter.Parameters.Length)
         {
             return false;
         }

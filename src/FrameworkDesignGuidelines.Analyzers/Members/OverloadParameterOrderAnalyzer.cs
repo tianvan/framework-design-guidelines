@@ -9,10 +9,10 @@ namespace FrameworkDesignGuidelines.Analyzers.Members;
 /// FDG5003: a parameter keeps its position in every overload, declared in the same type, that has a parameter with
 /// the same name. <c>params</c> arrays and <c>out</c> parameters are left out, as the rule's body allows, and so are
 /// <c>CancellationToken</c> parameters, which section 9.2 keeps last. Of two overloads that disagree, the one with
-/// more parameters is reported (the later one on a tie), unless it overrides or implements another member. Overloads
-/// with different numbers of type parameters are not compared, as a type argument can take the place of a parameter.
-/// Exception constructors are not compared either: section 7.3 asks for the common constructors
-/// <c>(string message)</c> and <c>(string message, Exception innerException)</c>, which fixes where those go.
+/// more parameters is reported (the later one on a tie), unless it overrides or implements another member. A pair of
+/// exception constructors is not compared when either starts with <c>string message</c>: section 7.4 asks for the
+/// common constructors <c>(string message)</c> and <c>(string message, Exception innerException)</c>, which fixes
+/// where those parameters go.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class OverloadParameterOrderAnalyzer : DiagnosticAnalyzer
@@ -29,20 +29,20 @@ public sealed class OverloadParameterOrderAnalyzer : DiagnosticAnalyzer
 
     private static void AnalyzeType(SymbolAnalysisContext context)
     {
-        foreach (ImmutableArray<IMethodSymbol> family in Overloads.Families((INamedTypeSymbol)context.Symbol))
+        foreach (OverloadFamily family in Overloads.Families((INamedTypeSymbol)context.Symbol))
         {
             var reported = new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
             for (int i = 0; i < family.Length; i++)
             {
                 for (int j = i + 1; j < family.Length; j++)
                 {
-                    if (Target(family[i], family[j]) is not { } target)
+                    if (Target(family, i, j) is not { } index)
                     {
                         continue;
                     }
 
-                    IMethodSymbol other =
-                        SymbolEqualityComparer.Default.Equals(target, family[i]) ? family[j] : family[i];
+                    IMethodSymbol target = family[index];
+                    IMethodSymbol other = index == i ? family[j] : family[i];
                     foreach (IParameterSymbol parameter in target.Parameters.Where(IsCompared))
                     {
                         if (other.Parameters.FirstOrDefault(p => p.Name == parameter.Name && IsCompared(p)) is { } match
@@ -59,16 +59,15 @@ public sealed class OverloadParameterOrderAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static IMethodSymbol? Target(IMethodSymbol earlier, IMethodSymbol later)
+    private static int? Target(OverloadFamily family, int earlier, int later)
     {
-        if (earlier.Arity != later.Arity
-            || (earlier.MethodKind == MethodKind.Constructor && IsException(earlier.ContainingType)))
+        if (IsCommonExceptionConstructor(family[earlier]) || IsCommonExceptionConstructor(family[later]))
         {
             return null;
         }
 
-        bool earlierInherited = NamingSymbols.IsInherited(earlier);
-        bool laterInherited = NamingSymbols.IsInherited(later);
+        bool earlierInherited = family.IsInherited(earlier);
+        bool laterInherited = family.IsInherited(later);
         if (earlierInherited != laterInherited)
         {
             return earlierInherited ? later : earlier;
@@ -79,7 +78,18 @@ public sealed class OverloadParameterOrderAnalyzer : DiagnosticAnalyzer
             return null;
         }
 
-        return earlier.Parameters.Length > later.Parameters.Length ? earlier : later;
+        return family[earlier].Parameters.Length > family[later].Parameters.Length ? earlier : later;
+    }
+
+    /// <summary>
+    /// True for a constructor of an exception type whose first parameter is <c>string message</c>, the start of the
+    /// common constructors of section 7.4.
+    /// </summary>
+    private static bool IsCommonExceptionConstructor(IMethodSymbol method)
+    {
+        return method.MethodKind == MethodKind.Constructor
+            && method.Parameters.FirstOrDefault() is { Name: "message", Type.SpecialType: SpecialType.System_String }
+            && IsException(method.ContainingType);
     }
 
     private static bool IsCompared(IParameterSymbol parameter)

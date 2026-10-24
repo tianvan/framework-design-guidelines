@@ -2884,7 +2884,7 @@
       "diagnostics": [
         "FDG5003"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -2900,7 +2900,7 @@
       "diagnostics": [
         "FDG5004"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -2916,7 +2916,7 @@
       "diagnostics": [
         "FDG5005"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -2960,7 +2960,7 @@
       "diagnostics": [
         "FDG5008"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3006,7 +3006,7 @@
       "diagnostics": [
         "FDG5011"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3036,7 +3036,7 @@
       "diagnostics": [
         "FDG5013"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3066,7 +3066,7 @@
       "diagnostics": [
         "FDG5015"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3196,7 +3196,7 @@
       "diagnostics": [
         "CA1024"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "suggestion",
         "application": "suggestion",
@@ -3212,7 +3212,7 @@
       "diagnostics": [
         "CA1819"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3302,8 +3302,8 @@
       ],
       "autofix": "no",
       "severity": {
-        "library": "suggestion",
-        "application": "suggestion",
+        "library": "warning",
+        "application": "warning",
         "test": "none"
       },
       "naming": null
@@ -3344,7 +3344,7 @@
       "diagnostics": [
         "FDG5034"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3360,7 +3360,7 @@
       "diagnostics": [
         "CA1043"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3432,7 +3432,7 @@
       "diagnostics": [
         "FDG5040"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3518,7 +3518,7 @@
       "diagnostics": [
         "FDG5046"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -3636,8 +3636,8 @@
       ],
       "autofix": "no",
       "severity": {
-        "library": "suggestion",
-        "application": "suggestion",
+        "library": "warning",
+        "application": "warning",
         "test": "none"
       },
       "naming": null
@@ -5971,13 +5971,26 @@
   "breakingFixDiagnostics": [
     "CA1008",
     "CA1012",
+    "CA1024",
     "CA1027",
     "CA1028",
     "CA1033",
+    "CA1043",
     "CA1052",
     "CA1707",
+    "CA1819",
     "CA2217",
     "FDG4013",
+    "FDG5003",
+    "FDG5004",
+    "FDG5005",
+    "FDG5008",
+    "FDG5011",
+    "FDG5013",
+    "FDG5015",
+    "FDG5034",
+    "FDG5040",
+    "FDG5046",
     "IDE0130",
     "IDE1006"
   ]

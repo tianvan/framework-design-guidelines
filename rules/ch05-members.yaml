@@ -13,7 +13,7 @@
           public MethodInfo GetMethod(string name); //ignoreCase = false
           public MethodInfo GetMethod(string name, Boolean ignoreCase);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -47,7 +47,7 @@
            public int IndexOf (string value) { ... }
            public int IndexOf (string str, int startIndex) { ... }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -82,14 +82,14 @@
       text: In some specific cases, this otherwise very strict guideline can be broken. For example, a `params` array parameter has to be the last parameter in a parameter list. If a `params` array parameter appears in an overloaded member, the API designer might need to make a trade-off and either settle for inconsistent parameter ordering or not use the `params` modifier. For more information on the `params` array parameters, see section 5.8.4.
     - kind: paragraph
       text: Another case where the guideline might need to be violated is when the parameter list contains `out` parameters. These parameters should typically appear at the end of the parameter list, which again means that the API designer might need to settle for a slightly inconsistent order of parameters in overloads with `out` parameters. See section 5.8 for more information on `out` parameters.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG5003
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -100,7 +100,7 @@
   analyzer:
     message: Put the parameter '{0}' at the same position in every overload of '{1}'
     category: Members
-  notes: FDG5003 reports a parameter of an externally visible method or constructor whose position differs from that of the parameter with the same name in another overload declared in the same type. `params` arrays and `out` parameters are left out, as the body allows, and so are CancellationToken parameters, which section 9.2 keeps last. Overloads with different numbers of type parameters are not compared, since a type argument can take the place of a parameter, and neither are exception constructors, whose common forms section 7.3 fixes. Overrides and interface implementations take their signature from another member and are not reported, and overloads inherited from a base type are not compared. Moving a parameter changes the public signature, so there is no code fix.
+  notes: 'FDG5003 reports a parameter of an externally visible method or constructor whose position differs from that of the parameter with the same name in another overload declared in the same type. `params` arrays and `out` parameters are left out, as the body allows, and so are CancellationToken parameters, which section 9.2.2 keeps last. Two constructors of an exception type are not compared when either starts with `string message`: section 7.4 fixes the common forms `(string message)` and `(string message, Exception innerException)`. Overrides and interface implementations take their signature from another member and are not reported, and overloads inherited from a base type are not compared. There is no code fix; moving a parameter changes the public signature, so the fix is breaking.'
 - id: FDG5004
   strength: DO
   text: make only the longest overload virtual (if extensibility is required). Shorter overloads should simply call through to a longer overload.
@@ -129,14 +129,14 @@
 
         Further, if I’ve got more than two overloads, I always make the less complicated ones call the next more complicated one and not the most complicated one, like the three overloads of `IsAlwaysNormalized` shown previously for `Encoding`. That way, I’m not hard-coding defaults in more than one place—if I had to do that, I’d probably get it wrong.
       author: Chris Sells
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG5004
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -147,7 +147,7 @@
   analyzer:
     message: Make only the longest overload of '{0}' virtual and have this overload call it
     category: Members
-  notes: FDG5004 reports a virtual or abstract method of an externally visible class when another overload in the same type starts with the same parameters (names, types and modifiers) and adds more. Overloads whose parameter lists differ otherwise, and overrides, are not reported; whether the shorter overload calls the longer one is not checked. Making a method nonvirtual changes the public API, so there is no code fix.
+  notes: 'FDG5004 reports a virtual or abstract method of an externally visible class when another overload in the same type starts with the same parameters (names, types and modifiers) and adds more, whatever the accessibility of either: the rule is for overriders, who also see protected overloads, so a public virtual method beside a longer protected virtual overload is reported (the pattern of the body makes the shorter one nonvirtual). Overloads whose parameter lists differ otherwise, and overrides, are not reported; whether the shorter overload calls the longer one is not checked. There is no code fix; making a public method nonvirtual changes the public API, so the fix is breaking.'
 - id: FDG5005
   strength: DO NOT
   text: use `ref`, `out`, or `in` modifiers to overload members.
@@ -165,14 +165,14 @@
         }
     - kind: paragraph
       text: Some languages cannot resolve calls to overloads like this. In addition, such overloads usually have completely different semantics and probably should not be overloads at all, but rather two separate methods.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG5005
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -183,7 +183,7 @@
   analyzer:
     message: Do not overload '{0}' on the '{1}' modifier of the parameter '{2}'
     category: Members
-  notes: FDG5005 reports a parameter with a `ref`, `out`, `in` or `ref readonly` modifier when another overload in the same type has the same parameter types without that modifier at that position. Overrides and interface implementations are not reported. Renaming or removing an overload changes the public API, so there is no code fix.
+  notes: FDG5005 reports a parameter with a `ref`, `out`, `in` or `ref readonly` modifier when another overload in the same type has the same parameter types without that modifier at that position. Overrides and interface implementations are not reported. There is no code fix; renaming or removing an overload changes the public API, so the fix is breaking.
 - id: FDG5006
   strength: DO NOT
   text: have overloads with parameters at the same position and similar types, yet with different semantics.
@@ -215,7 +215,7 @@
           public void WriteLine(long value){ ... }
           public void WriteLine(int value){ ... }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -247,7 +247,7 @@
     - kind: annotation
       text: Notice that this guideline is not intended to encourage developers to use `null` as a magic constant, but rather to help them avoid explicit checking, as previously described. In fact, whenever you have to use literal `null` when calling an API, it indicates an error in your code or in the framework not providing the appropriate overload.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -292,14 +292,14 @@
     - kind: annotation
       text: This guidance doesn’t apply as strongly for generic methods (as opposed to non-generic methods on a generic types), because a generic method can be explicitly invoked by specifying the generic type arguments. But it still can cause unpleasant syntax, may not be possible to solve in all CLR languages, and is far more likely to have different semantics between the two methods with the same name.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG5008
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -310,7 +310,7 @@
   analyzer:
     message: The overload of '{0}' that takes '{1}' cannot be called when '{1}' is '{2}'
     category: Members
-  notes: FDG5008 reports an overload, declared on a generic type, that takes a type parameter of the type at a position where another overload of the same name takes a specific type, so that it cannot be called when the type argument is that type. Only top-level parameter types are compared. Type parameters with a constraint that the specific type cannot be shown to meet are not reported, nor are a generic method's own type parameters (the Barton annotation says the guideline applies less strongly to them). Removing or renaming an overload changes the public API, so there is no code fix.
+  notes: FDG5008 reports an overload, declared on a generic type, that takes a type parameter of the type at a position where another overload of the same name takes a specific type, so that it cannot be called when the type argument is that type. Only top-level parameter types are compared. Type parameters with a constraint that the specific type cannot be shown to meet are not reported, nor are a generic method's own type parameters (the Barton annotation says the guideline applies less strongly to them). There is no code fix; removing or renaming an overload changes the public API, so the fix is breaking.
 - id: FDG5009
   strength: CONSIDER
   text: using default parameters on the longest overload of a method.
@@ -336,7 +336,7 @@
 
         When looking at tools for tree shaking/linking, overloads with lots of default parameters can also be problematic. Let’s say the `Parse` method had different implementations to handle integer and hex number styles. A linker that sees this overload being used might end up keeping both the integer and hex support, even if it’s only ever called with the default integer argument. If this were instead an overload that didn’t take a style at all, a linker has a better chance of being able to strip away portions of the implementation that go unused.
       author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -372,7 +372,7 @@
            ReadOnlySpan<char> value,
            NumberStyles style = NumberStyles.Integer,
            IFormatProvider provider = null) { ... }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -390,7 +390,7 @@
   analyzer:
     message: Provide a simple overload of '{0}' without default parameters
     category: Members
-  notes: FDG5010 reports an externally visible method or constructor with two or more default parameters when no externally visible overload in the same type has no default parameters and at most as many parameters as its required ones. The types of the simple overload are not compared. The fix is a new overload with a body, so there is no code fix.
+  notes: FDG5010 reports an externally visible method or constructor with two or more default parameters when no externally visible overload in the same type has no default parameters and at most as many parameters as its required ones. The types of the simple overload are not compared. The fix is a new overload with a body, so there is no code fix; adding an overload changes no existing signature, so it is not breaking.
 - id: FDG5011
   strength: DO NOT
   text: use default parameters, for any parameter type other than `CancellationToken`, on interface methods or virtual methods on classes.
@@ -480,14 +480,14 @@
       text: |-
         - Changing the last required parameter of a method to be a default parameter is generally not a breaking change, but would cause the override to provide a different set of defaults.
         - The guidance for adding a new default parameter to an existing method (provided next) calls for removing the defaults from the current method overload, which can result in ambiguous method compile-time failures due to the overrides that have yet to be updated.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG5011
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -498,7 +498,7 @@
   analyzer:
     message: Do not give the parameter '{0}' of the virtual or interface member '{1}' a default value
     category: Members
-  notes: FDG5011 reports a parameter with a default value, other than one of type CancellationToken, on an externally visible interface member or on a virtual, abstract or override method of a class. The Template Method Pattern of the body (a nonvirtual public method with the defaults that calls a protected virtual method without them) and extension methods are not reported. Removing a default value breaks callers that omit the argument, so there is no code fix.
+  notes: 'FDG5011 reports a parameter with a default value, other than one of type CancellationToken, on an externally visible interface member or on a virtual, abstract or override method of a class. The Template Method Pattern of the body (a nonvirtual public method with the defaults that calls a protected virtual method without them) and extension methods are not reported. An override is reported only when the member it overrides is declared in source: the defaults of an override of a referenced member repeat ones the user cannot change. There is no code fix; removing a default value breaks callers that omit the argument, so the fix is breaking.'
 - id: FDG5012
   strength: DO NOT
   text: change the default value for a parameter once it has been publicly released.
@@ -522,7 +522,7 @@
            ReadOnlySpan<char> value,
            NumberStyles style = NumberStyles.Integer,
            IFormatProvider provider = null) { ... }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -545,14 +545,14 @@
   section: 5.1.1 Member Overloading
   anchor: sec5_1_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG5013
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -563,7 +563,7 @@
   analyzer:
     message: Another overload of '{0}' with compatible required parameters also uses default parameters
     category: Members
-  notes: 'FDG5013 reports the later of two overloads in the same type that both have default parameters when a call with only the required arguments of one matches the other: the required parameters of one are, by type and modifier, the leading parameters of the other, and the other needs no more of them. Compatibility through implicit conversions is not checked. Moving the defaults changes the public signatures, so there is no code fix.'
+  notes: 'FDG5013 reports the later of two overloads in the same type that both have default parameters when a call with only the required arguments of one matches the other: the required parameters of one are, by type and modifier, the leading parameters of the other, and the other needs no more of them. Compatibility through implicit conversions is not checked. There is no code fix; moving the defaults changes the public signatures, so the fix is breaking.'
 - id: FDG5014
   strength: AVOID
   text: having two overloads of the same method that both use default parameters.
@@ -571,7 +571,7 @@
   section: 5.1.1 Member Overloading
   anchor: sec5_1_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -628,14 +628,14 @@
          out int bytesWritten,
          bool isFinalBlock = true,
          int bufferSize = 512) { ... }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG5015
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -646,7 +646,7 @@
   analyzer:
     message: The parameter '{0}' has a different default value in another overload of '{1}'
     category: Members
-  notes: FDG5015 reports a parameter with a default value when a parameter with the same name and type in another overload in the same type has a different default value. Changing a default value changes what existing callers get (FDG5012), so there is no code fix.
+  notes: FDG5015 reports a parameter with a default value when a parameter with the same name and type in another overload in the same type has a different default value. There is no code fix; changing a default value changes the public signature and what existing callers get (FDG5012), so the fix is breaking.
 - id: FDG5016
   strength: DO
   text: move all default parameters to the new, longer overload when adding optional parameters to an existing method.
@@ -675,7 +675,7 @@
          out int bytesWritten,
          bool isFinalBlock = true,
          int bufferSize = 512) { ... }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -733,7 +733,7 @@
     - kind: annotation
       text: One common observation we have made in the API usability studies is that many developers assume that the reason members have been implemented explicitly is that they are not supposed to be used in common scenarios. Thus, they sometimes have a tendency to avoid using these members and spend time looking for some other way to accomplish their task.
       author: Steven Clarke
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -758,7 +758,7 @@
   body:
     - kind: paragraph
       text: This includes mainly members supporting framework infrastructure, such as data binding or serialization. For example, `ICollection<T>. IsReadOnly` is intended to be accessed mainly by the data-binding infrastructure through the `ICollection<T>` interface. It is almost never accessed directly when using types implementing the interface. Therefore, `List<T>` implements the member explicitly.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -790,7 +790,7 @@
           object IList.this[int index] { ... }
           ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -825,7 +825,7 @@
         }
     - kind: paragraph
       text: Such member renaming should be done extremely sparingly. In most cases, the added confusion is a bigger problem than the suboptimal name of the interface member.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -853,7 +853,7 @@
     - kind: annotation
       text: Generally, objects that have security issues should expose the fewest possible interfaces and inherit as little as possible. Get your code reuse by encapsulation rather than by inheritance, and seal as much as you can. My biggest dissent with the guidelines is that they do not recommend sealing as often as I believe they should. Where there are security issues, be more careful and consider sealing more aggressively, inheriting less aggressively, and using explicit (sealed) implementations of those interfaces you need to offer.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -896,7 +896,7 @@
     - kind: annotation
       text: Classes designed to be subclassed in normal use need extra care. The times when the `Core` functions are called is part of the contract, so document it well and try not to change it. Access to protected members might allow partially trusted code to do bad things to the internal state. You must code with the expectation that the subclass will be hostile.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -912,7 +912,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1033 reports an explicit interface implementation in an unsealed externally visible type when the type has no externally visible method of the same name for derived classes. It cannot tell whether the functionality is meant to be specialized, and in a probe with SDK 10.0.402 it did not report explicit implementations with an empty body. Its fix seals the type or changes the members, which changes the public API, so it is breaking.
+  notes: CA1033 reports an explicit interface implementation in an unsealed externally visible type when the type has no externally visible method of the same name for derived classes. It cannot tell whether the functionality is meant to be specialized. It accepts only a derived-visible member with the same name; it also reports an explicit implementation that delegates to a protected virtual XxxCore member, which the body allows ("the same name or affixing Core"), and such reports are not violations. In a probe with SDK 10.0.402 it did not report explicit implementations with an empty body. Its fix seals the type or changes the members, which changes the public API, so it is breaking.
 - id: FDG5023
   strength: CONSIDER
   text: using a property if the member represents a logical attribute of the type.
@@ -922,7 +922,7 @@
   body:
     - kind: paragraph
       text: For example, `Button.Color` is a property because color is an attribute of a button.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -958,14 +958,14 @@
           }
           private string name;
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1024
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: suggestion
     application: suggestion
@@ -974,7 +974,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'CA1024 reports an externally visible parameterless method whose name starts with Get and that returns a value. It does not see whether the value is stored in memory; a Get method that computes, allocates or has side effects should stay a method (FDG5025). CA1024 has no code fix, and turning a method into a property changes the public API. A suggestion: in the noise samples 1 of 5 reports was a method that gathers system information, which FDG5025 keeps a method.'
+  notes: 'CA1024 reports an externally visible parameterless method whose name starts with Get and that returns a value. It does not see whether the value is stored in memory; a Get method that computes, allocates or has side effects should stay a method (FDG5025). CA1024 has no code fix, and turning a method into a property changes the public API, so the fix is breaking. A suggestion: in the noise samples 1 of 5 reports was a method that computes its value and allocates on each call, which FDG5025 keeps a method.'
 - id: FDG5025
   strength: DO
   text: 'use a method, rather than a property, in the following situations:'
@@ -1036,14 +1036,14 @@
     - kind: annotation
       text: 'I hope you’ve read this far—you really must understand that the preceding guideline is designed to avoid some pretty big problems. I’d encourage you to remember this shorthand: Use properties for simple access to simple data with a simple computation. Don’t stray from that pattern.'
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1819
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1052,7 +1052,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1819 reports an externally visible property that returns an array, the last case of the list. The other cases (slow operations, conversions, results that change between calls, observable side effects, copies of internal state) are behavior and are not checked. CA1819 has no code fix, and turning a property into a method changes the public API.
+  notes: CA1819 reports an externally visible property that returns an array, the last case of the list. The other cases (slow operations, conversions, results that change between calls, observable side effects, copies of internal state) are behavior and are not checked. CA1819 has no code fix, and turning a property into a method changes the public API, so the fix is breaking.
 - id: FDG5026
   strength: DO
   text: create get-only properties if the caller should not be able to change the value of the property.
@@ -1062,7 +1062,7 @@
   body:
     - kind: paragraph
       text: If the type of the property is a mutable reference type, the property value can be changed even if the property is get-only.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1089,7 +1089,7 @@
       text: For example, do not use properties with a public setter and a protected getter.
     - kind: paragraph
       text: If the property getter cannot be provided, implement the functionality as a method instead. Consider starting the method name with `Set` and follow with what you would have named the property. For example, `AppDomain` has a method called `SetCachePath` instead of having a set-only property called `CachePath`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1105,7 +1105,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1044 reports an externally visible property that is set-only or whose getter is less accessible than its setter, which is the whole rule. CA1044 has no code fix.
+  notes: CA1044 reports an externally visible property that is set-only or whose getter is less accessible than its setter, which is the whole rule. CA1044 has no code fix. Adding a getter is enough and changes no existing signature, so the fix is not breaking.
 - id: FDG5028
   strength: DO
   text: provide sensible default values for all properties, ensuring that the defaults do not result in a security hole or terribly inefficient code.
@@ -1113,7 +1113,7 @@
   section: 5.2 Property Design
   anchor: sec5_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1147,7 +1147,7 @@
     - kind: annotation
       text: One place where order-dependent property setting comes up is when assigning property A changes property B. You generally want to avoid doing that, since the confusion it costs is probably worse than the potential error state it was avoiding.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1170,7 +1170,7 @@
   section: 5.2 Property Design
   anchor: sec5_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1204,7 +1204,7 @@
     - kind: annotation
       text: Another pattern to avoid is blocking the thread inside of a property, because of either I/O or some synchronization operation. This is the extreme example of “doing too much work” inside of a property. In the worst case (deadlock), the property may never actually return to the caller. If the property accesses shared state, it may be necessary to acquire a lock to access it safely, but anything more complicated (like waiting on a `WaitHandle`) is an indication that a method is a better design choice.
       author: Joe Duffy
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1213,14 +1213,14 @@
     coverage: partial
   autofix: no
   severity:
-    library: suggestion
-    application: suggestion
+    library: warning
+    application: warning
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'CA1065 reports an exception created in a property getter, except InvalidOperationException, NotSupportedException and their subclasses, and, in an indexer getter, also ArgumentException and KeyNotFoundException, which the indexer exception of the body allows. The exceptions it allows are still to be avoided, and exceptions thrown by called methods are not seen. CA1065 also reports Equals, GetHashCode, ToString, operators, finalizers, Dispose and static constructors (FDG5054). CA1065 has no code fix. A suggestion: the one report in the noise samples was a Dispose method, outside this rule and FDG5054.'
+  notes: CA1065 reports an exception created in a property getter, except InvalidOperationException, NotSupportedException and their subclasses, and, in an indexer getter, also ArgumentException and KeyNotFoundException, which the indexer exception of the body allows. The exceptions it allows are still to be avoided, and exceptions thrown by called methods are not seen. Static constructors are FDG5054. CA1065 has no code fix. CA1065 also reports Equals, GetHashCode, ToString, operators, finalizers and Dispose, which sections 8.9 and 9.4.1 cover; the one noise-sample report (Dispose) belongs there.
 - id: FDG5032
   strength: CONSIDER
   text: using indexers to provide access to data stored in an internal array.
@@ -1228,7 +1228,7 @@
   section: 5.2.1 Indexed Property Design
   anchor: sec5_2_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1251,7 +1251,7 @@
   section: 5.2.1 Indexed Property Design
   anchor: sec5_2_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1276,14 +1276,14 @@
   body:
     - kind: paragraph
       text: If the design requires multiple parameters, reconsider whether the property really represents an accessor to a logical collection. If it does not, use methods instead. Consider starting the method name with `Get` or `Set`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG5034
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1294,7 +1294,7 @@
   analyzer:
     message: Use methods instead of the indexer of '{0}' with more than one parameter
     category: Members
-  notes: FDG5034 reports an externally visible indexer with more than one parameter. Indexers that override or implement another member are not reported. The body asks to reconsider whether the indexer really is an accessor to a logical collection, which symbols do not show; a report on such a collection (a matrix, for example) is not a violation. Replacing an indexer with methods changes the public API, so there is no code fix.
+  notes: FDG5034 reports an externally visible indexer with more than one parameter. Indexers that override or implement another member are not reported. The body asks to reconsider whether the indexer really is an accessor to a logical collection, which symbols do not show; a report on such a collection (a matrix, for example) is not a violation. There is no code fix; replacing an indexer with methods changes the public API, so the fix is breaking.
 - id: FDG5035
   strength: AVOID
   text: indexers with parameter types other than `System.Int32`, `System.Int64`, `System.String`, `System.Range`, `System.Index`, or an enum, except on dictionary-like types.
@@ -1304,14 +1304,14 @@
   body:
     - kind: paragraph
       text: If the design requires other types of parameters, strongly reevaluate whether the API really represents an accessor to a logical collection. If it does not, use a method. Consider starting the method name with `Get` or `Set`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1043
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1320,7 +1320,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1043 reports an externally visible indexer with a parameter type other than Int32, Int64, String or Object; in a probe with SDK 10.0.402 it also allowed Int16, Index, Range, enums and type parameters. It does not know dictionary-like types, which the text exempts, so a report on one is not a violation. It allows Object and Int16, which the text does not. CA1043 has no code fix.
+  notes: CA1043 reports an externally visible indexer with a parameter type other than Int32, Int64, String or Object; in a probe with SDK 10.0.402 it also allowed Int16, Index, Range, enums and type parameters. It does not know dictionary-like types, which the text exempts, so a report on one is not a violation. It allows Object and Int16, which the text does not. CA1043 has no code fix, and changing the parameter type of an indexer changes the public API, so the fix is breaking.
 - id: FDG5036
   strength: DO
   text: use the name `Item` for indexed properties unless there is an obviously better name (e.g., see the `Chars` property on `System.String`).
@@ -1339,7 +1339,7 @@
          }
          ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1373,7 +1373,7 @@
           public MemberInfo GetMember(string memberName, Boolean ignoreCase){
         ... }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1398,7 +1398,7 @@
   body:
     - kind: paragraph
       text: This is enforced by the C# compiler.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1423,7 +1423,7 @@
   body:
     - kind: paragraph
       text: This is enforced by the C# compiler.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1474,14 +1474,14 @@
     - kind: annotation
       text: The behavior of the `System.Range` indexer for arrays was a subject of long debate. Making it very easy to produce copies of potentially large arrays seems to be a performance trap. In the end, the copying behavior was chosen for consistency. The future will tell whether it was a wise choice.
       author: Jan Kotas
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG5040
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1492,7 +1492,7 @@
   analyzer:
     message: Return '{0}' from '{1}'
     category: Members
-  notes: FDG5040 reports an externally visible indexer whose only parameter is a System.Range, and an externally visible Slice(int, int) method of a type that has an int Length or Count property and no Range indexer (C# then uses Slice as the range indexer), when it returns a type other than the declaring type. Members that override or implement another member are not reported. Changing the return type changes the public API, so there is no code fix.
+  notes: FDG5040 reports an externally visible indexer whose only parameter is a System.Range, and an externally visible Slice(int, int) method of a type that has an int Length or Count property and no Range indexer (C# then uses Slice as the range indexer), when it returns a type other than the declaring type. Members that override or implement another member are not reported. There is no code fix; changing the return type changes the public API, so the fix is breaking.
 - id: FDG5041
   strength: CONSIDER
   text: raising change notification events when property values in high-level APIs (usually designer components) are modified.
@@ -1507,7 +1507,7 @@
     - kind: annotation
       text: Because `List<T>` doesn’t implement any of the notification APIs for data binding, and because I like data binding, I find myself using `ObservableCollection<T>` instead, which implements `INotifyCollectionChanged`.
       author: Chris Sells
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1532,7 +1532,7 @@
   body:
     - kind: paragraph
       text: If a property value changes via some external force (in a way other than by calling methods on the object), raising events indicates to the developer that the value is changing or has changed. A good example is the `Text` property of a text box control. When the user types text in a `TextBox`, the property value automatically changes.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1565,7 +1565,7 @@
 
         At the same time, I think it’s a good practice to have default constructors that provide reasonable defaults for these required dependencies.
       author: Phil Haack
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1593,7 +1593,7 @@
     - kind: annotation
       text: Factory methods can also afford significantly more flexibility in the future, as they enable returning a type derived from the return type rather than forcing it to be exactly the return type. An example near and dear to me is `Task`. With 20/20 hindsight, if we could do it over, we would not have added constructors that take a delegate to `System.Threading.Tasks.Task`. In doing so, we’ve made it extremely difficult for ourselves to optimize `Task` for scenarios that don’t require a delegate, such as when `Task` is used as the return type of an `async` method. If we didn’t have such constructors and only had factories (e.g. `Task.Run`), we could have put the delegate onto a derived type rather than onto the base type, and reduced the size of the `Task` object for all other cases where a delegate isn’t needed.
       author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1631,7 +1631,7 @@
 
         //3
         var applicationLog = new EventLog("Application", "BillingServer");
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1667,14 +1667,14 @@
             set { ... }
           }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG5046
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1685,7 +1685,7 @@
   analyzer:
     message: Name the parameter '{0}' like the property '{1}' that it sets
     category: Members
-  notes: FDG5046 reports a parameter of an externally visible constructor that is used only to set a property of the instance, through `P = p;`, `this.P = p;` or `P = p ?? throw ...;` in the constructor or, for a primary constructor, through a property initializer `= p`, when the names differ in more than casing. Uses inside nameof do not count. Parameters that set a field are not checked. Renaming a public parameter breaks callers that use named arguments, so there is no code fix.
+  notes: FDG5046 reports a parameter of an externally visible constructor that is used only to set a property of the instance, through `P = p;`, `this.P = p;` or `P = p ?? throw ...;` in the constructor or, for a primary constructor, through a property initializer `= p`, when the names differ in more than casing. Uses inside nameof do not count. Parameters that set a field are not checked. There is no code fix; renaming a public parameter breaks callers that use named arguments, so the fix is breaking.
 - id: FDG5047
   strength: CONSIDER
   text: adding a property for each parameter in a constructor.
@@ -1699,7 +1699,7 @@
       text: Constructor parameters typed as mutable reference types may not be suitable for exposing as properties, particularly when your type is stateful and modifying that parameter can invalidate your state. You should also be mindful of the guidance for when to use a method instead of a property (see section 5.1.3).
     - kind: paragraph
       text: You may have other reasons, such as data hiding, for not exposing constructor parameters via properties. Even so, you should generally start from an expectation of adding the properties and then justify why doing so is not appropriate in context.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1724,7 +1724,7 @@
   body:
     - kind: paragraph
       text: Constructors should not do much work other than capture the constructor parameters. The cost of any other processing should be delayed until required.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1774,7 +1774,7 @@
     - kind: annotation
       text: A related constructor anti-pattern can lead to the same problem that Chris describes. If a constructor prematurely shares the `this` reference, the object may be accessible even if it has thrown an exception before it was fully constructed. This could happen by setting a field on an object passed in as an argument, or via a static variable, for example. Avoid doing this at all costs.
       author: Joe Duffy
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1828,7 +1828,7 @@
       text: This will break code relying on the default constructor, and such a problem is unlikely to be caught in a code review. Therefore, the best practice is to always specify the public default constructor explicitly.
     - kind: paragraph
       text: Note that this does not apply to structs. Structs implicitly get default constructors even if they have a parameterized constructor defined.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1868,7 +1868,7 @@
     - kind: annotation
       text: The default constructors on structs were enabled for C# 6 previews. We kept discovering cases where parameterless struct constructors caused inconsistent behaviors and decided to pull them out. It is not clear whether they will ever come back.
       author: Jan Kotas
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1929,7 +1929,7 @@
 
         Either behavior is appropriate for some programs and inappropriate for others. Both behaviors can be logically defended. For the CLR, the decision is ultimately based on our desire to support extremely fast object creation.
       author: Christopher Brumme
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1945,7 +1945,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA2214 reports a call to a virtual or abstract method of the type from its constructor; in a probe with SDK 10.0.402 it did not report getting or setting a virtual property. The body accepts calls whose risks were analyzed and that are documented for overriders, which CA2214 cannot see; such reports are not violations. CA2214 has no code fix.
+  notes: CA2214 reports a call to a virtual or abstract method of the type from its constructor; in a probe with SDK 10.0.402 it did not report getting or setting a virtual property. The body accepts calls whose risks were analyzed and that are documented for overriders, which CA2214 cannot see; such reports are not violations. CA2214 has no code fix, and moving the call changes no public signature.
 - id: FDG5053
   strength: DO
   text: make static constructors private.
@@ -1957,7 +1957,7 @@
       text: A static constructor, also called a class constructor, is used to initialize a type. The CLR calls the static constructor before the first instance of the type is created or any static members of that type are called. The user has no control over when the static constructor is called. If a static constructor is not private, it can be called by code other than the CLR. Depending on the operations performed in the constructor, this can cause unexpected behavior.
     - kind: paragraph
       text: The C# compiler forces static constructors to be private.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2010,7 +2010,7 @@
         }
         ```
       author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2019,14 +2019,14 @@
     coverage: partial
   autofix: no
   severity:
-    library: suggestion
-    application: suggestion
+    library: warning
+    application: warning
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'CA1065 reports an exception created in a static constructor. Exceptions from methods the constructor calls (the Morrison annotation) are not seen. The Brumme annotation allows throwing when the type must never again be used in the application domain; such reports are not violations. CA1065 also reports property getters (FDG5031) and other locations. CA1065 has no code fix. A suggestion, as for FDG5031: the one report in the noise samples was a Dispose method.'
+  notes: CA1065 reports an exception created in a static constructor. Exceptions from methods the constructor calls (the Morrison annotation) are not seen. The Brumme annotation allows throwing when the type must never again be used in the application domain; such reports are not violations. Property getters are FDG5031. CA1065 has no code fix. CA1065 also reports Equals, GetHashCode, ToString, operators, finalizers and Dispose, which sections 8.9 and 9.4.1 cover; the one noise-sample report (Dispose) belongs there.
 - id: FDG5055
   strength: CONSIDER
   text: initializing static fields inline rather than explicitly using static constructors, because the runtime is able to optimize the performance of types that don’t have an explicitly defined static constructor.
@@ -2063,7 +2063,7 @@
     - kind: annotation
       text: The nonpredictable timing of static fields initialized inline was an endless source of subtle compatibility issues. .NET Core runtimes and recent versions of .NET Framework no longer take advantage of the loose guarantees, but instead execute the static constructor precisely on the first static field access. Defining fields inline still offers a performance advantage because the static constructor is triggered by the static field access only—and not by access to other members—but it comes without the warning about nonpredictable timing now.
       author: Jan Kotas
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2080,7 +2080,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1810 (reference types) and CA2207 (value types) report an explicit static constructor that initializes static fields. Moving the initialization inline changes when the fields are initialized (the Brumme and Kotas annotations), so neither has a code fix.
+  notes: CA1810 (reference types) and CA2207 (value types) report an explicit static constructor that initializes static fields. Moving the initialization inline changes when the fields are initialized (the Brumme and Kotas annotations), so neither has a code fix; the change is to behavior, not to a public signature.
 - id: FDG5056
   strength: DO
   text: use the term “raise” for events rather than “fire” or “trigger.”

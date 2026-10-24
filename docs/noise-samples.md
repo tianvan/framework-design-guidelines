@@ -237,7 +237,7 @@ the new analyzers are counted. Every report was checked, except FDG4032 (37; 20 
 
 Package 0.1.0 with the mappings of sections 5.1 to 5.3 and the new member design analyzers, enabled by the profile
 globalconfigs (library for the open-source samples, application for the internal ones). Only the newly mapped SDK
-diagnostics and the new analyzers are counted. Every report was checked, except FDG5003 (111; 20 checked across all
+diagnostics and the new analyzers are counted. Every report was checked, except FDG5003 (152; 20 checked across all
 five samples) and FDG5010 (32; 20 checked).
 
 | Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
@@ -246,13 +246,13 @@ five samples) and FDG5010 (32; 20 checked).
 | CA1033 | FDG5022 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
 | CA1043 | FDG5035 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
 | CA1044 | FDG5027 | 0 | 0 | 0 | 0 | 6 | 6 | 0 | 6 | None needed. |
-| CA1065 | FDG5031, FDG5054 | 0 | 0 | 0 | 1 | 0 | 1 | 1 | 0 | FDG5031 and FDG5054 lowered to suggestion. |
+| CA1065 | FDG5031, FDG5054 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | None needed (see notes). |
 | CA1810 | FDG5055 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (already a suggestion). |
 | CA1819 | FDG5025 | 0 | 0 | 0 | 0 | 6 | 6 | 0 | 6 | None needed. |
 | CA2207 | FDG5055 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (already a suggestion). |
 | CA2214 | FDG5052 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
-| FDG5003 | FDG5003 | 81 | 10 | 8 | 6 | 6 | 20 | 0 | 20 | Narrowed before this run (see notes). |
-| FDG5004 | FDG5004 | 0 | 0 | 1 | 0 | 1 | 2 | 0 | 2 | Narrowed before this run (see notes). |
+| FDG5003 | FDG5003 | 115 | 16 | 9 | 6 | 6 | 20 | 0 | 20 | Narrowed before this run (see notes). |
+| FDG5004 | FDG5004 | 0 | 0 | 2 | 0 | 1 | 3 | 0 | 3 | None needed. |
 | FDG5005 | FDG5005 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
 | FDG5008 | FDG5008 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1 | None needed. |
 | FDG5010 | FDG5010 | 12 | 0 | 0 | 0 | 20 | 20 | 0 | 20 | None needed. |
@@ -267,21 +267,22 @@ five samples) and FDG5010 (32; 20 checked).
 
 - **polly's configuration.** polly's own globalconfig files set CA1024, CA1043, CA1810, CA1819 and CA2207 to `none`
   and take precedence over the package, so polly's zeros for those diagnostics measure polly's configuration.
-- **FDG5003, first run.** The first run reported 177 parameters. Three groups were not violations of the rule as the
-  book states it elsewhere, so the analyzer was narrowed and the run repeated: `CancellationToken` parameters kept last
-  (section 9.2 asks for that; 18 reports), overloads that differ in their number of type parameters, where a type
-  argument takes the place of a parameter (41 reports, such as `Add(Func<Exception> generator, int weight)` beside
-  `Add<TException>(int weight)`), and exception constructors, whose common forms section 7.3 fixes (7 reports).
+- **FDG5003, narrowing.** A first run reported 177 parameters. Two groups follow rules the book states elsewhere and
+  are left out: `CancellationToken` parameters kept last (section 9.2.2; 18 reports), and pairs of exception
+  constructors where either starts with `string message`, whose common forms section 7.4 fixes (7 reports). An
+  intermediate run also left out overloads with different numbers of type parameters; the book allows no such
+  exception, so that was undone and those reports (such as `Add(Func<Exception> generator, int weight)` beside
+  `Add<TException>(int weight)`) are counted again.
 - **FDG5003.** The 20 checked reports are all true: an overload that inserts a parameter (an exception, a level, a
-  type, a context) in front of a parameter that the shorter overload has first. In serilog this is the shape of every
-  logging method (`Write(level, messageTemplate)` beside `Write(level, exception, messageTemplate)`, 70 of its 81
-  reports); internal-a has the same shape in six extension methods of one static class, and internal-b in three static
-  methods of parameter-builder classes and three constructors of one class. Reordering changes public signatures, so
-  on API that already exists the reports do not block.
-- **FDG5004, first run.** The first run also reported a public `WriteEnd()` that calls a protected virtual
-  `WriteEnd(token)`. Callers cannot call the protected overload, so the analyzer now compares only overloads with the
-  same accessibility. The two remaining reports are a public virtual method beside a longer public virtual overload,
-  and a virtual parameterless method beside a virtual generic overload that calls it.
+  type, a context, a callback) in front of a parameter that the shorter overload has first. In serilog this is the shape of every logging method (`Write(level, messageTemplate)` beside
+  `Write(level, exception, messageTemplate)`). internal-a has the same shape in six extension methods of one static
+  class, and internal-b in three static methods of two helper classes and three constructors of one class.
+  Reordering changes public signatures, so FDG5003 is `autofix: breaking`: on API that already exists the reports do
+  not block, and new API is held to the rule.
+- **FDG5004.** Three reports, all true: a public virtual method beside a longer public virtual overload, a public
+  virtual parameterless method beside a protected virtual overload that it calls (overriders see both, so they get
+  two virtual entry points; the pattern of the body makes the shorter one nonvirtual), and a virtual parameterless
+  method beside a virtual generic overload that calls it.
 - **FDG5008.** newtonsoft-json's `JsonConverter<T>` declares `WriteJson(writer, T? value, serializer)` beside
   `WriteJson(writer, object? value, serializer)`; when `T` is `object` the first cannot be called. True.
 - **FDG5010.** The 20 checked reports (all 12 of serilog, 8 of internal-b) are methods and constructors with two to
@@ -291,13 +292,13 @@ five samples) and FDG5010 (32; 20 checked).
 - **FDG5011.** Default values on interface members, on abstract methods and on the overrides that repeat them, and
   one on a virtual generic method. All true.
 - **FDG5046.** polly's `resilienceEvent` sets `Event`; internal-b has constructor parameters with short or prefixed
-  names (`s`, an index abbreviation, a leading underscore, a different word) that only set a property. All true.
+  names (`s`, an abbreviation, a leading underscore, a different word) that only set a property. All true.
 - **CA1024.** Five parameterless `Get` methods in internal-b. Four return a constant or map a field through a
-  `switch`, which a property may do. One gathers system information and allocates, which FDG5025 keeps a method
+  `switch`, which a property may do. One computes its value and allocates on each call, which FDG5025 keeps a method
   (false positive). 1 of 5 is above 1 in 20, so FDG5024 is now a suggestion.
-- **CA1065.** The one report is a `Dispose` method that throws `InvalidOperationException` when contexts are disposed
-  out of order. Neither FDG5031 (property getters) nor FDG5054 (static constructors) covers `Dispose`, so for these
-  rules it is a false positive; both are now suggestions.
+- **CA1065.** The one report is a `Dispose` method that throws `InvalidOperationException` when disposed out of
+  order. It is outside FDG5031 (property getters) and FDG5054 (static constructors), but it is a true warning under
+  section 9.4.1, which asks not to throw from `Dispose` except in critical situations. Both rules stay warnings.
 - **CA1044 and CA1819.** Set-only compatibility properties of one class and array-typed auto-properties of model
   classes in internal-b. All true.
 - **No reports.** The other diagnostics report nothing on these samples; their tests cover the positive cases.

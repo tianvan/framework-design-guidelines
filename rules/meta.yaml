@@ -143,7 +143,7 @@ chapters:
         note: "The definition of member overloading and its signature rules, the WriteLine example, the Rector annotation and the DateTime example are rationale for FDG5001 to FDG5016; operator overloading is covered in section 5.7."
       - section: "5.1.2"
         disposition: background
-        note: "The definition of explicit interface member implementation and its example are background for FDG5017 to FDG5022."
+        note: "The definition of explicit interface member implementation, its example and the Hejlsberg annotation are background for FDG5017 to FDG5022."
       - section: "5.1.3"
         disposition: rationale
         note: "The narrative on the two API styles, properties and methods, and when each reads better is rationale for FDG5023 to FDG5025."
@@ -152,10 +152,10 @@ chapters:
         note: "The section introduction (properties are smart fields, with the syntax of fields and the flexibility of methods) is background for FDG5026 to FDG5031."
       - section: "5.2.1"
         disposition: background
-        note: "The definition of an indexer and the String example are background for FDG5032 to FDG5040."
+        note: "The definition of an indexer, the String example, the sentence that indexers should be used only in APIs that provide access to items in a logical collection, and the Mariani annotation are background for FDG5032 to FDG5040; FDG5034 and FDG5035 rely on the logical-collection sentence."
       - section: "5.2.2"
         disposition: background
-        note: "The TextChanged example of a property change notification event is background for FDG5041 and FDG5042."
+        note: "The TextChanged example of a property change notification event and the Mariani and Sells annotations are background for FDG5041 and FDG5042."
       - section: "5.3"
         disposition: background
         note: "The section introduction (type constructors and instance constructors, the Customer example, default constructors, and constructors as the most natural way to create instances) is background for FDG5043 to FDG5052."

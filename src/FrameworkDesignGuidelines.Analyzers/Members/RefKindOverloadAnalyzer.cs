@@ -25,7 +25,7 @@ public sealed class RefKindOverloadAnalyzer : DiagnosticAnalyzer
 
     private static void AnalyzeType(SymbolAnalysisContext context)
     {
-        foreach (ImmutableArray<IMethodSymbol> family in Overloads.Families((INamedTypeSymbol)context.Symbol))
+        foreach (OverloadFamily family in Overloads.Families((INamedTypeSymbol)context.Symbol))
         {
             var reported = new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
             for (int i = 0; i < family.Length; i++)
@@ -46,9 +46,10 @@ public sealed class RefKindOverloadAnalyzer : DiagnosticAnalyzer
                             continue;
                         }
 
-                        IParameterSymbol modified = second.RefKind != RefKind.None ? second : first;
+                        bool secondModified = second.RefKind != RefKind.None;
+                        IParameterSymbol modified = secondModified ? second : first;
                         var method = (IMethodSymbol)modified.ContainingSymbol;
-                        if (!NamingSymbols.IsInherited(method) && reported.Add(modified)
+                        if (!family.IsInherited(secondModified ? j : i) && reported.Add(modified)
                             && NamingSymbols.SourceLocation(modified) is { } location)
                         {
                             context.ReportDiagnostic(Diagnostic.Create(

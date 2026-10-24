@@ -33,7 +33,7 @@ public sealed class GenericOverloadAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        foreach (ImmutableArray<IMethodSymbol> family in Overloads.Families(type))
+        foreach (OverloadFamily family in Overloads.Families(type))
         {
             var reported = new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
             for (int i = 0; i < family.Length; i++)
@@ -48,7 +48,10 @@ public sealed class GenericOverloadAnalyzer : DiagnosticAnalyzer
                     foreach ((IParameterSymbol parameter, ITypeSymbol specific) in collision)
                     {
                         var method = (IMethodSymbol)parameter.ContainingSymbol;
-                        if (!NamingSymbols.IsInherited(method) && reported.Add(parameter)
+                        bool inherited = SymbolEqualityComparer.Default.Equals(method, family[i])
+                            ? family.IsInherited(i)
+                            : family.IsInherited(j);
+                        if (!inherited && reported.Add(parameter)
                             && NamingSymbols.SourceLocation(parameter) is { } location)
                         {
                             context.ReportDiagnostic(Diagnostic.Create(

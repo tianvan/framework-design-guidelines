@@ -7,7 +7,7 @@ namespace FrameworkDesignGuidelines.Analyzers.Tests.Members;
 public sealed class VirtualOverloadTests
 {
     [Fact]
-    public Task Virtual_shorter_overload_is_reported()
+    public Task Virtual_shorter_overload_is_reported_whatever_the_accessibility_of_either()
     {
         return Verifier.VerifyAsync(
             """
@@ -38,6 +38,26 @@ public sealed class VirtualOverloadTests
 
                 public abstract int Read(byte[] buffer, int offset, int count);
             }
+
+            public class TextWriter
+            {
+                public virtual void {|FDG5004:WriteEnd|}()
+                {
+                    WriteEnd(0);
+                }
+
+                protected virtual void WriteEnd(int token)
+                {
+                }
+
+                protected internal virtual void {|FDG5004:Flush|}()
+                {
+                }
+
+                protected virtual void Flush(bool all)
+                {
+                }
+            }
             """);
     }
 
@@ -61,7 +81,7 @@ public sealed class VirtualOverloadTests
     }
 
     [Fact]
-    public Task Longest_virtual_overload_other_accessibility_and_unrelated_parameter_lists_are_not_reported()
+    public Task Longest_virtual_overload_and_unrelated_parameter_lists_are_not_reported()
     {
         return Verifier.VerifyAsync(
             """
@@ -85,14 +105,6 @@ public sealed class VirtualOverloadTests
 
             public class TextWriter
             {
-                public virtual void WriteEnd()
-                {
-                }
-
-                protected virtual void WriteEnd(int token)
-                {
-                }
-
                 public virtual void Write(int value)
                 {
                 }

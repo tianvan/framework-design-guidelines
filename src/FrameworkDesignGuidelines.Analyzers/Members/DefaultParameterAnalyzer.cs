@@ -9,7 +9,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Members;
 /// The default parameter rules of section 5.1.1, over the externally visible methods and constructors of a type:
 /// FDG5010, a member with two or more default parameters has an overload without defaults and with no more
 /// parameters than its required ones; FDG5011, interface members and virtual, abstract or override methods give no
-/// parameter a default value except a <c>CancellationToken</c>; FDG5013, two overloads with defaults do not have
+/// parameter a default value except a <c>CancellationToken</c>, and an override is reported only when the member it
+/// overrides is declared in source; FDG5013, two overloads with defaults do not have
 /// compatible required parameters; FDG5015, a parameter has the same default value in every overload.
 /// Members that override or implement another one are reported by FDG5011 only.
 /// </summary>
@@ -30,12 +31,15 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeType(SymbolAnalysisContext context)
     {
         var type = (INamedTypeSymbol)context.Symbol;
-        foreach (ImmutableArray<IMethodSymbol> family in Overloads.Families(type))
+        foreach (OverloadFamily family in Overloads.Families(type))
         {
-            foreach (IMethodSymbol method in family)
+            for (int i = 0; i < family.Length; i++)
             {
-                AnalyzeVirtualDefaults(context, type, method);
-                AnalyzeSimpleOverload(context, family, method);
+                AnalyzeVirtualDefaults(context, type, family[i]);
+                if (!family.IsInherited(i))
+                {
+                    AnalyzeSimpleOverload(context, family.Methods, family[i]);
+                }
             }
 
             var reportedMethods = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
@@ -44,13 +48,13 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
             {
                 for (int j = i + 1; j < family.Length; j++)
                 {
-                    if (Overloads.Target(family[i], family[j]) is not { } target)
+                    if (family.Target(i, j) is not { } index)
                     {
                         continue;
                     }
 
-                    IMethodSymbol other =
-                        SymbolEqualityComparer.Default.Equals(target, family[i]) ? family[j] : family[i];
+                    IMethodSymbol target = family[index];
+                    IMethodSymbol other = index == i ? family[j] : family[i];
                     AnalyzeCompatibleDefaults(context, target, other, reportedMethods);
                     AnalyzeDifferentDefaults(context, target, other, reportedParameters);
                 }
@@ -67,7 +71,7 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
             TypeKind.Class => method.IsVirtual || method.IsAbstract || method.IsOverride,
             _ => false,
         };
-        if (!isVirtual)
+        if (!isVirtual || (method.IsOverride && !IsRootInSource(method)))
         {
             return;
         }
@@ -86,7 +90,7 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeSimpleOverload(
         SymbolAnalysisContext context, ImmutableArray<IMethodSymbol> family, IMethodSymbol method)
     {
-        if (method.Parameters.Count(parameter => parameter.IsOptional) < 2 || NamingSymbols.IsInherited(method))
+        if (method.Parameters.Count(parameter => parameter.IsOptional) < 2)
         {
             return;
         }
@@ -129,6 +133,22 @@ public sealed class DefaultParameterAnalyzer : DiagnosticAnalyzer
                     FdgDescriptors.FDG5015, location, parameter.Name, Overloads.DisplayName(target)));
             }
         }
+    }
+
+    /// <summary>
+    /// True when the method that <paramref name="method"/> overrides, followed back to the first declaration, is in
+    /// source. The defaults of an override of a referenced member repeat the referenced ones, which the user cannot
+    /// change, and removing them would break callers that leave the argument out.
+    /// </summary>
+    private static bool IsRootInSource(IMethodSymbol method)
+    {
+        IMethodSymbol root = method;
+        while (root.OverriddenMethod is { } overridden)
+        {
+            root = overridden;
+        }
+
+        return root.Locations.Any(location => location.IsInSource);
     }
 
     /// <summary>
