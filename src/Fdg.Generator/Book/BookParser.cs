@@ -152,7 +152,7 @@ public static class BookParser
         private void VisitFigure(IElement figure)
         {
             IElement? figcaption = figure.QuerySelector("figcaption");
-            string? caption = figcaption is null ? null : BlockRenderer.Inline(figcaption);
+            string? caption = figcaption is null ? null : BlockRenderer.Caption(figcaption);
             foreach (IElement child in figure.Children)
             {
                 if (child.LocalName == "figcaption")

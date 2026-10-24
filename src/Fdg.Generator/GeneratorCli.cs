@@ -6,7 +6,7 @@ public static class GeneratorCli
 {
     private const string Usage =
         "Usage:\n" +
-        "  fdg-gen extract --book <OEBPS dir> --chapter <token> [--rules <dir>]\n" +
+        "  fdg-gen extract --book <OEBPS dir> --chapter <token> [--rules <dir>] [--update]\n" +
         "  fdg-gen verify-source --book <OEBPS dir> [--rules <dir>]\n" +
         "  fdg-gen check [--book <OEBPS dir>] [--rules <dir>] [--sdk <SDK dir>]\n" +
         "  fdg-gen generate [--rules <dir>] [--out <repository root>] [--version <version>]";

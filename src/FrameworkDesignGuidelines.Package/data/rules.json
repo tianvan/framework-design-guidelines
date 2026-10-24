@@ -117,7 +117,7 @@
     {
       "id": "FDG3009",
       "strength": "DO",
-      "text": "favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the X-axis).",
+      "text": "favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the *X*-axis).",
       "section": "3.2.1 Word Choice",
       "diagnostics": [],
       "autofix": "no",
@@ -242,7 +242,7 @@
     {
       "id": "FDG3018",
       "strength": "DO",
-      "text": "use a common name, such as value or item, rather than repeating the type name, in the rare cases when an identifier has no semantic meaning and the type of the parameter is not important.",
+      "text": "use a common name, such as *value* or *item*, rather than repeating the type name, in the rare cases when an identifier has no semantic meaning and the type of the parameter is not important.",
       "section": "3.2.3 Avoiding Language-Specific Names",
       "diagnostics": [
         "CA1720"
@@ -562,7 +562,7 @@
     {
       "id": "FDG3042",
       "strength": "DO",
-      "text": "prefix interface names with the letter I, to indicate that the type is an interface.",
+      "text": "prefix interface names with the letter *I*, to indicate that the type is an interface.",
       "section": "3.5 Names of Classes, Structs, and Interfaces",
       "diagnostics": [
         "CA1715"
@@ -1028,7 +1028,7 @@
     {
       "id": "FDG3075",
       "strength": "DO",
-      "text": "use two parameters named sender and e in event handlers.",
+      "text": "use two parameters named *sender* and *e* in event handlers.",
       "section": "3.6.3 Names of Events",
       "diagnostics": [],
       "autofix": "no",
@@ -1141,7 +1141,7 @@
     {
       "id": "FDG3083",
       "strength": "DO",
-      "text": "use left and right for binary operator overload parameter names if there is no meaning to the parameters.",
+      "text": "use *left* and *right* for binary operator overload parameter names if there is no meaning to the parameters.",
       "section": "3.7.1 Naming Operator Overload Parameters",
       "diagnostics": [],
       "autofix": "no",
@@ -1154,7 +1154,7 @@
     {
       "id": "FDG3084",
       "strength": "DO",
-      "text": "use value for unary operator overload parameter names if there is no meaning to the parameters.",
+      "text": "use *value* for unary operator overload parameter names if there is no meaning to the parameters.",
       "section": "3.7.1 Naming Operator Overload Parameters",
       "diagnostics": [],
       "autofix": "no",

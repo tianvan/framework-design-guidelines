@@ -190,4 +190,37 @@ public class BookParserTests
         Assert.Equal("FDGA001", chapter.Rules[0].Id);
         Assert.All(chapter.Rules, r => Assert.True(r.Mapping.Style));
     }
+
+    [Fact]
+    public void Inline_emphasis_strong_and_external_links_are_kept_as_markdown()
+    {
+        Rule rule = BookParser.Parse(Fixture("fidelity.xhtml"), "8").Rules[0];
+
+        Assert.Equal("keep *inline* markup.", rule.Text);
+        Assert.Equal(
+            "Use *this* and **that** with `Foo` per [the spec](https://example.com/spec), see section 3.1.<br>Next line.",
+            rule.Body[0].Text);
+    }
+
+    [Fact]
+    public void Internal_links_keep_only_their_text()
+    {
+        Rule rule = BookParser.Parse(Fixture("fidelity.xhtml"), "8").Rules[0];
+
+        Assert.Contains("see section 3.1.", rule.Body[0].Text);
+        Assert.DoesNotContain("fidelity.xhtml", rule.Body[0].Text);
+        Assert.DoesNotContain("[section 3.1]", rule.Body[0].Text);
+    }
+
+    [Fact]
+    public void Sidebar_lists_and_tables_are_rendered_inside_the_annotation()
+    {
+        Rule rule = BookParser.Parse(Fixture("fidelity.xhtml"), "8").Rules[0];
+
+        Block annotation = Assert.Single(rule.Body, b => b.Kind == BlockKind.Annotation);
+        Assert.Equal("Jeremy Barton", annotation.Author);
+        Assert.Equal(
+            "An annotation with structure.\n\n- first\n- second\n\n1. one\n2. two\n\n| A | B |\n| --- | --- |\n| 1 | 2 |",
+            annotation.Text);
+    }
 }

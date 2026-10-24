@@ -36,6 +36,27 @@ public sealed class GeneratorCliTests : IDisposable
         return Run("extract", "--book", _bookDir, "--chapter", "9", "--rules", _rulesDir);
     }
 
+    private (int ExitCode, string Output, string Error) Update(string chapter = "9")
+    {
+        return Run("extract", "--book", _bookDir, "--chapter", chapter, "--rules", _rulesDir, "--update");
+    }
+
+    /// <summary>Lists only the fidelity fixture, as chapter 8.</summary>
+    private string UseFidelityChapter()
+    {
+        File.WriteAllText(
+            Path.Combine(_rulesDir, "meta.yaml"),
+            "repositoryUrl: https://example.test/repo\n" +
+            "chapters:\n" +
+            "  - { token: \"8\", file: fidelity.xhtml, rules: ch08-fidelity.yaml, title: Fidelity Chapter }\n");
+        return Path.Combine(_rulesDir, "ch08-fidelity.yaml");
+    }
+
+    private static int LineCount(string text)
+    {
+        return text.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length;
+    }
+
     private (int ExitCode, string Output, string Error) Verify()
     {
         return Run("verify-source", "--book", _bookDir, "--rules", _rulesDir);
@@ -137,5 +158,101 @@ public sealed class GeneratorCliTests : IDisposable
         Assert.Equal("Sample Chapter", file.Title);
         Assert.Equal("sample.xhtml", file.SourceFile);
         Assert.Equal(4, file.Rules.Count);
+    }
+
+    [Fact]
+    public void Update_keeps_mapping_and_reports_changed_ids()
+    {
+        string path = UseFidelityChapter();
+        Assert.Equal(0, Run("extract", "--book", _bookDir, "--chapter", "8", "--rules", _rulesDir).ExitCode);
+        Rule extracted = Assert.Single(RuleLoader.LoadRules(path));
+        Rule edited = extracted with
+        {
+            Body = extracted.Body
+                .Select((b, i) => i == 0 ? b with { Text = "Use this and that with `Foo` per the spec, see section 3.1. Next line." } : b)
+                .ToList(),
+            Mapping = extracted.Mapping with { Status = RuleStatus.Verified, Notes = "keep" },
+        };
+        File.WriteAllText(path, RuleYaml.Serialize(new[] { edited }));
+
+        var result = Update("8");
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains("Updated 1 of 1 rules", result.Output);
+        Assert.Contains("FDG8001", result.Output);
+        Rule updated = Assert.Single(RuleLoader.LoadRules(path));
+        Assert.Equal(RuleStatus.Verified, updated.Mapping.Status);
+        Assert.Equal("keep", updated.Mapping.Notes);
+        Assert.Equal(extracted.Body, updated.Body);
+        Assert.False(File.ReadAllBytes(path).AsSpan().StartsWith(new byte[] { 0xEF, 0xBB, 0xBF }));
+    }
+
+    [Fact]
+    public void Update_reports_no_changes_when_the_file_matches_the_book()
+    {
+        Extract();
+
+        var result = Update();
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains("Updated 0 of 4 rules", result.Output);
+    }
+
+    [Fact]
+    public void Update_refuses_when_rule_count_differs()
+    {
+        Extract();
+        string path = Path.Combine(_rulesDir, "ch09-sample.yaml");
+        File.WriteAllText(path, RuleYaml.Serialize(RuleLoader.LoadRules(path).Take(3)));
+        string before = File.ReadAllText(path);
+
+        var result = Update();
+
+        Assert.Equal(1, result.ExitCode);
+        Assert.Equal(1, LineCount(result.Error));
+        Assert.Contains("3", result.Error);
+        Assert.Contains("4", result.Error);
+        Assert.Equal(before, File.ReadAllText(path));
+    }
+
+    [Fact]
+    public void Update_refuses_when_a_strength_differs()
+    {
+        Extract();
+        string path = Path.Combine(_rulesDir, "ch09-sample.yaml");
+        File.WriteAllText(path, File.ReadAllText(path).Replace("strength: CONSIDER", "strength: DO"));
+        string before = File.ReadAllText(path);
+
+        var result = Update();
+
+        Assert.Equal(1, result.ExitCode);
+        Assert.Equal(1, LineCount(result.Error));
+        Assert.Contains("FDG9003", result.Error);
+        Assert.Equal(before, File.ReadAllText(path));
+    }
+
+    [Fact]
+    public void Update_refuses_when_the_rule_file_is_missing()
+    {
+        var result = Update();
+
+        Assert.Equal(1, result.ExitCode);
+        Assert.Equal(1, LineCount(result.Error));
+        Assert.False(File.Exists(Path.Combine(_rulesDir, "ch09-sample.yaml")));
+    }
+
+    [Fact]
+    public void Extract_without_update_still_refuses_to_overwrite()
+    {
+        Extract();
+        string path = Path.Combine(_rulesDir, "ch09-sample.yaml");
+        File.WriteAllText(path, File.ReadAllText(path).Replace("status: draft", "status: verified"));
+        string before = File.ReadAllText(path);
+
+        var result = Extract();
+
+        Assert.Equal(1, result.ExitCode);
+        Assert.Contains("already exists; extraction never overwrites", result.Error);
+        Assert.Equal(before, File.ReadAllText(path));
     }
 }

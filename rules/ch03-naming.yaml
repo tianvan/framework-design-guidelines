@@ -42,15 +42,15 @@
         | Namespace | Pascal | namespace System.Security { ... } |
         | Type | Pascal | public class StreamReader { ... } |
         | Interface | Pascal | public interface IEnumerable { ... } |
-        | Method | Pascal | public class Object { public virtual string ToString(); } |
-        | Property | Pascal | public class String { public int Length { get; } } |
-        | Event | Pascal | public class Process { public event EventHandler Exited; } |
-        | Field | Pascal | public class MessageQueue { public static readonly TimeSpan InfiniteTimeout; } public struct UInt32 { public const MinValue = 0; } |
-        | Enum value | Pascal | public enum FileMode { Append, ... } |
-        | Type parameter, generic method | Pascal | public partial class Enum { public static TEnum Parse<TEnum>( string value) { ... } } |
-        | Type parameter, generic type | Pascal | public class Task<TResult> { ... } |
-        | Tuple element | Pascal | public partial class Range { public (int Offset, int Length) GetOffsetAndLength( int length) { ... } } |
-        | Parameter | Camel | public class Convert { public static int ToInt32(string value); } |
+        | Method | Pascal | public class Object {<br>public virtual string ToString();<br>} |
+        | Property | Pascal | public class String {<br>public int Length { get; }<br>} |
+        | Event | Pascal | public class Process {<br>public event EventHandler Exited;<br>} |
+        | Field | Pascal | public class MessageQueue {<br>public static readonly TimeSpan<br>InfiniteTimeout;<br>}<br>public struct UInt32 {<br>public const MinValue = 0;<br>} |
+        | Enum value | Pascal | public enum FileMode {<br>Append,<br>...<br>} |
+        | Type parameter, generic method | Pascal | public partial class Enum {<br>public static TEnum Parse<TEnum>(<br>string value) { ... }<br>} |
+        | Type parameter, generic type | Pascal | public class Task<TResult> {<br>...<br>} |
+        | Tuple element | Pascal | public partial class Range {<br>public<br>(int Offset, int Length)<br>GetOffsetAndLength(<br>int length) { ... }<br>} |
+        | Parameter | Camel | public class Convert {<br>public static int ToInt32(string value);<br>} |
     - kind: annotation
       text: An early version of this table included a convention for instance field names. We later adopted the guideline that you should almost never use publicly exposed instance fields and should use properties instead. Thus, the guideline for publicly exposed instance fields was no longer needed. For the record, the convention was camelCasing.
       author: Brad Abrams
@@ -243,7 +243,7 @@
     - kind: paragraph
       text: 2. “Login” is now regarded as a closed-form noun, so a type with members named “Login” and “Password” would be OK, except in .NET we prefer “Logon” to “Login.” As a compound verb, “Log In” should be “Log On,” so “LogIn” is never used, and “LogOn” does not appear in this table.
     - kind: paragraph
-      text: Two other terms that are in common usage are in a category by themselves, because they are common slang abbreviations. The two words Ok and Id (cased as shown here) are exceptions to the guideline that no abbreviations should be used in names.
+      text: Two other terms that are in common usage are in a category by themselves, because they are common slang abbreviations. The two words *Ok* and *Id* (cased as shown here) are exceptions to the guideline that no abbreviations should be used in names.
     - kind: paragraph
       text: Table 3-2 and the rule about closed-form nouns are secondary to the general guideline of maintaining consistency. As of September 2019, “white space” is the dictionary entry, with some dictionaries having a note that computer science often uses it as a single word. If and when “whitespace” becomes an accepted closed-form noun, you should continue to use “WhiteSpace” in type hierarchies built with the older form of the word.
     - kind: annotation
@@ -254,7 +254,7 @@
       author: Brad Abrams
     - kind: annotation
       text: |-
-        Several changes were made to Table 3-2 for the third edition of this book. The Oxford English Dictionary, as well as others, now considers “filename,” “logoff,” “logout,” “login,” “logon,” and “username” as closed-form nouns, enabling identifiers like `LogoffTime`. In the sense of an action, the OED still considers “log in,” “log on,” “log off,” or “log out” to be the only acceptable forms.
+        Several changes were made to Table 3-2 for the third edition of this book. The *Oxford English Dictionary*, as well as others, now considers “filename,” “logoff,” “logout,” “login,” “logon,” and “username” as closed-form *nouns*, enabling identifiers like `LogoffTime`. In the sense of an action, the OED still considers “log in,” “log on,” “log off,” or “log out” to be the only acceptable forms.
 
         That doesn’t mean you should immediately change all of your existing names. However, in types that don’t interact with the older forms, you are free (and encouraged) to accept the evolving nature of language when it comes to these terms.
       author: Jeremy Barton
@@ -325,7 +325,7 @@
   notes: null
 - id: FDG3009
   strength: DO
-  text: favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the X-axis).
+  text: favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the *X*-axis).
   context: null
   section: 3.2.1 Word Choice
   anchor: sec3_2_1
@@ -416,7 +416,7 @@
     - kind: paragraph
       text: According to Rule 4 of the Common Language Specification (CLS), all compliant languages must provide a mechanism that allows access to named items that use a keyword of that language as an identifier. C#, for example, uses the @ sign as an escape mechanism in this case. However, it is still a good idea to avoid common keywords because it is much more difficult to use a method with the escape sequence than one without it.
     - kind: annotation
-      text: When I was porting my Applied Microsoft .NET Framework Programming book from C# to Visual Basic, I ran into this situation a lot. For example, the class library has `Delegate`, `Module`, and `Assembly` classes, and Visual Basic uses these same terms for keywords. This problem is exacerbated by the fact that VB is a case-insensitive language. Visual Basic, like C#, has a way to escape the keywords to disambiguate the situation to the compiler (using square brackets), but I was surprised that the VB team selected keywords that conflict with so many class library names.
+      text: When I was porting my *Applied Microsoft .NET Framework Programming* book from C# to Visual Basic, I ran into this situation a lot. For example, the class library has `Delegate`, `Module`, and `Assembly` classes, and Visual Basic uses these same terms for keywords. This problem is exacerbated by the fact that VB is a case-insensitive language. Visual Basic, like C#, has a way to escape the keywords to disambiguate the situation to the compiler (using square brackets), but I was surprised that the VB team selected keywords that conflict with so many class library names.
       author: Jeffrey Richter
   status: verified
   style: false
@@ -604,7 +604,7 @@
   notes: CA1720 also reports common English words such as Long and Short, so it is a suggestion rather than a warning.
 - id: FDG3018
   strength: DO
-  text: use a common name, such as value or item, rather than repeating the type name, in the rare cases when an identifier has no semantic meaning and the type of the parameter is not important.
+  text: use a common name, such as *value* or *item*, rather than repeating the type name, in the rare cases when an identifier has no semantic meaning and the type of the parameter is not important.
   context: null
   section: 3.2.3 Avoiding Language-Specific Names
   anchor: sec3_2_3
@@ -1300,7 +1300,7 @@
   notes: null
 - id: FDG3042
   strength: DO
-  text: prefix interface names with the letter I, to indicate that the type is an interface.
+  text: prefix interface names with the letter *I*, to indicate that the type is an interface.
   context: null
   section: 3.5 Names of Classes, Structs, and Interfaces
   anchor: sec3_5
@@ -2240,7 +2240,7 @@
   notes: null
 - id: FDG3075
   strength: DO
-  text: use two parameters named sender and e in event handlers.
+  text: use two parameters named *sender* and *e* in event handlers.
   context: null
   section: 3.6.3 Names of Events
   anchor: sec3_6_3
@@ -2473,7 +2473,7 @@
   notes: null
 - id: FDG3083
   strength: DO
-  text: use left and right for binary operator overload parameter names if there is no meaning to the parameters.
+  text: use *left* and *right* for binary operator overload parameter names if there is no meaning to the parameters.
   context: null
   section: 3.7.1 Naming Operator Overload Parameters
   anchor: sec3_7_1
@@ -2502,7 +2502,7 @@
   notes: null
 - id: FDG3084
   strength: DO
-  text: use value for unary operator overload parameter names if there is no meaning to the parameters.
+  text: use *value* for unary operator overload parameter names if there is no meaning to the parameters.
   context: null
   section: 3.7.1 Naming Operator Overload Parameters
   anchor: sec3_7_1

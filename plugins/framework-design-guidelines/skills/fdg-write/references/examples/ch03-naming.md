@@ -65,7 +65,7 @@ Table 3-2 shows capitalization for some of the most commonly used compound words
 
 2. “Login” is now regarded as a closed-form noun, so a type with members named “Login” and “Password” would be OK, except in .NET we prefer “Logon” to “Login.” As a compound verb, “Log In” should be “Log On,” so “LogIn” is never used, and “LogOn” does not appear in this table.
 
-Two other terms that are in common usage are in a category by themselves, because they are common slang abbreviations. The two words Ok and Id (cased as shown here) are exceptions to the guideline that no abbreviations should be used in names.
+Two other terms that are in common usage are in a category by themselves, because they are common slang abbreviations. The two words *Ok* and *Id* (cased as shown here) are exceptions to the guideline that no abbreviations should be used in names.
 
 Table 3-2 and the rule about closed-form nouns are secondary to the general guideline of maintaining consistency. As of September 2019, “white space” is the dictionary entry, with some dictionaries having a note that computer science often uses it as a single word. If and when “whitespace” becomes an accepted closed-form noun, you should continue to use “WhiteSpace” in type hierarchies built with the older form of the word.
 
@@ -73,7 +73,7 @@ Table 3-2 and the rule about closed-form nouns are secondary to the general guid
 
 > **Brad Abrams:** One abbreviation commonly used in COM interface names was Ex (for interfaces that were extended versions of previously existing interfaces). This abbreviation should be avoided in reusable libraries. Use instead a meaningful name that describes the new functionality. For example, rather than `IDispatchEx`, consider `IDynamicDispatch`.
 
-> **Jeremy Barton:** Several changes were made to Table 3-2 for the third edition of this book. The Oxford English Dictionary, as well as others, now considers “filename,” “logoff,” “logout,” “login,” “logon,” and “username” as closed-form nouns, enabling identifiers like `LogoffTime`. In the sense of an action, the OED still considers “log in,” “log on,” “log off,” or “log out” to be the only acceptable forms.
+> **Jeremy Barton:** Several changes were made to Table 3-2 for the third edition of this book. The *Oxford English Dictionary*, as well as others, now considers “filename,” “logoff,” “logout,” “login,” “logon,” and “username” as closed-form *nouns*, enabling identifiers like `LogoffTime`. In the sense of an action, the OED still considers “log in,” “log on,” “log off,” or “log out” to be the only acceptable forms.
 >
 > That doesn’t mean you should immediately change all of your existing names. However, in types that don’t interact with the older forms, you are free (and encouraged) to accept the evolving nature of language when it comes to these terms.
 
@@ -463,7 +463,7 @@ For example, a close event that is raised before a window is closed would be cal
 
 ## FDG3075
 
-DO use two parameters named sender and e in event handlers.
+DO use two parameters named *sender* and *e* in event handlers.
 
 The sender parameter represents the object that raised the event. The sender parameter is typically of type `object`, even if it is possible to employ a more specific type. The pattern is used consistently across .NET and is described in more detail in section 5.4.
 
@@ -488,7 +488,7 @@ Development tools generally provide useful information about the type, so the pa
 
 ## FDG3083
 
-DO use left and right for binary operator overload parameter names if there is no meaning to the parameters.
+DO use *left* and *right* for binary operator overload parameter names if there is no meaning to the parameters.
 
 ```csharp
 public static TimeSpan operator-(DateTimeOffset left,
@@ -499,7 +499,7 @@ public static bool operator==(DateTimeOffset left,
 
 ## FDG3084
 
-DO use value for unary operator overload parameter names if there is no meaning to the parameters.
+DO use *value* for unary operator overload parameter names if there is no meaning to the parameters.
 
 ```csharp
 public static BigInteger operator-(BigInteger value);

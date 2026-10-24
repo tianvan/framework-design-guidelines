@@ -16,7 +16,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 ## 3.2.1 Word Choice
 
 - **FDG3008** DO choose easily readable identifier names. — examples: examples/ch03-naming.md#fdg3008
-- **FDG3009** DO favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the X-axis).
+- **FDG3009** DO favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the *X*-axis).
 - **FDG3011** DO NOT use Hungarian notation. — examples: examples/ch03-naming.md#fdg3011
 - **FDG3013** DO use only ASCII characters in identifier names. — examples: examples/ch03-naming.md#fdg3013
 
@@ -101,7 +101,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 - **FDG3071** DO name events with a verb or a verb phrase. — examples: examples/ch03-naming.md#fdg3071
 - **FDG3072** DO give events names with a concept of before and after, using the present and past tenses, such as `Closing` and `Closed`. — examples: examples/ch03-naming.md#fdg3072
-- **FDG3075** DO use two parameters named sender and e in event handlers. — examples: examples/ch03-naming.md#fdg3075
+- **FDG3075** DO use two parameters named *sender* and *e* in event handlers. — examples: examples/ch03-naming.md#fdg3075
 
 ## 3.6.4 Naming Fields
 
@@ -114,8 +114,8 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 3.7.1 Naming Operator Overload Parameters
 
-- **FDG3083** DO use left and right for binary operator overload parameter names if there is no meaning to the parameters. — examples: examples/ch03-naming.md#fdg3083
-- **FDG3084** DO use value for unary operator overload parameter names if there is no meaning to the parameters. — examples: examples/ch03-naming.md#fdg3084
+- **FDG3083** DO use *left* and *right* for binary operator overload parameter names if there is no meaning to the parameters. — examples: examples/ch03-naming.md#fdg3083
+- **FDG3084** DO use *value* for unary operator overload parameter names if there is no meaning to the parameters. — examples: examples/ch03-naming.md#fdg3084
 - **FDG3085** CONSIDER meaningful names for operator overload parameters if doing so adds significant value. — examples: examples/ch03-naming.md#fdg3085
 - **FDG3086** DO NOT use abbreviations or numeric indices for operator overload parameter names. — examples: examples/ch03-naming.md#fdg3086
 

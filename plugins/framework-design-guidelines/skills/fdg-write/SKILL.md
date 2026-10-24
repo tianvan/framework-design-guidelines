@@ -27,7 +27,7 @@ In `test` projects the Chapter 3 rules are off (test names such as `Method_WhenX
 
 - **FDG3014** DO NOT use abbreviations or contractions as part of identifier names.
 - **FDG3008** DO choose easily readable identifier names.
-- **FDG3009** DO favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the X-axis).
+- **FDG3009** DO favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the *X*-axis).
 - **FDG3015** DO NOT use any acronyms that are not widely accepted, and even if they are, only when necessary.
 - **FDG3011** DO NOT use Hungarian notation.
 - **FDG3033** DO NOT introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`.
@@ -46,7 +46,7 @@ In `test` projects the Chapter 3 rules are off (test names such as `Method_WhenX
 - **FDG3070** CONSIDER giving a property the same name as its type.
 - **FDG3071** DO name events with a verb or a verb phrase.
 - **FDG3072** DO give events names with a concept of before and after, using the present and past tenses, such as `Closing` and `Closed`.
-- **FDG3075** DO use two parameters named sender and e in event handlers.
+- **FDG3075** DO use two parameters named *sender* and *e* in event handlers.
 - **FDG3078** DO name fields using a noun, noun phrase, or adjective.
 - **FDG3081** DO use descriptive parameter names.
 - **FDG3082** CONSIDER using names based on a parameter’s meaning rather than the parameter’s type.
