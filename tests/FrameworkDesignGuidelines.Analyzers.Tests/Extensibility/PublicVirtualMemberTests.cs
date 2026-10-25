@@ -52,6 +52,99 @@ public sealed class PublicVirtualMemberTests
                 {
                 }
             }
+
+            public abstract class Shape
+            {
+                public abstract void {|FDG6013:Draw|}();
+            }
+
+            public abstract class Polygon : Shape
+            {
+                public abstract override void Draw();
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Only_classes_that_can_be_derived_outside_the_assembly_are_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            public abstract class LivingOrganism
+            {
+                internal LivingOrganism()
+                {
+                }
+
+                public abstract void Grow();
+            }
+
+            public class Animal : LivingOrganism
+            {
+                protected Animal()
+                {
+                }
+
+                public override void Grow()
+                {
+                }
+
+                public virtual void {|FDG6013:Eat|}()
+                {
+                }
+            }
+
+            public class Mineral
+            {
+                private Mineral()
+                {
+                }
+
+                public virtual void Erode()
+                {
+                }
+            }
+
+            public class Crystal
+            {
+                private protected Crystal()
+                {
+                }
+
+                internal Crystal(int size)
+                {
+                }
+
+                public virtual void Grow()
+                {
+                }
+            }
+
+            public class Plant
+            {
+                internal Plant()
+                {
+                }
+
+                public Plant(string name)
+                {
+                }
+
+                public virtual void {|FDG6013:Bloom|}()
+                {
+                }
+            }
+
+            public class Fungus
+            {
+                protected internal Fungus()
+                {
+                }
+
+                public virtual void {|FDG6013:Spread|}()
+                {
+                }
+            }
             """);
     }
 
@@ -104,16 +197,6 @@ public sealed class PublicVirtualMemberTests
                 protected override void SetBoundsCore(int x, int y)
                 {
                 }
-            }
-
-            public abstract class Shape
-            {
-                public abstract void {|FDG6013:Draw|}();
-            }
-
-            public abstract class Polygon : Shape
-            {
-                public abstract override void Draw();
             }
 
             internal class Cache
@@ -205,5 +288,18 @@ public sealed class PublicVirtualMemberTests
             }
             """,
             new DiagnosticResult(FdgDescriptors.FDG6013).WithLocation(0).WithArguments("SetBounds"));
+    }
+
+    [Fact]
+    public Task Message_names_an_indexer_with_its_parameter_types()
+    {
+        return Verifier.VerifyWithAsync(
+            """
+            public class Table
+            {
+                public virtual string {|#0:this|}[int row, string column] => column;
+            }
+            """,
+            new DiagnosticResult(FdgDescriptors.FDG6013).WithLocation(0).WithArguments("this[int, string]"));
     }
 }

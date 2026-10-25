@@ -31,7 +31,7 @@
     - kind: annotation
       text: The key word in this advice is “CONSIDER.” Keep in mind that you always have the option of unsealing a class in the future (it is not a breaking change); however, once unsealed, a class must remain unsealed. Also, unsealing does inhibit some optimizations [e.g., converting virtual calls to more efficient nonvirtual calls (and then inlining)]. Finally, unsealing helps your users only if they control the creation of the class (sometimes true, sometimes not). In short, designs are only rarely usefully extensible “by accident.” Being unsealed is part of the contract of a class and its users, and like everything about the contract, it deserves to be a conscious, deliberate choice on the part of the designer.
       author: Vance Morrison
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -56,7 +56,7 @@
   body:
     - kind: paragraph
       text: Protected members are a great way to provide advanced customization without complicating the public interface.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -84,7 +84,7 @@
     - kind: annotation
       text: Protected members are just as much a part of your publicly callable interface as public members. In designing the framework, we considered protected and public to be roughly equivalent. We generally did the same level of review and error checking in protected APIs as we did in public APIs because they can be called from any code that just happens to subclass.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -107,7 +107,7 @@
   section: 6.1.3 Events and Callbacks
   anchor: sec6_1_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -130,7 +130,7 @@
   section: 6.1.3 Events and Callbacks
   anchor: sec6_1_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -153,7 +153,7 @@
   section: 6.1.3 Events and Callbacks
   anchor: sec6_1_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -182,7 +182,7 @@
     - kind: annotation
       text: In a performance-critical method, you want to think about all forms of extensibility and what kind of impact they may have on throughput. This goes beyond delegates. In fact, in some situations it may actually be better for your common case to use delegates instead of virtual methods. For example, consider a design where you want a default behavior that can then be potentially replaced if a delegate is provided. If you made the functionality virtual, you’d be paying for the virtual dispatch (unless the JIT could devirtualize the call) regardless of whether a replacement was provided. But with a delegate, you could have a nonvirtual, inlineable implementation that just does a null check on the delegate instance and only pays the delegate invocation costs if there is something else to do instead of the default behavior.
       author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -247,7 +247,7 @@
     - kind: annotation
       text: Most times you’re going to want `Func` or `Action` if all that needs to happen is to run some code. You need `Expression` when the code needs to be analyzed, serialized, or optimized before it is run. `Expression` is for thinking about code; `Func`/`Action` is for running it.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -285,7 +285,7 @@
         - Don’t create systems that optimize the code so much before running it that it would have been faster to just run it directly without optimizing.
         - Optimization isn’t the only use for expression trees, but it is an important one.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -364,7 +364,7 @@
 
         Extensibility is hard.
       author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -404,13 +404,13 @@
   autofix: no
   severity:
     library: warning
-    application: none
+    application: warning
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Library only: the costs in the body and the annotations are those of an extensibility point that subclasses outside the library rely on: compatibility, and a contract to design, test and maintain (the Gray annotation). Not an analyzer candidate: whether there is a good reason is a matter of intent. FDG6013 reports public virtual members, and FDG5004 virtual shorter overloads.'
+  notes: "Not library only: the body's cost that virtual members are slower because calls to them are not inlined (and the Mariani annotation), and the cost of designing and testing members that can be overridden in unpredictable ways, apply to virtual members in any code, as for FDG5004 and FDG6007. Not an analyzer candidate: whether there is a good reason is a matter of intent. FDG6013 reports public virtual members, and FDG5004 virtual shorter overloads."
 - id: FDG6012
   strength: CONSIDER
   text: limiting extensibility to only what is absolutely necessary through the use of the Template Method Pattern, described in section 9.9.
@@ -418,7 +418,7 @@
   section: 6.1.4 Virtual Members
   anchor: sec6_1_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -478,7 +478,7 @@
   analyzer:
     message: Make the virtual member '{0}' protected and call it from a nonvirtual public member
     category: Extensibility
-  notes: "Library only: the body separates the public members, for direct consumers of the class, from the protected virtual members, for subclasses outside the library. FDG6013 reports a virtual or abstract method, property, indexer or event declared public in an externally visible class. Overrides are not reported, since their accessibility comes from the overridden member, nor members that the compiler declares, nor a record's Equals(T), which C# requires to be public and virtual in an unsealed record. Whether a public member calls a protected virtual one is not checked. A virtual shorter overload is reported by FDG5004 too (the Richter annotation). CA1070 (virtual field-like events) is not mapped: its reason is how the compiler implements such events, not accessibility. Making a public member protected or nonvirtual changes the public API, so the fix is breaking; there is no code fix."
+  notes: "Library only: the body separates the public members, for direct consumers of the class, from the protected virtual members, for subclasses outside the library. FDG6013 reports a virtual or abstract method, property, indexer or event declared public in an externally visible class; abstract members count because they are virtual, and the Template Method of section 9.9 has a public member call a protected abstract one as well. Overrides are not reported, since their accessibility comes from the overridden member, nor members that the compiler declares, nor a record's Equals(T), which C# requires to be public and virtual in an unsealed record. Members of a class that cannot be derived from outside its assembly (every instance constructor is internal, private or private protected) are not reported: the reason of the rule is subclasses outside the library, and the closed hierarchy of the Cwalina annotation in section 6.3 uses such a constructor. Whether a public member calls a protected virtual one is not checked. A virtual shorter overload is reported by FDG5004 too (the Richter annotation). CA1070 (virtual field-like events) is not mapped: its reason is how the compiler implements such events, not accessibility. Making a public member protected or nonvirtual changes the public API, so the fix is breaking; there is no code fix."
 - id: FDG6014
   strength: DO NOT
   text: provide abstractions unless they are tested by developing several concrete implementations and APIs consuming the abstractions.
@@ -486,7 +486,7 @@
   section: 6.1.5 Abstractions (Abstract Types and Interfaces)
   anchor: sec6_1_5
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -509,7 +509,7 @@
   section: 6.1.5 Abstractions (Abstract Types and Interfaces)
   anchor: sec6_1_5
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -538,7 +538,7 @@
     - kind: annotation
       text: Before shipping an abstraction, you should plan to validate it by building at least two or three distinct implementations and by using the abstraction in at least two or three distinct consumers. Those tests will provide you with a lot more confidence that you’ve built something that will actually be usable, and in my experience, will most likely help you to find issues that need to be addressed before you ship.
       author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -564,7 +564,7 @@
     - kind: annotation
       text: My interpretation of this guideline is that it’s OK to declare the class abstract even if there are no abstract members, but you still need a reason why. If the class works fine on its own, it should probably be instantiable.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -587,7 +587,7 @@
   section: 6.2 Base Classes
   anchor: sec6_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -643,7 +643,7 @@
   analyzer:
     message: Remove the 'Base' suffix from '{0}', which a public API uses as a type
     category: Extensibility
-  notes: 'Library only: the text is about classes intended for use in public APIs. FDG6019 reports an unsealed, nonstatic, externally visible class whose name ends with the word Base (FooBase, not Database) when an externally visible member, delegate or generic type of the same compilation uses it in its signature: the return, parameter, property, indexer, field or event type, or a constraint of a type parameter, also as an array element type or a type argument, the way the GetFilenames method of the body returns Collection<string>. A class that the compilation uses only as a base class is not reported, nor one that only a constraint of its own type parameters names (EntityBase<TSelf> where TSelf : EntityBase<TSelf>), nor uses in other assemblies, and members that the compiler declares do not count. CA1711 does not report the Base suffix (probe with SDK 10.0.402). Renaming a public class breaks callers, so the fix is breaking; there is no code fix.'
+  notes: 'Library only: the text is about classes intended for use in public APIs. FDG6019 reports an unsealed, externally visible class whose name ends with the word Base (FooBase, not Database) when an externally visible member, delegate or generic type of the same compilation uses it in its signature: the return, parameter, property, indexer, field or event type, or a constraint of a type parameter, also as an array element type or a type argument, the way the GetFilenames method of the body returns Collection<string>. A class that the compilation uses only as a base class is not reported, nor one that only a constraint of its own type parameters names (EntityBase<TSelf> where TSelf : EntityBase<TSelf>), nor uses in other assemblies, and members that the compiler declares do not count. A class counts as a base class when it is abstract, declares a protected or virtual member, or another class of the compilation derives from it (section 6.2: a class designed for inheritance); an unsealed class whose name only ends in the word Base, such as KnowledgeBase, is not reported. CA1711 does not report the Base suffix (probe with SDK 10.0.402). Renaming a public class breaks callers, so the fix is breaking; there is no code fix.'
 - id: FDG6020
   strength: DO NOT
   text: seal classes without having a good reason to do so.
@@ -666,7 +666,7 @@
     - kind: annotation
       text: People often ask about the cost of sealing individual members. This cost is relatively small, but it is nonzero and should be taken into account. There is development cost (typing in the overrides), testing cost (have you called the base class from the override?), assembly size cost (new overrides), and working set cost (if both the overrides and the base implementation are ever called).
       author: Krzysztof Cwalina
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -691,7 +691,7 @@
   body:
     - kind: paragraph
       text: By definition, sealed types cannot be inherited from. This means that protected members on sealed types cannot be called, and virtual methods on sealed types cannot be overridden.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -706,7 +706,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Not checked: the C# compiler reports a new protected member of a sealed type (warning CS0628, protected internal and private protected included) and rejects a new virtual member of a sealed type (error CS0549) and a protected member of a struct (error CS0666); a probe with SDK 10.0.402 showed this for sealed classes and sealed records. Overrides, which the compiler allows, declare no new protected or virtual member.'
+  notes: 'Not checked: the C# compiler reports a new protected member of a sealed type (warning CS0628, protected internal and private protected included) and rejects a new virtual member of a sealed type (error CS0549), a protected member of a struct (error CS0666) and a protected member of a static class (error CS1057); a probe with SDK 10.0.402 showed this for sealed classes and sealed records. Overrides, which the compiler allows, declare no new protected or virtual member.'
 - id: FDG6022
   strength: CONSIDER
   text: sealing members that you override.
@@ -725,7 +725,7 @@
       text: Problems that can result from introducing virtual members (discussed in section 6.1.4) apply to overrides as well, although to a slightly lesser degree. Sealing an override shields you from these problems starting from that point in the inheritance hierarchy.
     - kind: paragraph
       text: In short, part of designing for extensibility is knowing when to limit it, and sealed types are one of the mechanisms by which you do that.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment

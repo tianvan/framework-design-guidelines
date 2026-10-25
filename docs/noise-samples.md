@@ -444,20 +444,25 @@ FDG6019 are counted. FDG6013 was checked at 20 evenly spaced locations, FDG6019 
 
 | Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| FDG6013 | FDG6013 | 3 | 8 | 191 | 0 | 0 | 20 | 0 | 20 | None needed. |
+| FDG6013 | FDG6013 | 3 | 8 | 180 | 0 | 0 | 20 | 0 | 20 | Closed classes exempt (Ruling 28): 202 to 191. |
 | FDG6019 | FDG6019 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1 | None needed. |
 
 ### Notes
 
 - **FDG6013.** Every checked report is a public virtual or abstract method, property or indexer declared (not
   overridden) in a public class: serilog's abstract `Render` and `Length` of its property value and token classes, and
-  newtonsoft-json's reader, writer, serializer, token and naming strategy classes, whose public virtual `Read...`,
+  newtonsoft-json's reader, writer, serializer and naming strategy classes, whose public virtual `Read...`,
   `Write...` and settings members are the extensibility points. polly's 8 are public abstract or virtual members of
   its context pool, pipeline provider and telemetry listener classes and of its rejection exception. The body asks
-  for protected virtual members called from public ones, so all are true warnings; none is an override.
+  for protected virtual members called from public ones, so all are true warnings; none is an override. The second
+  run leaves out classes that cannot be derived from outside their assembly (every instance constructor internal,
+  private or private protected): the 11 reports it drops are newtonsoft-json's token class, whose only constructor is
+  internal, so its public abstract and virtual members are consumer API of a closed hierarchy, not extension points.
 - **FDG6019.** polly's pipeline builder base class, which the type parameter constraints of public extension methods
   name, so callers meet the Base suffix in those APIs. True. newtonsoft-json's date and time converter base class is
   not reported: the compilation uses it only as a base class. A first run that did not read constraints reported
-  nothing; constraints were added to the analyzer after it.
+  nothing; constraints were added to the analyzer after it. The second run counts a class only when it is a base
+  class (abstract, with a protected or virtual member, or derived from in the compilation); the polly class is
+  abstract, so the count is unchanged.
 - **Library only.** Both rules are `none` in the application profile, so the internal samples measure them only by
   their absence.

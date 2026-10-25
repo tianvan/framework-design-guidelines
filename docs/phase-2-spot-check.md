@@ -89,15 +89,15 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
 - [ ] FDG6010 DO understand that by calling a delegate, you are executing arbitrary code, and that could have security, correctness, and compatibility repercussions.
   judgment; no autofix; kept in the application profile. Chosen because delegates invoked under a lock (the Pepin annotation) are not reported, since the Duffy annotation says that this is sometimes unavoidable.
 - [ ] FDG6011 DO NOT make members virtual unless you have a good reason to do so and you are aware of all the costs related to designing, testing, and maintaining virtual members.
-  judgment; no autofix; library only. Chosen because the profile rests on reading the costs as those of an extensibility point for subclasses outside the library, although the body also names the speed of nonvirtual calls.
+  judgment; no autofix; kept in the application profile. Chosen because the cross-check moved it out of library only: the body's costs (virtual calls are not inlined, and members that can be overridden in unpredictable ways are costly to design and test) apply to any code, as for FDG5004 and FDG6007.
 - [ ] FDG6013 DO prefer protected accessibility over public accessibility for virtual members. Public members should provide extensibility (if required) by calling into a protected virtual member.
-  fdg FDG6013, full; breaking; library only. Chosen because the new analyzer reports abstract members too, as virtual members, and leaves out only overrides, compiler-declared members and a record's Equals(T).
+  fdg FDG6013, full; breaking; library only. Chosen because the new analyzer reports abstract members too, as virtual members, and leaves out overrides, compiler-declared members, a record's Equals(T) and classes that cannot be derived from outside their assembly (Ruling 28).
 - [ ] FDG6014 DO NOT provide abstractions unless they are tested by developing several concrete implementations and APIs consuming the abstractions.
   judgment; no autofix. Chosen because it stays in the application profile, like FDG4015, FDG4023 and FDG4024, while most of the chapter is library only.
 - [ ] FDG6017 CONSIDER making base classes abstract even if they don’t contain any abstract members. This clearly communicates to the users that the class is designed solely to be inherited from.
   judgment; no autofix; library only. Chosen because the Barton annotation still asks for a reason to make a class abstract, so no analyzer could report a concrete base class.
 - [ ] FDG6019 AVOID naming base classes with a “Base” suffix if the class is intended for use in public APIs.
-  fdg FDG6019, partial; breaking; library only. Chosen because the new analyzer reads "intended for use in public APIs" as a use in the signature (constraints included) of an externally visible member or type of the same compilation, so a class used only as a base class is not reported.
+  fdg FDG6019, partial; breaking; library only. Chosen because the new analyzer reads "intended for use in public APIs" as a use in the signature (constraints included) of an externally visible member or type of the same compilation, so a class used only as a base class is not reported, and counts only base classes (abstract, with a protected or virtual member, or derived from), not compound nouns such as KnowledgeBase.
 - [ ] FDG6020 DO NOT seal classes without having a good reason to do so.
   judgment; no autofix; library only. Chosen because the body's list of good reasons is open ("include the following"), and because CA1813 and CA1852, which ask for sealing, are not mapped.
 - [ ] FDG6021 DO NOT declare protected or virtual members on sealed types.

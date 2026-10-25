@@ -14,7 +14,7 @@ public sealed class BaseSuffixTests
             using System;
             using System.Collections.Generic;
 
-            public class {|FDG6019:CollectionBase|}
+            public abstract class {|FDG6019:CollectionBase|}
             {
             }
 
@@ -26,28 +26,41 @@ public sealed class BaseSuffixTests
             {
             }
 
+            public class Item : ItemBase<int>
+            {
+            }
+
             public class {|FDG6019:ValueBase|}
             {
+                protected int Value;
             }
 
             public class {|FDG6019:HandlerBase|}
             {
+                public virtual void Handle()
+                {
+                }
             }
 
             public class {|FDG6019:SourceBase|}
             {
+                protected internal int Id { get; set; }
             }
 
-            public class {|FDG6019:CloneableBase|}
+            public abstract class {|FDG6019:CloneableBase|}
             {
                 public CloneableBase Clone() => this;
             }
 
-            public class {|FDG6019:PluginBase|}
+            public abstract class {|FDG6019:PluginBase|}
             {
             }
 
             public class {|FDG6019:StepBase|}
+            {
+            }
+
+            public class Step : StepBase
             {
             }
 
@@ -58,12 +71,24 @@ public sealed class BaseSuffixTests
 
             public delegate void Visit(VisitorBase visitor);
 
-            public class {|FDG6019:VisitorBase|}
+            public abstract class {|FDG6019:VisitorBase|}
+            {
+            }
+
+            public abstract class {|FDG6019:ChangedEventArgsBase|} : EventArgs
+            {
+            }
+
+            public abstract class {|FDG6019:OptionsBase|}
             {
             }
 
             public class Directory
             {
+                public Directory(OptionsBase options)
+                {
+                }
+
                 public CollectionBase GetFilenames() => null;
 
                 public void Add(NodeBase node)
@@ -78,10 +103,29 @@ public sealed class BaseSuffixTests
 
                 protected SourceBase this[int index] => null;
 
+                public event EventHandler<ChangedEventArgsBase> Changed;
+
                 public void Run<TStep>(TStep step)
                     where TStep : StepBase
                 {
                 }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Class_that_is_not_a_base_class_is_not_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            public class KnowledgeBase
+            {
+                public string Find(string question) => question;
+            }
+
+            public class Assistant
+            {
+                public KnowledgeBase GetKnowledgeBase() => new KnowledgeBase();
             }
             """);
     }
@@ -95,6 +139,10 @@ public sealed class BaseSuffixTests
             {
             }
 
+            public class Controller : ControllerBase
+            {
+            }
+
             public abstract class EntityBase<TSelf>
                 where TSelf : EntityBase<TSelf>
             {
@@ -104,11 +152,7 @@ public sealed class BaseSuffixTests
             {
             }
 
-            public class Controller : ControllerBase
-            {
-            }
-
-            public class RepositoryBase
+            public abstract class RepositoryBase
             {
             }
 
@@ -134,15 +178,31 @@ public sealed class BaseSuffixTests
     }
 
     [Fact]
+    public Task Self_constraint_still_counts_its_type_arguments()
+    {
+        return Verifier.VerifyAsync(
+            """
+            public abstract class {|FDG6019:KeyBase|}
+            {
+            }
+
+            public abstract class RecordBase<TSelf, TKey>
+                where TSelf : RecordBase<TSelf, KeyBase>
+            {
+            }
+            """);
+    }
+
+    [Fact]
     public Task Names_types_and_visibility_outside_the_rule_are_not_reported()
     {
         return Verifier.VerifyAsync(
             """
-            public class Database
+            public abstract class Database
             {
             }
 
-            public class Base
+            public abstract class Base
             {
             }
 
@@ -158,13 +218,13 @@ public sealed class BaseSuffixTests
             {
             }
 
-            internal class InternalBase
+            internal abstract class InternalBase
             {
             }
 
             public class Outer
             {
-                private class HiddenBase
+                private abstract class HiddenBase
                 {
                 }
 
@@ -199,7 +259,7 @@ public sealed class BaseSuffixTests
     {
         return Verifier.VerifyWithAsync(
             """
-            public class {|#0:ItemBase|}<T>
+            public abstract class {|#0:ItemBase|}<T>
             {
             }
 
