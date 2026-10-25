@@ -86,7 +86,9 @@ public sealed class ExceptionSignatureAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    /// <summary>The result type of a <c>Task&lt;T&gt;</c> or <c>ValueTask&lt;T&gt;</c>, otherwise the type itself.</summary>
+    /// <summary>
+    /// The result type of a <c>Task&lt;T&gt;</c> or <c>ValueTask&lt;T&gt;</c>, otherwise the type itself.
+    /// </summary>
     private static ITypeSymbol Result(ITypeSymbol type, INamedTypeSymbol?[] awaitables)
     {
         return type is INamedTypeSymbol { TypeArguments: { Length: 1 } arguments } named
