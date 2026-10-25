@@ -4026,7 +4026,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'CA1062 reports a parameter that is dereferenced without a null check: a member that does not support null and does not throw ArgumentNullException. It accepts any null check before the dereference, so a check that throws another exception or returns is not reported, although the text asks for ArgumentNullException (see FDG5073); it does not report an explicit interface implementation (see FDG5108). Whether a member supports null is otherwise not seen. CA1510 is not mapped: it only rewrites a check that already throws ArgumentNullException. CA1062 has no code fix; adding the check changes no signature.'
+  notes: 'CA1062 reports a parameter that is dereferenced without a null check: a member that does not support null and does not throw ArgumentNullException. It accepts any null check before the dereference, so a check that throws another exception or returns is not reported, although the text asks for ArgumentNullException (see FDG5073); it does not report an explicit interface implementation (see FDG5108). Whether a member supports null is otherwise not seen. CA1510 is not mapped here (FDG7009 maps it): it only rewrites a check that already throws ArgumentNullException. CA1062 has no code fix; adding the check changes no signature.'
 - id: FDG5110
   strength: DO
   text: validate enum parameters.

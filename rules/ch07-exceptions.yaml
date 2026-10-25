@@ -223,7 +223,7 @@
       text: |-
         // bad design
         public Exception DoSomething() { ... }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -267,7 +267,7 @@
             throw new FileIOException(description);
           }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -603,7 +603,7 @@
   body:
     - kind: paragraph
       text: This way, code that displays exception messages to the user does not have to handle the case in which a developer forgot the final period, which is relatively cumbersome and expensive.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -684,7 +684,7 @@
 
         When a Microsoft Office application gets an unhandled exception, all the dialog box says is something like this: “Microsoft Word has encountered a problem and needs to close. We are sorry for the inconvenience.” There is a bit more to the message, but there is nothing computerese in the message. The user does have the option of clicking a button that will show what’s in the error report that gets sent back to Microsoft, and this error report is very geeky.
       author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1111,7 +1111,7 @@
     - kind: annotation
       text: It cannot be stressed enough how carefully this needs to be thought through. When in doubt, do not wrap an exception with another. An example in the CLR where wrapping is known to cause all kinds of trouble is with reflection. When you invoke a method using reflection, if that method throws an exception, the CLR catches it and throws a new `TargetInvocationException`. This is incredibly annoying because it hides the actual method and location in the method that had the problem. I have wasted much time trying to debug my code because of this exception wrapping.
       author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1212,7 +1212,7 @@
     - kind: annotation
       text: '`System.ApplicationException` is a class that should not be part of .NET. The original idea was that classes derived from `SystemException` would indicate exceptions thrown from the CLR (or system) itself, whereas non-CLR exceptions would be derived from `ApplicationException`. However, a lot of exception classes didn’t follow this pattern. For example, `TargetInvocationException` (which is thrown by the CLR) is derived from `ApplicationException`. So the `ApplicationException` class lost all meaning. The reason to derive from this base class is to allow some code higher up the call stack to catch the base class. It was no longer possible to catch all application exceptions.'
       author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1336,7 +1336,7 @@
     - kind: annotation
       text: Jeffrey is absolutely correct here. And it is the infrequency with which these exception types are caught that makes them safe to broadly reuse for throwing in your code.
       author: Jason Clark
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1484,7 +1484,7 @@
     - kind: annotation
       text: If you see an `ExecutionEngineException` thrown, treat it like any other framework exception. It was thrown from a place where the CLR is not actually in an invalid state. For instance, some invalid operations in the security code throw this exception, and backward-compatibility requirements prevent us from changing the exception type.
       author: Christopher Brumme
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1704,7 +1704,7 @@
   section: 7.4 Designing Custom Exceptions
   anchor: sec7_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1739,7 +1739,7 @@
           protected SomeException(SerializationInfo info, StreamingContext
         context);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1958,7 +1958,7 @@
   body:
     - kind: paragraph
       text: Unlike `CountdownEvent.TryAddCount`, most Try methods are expected to produce an additional value from the method—the return value of the exception-throwing alternative member. Since the Try pattern reserves the return value for reporting success or failure, the additional value must be returned via an `out` parameter (see section 5.8 for more information on `out` parameters).
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment

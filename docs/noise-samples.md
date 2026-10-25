@@ -478,7 +478,7 @@ counted. Every report was checked, except CA1062, whose reports are the 56 of th
 | CA1032 | FDG7059 | 1 | 0 | 0 | 2 | 0 | 3 | 0 | 3 | None needed. |
 | CA1058 | FDG7040 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
 | CA1510 | FDG7009 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports; no sample targets .NET 6 or later). |
-| CA1511 | FDG7009 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports; no sample targets .NET 8). |
+| CA1511 | FDG7009 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports; no sample targets .NET 7 or later). |
 | CA1512 | FDG7009 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports; no sample targets .NET 8). |
 | CA1513 | FDG7009 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports; no sample targets .NET 7 or later). |
 | CA1062 | FDG7045 | 9 | 0 | 0 | 0 | 47 | - | - | - | None needed. Counted in the chapter 5 (5.8 to 5.9) section; true warnings under FDG5108. |
