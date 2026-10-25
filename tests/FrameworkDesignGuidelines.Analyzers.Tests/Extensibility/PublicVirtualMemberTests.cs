@@ -66,7 +66,7 @@ public sealed class PublicVirtualMemberTests
     }
 
     [Fact]
-    public Task Only_classes_that_can_be_derived_outside_the_assembly_are_reported()
+    public Task Class_with_only_an_internal_constructor_is_reported()
     {
         return Verifier.VerifyAsync(
             """
@@ -76,72 +76,14 @@ public sealed class PublicVirtualMemberTests
                 {
                 }
 
-                public abstract void Grow();
+                public virtual void {|FDG6013:Grow|}()
+                {
+                }
             }
 
             public class Animal : LivingOrganism
             {
-                protected Animal()
-                {
-                }
-
                 public override void Grow()
-                {
-                }
-
-                public virtual void {|FDG6013:Eat|}()
-                {
-                }
-            }
-
-            public class Mineral
-            {
-                private Mineral()
-                {
-                }
-
-                public virtual void Erode()
-                {
-                }
-            }
-
-            public class Crystal
-            {
-                private protected Crystal()
-                {
-                }
-
-                internal Crystal(int size)
-                {
-                }
-
-                public virtual void Grow()
-                {
-                }
-            }
-
-            public class Plant
-            {
-                internal Plant()
-                {
-                }
-
-                public Plant(string name)
-                {
-                }
-
-                public virtual void {|FDG6013:Bloom|}()
-                {
-                }
-            }
-
-            public class Fungus
-            {
-                protected internal Fungus()
-                {
-                }
-
-                public virtual void {|FDG6013:Spread|}()
                 {
                 }
             }

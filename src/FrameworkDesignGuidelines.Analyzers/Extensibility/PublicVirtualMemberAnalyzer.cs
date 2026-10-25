@@ -10,8 +10,7 @@ namespace FrameworkDesignGuidelines.Analyzers.Extensibility;
 /// abstract method, property, indexer or event declared public in an externally visible class is reported.
 /// Overrides take their accessibility from the overridden member and are not reported, nor are members that the
 /// compiler declares, nor a record's <c>Equals(T)</c>, which C# requires to be public and virtual in an unsealed
-/// record, nor members of a class that cannot be derived from outside its assembly (every instance constructor is
-/// internal, private or private protected).
+/// record.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class PublicVirtualMemberAnalyzer : DiagnosticAnalyzer
@@ -41,7 +40,6 @@ public sealed class PublicVirtualMemberAnalyzer : DiagnosticAnalyzer
             || member.IsImplicitlyDeclared
             || member is IMethodSymbol { MethodKind: not MethodKind.Ordinary }
             || IsRecordEquals(member, type)
-            || !CanBeDerivedOutsideItsAssembly(type)
             || !NamingSymbols.IsExternallyVisible(member)
             || NamingSymbols.SourceLocation(member) is not { } location)
         {
@@ -52,16 +50,6 @@ public sealed class PublicVirtualMemberAnalyzer : DiagnosticAnalyzer
             ? member.ToDisplayString(_indexerFormat)
             : member.Name;
         context.ReportDiagnostic(Diagnostic.Create(FdgDescriptors.FDG6013, location, name));
-    }
-
-    /// <summary>
-    /// True when another assembly can declare a subclass: some instance constructor is public, protected or
-    /// protected internal (the implicit default constructor is public, or protected in an abstract class).
-    /// </summary>
-    private static bool CanBeDerivedOutsideItsAssembly(INamedTypeSymbol type)
-    {
-        return type.InstanceConstructors.Any(constructor => constructor.DeclaredAccessibility
-            is Accessibility.Public or Accessibility.Protected or Accessibility.ProtectedOrInternal);
     }
 
     /// <summary>The <c>Equals(T)</c> of a record T, which must be public and virtual unless T is sealed.</summary>

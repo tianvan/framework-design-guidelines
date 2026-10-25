@@ -12,8 +12,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Extensibility;
 /// its signature (return, parameter, property, indexer, field or event type, or a constraint of a type parameter,
 /// also as an array element type or a type argument), or an externally visible delegate or generic type does.
 /// Members that the compiler declares do not count. A class is a base class (section 6.2: designed for inheritance)
-/// when it is abstract, declares a protected, virtual or abstract member, or another class of the compilation
-/// derives from it.
+/// when it is abstract, declares a protected, virtual or abstract member that is not an override, or another class
+/// of the compilation derives from it; a subclass in generated code does not count.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class BaseSuffixAnalyzer : DiagnosticAnalyzer
@@ -138,16 +138,19 @@ public sealed class BaseSuffixAnalyzer : DiagnosticAnalyzer
 
     /// <summary>
     /// True for a class designed for inheritance: abstract, with a protected (protected internal, private protected),
-    /// virtual or abstract member that the source declares, or the base class of another class of the compilation.
+    /// virtual or abstract member that the source declares and that is not an override, or the base class of another
+    /// class of the compilation. An override implements a choice of the class it overrides, not of this one.
     /// </summary>
     private static bool IsBaseClass(INamedTypeSymbol type, ConcurrentDictionary<INamedTypeSymbol, byte> derived)
     {
         return type.IsAbstract
             || derived.ContainsKey(type)
             || type.GetMembers().Any(member => !member.IsImplicitlyDeclared
+                && !member.IsOverride
                 && (member.DeclaredAccessibility is Accessibility.Protected or Accessibility.ProtectedOrInternal
                         or Accessibility.ProtectedAndInternal
-                    || ((member.IsVirtual || member.IsAbstract) && !member.IsOverride)));
+                    || member.IsVirtual
+                    || member.IsAbstract));
     }
 
     private static void Report(CompilationAnalysisContext context, IEnumerable<INamedTypeSymbol> used)

@@ -131,6 +131,56 @@ public sealed class BaseSuffixTests
     }
 
     [Fact]
+    public Task Overrides_do_not_make_a_base_class()
+    {
+        return Verifier.VerifyAsync(
+            """
+            public abstract class Source
+            {
+                protected abstract void Load();
+            }
+
+            public class KnowledgeBase : Source
+            {
+                protected override void Load()
+                {
+                }
+            }
+
+            public class NameBase
+            {
+                public override string ToString() => "name";
+            }
+
+            public class Assistant
+            {
+                public KnowledgeBase GetKnowledgeBase() => new KnowledgeBase();
+
+                public NameBase Name => new NameBase();
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Subclass_in_generated_code_does_not_count()
+    {
+        return Verifier.VerifyAsync(
+            """
+            public class StepBase
+            {
+            }
+
+            public class Runner
+            {
+                public void Run(StepBase step)
+                {
+                }
+            }
+            """,
+            ("Steps.g.cs", "public class Step : StepBase { }"));
+    }
+
+    [Fact]
     public Task Base_class_not_used_in_a_public_signature_is_not_reported()
     {
         return Verifier.VerifyAsync(
