@@ -820,7 +820,7 @@
     diagnostics:
       - CA1711
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -829,7 +829,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1711 reports the Ex and New suffixes when a member or type without the suffix exists. Unlike the other versioning guidelines it applies to applications too, as a naming rule (CA1711 is shared with FDG3052, FDG3055, FDG3062, and FDG3063).
+  notes: CA1711 reports the Ex and New suffixes when a member or type without the suffix exists. Unlike the other versioning guidelines it applies to applications too, as a naming rule (CA1711 is shared with FDG3052, FDG3055, FDG3062, and FDG3063). Removing the suffix renames a public member or type, which changes the public API, so the fix is breaking; CA1711 has no code fix.
 - id: FDG3024
   strength: DO
   text: use the “64” suffix when introducing versions of APIs that operate on a 64-bit integer (a long integer) instead of a 32-bit integer. You only need to take this approach when the existing 32-bit API exists; don’t do it for brand-new APIs with only a 64-bit version.
@@ -1529,7 +1529,7 @@
       - CA1710
       - CA1711
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1538,7 +1538,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 and CA1711 have no code fix.
 - id: FDG3049
   strength: DO
   text: add the suffix “Attribute” to names of custom attribute classes.
@@ -1627,7 +1627,7 @@
     diagnostics:
       - CA1711
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1636,7 +1636,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public type changes the public API, so the fix is breaking; CA1711 has no code fix.
 - id: FDG3053
   strength: DO
   text: add the suffix “EventArgs.”
@@ -1698,7 +1698,7 @@
     diagnostics:
       - CA1711
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1707,7 +1707,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public type changes the public API, so the fix is breaking; CA1711 has no code fix.
 - id: FDG3056
   strength: DO
   text: add the suffix “Exception.”
@@ -1888,7 +1888,7 @@
     diagnostics:
       - CA1711
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1897,7 +1897,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public type changes the public API, so the fix is breaking; CA1711 has no code fix.
 - id: FDG3063
   strength: DO NOT
   text: use “Flag” or “Flags” suffixes in enum type names.
@@ -1921,7 +1921,7 @@
     diagnostics:
       - CA1711
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1930,7 +1930,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public type changes the public API, so the fix is breaking; CA1711 has no code fix.
 - id: FDG3064
   strength: DO NOT
   text: use a prefix on enumeration value names (e.g., “ad” for ADO enums, “rtf” for rich text enums).

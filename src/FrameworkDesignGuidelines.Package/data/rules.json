@@ -819,7 +819,7 @@
       "diagnostics": [
         "CA1711"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1189,7 +1189,7 @@
         "CA1710",
         "CA1711"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1253,7 +1253,7 @@
       "diagnostics": [
         "CA1711"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1299,7 +1299,7 @@
       "diagnostics": [
         "CA1711"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1407,7 +1407,7 @@
       "diagnostics": [
         "CA1711"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1423,7 +1423,7 @@
       "diagnostics": [
         "CA1711"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -7478,6 +7478,7 @@
     "CA1065",
     "CA1707",
     "CA1710",
+    "CA1711",
     "CA1725",
     "CA1819",
     "CA2201",
