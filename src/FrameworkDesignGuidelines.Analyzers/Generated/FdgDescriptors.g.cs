@@ -619,6 +619,195 @@ internal static class FdgDescriptors
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7064.md");
 
+    public static readonly DiagnosticDescriptor FDG8002 = new DiagnosticDescriptor(
+        id: "FDG8002",
+        title: "DO remember that arrays are mutable types—even arrays of immutable types.",
+        messageFormat: "Callers can change the elements of the read-only array field '{0}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8002.md");
+
+    public static readonly DiagnosticDescriptor FDG8011 = new DiagnosticDescriptor(
+        id: "FDG8011",
+        title: "AVOID overloading custom attribute constructors.",
+        messageFormat: "Give the attribute '{0}' a single constructor",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8011.md");
+
+    public static readonly DiagnosticDescriptor FDG8014 = new DiagnosticDescriptor(
+        id: "FDG8014",
+        title: "DO NOT use `ArrayList` or `List<T>` in public APIs.",
+        messageFormat: "Do not use ArrayList in the signature of '{0}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8014.md");
+
+    public static readonly DiagnosticDescriptor FDG8015 = new DiagnosticDescriptor(
+        id: "FDG8015",
+        title: "DO NOT use `Hashtable` or `Dictionary<TKey,TValue>` in public APIs.",
+        messageFormat: "Do not use '{0}' in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8015.md");
+
+    public static readonly DiagnosticDescriptor FDG8016 = new DiagnosticDescriptor(
+        id: "FDG8016",
+        title: "DO NOT use `IEnumerator<T>`, `IEnumerator`, or any other type that implements either of these interfaces, except as the return type of a `GetEnumerator` method.",
+        messageFormat: "Do not use the enumerator type '{0}' in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8016.md");
+
+    public static readonly DiagnosticDescriptor FDG8017 = new DiagnosticDescriptor(
+        id: "FDG8017",
+        title: "DO NOT implement both `IEnumerator<T>` and `IEnumerable<T>` on the same type. The same applies to the non-generic interfaces `IEnumerator` and `IEnumerable`.",
+        messageFormat: "Type '{0}' should not be both a collection and an enumerator",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8017.md");
+
+    public static readonly DiagnosticDescriptor FDG8026 = new DiagnosticDescriptor(
+        id: "FDG8026",
+        title: "DO NOT return null values from collection properties or from methods returning collections. Return an empty collection or an empty array instead.",
+        messageFormat: "Return an empty collection instead of null from '{0}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8026.md");
+
+    public static readonly DiagnosticDescriptor FDG8031 = new DiagnosticDescriptor(
+        id: "FDG8031",
+        title: "DO use byte arrays instead of collections of bytes.",
+        messageFormat: "Use a byte array instead of '{0}' in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8031.md");
+
+    public static readonly DiagnosticDescriptor FDG8050 = new DiagnosticDescriptor(
+        id: "FDG8050",
+        title: "DO NOT implement `ICloneable`.",
+        messageFormat: "Type '{0}' should not implement ICloneable",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8050.md");
+
+    public static readonly DiagnosticDescriptor FDG8051 = new DiagnosticDescriptor(
+        id: "FDG8051",
+        title: "DO NOT use `ICloneable` in public APIs.",
+        messageFormat: "Do not use ICloneable in the signature of '{0}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8051.md");
+
+    public static readonly DiagnosticDescriptor FDG8053 = new DiagnosticDescriptor(
+        id: "FDG8053",
+        title: "DO implement `IEquatable<T>` on value types.",
+        messageFormat: "Value type '{0}' should implement IEquatable<{0}>",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8053.md");
+
+    public static readonly DiagnosticDescriptor FDG8057 = new DiagnosticDescriptor(
+        id: "FDG8057",
+        title: "DO implement `IEquatable<T>` any time you implement `IComparable<T>`.",
+        messageFormat: "Type '{0}' implements IComparable<{1}> but not IEquatable<{1}>",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8057.md");
+
+    public static readonly DiagnosticDescriptor FDG8070 = new DiagnosticDescriptor(
+        id: "FDG8070",
+        title: "DO NOT implement value equality on mutable reference types.",
+        messageFormat: "Type '{0}' has value equality but is mutable",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8070.md");
+
+    public static readonly DiagnosticDescriptor FDG8082 = new DiagnosticDescriptor(
+        id: "FDG8082",
+        title: "DO NOT return an empty string or null from `ToString`.",
+        messageFormat: "ToString of '{0}' should not return null or an empty string",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8082.md");
+
+    public static readonly DiagnosticDescriptor FDG8088 = new DiagnosticDescriptor(
+        id: "FDG8088",
+        title: "DO make the `(SerializationInfo info, StreamingContext context)` serialization constructor `protected` (`private` for sealed types) when implementing `ISerializable`.",
+        messageFormat: "Make the serialization constructor of '{0}' {1}",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8088.md");
+
+    public static readonly DiagnosticDescriptor FDG8089 = new DiagnosticDescriptor(
+        id: "FDG8089",
+        title: "DO implement the `ISerializable` members explicitly.",
+        messageFormat: "Implement ISerializable.GetObjectData explicitly in '{0}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8089.md");
+
+    public static readonly DiagnosticDescriptor FDG8096 = new DiagnosticDescriptor(
+        id: "FDG8096",
+        title: "DO NOT use `XmlNode` or `XmlDocument` to represent XML data. Instead, favor using instances of `IXPathNavigable`, `XmlReader`, `XmlWriter`, or subtypes of `XNode`. `XmlNode` and `XmlDocument` are not designed for exposing in public APIs.",
+        messageFormat: "Do not use '{0}' in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8096.md");
+
+    public static readonly DiagnosticDescriptor FDG8102 = new DiagnosticDescriptor(
+        id: "FDG8102",
+        title: "DO implement `IEquatable<T>`, with the same behavior as the operator, on any type that defines `operator==`.",
+        messageFormat: "Type '{0}' defines operator == but does not implement IEquatable<{0}>",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8102.md");
+
+    public static readonly DiagnosticDescriptor FDG8103 = new DiagnosticDescriptor(
+        id: "FDG8103",
+        title: "DO implement `operator==` with the mathematical reflexive and transitive properties.",
+        messageFormat: "operator ==({0}, {1}) needs the overload operator ==({2}, {3})",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8103.md");
+
+    public static readonly DiagnosticDescriptor FDG8104 = new DiagnosticDescriptor(
+        id: "FDG8104",
+        title: "AVOID defining `operator==` with arguments of different types.",
+        messageFormat: "Avoid operator == with arguments of different types ({0} and {1})",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8104.md");
+
+    public static readonly DiagnosticDescriptor FDG8106 = new DiagnosticDescriptor(
+        id: "FDG8106",
+        title: "AVOID overloading equality operators on mutable reference types.",
+        messageFormat: "Avoid overloading equality operators on the mutable reference type '{0}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8106.md");
+
     public static readonly DiagnosticDescriptor FDGA003 = new DiagnosticDescriptor(
         id: "FDGA003",
         title: "DO place the closing brace on its own line, except the end of a `do`..`while` statement.",

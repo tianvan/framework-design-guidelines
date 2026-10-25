@@ -533,3 +533,114 @@ counted. Every report was checked, except CA1062, whose reports are the 56 of th
   only when the target framework has the throw helpers, and every sample builds for netstandard2.0 or net472, so they
   cannot report here. CA2237 reports only on .NET Framework; the internal samples build for net472 and report none,
   and polly turns it off.
+
+## Chapter 8 mappings and analyzers
+
+Package 0.1.0 with the mappings of chapter 8 and its six analyzers (21 diagnostics), enabled by the profile
+globalconfigs (library for the open-source samples, application for the internal ones). The mapped SDK diagnostics
+and the new analyzers are counted. Every report was checked; the 133 CA2227 reports and the 86 CA1056 reports of the
+internal samples were checked by their shape, which is the same in each. The counts of FDG8015, FDG8026, FDG8053 and
+FDG8096 are those of the rerun after fix round 1.
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| CA1002 | FDG8014 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1 | None needed. |
+| CA1010 | FDG8034 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1018 | FDG8006 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1019 | FDG8008, FDG8009, FDG8010 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1036 | FDG8058 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1046 | FDG8100 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1054 | FDG8091 | 0 | 0 | 0 | 6 | 2 | 8 | 0 | 8 | None needed. |
+| CA1055 | FDG8091 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | None needed. |
+| CA1056 | FDG8091 | 0 | 0 | 0 | 4 | 82 | 86 | 0 | 86 | None needed. |
+| CA1058 | FDG8037, FDG8098 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1065 | FDG8066, FDG8075, FDG8083, FDG8101 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | None needed (see notes). |
+| CA1066 | FDG8065, FDG8068 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1 | None needed. |
+| CA1067 | FDG8055 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1710 | FDG8005, FDG8038, FDG8039 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1813 | FDG8012 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1814 | FDG8004 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1815 | FDG8067 | 1 | 0 | 0 | 0 | 1 | 2 | 1 | 1 | FDG8067 is now a suggestion; see the notes. |
+| CA1819 | FDG8003, FDG8032 | 0 | 0 | 0 | 0 | 6 | 6 | 0 | 6 | None needed. |
+| CA2227 | FDG8020 | 0 | 0 | 0 | 0 | 133 | 133 | 0 | 133 | None needed (see notes). |
+| CA2231 | FDG8105 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA2234 | FDG8094 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG8002 | FDG8002 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG8011 | FDG8011 | 0 | 3 | 5 | 0 | 0 | 8 | 0 | 8 | None needed (see notes). |
+| FDG8014 | FDG8014 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG8015 | FDG8015 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1 | None needed. |
+| FDG8016 | FDG8016 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG8017 | FDG8017 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG8026 | FDG8026 | 0 | 1 | 11 | 0 | 0 | 12 | 0 | 12 | Narrowed after the first run (15 reports, 3 FP); see the notes. |
+| FDG8031 | FDG8031 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | None needed. |
+| FDG8050 | FDG8050 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1 | None needed. |
+| FDG8051 | FDG8051 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG8053 | FDG8053 | 3 | 34 | 4 | 0 | 0 | 41 | 0 | 41 | Narrowed after the first run (43 reports, 1 FP); see the notes. |
+| FDG8057 | FDG8057 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG8070 | FDG8070 | 0 | 0 | 2 | 0 | 0 | 2 | 0 | 2 | None needed. |
+| FDG8082 | FDG8082 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1 | None needed. |
+| FDG8088 | FDG8088 | 0 | 1 | 5 | 0 | 0 | 6 | 0 | 6 | None needed. |
+| FDG8089 | FDG8089 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG8096 | FDG8096 | 0 | 0 | 7 | 0 | 0 | 7 | 0 | 7 | None needed; the message no longer shows `?` (see notes). |
+| FDG8102 | FDG8102 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG8103 | FDG8103 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG8104 | FDG8104 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG8106 | FDG8106 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+
+### Notes
+
+- **CA1002.** newtonsoft-json's 1 is an overridable method of its contract resolver that returns `List<T>`. True under
+  FDG8014, which asks for collection types in public APIs (library only).
+- **CA1054, CA1055 and CA1056.** Every report is a string parameter, return value or property whose name holds "url"
+  or "uri": in internal-a, 6 parameters and 4 properties; in internal-b, 2 parameters, 1 return value and 82
+  properties of data model classes. True under FDG8091 (DO use System.Uri), whose application profile keeps the
+  warning; the test profile turns these diagnostics off.
+- **CA1065.** The one report is the same `Dispose` method of internal-a as in the chapter 5 sections. It is outside
+  FDG8066, FDG8075, FDG8083 and FDG8101 (Equals, GetHashCode, ToString and the equality operators), and a true warning
+  under section 9.4.1.
+- **CA1066.** serilog's 1 is a struct that overrides Equals without `IEquatable<T>`. True.
+- **CA1815.** serilog's 1 is a public struct that does not override Equals. True. internal-b's 1 is a struct that
+  holds only const fields: the default Equals has no field to compare, so the reason of the body (a slow
+  reflection-based Equals) does not apply. 1 of 2 is above 1 in 20, and CA1815 cannot be narrowed, so FDG8067 is now
+  a suggestion in every profile.
+- **CA1819.** internal-b's 6 are properties of array type. True under FDG8003 and FDG8032.
+- **CA2227.** internal-b's 133 are `{ get; set; }` properties of type `List<T>` or `ObservableCollection<T>` in data
+  model classes. True under FDG8020 (DO NOT provide settable collection properties); the rule stays a warning.
+- **FDG8011.** polly's 3 are attribute classes in its polyfill folder that copy attributes of newer frameworks;
+  newtonsoft-json's 5 are its serialization attributes. Each declares more than one public constructor, so all are
+  true. polly's copies must keep the constructors of the attributes they copy, so a suppression is its fix.
+- **FDG8015.** serilog's 1 is a public method that takes a `Dictionary<TKey, TValue>`. True.
+- **FDG8026.** The first run had 15 reports: polly's 1 (a helper that returns null as a nullable `string[]`, with a
+  suppression of the SonarAnalyzer rule for the same guideline) and newtonsoft-json's 14. Of these, 11 return null as
+  `byte[]` from its readers' `ReadAsBytes` methods and their async forms. True. 3 return null as the JSON property
+  node type, which implements `IList<T>` of its children but is a node of a document tree, for which null means "not
+  found". 3 of 15 is above 1 in 20, so in fix round 1 the analyzer was narrowed to arrays, `IEnumerable`,
+  `IEnumerable<T>`, and types that implement a collection interface and are, or derive from, a type of the
+  System.Collections namespaces. The rerun reports the 12 true ones and none of the 3. A collection class that
+  implements the interfaces without such a base type is no longer seen; the coverage stays partial.
+- **FDG8031.** internal-b's 1 is a `List<byte>` in the signature of a public member. True.
+- **FDG8050.** newtonsoft-json's 1 is its token base class, which implements `ICloneable`. True.
+- **FDG8053.** The first run had 43 reports: serilog's 3, polly's 35, newtonsoft-json's 4 and internal-b's 1.
+  internal-b's 1 is the struct with only const fields of CA1815: it has no instance field to compare, so it was
+  counted as a false positive. 1 of 43 is below 1 in 20, but the case is the same as the one the body of FDG8067 does
+  not cover, so in fix round 1 the analyzer was narrowed to structs with an instance field. The rerun reports 41:
+  internal-b's struct and one empty struct of polly are no longer reported. polly's 34 are readonly structs that
+  carry the arguments of its callbacks and events; they are not compared, but the guideline has no exception for
+  them, so they are true by the letter. serilog's 3 and newtonsoft-json's 4 are public structs without the
+  interface. True.
+- **FDG8070.** newtonsoft-json's 2 are classes that override Equals and have mutable instance fields (its value token
+  and its naming strategy). True.
+- **FDG8082.** newtonsoft-json's 1 is the `ToString` override of its value token, which returns `string.Empty` for a
+  null value. True.
+- **FDG8088.** polly's 1 is a private serialization constructor of an unsealed class; newtonsoft-json's 5
+  are public serialization constructors. True.
+- **FDG8096.** newtonsoft-json's 7 are public methods of its static entry-point class that take or return `XmlNode`
+  or `XmlDocument`. True. The first run showed the nullable annotation in the message (`'XmlNode?'`); fix round 1
+  removed it, and the rerun has the same 7 reports with the plain type name.
+- **Zero reports.** polly's 0 for every SDK diagnostic is measured with its own configuration: its library
+  globalconfig keeps all of them at warning (CA2231 at error), and its library code has no report; its test and
+  benchmark globalconfigs turn several off. The 0-report analyzers and mappings pass gate 2 (Ruling 21).
+- **Fix round 1 (rerun).** The package was rebuilt with the FDG8026 and FDG8053 narrowings and the message change of
+  the signature analyzer (no top-level nullable annotation in the type names of FDG8015, FDG8016, FDG8031 and
+  FDG8096), and FDG8015, FDG8026, FDG8053 and FDG8096 were measured again. FDG8015 and FDG8096 are unchanged; FDG8026
+  went from 15 to 12 and FDG8053 from 43 to 41. FDG8067 became a suggestion after the run, which changes no count.

@@ -285,6 +285,87 @@ chapters:
       - section: "Summary"
         disposition: background
         note: "The chapter summary states no guideline."
+  - token: "8"
+    file: ch08.xhtml
+    rules: ch08-usage.yaml
+    title: Usage Guidelines
+    testProfile: on
+    nonGuideline:
+      - section: "8"
+        disposition: background
+        note: "The chapter introduction (guidelines for using common types in publicly accessible APIs: direct use of built-in types such as Collection<T> and the serialization attributes, implementing common interfaces, inheriting from common base classes, and overloading common operators in the last section) is background for the whole chapter."
+      - section: "8.1"
+        disposition: background
+        note: "The one-sentence introduction (the section covers arrays in publicly accessible APIs) is background for FDG8001 to FDG8004."
+      - section: "8.2"
+        disposition: rationale
+        note: "The introduction defines custom attributes (System.Attribute, the NameAttribute example), their properties, required arguments (set through constructor parameters, the ConditionalAttribute example) and optional arguments (set through property setters, the AttributeUsageAttribute example). These definitions are rationale for FDG8005 to FDG8012."
+      - section: "8.3"
+        disposition: rationale
+        note: "The definition of a collection (a type designed to manipulate a group of objects with a common characteristic, which in this section means a type implementing IEnumerable or IEnumerable<T>) is rationale for FDG8013 to FDG8043."
+      - section: "8.3.1"
+        disposition: background
+        note: "The one-sentence introduction (the subsection covers collections used as parameters) is background for FDG8018 and FDG8019."
+      - section: "8.3.2"
+        disposition: background
+        note: "The one-sentence introduction (the subsection covers collections returned from methods and property getters) is background for FDG8020 to FDG8026."
+      - section: "8.3.2.1"
+        disposition: rationale
+        note: "The definitions of snapshot collections (a state at some point in time, such as the rows a database query returned) and live collections (always the current state, such as the items of a ComboBox) are rationale for FDG8027 and FDG8028."
+      - section: "8.3.3"
+        disposition: background
+        note: "The introduction (arrays and collections are used in very similar ways but differ in performance, usability and versioning) is background for FDG8029 to FDG8032."
+      - section: "8.3.4"
+        disposition: background
+        note: "The one-sentence introduction (follow these guidelines when implementing custom collections) is background for FDG8033 to FDG8037."
+      - section: "8.3.4.1"
+        disposition: rationale
+        note: "The two reasons for creating collections (a new data structure with its own operations, such as List<T>, LinkedList<T> or Stack<T>, used mostly inside implementations; and a specialized collection for a specific set of items, such as StringCollection, exposed in APIs) are rationale for FDG8038 to FDG8043."
+      - section: "8.4"
+        disposition: background
+        note: "The introduction (DateTime stores a local or UTC time; DateTimeOffset adds the offset from UTC and so represents a point in time more precisely), the Moore annotation on naming DateTimeOffset (Date + Time + Offset) and the listing of the main properties of the two types are background for FDG8044 to FDG8049."
+      - section: "8.5"
+        disposition: rationale
+        note: "The description of ICloneable (a single Clone method), of deep and shallow copies, and the reason not to implement it (its contract does not say which copy it makes, so consumers cannot rely on it), with the Cwalina annotation (never ship an interface without both implementations and consumers; the framework had no consumer of ICloneable), are rationale for FDG8050 to FDG8052."
+      - section: "8.6"
+        disposition: background
+        note: "The introduction (IComparable<T> specifies ordering and is used mainly for sorting; IEquatable<T> specifies equality and is used mainly for look-ups) with the two interface definitions is background for FDG8053 to FDG8058."
+      - section: "8.7"
+        disposition: background
+        note: "The section only says that IDisposable is the Dispose Pattern of section 9.3; it states no guideline."
+      - section: "8.8"
+        disposition: background
+        note: "The introduction (Nullable<T> represents value types with null values; C# has aliases, lifted operators and the null-coalescing operator for it) with its two code examples is background for FDG8059 to FDG8062."
+      - section: "8.9"
+        disposition: background
+        note: "The one-sentence introduction (System.Object has several commonly overridden members, covered in the following subsections) is background for FDG8063 to FDG8085."
+      - section: "8.9.1"
+        disposition: rationale
+        note: "The definitions of value equality (the default Equals of value types, which compares all fields through reflection and is often unacceptably inefficient) and of reference equality (the default Equals of reference types, which some types such as String override with value equality) are rationale for FDG8063 to FDG8070."
+      - section: "8.9.2"
+        disposition: rationale
+        note: "The introduction (a hash code corresponds to the identity of an object as an associated implementation of equality determines it, and hashtables use hash codes) is rationale for FDG8071 to FDG8075."
+      - section: "8.9.3"
+        disposition: rationale
+        note: "The introduction (ToString is meant for general display and debugging; the default implementation returns the type name, is not very useful and should be overridden) is rationale for FDG8076 to FDG8085."
+      - section: "8.10"
+        disposition: background
+        note: "The introduction (serialization converts an object into a form that can be persisted or transported; .NET has many serialization technologies, and most of the serialization guidance of the second edition moved to Appendix B because formats change quickly) is background for FDG8086 to FDG8090."
+      - section: "8.11"
+        disposition: background
+        note: "The introduction (System.Uri represents URIs, which strings can also represent; the section helps choose between Uri and String) is background for FDG8091 to FDG8095."
+      - section: "8.11.1"
+        disposition: background
+        note: "The one-sentence introduction (the subsection helps implement code that uses System.Uri) is background for FDG8094 and FDG8095."
+      - section: "8.12"
+        disposition: background
+        note: "The one-sentence introduction (the section covers System.Xml types that can represent XML data) is background for FDG8096 to FDG8098."
+      - section: "8.13"
+        disposition: background
+        note: "The introduction (operator== and operator!= are called the equality operators) is background for FDG8099 to FDG8107. The closing sentence of the chapter (the next chapter covers design patterns) follows FDG8107 and is kept in its body by the extractor; it states no guideline."
+    references:
+      - { file: ch08-usage-arrays-attributes-collections, sections: ["8.1", "8.2", "8.3"] }
+      - { file: ch08-usage-types, sections: ["8.4", "8.5", "8.6", "8.7", "8.8", "8.9", "8.10", "8.11", "8.12", "8.13"] }
   - token: "A"
     file: app01.xhtml
     rules: appA-coding-style.yaml

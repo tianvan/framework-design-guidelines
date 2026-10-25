@@ -6187,6 +6187,1605 @@
       "naming": null
     },
     {
+      "id": "FDG8001",
+      "strength": "DO",
+      "text": "prefer using collections over arrays in public APIs. Section 8.3.3 provides details about how to choose between collections and arrays.",
+      "section": "8.1 Arrays",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8002",
+      "strength": "DO",
+      "text": "remember that arrays are mutable types—even arrays of immutable types.",
+      "section": "8.1 Arrays",
+      "diagnostics": [
+        "FDG8002"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8003",
+      "strength": "AVOID",
+      "text": "array properties.",
+      "section": "8.1 Arrays",
+      "diagnostics": [
+        "CA1819"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8004",
+      "strength": "CONSIDER",
+      "text": "using jagged arrays instead of multidimensional arrays.",
+      "section": "8.1 Arrays",
+      "diagnostics": [
+        "CA1814"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8005",
+      "strength": "DO",
+      "text": "name custom attribute classes with the suffix “Attribute.”",
+      "section": "8.2 Attributes",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8006",
+      "strength": "DO",
+      "text": "apply the `AttributeUsageAttribute` to custom attributes.",
+      "section": "8.2 Attributes",
+      "diagnostics": [
+        "CA1018"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8007",
+      "strength": "DO",
+      "text": "provide settable properties for optional arguments.",
+      "section": "8.2 Attributes",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8008",
+      "strength": "DO",
+      "text": "provide get-only properties for required arguments.",
+      "section": "8.2 Attributes",
+      "diagnostics": [
+        "CA1019"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8009",
+      "strength": "DO",
+      "text": "provide constructor parameters to initialize properties corresponding to required arguments. Each parameter should have the same name (although with different casing) as the corresponding property.",
+      "section": "8.2 Attributes",
+      "diagnostics": [
+        "CA1019"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8010",
+      "strength": "DO NOT",
+      "text": "provide constructor parameters to initialize properties corresponding to the optional arguments.",
+      "section": "8.2 Attributes",
+      "diagnostics": [
+        "CA1019"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8011",
+      "strength": "AVOID",
+      "text": "overloading custom attribute constructors.",
+      "section": "8.2 Attributes",
+      "diagnostics": [
+        "FDG8011"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8012",
+      "strength": "DO",
+      "text": "seal custom attribute classes, if possible. This makes the look-up for the attribute faster.",
+      "section": "8.2 Attributes",
+      "diagnostics": [
+        "CA1813"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8013",
+      "strength": "DO NOT",
+      "text": "use weakly typed collections in public APIs.",
+      "section": "8.3 Collections",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8014",
+      "strength": "DO NOT",
+      "text": "use `ArrayList` or `List<T>` in public APIs.",
+      "section": "8.3 Collections",
+      "diagnostics": [
+        "FDG8014",
+        "CA1002"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8015",
+      "strength": "DO NOT",
+      "text": "use `Hashtable` or `Dictionary<TKey,TValue>` in public APIs.",
+      "section": "8.3 Collections",
+      "diagnostics": [
+        "FDG8015"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8016",
+      "strength": "DO NOT",
+      "text": "use `IEnumerator<T>`, `IEnumerator`, or any other type that implements either of these interfaces, except as the return type of a `GetEnumerator` method.",
+      "section": "8.3 Collections",
+      "diagnostics": [
+        "FDG8016"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8017",
+      "strength": "DO NOT",
+      "text": "implement both `IEnumerator<T>` and `IEnumerable<T>` on the same type. The same applies to the non-generic interfaces `IEnumerator` and `IEnumerable`.",
+      "section": "8.3 Collections",
+      "diagnostics": [
+        "FDG8017"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8018",
+      "strength": "DO",
+      "text": "use the least-specialized type possible as a parameter type. Most members taking collections as parameters use the `IEnumerable<T>` interface.",
+      "section": "8.3.1 Collection Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8019",
+      "strength": "AVOID",
+      "text": "using `ICollection<T>` or `ICollection` as a parameter just to access the `Count` property.",
+      "section": "8.3.1 Collection Parameters",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8020",
+      "strength": "DO NOT",
+      "text": "provide settable collection properties.",
+      "section": "8.3.2 Collection Properties and Return Values",
+      "diagnostics": [
+        "CA2227"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8021",
+      "strength": "DO",
+      "text": "use `Collection<T>` or a subclass of `Collection<T>` for properties or return values representing read/write collections.",
+      "section": "8.3.2 Collection Properties and Return Values",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8022",
+      "strength": "DO",
+      "text": "use `ReadOnlyCollection<T>`, a subclass of `ReadOnlyCollection<T>`, or in rare cases `IEnumerable<T>` for properties or return values representing read-only collections.",
+      "section": "8.3.2 Collection Properties and Return Values",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8023",
+      "strength": "CONSIDER",
+      "text": "using subclasses of generic base collections instead of using the collections directly.",
+      "section": "8.3.2 Collection Properties and Return Values",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8024",
+      "strength": "CONSIDER",
+      "text": "returning a subclass of `Collection<T>` or `ReadOnlyCollection<T>` from very commonly used methods and properties.",
+      "section": "8.3.2 Collection Properties and Return Values",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8025",
+      "strength": "CONSIDER",
+      "text": "using a keyed collection if the items stored in the collection have unique keys (e.g., names, IDs). Keyed collections are collections that can be indexed by both an integer and a key, and they are usually implemented by inheriting from `KeyedCollection<TKey,TItem>`.",
+      "section": "8.3.2 Collection Properties and Return Values",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8026",
+      "strength": "DO NOT",
+      "text": "return null values from collection properties or from methods returning collections. Return an empty collection or an empty array instead.",
+      "section": "8.3.2 Collection Properties and Return Values",
+      "diagnostics": [
+        "FDG8026"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8027",
+      "strength": "DO NOT",
+      "text": "return snapshot collections from properties. Properties should return live collections.",
+      "section": "8.3.2.1 Snapshots Versus Live Collections",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8028",
+      "strength": "DO",
+      "text": "use either a snapshot collection or a live `IEnumerable<T>` (or its subtype) to represent collections that are volatile (i.e., that can change without explicitly modifying the collection).",
+      "section": "8.3.2.1 Snapshots Versus Live Collections",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8029",
+      "strength": "DO",
+      "text": "prefer collections over arrays.",
+      "section": "8.3.3 Choosing Between Arrays and Collections",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8030",
+      "strength": "CONSIDER",
+      "text": "using arrays in low-level APIs to minimize memory consumption and maximize performance.",
+      "section": "8.3.3 Choosing Between Arrays and Collections",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8031",
+      "strength": "DO",
+      "text": "use byte arrays instead of collections of bytes.",
+      "section": "8.3.3 Choosing Between Arrays and Collections",
+      "diagnostics": [
+        "FDG8031"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8032",
+      "strength": "DO NOT",
+      "text": "use arrays for properties if the property would have to return a new array (e.g., a copy of an internal array) every time the property getter is called.",
+      "section": "8.3.3 Choosing Between Arrays and Collections",
+      "diagnostics": [
+        "CA1819"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8033",
+      "strength": "CONSIDER",
+      "text": "inheriting from `Collection<T>`, `ReadOnlyCollection<T>`, or `KeyedCollection<TKey,TItem>` when designing new collections.",
+      "section": "8.3.4 Implementing Custom Collections",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8034",
+      "strength": "DO",
+      "text": "implement `IEnumerable<T>` when designing new collections. Consider implementing `ICollection<T>`, `IReadOnlyList<T>`, or even `IList<T>` where it makes sense.",
+      "section": "8.3.4 Implementing Custom Collections",
+      "diagnostics": [
+        "CA1010"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8035",
+      "strength": "CONSIDER",
+      "text": "implementing non-generic collection interfaces (`IList` and `ICollection`) if the collection will often be passed to APIs taking these interfaces as input.",
+      "section": "8.3.4 Implementing Custom Collections",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8036",
+      "strength": "AVOID",
+      "text": "implementing collection interfaces on types with complex APIs unrelated to the concept of a collection.",
+      "section": "8.3.4 Implementing Custom Collections",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8037",
+      "strength": "DO NOT",
+      "text": "inherit from non-generic base collections such as `CollectionBase`. Use `Collection<T>`, `ReadOnlyCollection<T>`, and `KeyedCollection<TKey,TItem>` instead.",
+      "section": "8.3.4 Implementing Custom Collections",
+      "diagnostics": [
+        "CA1058"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8038",
+      "strength": "DO",
+      "text": "use the “Dictionary” suffix in names of abstractions implementing `IDictionary` or `IDictionary<TKey,TValue>`.",
+      "section": "8.3.4.1 Naming Custom Collections",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8039",
+      "strength": "DO",
+      "text": "use the “Collection” suffix in names of types implementing `IEnumerable` (or any of its descendants) and representing a list of items.",
+      "section": "8.3.4.1 Naming Custom Collections",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8040",
+      "strength": "DO",
+      "text": "use the appropriate data structure name for custom data structures.",
+      "section": "8.3.4.1 Naming Custom Collections",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8041",
+      "strength": "AVOID",
+      "text": "using any suffixes implying a particular implementation, such as “LinkedList” or “Hashtable,” in names of collection abstractions.",
+      "section": "8.3.4.1 Naming Custom Collections",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8042",
+      "strength": "CONSIDER",
+      "text": "prefixing collection names with the name of the item type. For example, a collection storing items of type `Address` (implementing `IEnumerable<Address>`) should be named `AddressCollection`. If the item type is an interface, the “I” prefix of the item type can be omitted. Thus, a collection of `IDisposable` items can be called `DisposableCollection`.",
+      "section": "8.3.4.1 Naming Custom Collections",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8043",
+      "strength": "CONSIDER",
+      "text": "using the “ReadOnly” prefix in names of read-only collections if a corresponding writeable collection might be added or already exists in the framework.",
+      "section": "8.3.4.1 Naming Custom Collections",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8044",
+      "strength": "DO",
+      "text": "use `DateTimeOffset` whenever you are referring to an exact point in time. For example, use it to calculate “now,” transaction times, file change times, logging event times, and so on. If the time zone is not known, use it with UTC. These usages are much more common than the scenarios where `DateTime` is preferred, so this should be considered the default.",
+      "section": "8.4 DateTime and DateTimeOffset",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8045",
+      "strength": "DO",
+      "text": "use `DateTime` for any cases where the absolute point in time does not apply, such as store opening times that apply across time zones.",
+      "section": "8.4 DateTime and DateTimeOffset",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8046",
+      "strength": "DO",
+      "text": "use `DateTime` when the time zone either is not known or is sometimes not known. This may happen in cases where it comes from a legacy data source.",
+      "section": "8.4 DateTime and DateTimeOffset",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8047",
+      "strength": "DO NOT",
+      "text": "use `DateTimeKind` if `DateTimeOffset` can be used instead.",
+      "section": "8.4 DateTime and DateTimeOffset",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8048",
+      "strength": "DO",
+      "text": "use `DateTime` with a 00:00:00 time component rather than `DateTimeOffset` to represent whole dates, such as a date of birth.",
+      "section": "8.4 DateTime and DateTimeOffset",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8049",
+      "strength": "DO",
+      "text": "use `TimeSpan` to represent times of day without a date.",
+      "section": "8.4 DateTime and DateTimeOffset",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8050",
+      "strength": "DO NOT",
+      "text": "implement `ICloneable`.",
+      "section": "8.5 ICloneable",
+      "diagnostics": [
+        "FDG8050"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8051",
+      "strength": "DO NOT",
+      "text": "use `ICloneable` in public APIs.",
+      "section": "8.5 ICloneable",
+      "diagnostics": [
+        "FDG8051"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8052",
+      "strength": "CONSIDER",
+      "text": "defining the `Clone` method on types that need a cloning mechanism. Ensure that the documentation clearly states whether it is a deep-copy or a shallow-copy.",
+      "section": "8.5 ICloneable",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8053",
+      "strength": "DO",
+      "text": "implement `IEquatable<T>` on value types.",
+      "section": "8.6 IComparable<T> and IEquatable<T>",
+      "diagnostics": [
+        "FDG8053"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8054",
+      "strength": "DO",
+      "text": "follow the same guidelines as for overriding `Object.Equals` when implementing `IEquatable<T>.Equals`.",
+      "section": "8.6 IComparable<T> and IEquatable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8055",
+      "strength": "DO",
+      "text": "override `Object.Equals` whenever implementing `IEquatable<T>`.",
+      "section": "8.6 IComparable<T> and IEquatable<T>",
+      "diagnostics": [
+        "CA1067"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8056",
+      "strength": "CONSIDER",
+      "text": "overloading `operator==` and `operator!=` whenever implementing `IEquatable<T>`.",
+      "section": "8.6 IComparable<T> and IEquatable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8057",
+      "strength": "DO",
+      "text": "implement `IEquatable<T>` any time you implement `IComparable<T>`.",
+      "section": "8.6 IComparable<T> and IEquatable<T>",
+      "diagnostics": [
+        "FDG8057"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8058",
+      "strength": "CONSIDER",
+      "text": "overloading comparison operators (<, >,<=, >=) whenever you implement `IComparable<T>`.",
+      "section": "8.6 IComparable<T> and IEquatable<T>",
+      "diagnostics": [
+        "CA1036"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8059",
+      "strength": "CONSIDER",
+      "text": "using `Nullable<T>` to represent values that might not be present (i.e., optional values). For example, use it when returning a strongly typed record from a database with a property representing an optional table column.",
+      "section": "8.8 Nullable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8060",
+      "strength": "DO NOT",
+      "text": "use `Nullable<T>` unless you would use a reference type in a similar manner, taking advantage of the fact that reference type values can be null.",
+      "section": "8.8 Nullable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8061",
+      "strength": "AVOID",
+      "text": "using `Nullable<bool>` to represent a general three-state value.",
+      "section": "8.8 Nullable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8062",
+      "strength": "AVOID",
+      "text": "using `System.DBNull`. Prefer `Nullable<T>` instead.",
+      "section": "8.8 Nullable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8063",
+      "strength": "DO",
+      "text": "comply with the contract defined for `Object.Equals` when overriding the method.",
+      "section": "8.9.1 Object.Equals",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8064",
+      "strength": "DO",
+      "text": "override `GetHashCode` whenever you override `Equals`.",
+      "section": "8.9.1 Object.Equals",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8065",
+      "strength": "CONSIDER",
+      "text": "implementing `IEquatable<T>` whenever overriding `Object.Equals`.",
+      "section": "8.9.1 Object.Equals",
+      "diagnostics": [
+        "CA1066"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8066",
+      "strength": "DO NOT",
+      "text": "throw exceptions from `Equals`.",
+      "section": "8.9.1 Object.Equals",
+      "diagnostics": [
+        "CA1065"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8067",
+      "strength": "DO",
+      "text": "override `Equals` on value types.",
+      "section": "8.9.1.1 Equals on Value Types",
+      "diagnostics": [
+        "CA1815"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8068",
+      "strength": "DO",
+      "text": "provide an overload of `Equals` taking the value type parameter by implementing `IEquatable<T>`.",
+      "section": "8.9.1.1 Equals on Value Types",
+      "diagnostics": [
+        "CA1066"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8069",
+      "strength": "CONSIDER",
+      "text": "overriding `Equals` to provide value equality if a reference type represents a value. For example, you might want to override `Equals` in reference types representing numbers or other mathematical entities.",
+      "section": "8.9.1.2 Equals on Reference Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8070",
+      "strength": "DO NOT",
+      "text": "implement value equality on mutable reference types.",
+      "section": "8.9.1.2 Equals on Reference Types",
+      "diagnostics": [
+        "FDG8070"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8071",
+      "strength": "DO",
+      "text": "override `GetHashCode` if you override `Object.Equals`.",
+      "section": "8.9.2 Object.GetHashCode",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8072",
+      "strength": "DO",
+      "text": "ensure that if the `Object.Equals` method returns true for any two objects, `GetHashCode` returns the same value for these objects.",
+      "section": "8.9.2 Object.GetHashCode",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8073",
+      "strength": "DO",
+      "text": "make every effort to ensure that `GetHashCode` generates a uniform distribution of numbers for all objects of a type.",
+      "section": "8.9.2 Object.GetHashCode",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8074",
+      "strength": "DO",
+      "text": "ensure that `GetHashCode` returns exactly the same value regardless of any changes that are made to the object.",
+      "section": "8.9.2 Object.GetHashCode",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8075",
+      "strength": "AVOID",
+      "text": "throwing exceptions from `GetHashCode`.",
+      "section": "8.9.2 Object.GetHashCode",
+      "diagnostics": [
+        "CA1065"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8076",
+      "strength": "DO",
+      "text": "override `ToString` whenever an interesting human-readable string can be returned.",
+      "section": "8.9.3 Object.ToString",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8077",
+      "strength": "DO",
+      "text": "try to keep the string returned from `ToString` short.",
+      "section": "8.9.3 Object.ToString",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8078",
+      "strength": "CONSIDER",
+      "text": "returning a unique string associated with the instance.",
+      "section": "8.9.3 Object.ToString",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8079",
+      "strength": "DO",
+      "text": "prefer a friendly name over a unique but not readable ID.",
+      "section": "8.9.3 Object.ToString",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8080",
+      "strength": "DO",
+      "text": "format the output of `ToString()` based on the current thread culture when returning culture-dependent information.",
+      "section": "8.9.3 Object.ToString",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8081",
+      "strength": "DO",
+      "text": "overload `ToString(string format)`, or implement `IFormattable`, if the string returned from `ToString()` is culture-sensitive or there are various ways to format the string. For example, `DateTime` provides the overload and implements `IFormattable`.",
+      "section": "8.9.3 Object.ToString",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8082",
+      "strength": "DO NOT",
+      "text": "return an empty string or null from `ToString`.",
+      "section": "8.9.3 Object.ToString",
+      "diagnostics": [
+        "FDG8082"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8083",
+      "strength": "AVOID",
+      "text": "throwing exceptions from `ToString`.",
+      "section": "8.9.3 Object.ToString",
+      "diagnostics": [
+        "CA1065"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8084",
+      "strength": "DO",
+      "text": "ensure that `ToString` has no observable side effects.",
+      "section": "8.9.3 Object.ToString",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8085",
+      "strength": "CONSIDER",
+      "text": "having the output of `ToString` be a valid input for any parsing methods on this type.",
+      "section": "8.9.3 Object.ToString",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8086",
+      "strength": "AVOID",
+      "text": "using serialization attributes or interfaces on public types in a general-purpose library, except for types that need to support serialization across AppDomains—such as Exception types.",
+      "section": "8.10 Serialization",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8087",
+      "strength": "DO",
+      "text": "consider backward and forward compatibility when creating or changing serializable types.",
+      "section": "8.10 Serialization",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8088",
+      "strength": "DO",
+      "text": "make the `(SerializationInfo info, StreamingContext context)` serialization constructor `protected` (`private` for sealed types) when implementing `ISerializable`.",
+      "section": "8.10 Serialization",
+      "diagnostics": [
+        "FDG8088"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8089",
+      "strength": "DO",
+      "text": "implement the `ISerializable` members explicitly.",
+      "section": "8.10 Serialization",
+      "diagnostics": [
+        "FDG8089"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8090",
+      "strength": "DO",
+      "text": "apply a link demand to `ISerializable.GetObjectData` implementation. This ensures that only fully trusted assemblies and the Runtime Serializer have access to the member.",
+      "section": "8.10 Serialization",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8091",
+      "strength": "DO",
+      "text": "use `System.Uri` to represent URI and URL data.",
+      "section": "8.11 Uri",
+      "diagnostics": [
+        "CA1054",
+        "CA1055",
+        "CA1056"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8092",
+      "strength": "CONSIDER",
+      "text": "providing string-based overloads for the most commonly used members with `System.Uri` parameters.",
+      "section": "8.11 Uri",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8093",
+      "strength": "DO NOT",
+      "text": "automatically overload all `Uri`-based members with a version that accepts a string.",
+      "section": "8.11 Uri",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8094",
+      "strength": "DO",
+      "text": "call the `Uri`-based overloads, if available.",
+      "section": "8.11.1 System.Uri Implementation Guidelines",
+      "diagnostics": [
+        "CA2234"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8095",
+      "strength": "DO NOT",
+      "text": "store URI/URL data in a string.",
+      "section": "8.11.1 System.Uri Implementation Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8096",
+      "strength": "DO NOT",
+      "text": "use `XmlNode` or `XmlDocument` to represent XML data. Instead, favor using instances of `IXPathNavigable`, `XmlReader`, `XmlWriter`, or subtypes of `XNode`. `XmlNode` and `XmlDocument` are not designed for exposing in public APIs.",
+      "section": "8.12 System.Xml Usage",
+      "diagnostics": [
+        "FDG8096"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8097",
+      "strength": "DO",
+      "text": "use `XmlReader`, `IXPathNavigable`, or subtypes of `XNode` as input or output of members that accept or return XML.",
+      "section": "8.12 System.Xml Usage",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8098",
+      "strength": "DO NOT",
+      "text": "subclass `XmlDocument` if you want to create a type representing an XML view of an underlying object model or data source.",
+      "section": "8.12 System.Xml Usage",
+      "diagnostics": [
+        "CA1058"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8099",
+      "strength": "DO NOT",
+      "text": "overload one of the equality operators and not the other.",
+      "section": "8.13 Equality Operators",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8100",
+      "strength": "DO",
+      "text": "ensure that `Object.Equals` and the equality operators have exactly the same semantics and similar performance characteristics.",
+      "section": "8.13 Equality Operators",
+      "diagnostics": [
+        "CA1046"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8101",
+      "strength": "DO NOT",
+      "text": "throw exceptions from equality operators.",
+      "section": "8.13 Equality Operators",
+      "diagnostics": [
+        "CA1065"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8102",
+      "strength": "DO",
+      "text": "implement `IEquatable<T>`, with the same behavior as the operator, on any type that defines `operator==`.",
+      "section": "8.13 Equality Operators",
+      "diagnostics": [
+        "FDG8102"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8103",
+      "strength": "DO",
+      "text": "implement `operator==` with the mathematical reflexive and transitive properties.",
+      "section": "8.13 Equality Operators",
+      "diagnostics": [
+        "FDG8103"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8104",
+      "strength": "AVOID",
+      "text": "defining `operator==` with arguments of different types.",
+      "section": "8.13 Equality Operators",
+      "diagnostics": [
+        "FDG8104"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8105",
+      "strength": "DO",
+      "text": "overload the equality operators on value types, if equality is meaningful.",
+      "section": "8.13.1 Equality Operators on Value Types",
+      "diagnostics": [
+        "CA2231"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8106",
+      "strength": "AVOID",
+      "text": "overloading equality operators on mutable reference types.",
+      "section": "8.13.2 Equality Operators on Reference Types",
+      "diagnostics": [
+        "FDG8106"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG8107",
+      "strength": "AVOID",
+      "text": "overloading equality operators on reference types if the implementation would be significantly slower than that of reference equality.",
+      "section": "8.13.2 Equality Operators on Reference Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
       "id": "FDGA001",
       "strength": "DO",
       "text": "place the opening brace on the next line, indented to the same level as the block statement.",
@@ -7322,12 +8921,16 @@
     }
   ],
   "registeredDiagnostics": [
+    "CA1002",
     "CA1003",
     "CA1008",
+    "CA1010",
     "CA1012",
     "CA1014",
     "CA1016",
     "CA1017",
+    "CA1018",
+    "CA1019",
     "CA1021",
     "CA1024",
     "CA1027",
@@ -7336,15 +8939,22 @@
     "CA1032",
     "CA1033",
     "CA1034",
+    "CA1036",
     "CA1040",
     "CA1043",
     "CA1044",
+    "CA1046",
     "CA1050",
     "CA1051",
     "CA1052",
+    "CA1054",
+    "CA1055",
+    "CA1056",
     "CA1058",
     "CA1062",
     "CA1065",
+    "CA1066",
+    "CA1067",
     "CA1069",
     "CA1507",
     "CA1510",
@@ -7366,6 +8976,9 @@
     "CA1725",
     "CA1802",
     "CA1810",
+    "CA1813",
+    "CA1814",
+    "CA1815",
     "CA1819",
     "CA2200",
     "CA2201",
@@ -7375,6 +8988,9 @@
     "CA2217",
     "CA2219",
     "CA2225",
+    "CA2227",
+    "CA2231",
+    "CA2234",
     "CA2237",
     "FDG3003",
     "FDG3004",
@@ -7444,6 +9060,27 @@
     "FDG7047",
     "FDG7051",
     "FDG7064",
+    "FDG8002",
+    "FDG8011",
+    "FDG8014",
+    "FDG8015",
+    "FDG8016",
+    "FDG8017",
+    "FDG8026",
+    "FDG8031",
+    "FDG8050",
+    "FDG8051",
+    "FDG8053",
+    "FDG8057",
+    "FDG8070",
+    "FDG8082",
+    "FDG8088",
+    "FDG8089",
+    "FDG8096",
+    "FDG8102",
+    "FDG8103",
+    "FDG8104",
+    "FDG8106",
     "FDGA003",
     "FDGA004",
     "FDGA023",
@@ -7463,9 +9100,11 @@
     "IDE2003"
   ],
   "breakingFixDiagnostics": [
+    "CA1002",
     "CA1003",
     "CA1008",
     "CA1012",
+    "CA1019",
     "CA1021",
     "CA1024",
     "CA1027",
@@ -7474,15 +9113,21 @@
     "CA1043",
     "CA1051",
     "CA1052",
+    "CA1054",
+    "CA1055",
+    "CA1056",
     "CA1058",
     "CA1065",
     "CA1707",
     "CA1710",
     "CA1711",
     "CA1725",
+    "CA1813",
+    "CA1814",
     "CA1819",
     "CA2201",
     "CA2217",
+    "CA2227",
     "FDG4013",
     "FDG5003",
     "FDG5004",
@@ -7519,6 +9164,21 @@
     "FDG7007",
     "FDG7008",
     "FDG7064",
+    "FDG8002",
+    "FDG8011",
+    "FDG8014",
+    "FDG8015",
+    "FDG8016",
+    "FDG8017",
+    "FDG8031",
+    "FDG8050",
+    "FDG8051",
+    "FDG8070",
+    "FDG8088",
+    "FDG8089",
+    "FDG8096",
+    "FDG8104",
+    "FDG8106",
     "IDE0130",
     "IDE1006"
   ]

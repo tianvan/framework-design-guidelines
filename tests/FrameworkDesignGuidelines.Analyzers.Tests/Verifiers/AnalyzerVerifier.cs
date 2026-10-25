@@ -77,6 +77,15 @@ internal static class AnalyzerVerifier<TAnalyzer>
         return VerifyAsync(source, ReferenceAssemblies.Net.Net80, LanguageVersion.Latest, extraSources);
     }
 
+    /// <summary>
+    /// Verifies .NET 8 under the latest language version only, with <paramref name="expected"/> on top of the marked
+    /// diagnostics, for messages of features that C# 7.3 lacks (nullable annotations).
+    /// </summary>
+    public static Task VerifyLatestWithAsync(string source, params DiagnosticResult[] expected)
+    {
+        return VerifyAsync(source, ReferenceAssemblies.Net.Net80, LanguageVersion.Latest, expected, []);
+    }
+
     /// <summary>Verifies one reference assembly set and language version only.</summary>
     public static Task VerifyAsync(
         string source,

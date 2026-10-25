@@ -92,6 +92,8 @@ Other references:
 - [references/ch05-members-parameters.md](references/ch05-members-parameters.md): design parameters (enums versus booleans, argument validation, ref, out, params, pointers) and tuples in member signatures
 - [references/ch06-extensibility.md](references/ch06-extensibility.md): choose an extensibility mechanism (unsealed classes, protected members, events and callbacks, virtual members, abstractions, base classes) and decide when to seal
 - [references/ch07-exceptions.md](references/ch07-exceptions.md): throw, choose, catch, wrap and design exceptions, write exception messages, and use the Tester-Doer and Try patterns
+- [references/ch08-usage-arrays-attributes-collections.md](references/ch08-usage-arrays-attributes-collections.md): use arrays, design custom attributes, and choose, return and implement collections in public APIs
+- [references/ch08-usage-types.md](references/ch08-usage-types.md): use DateTime and DateTimeOffset, ICloneable, IComparable<T>, IEquatable<T>, Nullable<T>, Uri and System.Xml types, override Equals, GetHashCode and ToString, design serializable types, and overload equality operators
 
 Each reference lists, by section, every rule of its chapter that tools do not enforce. When a rule's wording is not
 enough, follow the `examples:` link at the end of its line to the book's explanation and code.

@@ -129,3 +129,28 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
   sdk CA2237, partial; autofix yes. Chosen because CA2237 reports only a type that lists ISerializable itself, and only on .NET Framework, where the reason of the text still applies; an analyzer for every exception type was rejected, since .NET 8 made the serialization constructor and GetObjectData obsolete (SYSLIB0051).
 - [ ] FDG7064 DO use the prefix “Try” and Boolean return type for methods implementing the Try pattern.
   fdg FDG7064, partial; breaking. Chosen because the analyzer was narrowed after noise to Try methods with an out parameter, after 4 of 8 first-run reports were best-effort or fluent methods without one; 3 true reports that return a nullable value or a tuple are no longer seen.
+
+## Chapter 8: Usage Guidelines
+
+- [ ] FDG8002 DO remember that arrays are mutable types—even arrays of immutable types.
+  fdg FDG8002, partial; breaking. Chosen because the new analyzer reports only readonly array fields, as in the Path.InvalidPathChars example of the body; a method that hands out an internal array is not seen, and array properties are left to CA1819 (FDG8003).
+- [ ] FDG8011 AVOID overloading custom attribute constructors.
+  fdg FDG8011, full; breaking. Chosen because the analyzer counts only the constructors an attribute application can call (neither private, protected nor private protected), and polly's polyfill copies of framework attributes are true reports that only a suppression can fix.
+- [ ] FDG8015 DO NOT use `Hashtable` or `Dictionary<TKey,TValue>` in public APIs.
+  fdg FDG8015, partial; breaking; library only. Chosen because types derived from Hashtable or Dictionary are not reported, since the body allows a custom type implementing IDictionary, uses as a type argument are not seen, and Task<T> and ValueTask<T> results are unwrapped.
+- [ ] FDG8026 DO NOT return null values from collection properties or from methods returning collections. Return an empty collection or an empty array instead.
+  fdg FDG8026, partial; no autofix. Chosen because fix round 1 narrowed the analyzer to types of the System.Collections namespaces (and types derived from them) after 3 of 15 first-run reports were document tree nodes that implement IList<T>.
+- [ ] FDG8027 DO NOT return snapshot collections from properties. Properties should return live collections.
+  judgment; no autofix. Chosen because an analyzer for ToArray or ToList in a getter was rejected: FDG8028 allows a snapshot for a volatile collection, and whether a collection is volatile is design.
+- [ ] FDG8053 DO implement `IEquatable<T>` on value types.
+  fdg FDG8053, partial; no autofix. Chosen because ref structs, enumerator structs and (after fix round 1) structs without instance fields are left out, while polly's 34 readonly argument structs stay true by the letter.
+- [ ] FDG8067 DO override `Equals` on value types.
+  sdk CA1815, partial; no autofix; suggestion in every profile. Chosen because CA1815 reported a struct with only const fields, where the reflection-based default Equals of the body has nothing to compare (1 of 2 reports), so the rule became a suggestion.
+- [ ] FDG8091 DO use `System.Uri` to represent URI and URL data.
+  sdk CA1054, CA1055 and CA1056, partial; breaking; test profile none. Chosen because changing a string parameter, return value or property to Uri changes the public signature, which makes the three diagnostics breaking (Ruling 24); they had 95 true reports in the internal samples.
+- [ ] FDG8096 DO NOT use `XmlNode` or `XmlDocument` to represent XML data. Instead, favor using instances of `IXPathNavigable`, `XmlReader`, `XmlWriter`, or subtypes of `XNode`. `XmlNode` and `XmlDocument` are not designed for exposing in public APIs.
+  fdg FDG8096, partial; breaking; library only. Chosen because, unlike FDG8014 and FDG8015, types derived from XmlNode are reported too (XmlDocument and XmlElement are named or implied by the text), and the message drops the nullable annotation.
+- [ ] FDG8104 AVOID defining `operator==` with arguments of different types.
+  fdg FDG8104, full; breaking. Chosen because the analyzer also reports the operators of the OK examples of FDG8103, which define == with arguments of different types as that guideline asks.
+- [ ] FDG8105 DO overload the equality operators on value types, if equality is meaningful.
+  sdk CA2231, partial; autofix yes. Chosen because CA2231 reports only a struct that overrides Equals, which is how "if equality is meaningful" is read, and its code fix adds the operators without changing an existing signature.
