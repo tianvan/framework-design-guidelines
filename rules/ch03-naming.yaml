@@ -1553,7 +1553,7 @@
     diagnostics:
       - CA1710
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1562,7 +1562,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3050
   strength: DO
   text: add the suffix “EventHandler” to names of delegates that are used in events.
@@ -1577,7 +1577,7 @@
     diagnostics:
       - CA1710
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1586,7 +1586,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3051
   strength: DO
   text: add the suffix “Callback” to names of delegates other than those used as event handlers.
@@ -1651,7 +1651,7 @@
     diagnostics:
       - CA1710
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1660,7 +1660,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3054
   strength: DO NOT
   text: derive from this class; use the keyword supported by your language instead; for example, in C#, use the `enum` keyword.
@@ -1722,7 +1722,7 @@
     diagnostics:
       - CA1710
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1731,7 +1731,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3057
   strength: DO
   text: add the suffix “Dictionary.” Note that `IDictionary` is a specific type of collection, but this guideline takes precedence over the more general collections guideline that follows.
@@ -1746,7 +1746,7 @@
     diagnostics:
       - CA1710
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1755,7 +1755,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1710 does not report every dictionary type, such as a class derived from Dictionary<TKey, TValue>.
+  notes: CA1710 does not report every dictionary type, such as a class derived from Dictionary<TKey, TValue>. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3058
   strength: DO
   text: add the suffix “Collection,” except for reusable, specialized data types such as “Queue” and “HashSet.”
@@ -1770,7 +1770,7 @@
     diagnostics:
       - CA1710
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1779,7 +1779,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1710 does not know the exception for reusable, specialized data structures.
+  notes: CA1710 does not know the exception for reusable, specialized data structures. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3059
   strength: DO
   text: add the suffix “Stream.”
@@ -1794,7 +1794,7 @@
     diagnostics:
       - CA1710
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1803,7 +1803,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3060
   strength: DO
   text: use a singular type name for an enumeration unless its values are bit fields.
@@ -2275,7 +2275,7 @@
     diagnostics:
       - CA1710
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2284,7 +2284,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3075
   strength: DO
   text: use two parameters named *sender* and *e* in event handlers.
@@ -2346,7 +2346,7 @@
     diagnostics:
       - CA1710
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2355,7 +2355,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3077
   strength: DO
   text: use PascalCasing in field names.

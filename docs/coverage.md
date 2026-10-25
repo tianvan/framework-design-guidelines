@@ -11,9 +11,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 70 |
 | 5 Member Design | 133 | 20 | 39 | 74 | 0 | 133 |
 | 6 Designing for Extensibility | 22 | 0 | 2 | 20 | 0 | 22 |
-| 7 Exceptions | 70 | 18 | 10 | 42 | 0 | 0 |
+| 7 Exceptions | 70 | 20 | 10 | 40 | 0 | 59 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 485 | 132 | 71 | 282 | 0 | 415 |
+| Total | 485 | 134 | 71 | 280 | 0 | 474 |
 
 ## Non-guideline content
 

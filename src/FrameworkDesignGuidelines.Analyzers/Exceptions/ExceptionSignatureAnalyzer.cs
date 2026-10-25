@@ -8,9 +8,10 @@ namespace FrameworkDesignGuidelines.Analyzers.Exceptions;
 /// <summary>
 /// FDG7007 and FDG7008 (section 7.1): public members neither choose by an option whether they throw nor return
 /// exceptions. FDG7007 reports a bool parameter whose first word is "throw" (<c>throwOnError</c>) of an externally
-/// visible method, constructor or indexer. FDG7008 reports an externally visible method whose return type, or the
-/// type of one of its out parameters, is <see cref="System.Exception"/> or derives from it. Overrides and interface
-/// implementations take their signature from another member and are not reported.
+/// visible method, constructor or indexer. FDG7008 reports an externally visible method whose return type (or the
+/// result type of a returned <c>Task&lt;T&gt;</c> or <c>ValueTask&lt;T&gt;</c>), or the type of one of its out
+/// parameters, is <see cref="System.Exception"/> or derives from it. Overrides and interface implementations take
+/// their signature from another member and are not reported.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ExceptionSignatureAnalyzer : DiagnosticAnalyzer
@@ -25,14 +26,20 @@ public sealed class ExceptionSignatureAnalyzer : DiagnosticAnalyzer
         context.RegisterCompilationStartAction(start =>
         {
             INamedTypeSymbol? exception = start.Compilation.GetTypeByMetadataName("System.Exception");
+            INamedTypeSymbol?[] awaitables =
+            [
+                start.Compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1"),
+                start.Compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1"),
+            ];
             start.RegisterSymbolAction(
-                symbolContext => AnalyzeMember(symbolContext, exception),
+                symbolContext => AnalyzeMember(symbolContext, exception, awaitables),
                 SymbolKind.Method,
                 SymbolKind.Property);
         });
     }
 
-    private static void AnalyzeMember(SymbolAnalysisContext context, INamedTypeSymbol? exception)
+    private static void AnalyzeMember(
+        SymbolAnalysisContext context, INamedTypeSymbol? exception, INamedTypeSymbol?[] awaitables)
     {
         ISymbol member = context.Symbol;
         ImmutableArray<IParameterSymbol> parameters;
@@ -70,12 +77,21 @@ public sealed class ExceptionSignatureAnalyzer : DiagnosticAnalyzer
         }
 
         if (member is IMethodSymbol { MethodKind: MethodKind.Ordinary } ordinary
-            && (ExceptionSymbols.DerivesFrom(ordinary.ReturnType, exception)
+            && (ExceptionSymbols.DerivesFrom(Result(ordinary.ReturnType, awaitables), exception)
                 || ordinary.Parameters.Any(parameter =>
                     parameter.RefKind == RefKind.Out && ExceptionSymbols.DerivesFrom(parameter.Type, exception)))
             && NamingSymbols.SourceLocation(ordinary) is { } methodLocation)
         {
             context.ReportDiagnostic(Diagnostic.Create(FdgDescriptors.FDG7008, methodLocation, ordinary.Name));
         }
+    }
+
+    /// <summary>The result type of a <c>Task&lt;T&gt;</c> or <c>ValueTask&lt;T&gt;</c>, otherwise the type itself.</summary>
+    private static ITypeSymbol Result(ITypeSymbol type, INamedTypeSymbol?[] awaitables)
+    {
+        return type is INamedTypeSymbol { TypeArguments: { Length: 1 } arguments } named
+            && awaitables.Any(awaitable => SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, awaitable))
+            ? arguments[0]
+            : type;
     }
 }

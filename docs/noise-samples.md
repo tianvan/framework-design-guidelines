@@ -477,12 +477,17 @@ counted. Every report was checked, except CA1062, whose reports are the 56 of th
 | CA1031 | FDG7025, FDG7026, FDG7033, FDG7038, FDG7039 | 11 | 0 | 0 | 3 | 6 | 20 | 0 | 20 | None needed. |
 | CA1032 | FDG7059 | 1 | 0 | 0 | 2 | 0 | 3 | 0 | 3 | None needed. |
 | CA1058 | FDG7040 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1510 | FDG7009 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports; no sample targets .NET 6 or later). |
+| CA1511 | FDG7009 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports; no sample targets .NET 8). |
+| CA1512 | FDG7009 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports; no sample targets .NET 8). |
+| CA1513 | FDG7009 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports; no sample targets .NET 7 or later). |
 | CA1062 | FDG7045 | 9 | 0 | 0 | 0 | 47 | - | - | - | None needed. Counted in the chapter 5 (5.8 to 5.9) section; true warnings under FDG5108. |
 | CA1710 | FDG7057 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
 | CA2200 | FDG7031 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
 | CA2201 | FDG7018, FDG7037, FDG7040, FDG7045, FDG7046, FDG7048, FDG7049 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
 | CA2208 | FDG7019, FDG7043 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
 | CA2219 | FDG7011 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA2237 | FDG7058 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports; see the notes). |
 | FDG7007 | FDG7007 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
 | FDG7008 | FDG7008 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
 | FDG7010 | FDG7010 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
@@ -518,6 +523,13 @@ counted. Every report was checked, except CA1062, whose reports are the 56 of th
   polly's other 3 first-run reports, which return a nullable value or a tuple instead of an out parameter, were true
   and are no longer seen; the coverage stays partial.
 - **Zero reports.** polly's 0 for every diagnostic is measured with its own configuration: its globalconfigs set
-  CA1032 and CA1062 to none and CA1710 to silent in some of its projects, and its code has no report for the
+  CA1032, CA1062 and CA2237 to none and CA1710 to silent in some of its projects, and its code has no report for the
   diagnostics it keeps at warning. The 0-report analyzers pass gate 2 (Ruling 21). In the samples, FDG7036 finds no
   exception created in a catch block without the caught one as its inner exception.
+- **Fix round 1 (rerun).** The package was rebuilt with the FDG7008 change (Task<T> and ValueTask<T> returns are
+  unwrapped), the FDG7036 change (an exception passed in an array or an IEnumerable<T> parameter, as for
+  AggregateException, is an inner exception) and the new mappings of FDG7009 (CA1510 to CA1513, suggestion) and
+  FDG7058 (CA2237). Every count above is unchanged; FDG7008 and FDG7036 still have 0 reports. CA1510 to CA1513 report
+  only when the target framework has the throw helpers, and every sample builds for netstandard2.0 or net472, so they
+  cannot report here. CA2237 reports only on .NET Framework; the internal samples build for net472 and report none,
+  and polly turns it off.

@@ -172,6 +172,90 @@ public sealed class InnerExceptionTests
     }
 
     [Fact]
+    public Task Exceptions_passed_in_an_array_or_a_sequence_are_inner_exceptions()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+            using System.Collections.Generic;
+
+            public class Batch
+            {
+                public void Run(Action action)
+                {
+                    var errors = new List<Exception>();
+                    try
+                    {
+                        action();
+                    }
+                    catch (FormatException e)
+                    {
+                        throw new AggregateException(e);
+                    }
+                    catch (ArgumentException e)
+                    {
+                        errors.Add(e);
+                        throw new AggregateException("The batch failed.", errors);
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        throw new AggregateException("The batch failed.", new Exception[] { e });
+                    }
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task A_type_whose_inner_exception_constructor_is_not_accessible_is_not_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+
+            public class SealedOffException : Exception
+            {
+                public SealedOffException(string message)
+                    : base(message)
+                {
+                }
+
+                private SealedOffException(string message, Exception inner)
+                    : base(message, inner)
+                {
+                }
+
+                public static void Rethrow(Action action)
+                {
+                    try
+                    {
+                        action();
+                    }
+                    catch (FormatException)
+                    {
+                        throw {|FDG7036:new SealedOffException("Inside the type.")|};
+                    }
+                }
+            }
+
+            public class Store
+            {
+                public void Load(Action action)
+                {
+                    try
+                    {
+                        action();
+                    }
+                    catch (FormatException)
+                    {
+                        throw new SealedOffException("Outside the type.");
+                    }
+                }
+            }
+            """);
+    }
+
+    [Fact]
     public Task Message_names_the_exception_type()
     {
         return Verifier.VerifyWithAsync(

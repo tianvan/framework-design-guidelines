@@ -134,6 +134,70 @@ public sealed class ExceptionSignatureTests
     }
 
     [Fact]
+    public Task Awaitable_returns_of_exceptions_are_reported()
+    {
+        return Verifier.VerifyLatestAsync(
+            """
+            using System;
+            using System.IO;
+            using System.Threading.Tasks;
+
+            public class Validator
+            {
+                public Task<Exception> {|FDG7008:ValidateAsync|}()
+                {
+                    return Task.FromResult<Exception>(null);
+                }
+
+                public ValueTask<IOException> {|FDG7008:CheckAsync|}()
+                {
+                    return default;
+                }
+
+                public Task<string> DescribeAsync()
+                {
+                    return Task.FromResult(string.Empty);
+                }
+
+                public Task RunAsync()
+                {
+                    return Task.CompletedTask;
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Interface_implementations_are_not_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+
+            public interface IErrorSource
+            {
+                Exception {|FDG7008:GetError|}();
+            }
+
+            public class ErrorSource : IErrorSource
+            {
+                public Exception GetError()
+                {
+                    return null;
+                }
+            }
+
+            public class ExplicitErrorSource : IErrorSource
+            {
+                Exception IErrorSource.GetError()
+                {
+                    return null;
+                }
+            }
+            """);
+    }
+
+    [Fact]
     public Task Builder_methods_properties_and_overrides_are_not_reported()
     {
         return Verifier.VerifyAsync(

@@ -1205,7 +1205,7 @@
       "diagnostics": [
         "CA1710"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1221,7 +1221,7 @@
       "diagnostics": [
         "CA1710"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1269,7 +1269,7 @@
       "diagnostics": [
         "CA1710"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1315,7 +1315,7 @@
       "diagnostics": [
         "CA1710"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1331,7 +1331,7 @@
       "diagnostics": [
         "CA1710"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1347,7 +1347,7 @@
       "diagnostics": [
         "CA1710"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1363,7 +1363,7 @@
       "diagnostics": [
         "CA1710"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1587,7 +1587,7 @@
       "diagnostics": [
         "CA1710"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1619,7 +1619,7 @@
       "diagnostics": [
         "CA1710"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -5262,8 +5262,13 @@
       "strength": "CONSIDER",
       "text": "using exception builder methods.",
       "section": "7.1 Exception Throwing",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "CA1510",
+        "CA1511",
+        "CA1512",
+        "CA1513"
+      ],
+      "autofix": "yes",
       "severity": {
         "library": "suggestion",
         "application": "suggestion",
@@ -5998,8 +6003,10 @@
       "strength": "DO",
       "text": "make exceptions runtime serializable. An exception must be serializable to work correctly across application domain and remoting boundaries.",
       "section": "7.4 Designing Custom Exceptions",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "CA2237"
+      ],
+      "autofix": "yes",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -7340,6 +7347,10 @@
     "CA1065",
     "CA1069",
     "CA1507",
+    "CA1510",
+    "CA1511",
+    "CA1512",
+    "CA1513",
     "CA1700",
     "CA1707",
     "CA1708",
@@ -7364,6 +7375,7 @@
     "CA2217",
     "CA2219",
     "CA2225",
+    "CA2237",
     "FDG3003",
     "FDG3004",
     "FDG3013",

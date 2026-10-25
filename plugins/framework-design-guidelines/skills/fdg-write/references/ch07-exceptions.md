@@ -67,7 +67,6 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 - **FDG7055** DO derive exceptions from `System.Exception` or one of the other common base exceptions.
 - **FDG7056** AVOID deep exception hierarchies. — examples: examples/ch07-exceptions.md#fdg7056
-- **FDG7058** DO make exceptions runtime serializable. An exception must be serializable to work correctly across application domain and remoting boundaries.
 - **FDG7060** CONSIDER providing exception properties for programmatic access to extra information (besides the message string) relevant to the exception.
 
 ## 7.5 Exceptions and Performance
