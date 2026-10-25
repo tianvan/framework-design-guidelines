@@ -11,8 +11,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 70 |
 | 5 Member Design | 133 | 20 | 39 | 74 | 0 | 133 |
 | 6 Designing for Extensibility | 22 | 0 | 2 | 20 | 0 | 22 |
+| 7 Exceptions | 70 | 18 | 10 | 42 | 0 | 0 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 415 | 114 | 61 | 240 | 0 | 415 |
+| Total | 485 | 132 | 71 | 282 | 0 | 415 |
 
 ## Non-guideline content
 
@@ -99,6 +100,21 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 - **6.1.5** (rationale): The definition of an abstraction (Stream, IEnumerable<T>, Object), extension by implementing one, the narrative on the high design cost of abstractions and on too many abstractions hurting usability, the Richter annotation on the undocumented contract of ICloneable, and the narrative on the power of abstractions (plug-ins, inversion of control, pipelines, testability) are rationale for FDG6014 to FDG6016.
 - **6.2** (rationale): The definition of a base class, the IList<T>, Collection<T> and OrderCollection example, the narrative that base classes hold too much implementation to serve as abstractions, the Cwalina annotation on using Collection<T> directly, and the narrative that base classes add surface area and depth, so they should provide significant value to users (with delegation to an internal implementation when they would help only the implementers), are rationale for FDG6017 to FDG6019. That last advice has no icon and is not a rule.
 - **6.3** (rationale): The narrative on the power and danger of extensible design, the Cwalina annotation on limiting a hierarchy to a fixed set of classes with an internal constructor (the LivingOrganism, Animal and Plant example), the definition of sealing classes and members with the NonNullCollection example, and the advice to seal only with good reasons are rationale for FDG6020 to FDG6022.
+- **Summary** (background): The chapter summary states no guideline.
+
+### Chapter 7: Exceptions
+
+- **7** (rationale): The chapter introduction and its list of the benefits of exceptions over return-value error reporting (they fit object-oriented constructs such as constructors, properties and operators, keep APIs consistent, let handling code be placed near or far from the failure, cannot be silently ignored, carry rich information such as the call stack, allow unhandled exception handlers, and support instrumentation), with the Richter, Sells, Clarke, Abrams, Rector, Barton and Brumme annotations, are rationale for FDG7001, FDG7002 and the whole chapter. The Brumme and Richter annotations on unhandled exception filters (only applications with application-specific work should register one) have no icon and are not rules.
+- **7.1** (rationale): The definition of execution failure (a member cannot do what its name implies), the Cwalina annotation (exceptions communicate error conditions, not exceptional conditions), the narrative on the two usual excuses for error codes (syntax and performance, the latter answered in 7.5) and the Richter annotation on syntax are rationale for FDG7001 to FDG7011. The closing sentence of the section (it covered throwing; 7.2 covers the type to throw) follows FDG7011 and is kept in its body by the extractor; it states no guideline.
+- **7.2** (rationale): The classification of error conditions into usage errors, execution errors, program errors and system failures, with the File.Open and ArgumentNullException examples and footnote 1 (the CLR shuts the process down when the JIT compiler runs out of memory), is rationale for FDG7012 to FDG7018. The closing sentence (now focus on the message) follows FDG7018 and is kept in its body by the extractor.
+- **7.2.1** (background): The one-sentence introduction (these guidelines define best practices for exception message text) is background for FDG7019 to FDG7024.
+- **7.2.2** (rationale): The definitions of handling an exception (a catch of a specific type whose consequences are fully understood, such as falling back to a default configuration when the file is missing) and of swallowing one (a catch of a generic type that continues without understanding the failure) are rationale for FDG7025 to FDG7033.
+- **7.2.3** (rationale): The narrative on wrapping lower-layer exceptions that would be meaningless at a higher layer (the transaction management and TypeInitializationException examples) and the Clarke annotation (terminology in error messages must make sense where they are read) are rationale for FDG7034 to FDG7036.
+- **7.3** (background): The one-sentence introduction (the section covers the standard .NET exceptions and is not exhaustive) is background for FDG7037 to FDG7054.
+- **7.4** (background): The introduction (custom exceptions are needed when existing ones cannot be used, as 7.2 decides) is background for FDG7055 to FDG7060.
+- **7.5** (rationale): The introduction (throwing can be orders of magnitude slower, but good performance is possible without error codes through two patterns) is rationale for FDG7061 to FDG7070.
+- **7.5.1** (background): The ICollection<T>.Add and IsReadOnly example and the definitions of tester and doer are background for FDG7062.
+- **7.5.2** (background): The description of the Try pattern with the DateTime.Parse and TryParse example, and the ConcurrentDictionary.TryAdd example of the pattern solving the race condition of Tester-Doer, are background for FDG7063 to FDG7070.
 - **Summary** (background): The chapter summary states no guideline.
 
 ### Appendix A: C# Coding Style Conventions

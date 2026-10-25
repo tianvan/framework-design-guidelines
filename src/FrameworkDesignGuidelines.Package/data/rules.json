@@ -5142,6 +5142,1044 @@
       "naming": null
     },
     {
+      "id": "FDG7001",
+      "strength": "DO NOT",
+      "text": "return error codes.",
+      "section": "7.1 Exception Throwing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7002",
+      "strength": "DO",
+      "text": "report execution failures by throwing exceptions.",
+      "section": "7.1 Exception Throwing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7003",
+      "strength": "CONSIDER",
+      "text": "terminating the process by calling `System.Environment.FailFast` instead of throwing an exception if your code encounters a situation where immediate process termination is necessary.",
+      "section": "7.1 Exception Throwing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7004",
+      "strength": "DO NOT",
+      "text": "use exceptions for the normal flow of control, if possible. Prefer Tester–Doer or the Try pattern to throwing exceptions in common cases.",
+      "section": "7.1 Exception Throwing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7005",
+      "strength": "CONSIDER",
+      "text": "the performance implications of throwing exceptions. Throw rates greater than 100 per second are likely to noticeably impact the performance of most applications. See section 7.5 for details.",
+      "section": "7.1 Exception Throwing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7006",
+      "strength": "DO",
+      "text": "document all exceptions thrown by publicly callable members because of a violation of the member contract (rather than a system failure) and treat them as part of your contract.",
+      "section": "7.1 Exception Throwing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7007",
+      "strength": "DO NOT",
+      "text": "have public members that can either throw or not throw based on some option.",
+      "section": "7.1 Exception Throwing",
+      "diagnostics": [
+        "FDG7007"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7008",
+      "strength": "DO NOT",
+      "text": "have public members that return exceptions as the return value or an `out` parameter.",
+      "section": "7.1 Exception Throwing",
+      "diagnostics": [
+        "FDG7008"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7009",
+      "strength": "CONSIDER",
+      "text": "using exception builder methods.",
+      "section": "7.1 Exception Throwing",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7010",
+      "strength": "DO NOT",
+      "text": "throw exceptions from exception filter blocks.",
+      "section": "7.1 Exception Throwing",
+      "diagnostics": [
+        "FDG7010"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7011",
+      "strength": "AVOID",
+      "text": "explicitly throwing exceptions from finally blocks. Implicitly thrown exceptions resulting from calling methods that throw are acceptable.",
+      "section": "7.1 Exception Throwing",
+      "diagnostics": [
+        "CA2219"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7012",
+      "strength": "DO NOT",
+      "text": "create new exception types to communicate usage errors. Throw one of the existing base library exceptions instead. See section 7.3 for detailed usage guidelines for the most common standard exception types.",
+      "section": "7.2 Choosing the Right Type of Exception to Throw",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7013",
+      "strength": "CONSIDER",
+      "text": "creating and throwing custom exceptions if you have a program error condition that can be programmatically handled in a different way than any other existing exception. Otherwise, throw one of the existing exceptions. See section 7.4 for details on creating custom exceptions.",
+      "section": "7.2 Choosing the Right Type of Exception to Throw",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7014",
+      "strength": "DO NOT",
+      "text": "create a new exception type if the exception would not be handled differently than an existing framework exception. Throw the existing framework exception in such case. See section 7.3 for detailed usage guidelines for the most common standard exception types.",
+      "section": "7.2 Choosing the Right Type of Exception to Throw",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7015",
+      "strength": "DO",
+      "text": "create a new exception type to communicate a unique program error that cannot be communicated using an existing framework exception. See section 7.4 for details on creating custom exceptions.",
+      "section": "7.2 Choosing the Right Type of Exception to Throw",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7016",
+      "strength": "AVOID",
+      "text": "creating APIs that when called can result in a system failure. If such a failure can occur, call `Environment.FailFast` instead of throwing an exception when the system failure occurs.",
+      "section": "7.2 Choosing the Right Type of Exception to Throw",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7017",
+      "strength": "DO NOT",
+      "text": "create and throw new exceptions just to have your feature name in the exception type or namespace name.",
+      "section": "7.2 Choosing the Right Type of Exception to Throw",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7018",
+      "strength": "DO",
+      "text": "throw the most specific (the most derived) exception that makes sense.",
+      "section": "7.2 Choosing the Right Type of Exception to Throw",
+      "diagnostics": [
+        "CA2201"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7019",
+      "strength": "DO",
+      "text": "provide a rich and meaningful message text targeted at the developer when throwing an exception.",
+      "section": "7.2.1 Error Message Design",
+      "diagnostics": [
+        "CA2208"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7020",
+      "strength": "DO",
+      "text": "ensure that exception messages are grammatically correct.",
+      "section": "7.2.1 Error Message Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7021",
+      "strength": "DO",
+      "text": "ensure that each sentence of the message text ends with a period.",
+      "section": "7.2.1 Error Message Design",
+      "diagnostics": [
+        "FDG7021"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7022",
+      "strength": "AVOID",
+      "text": "question marks and exclamation points in exception messages.",
+      "section": "7.2.1 Error Message Design",
+      "diagnostics": [
+        "FDG7022"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7023",
+      "strength": "DO NOT",
+      "text": "disclose security-sensitive information in exception messages.",
+      "section": "7.2.1 Error Message Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7024",
+      "strength": "CONSIDER",
+      "text": "localizing the exception messages thrown by your components if you expect your components to be used by developers speaking different languages.",
+      "section": "7.2.1 Error Message Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7025",
+      "strength": "DO NOT",
+      "text": "swallow errors by catching nonspecific exceptions, such as `System.Exception`, `System.SystemException`, and so on, in framework code.",
+      "section": "7.2.2 Exception Handling",
+      "diagnostics": [
+        "CA1031"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7026",
+      "strength": "AVOID",
+      "text": "swallowing errors by catching nonspecific exceptions, such as `System.Exception`, `System.SystemException`, and so on, in application code.",
+      "section": "7.2.2 Exception Handling",
+      "diagnostics": [
+        "CA1031"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7027",
+      "strength": "DO NOT",
+      "text": "exclude any special exceptions when catching for the purpose of transferring exceptions.",
+      "section": "7.2.2 Exception Handling",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7028",
+      "strength": "CONSIDER",
+      "text": "catching a specific exception when you understand why it was thrown in a given context and can respond to the failure programmatically.",
+      "section": "7.2.2 Exception Handling",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7029",
+      "strength": "DO NOT",
+      "text": "overcatch. Exceptions should often be allowed to propagate up the call stack.",
+      "section": "7.2.2 Exception Handling",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7030",
+      "strength": "DO",
+      "text": "use try-finally and avoid using try-catch for cleanup code. In well-written exception code, try-finally is far more common than try-catch.",
+      "section": "7.2.2 Exception Handling",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7031",
+      "strength": "DO",
+      "text": "prefer using an empty throw when catching and rethrowing an exception. This is the best way to preserve the exception call stack.",
+      "section": "7.2.2 Exception Handling",
+      "diagnostics": [
+        "CA2200"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7032",
+      "strength": "DO",
+      "text": "use `ExceptionDispatchInfo` when rethrowing an exception from a different context.",
+      "section": "7.2.2 Exception Handling",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7033",
+      "strength": "DO NOT",
+      "text": "handle non-CLS-compliant exceptions (exceptions that don’t derive from `System.Exception`) using a parameterless catch block.",
+      "section": "7.2.2 Exception Handling",
+      "diagnostics": [
+        "CA1031"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7034",
+      "strength": "CONSIDER",
+      "text": "wrapping specific exceptions thrown from a lower layer in a more appropriate exception if the lower layer is just an implementation detail for the operation.",
+      "section": "7.2.3 Wrapping Exceptions",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7035",
+      "strength": "AVOID",
+      "text": "catching and wrapping nonspecific exceptions.",
+      "section": "7.2.3 Wrapping Exceptions",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7036",
+      "strength": "DO",
+      "text": "specify the inner exception when wrapping exceptions.",
+      "section": "7.2.3 Wrapping Exceptions",
+      "diagnostics": [
+        "FDG7036"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7037",
+      "strength": "DO NOT",
+      "text": "throw `System.Exception` or `System.SystemException`.",
+      "section": "7.3.1 Exception and SystemException",
+      "diagnostics": [
+        "CA2201"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7038",
+      "strength": "DO NOT",
+      "text": "catch `System.Exception` or `System.SystemException` in framework code, unless you intend to rethrow.",
+      "section": "7.3.1 Exception and SystemException",
+      "diagnostics": [
+        "CA1031"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7039",
+      "strength": "AVOID",
+      "text": "catching `System.Exception` or `System.SystemException`, except in top-level exception handlers.",
+      "section": "7.3.1 Exception and SystemException",
+      "diagnostics": [
+        "CA1031"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7040",
+      "strength": "DO NOT",
+      "text": "throw or derive from `System.ApplicationException`.",
+      "section": "7.3.2 ApplicationException",
+      "diagnostics": [
+        "CA2201",
+        "CA1058"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7041",
+      "strength": "DO",
+      "text": "throw an `InvalidOperationException` if the object is in an inappropriate state.",
+      "section": "7.3.3 InvalidOperationException",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7042",
+      "strength": "DO",
+      "text": "throw `ArgumentException` or one of its subtypes if bad arguments are passed to a member. Prefer the most derived exception type, if applicable.",
+      "section": "7.3.4 ArgumentException, ArgumentNullException, and ArgumentOutOfRangeException",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7043",
+      "strength": "DO",
+      "text": "set the `ParamName` property when throwing one of the subclasses of `ArgumentExceptions`.",
+      "section": "7.3.4 ArgumentException, ArgumentNullException, and ArgumentOutOfRangeException",
+      "diagnostics": [
+        "CA2208"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7044",
+      "strength": "DO",
+      "text": "use `value` for the name of the implicit value parameter of property setters.",
+      "section": "7.3.4 ArgumentException, ArgumentNullException, and ArgumentOutOfRangeException",
+      "diagnostics": [
+        "FDG7044"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7045",
+      "strength": "DO NOT",
+      "text": "allow publicly callable APIs to explicitly or implicitly throw `NullReferenceException`, `AccessViolationException`, or `IndexOutOfRangeException`. These exceptions are reserved and thrown by the platform and in most cases indicate a bug.",
+      "section": "7.3.5 NullReferenceException, IndexOutOfRangeException, and AccessViolationException",
+      "diagnostics": [
+        "CA2201",
+        "CA1062"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7046",
+      "strength": "DO NOT",
+      "text": "explicitly throw `StackOverflowException`. This exception should be explicitly thrown only by the CLR.",
+      "section": "7.3.6 StackOverflowException",
+      "diagnostics": [
+        "CA2201"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7047",
+      "strength": "DO NOT",
+      "text": "catch `StackOverflowException`.",
+      "section": "7.3.6 StackOverflowException",
+      "diagnostics": [
+        "FDG7047"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7048",
+      "strength": "DO NOT",
+      "text": "explicitly throw `OutOfMemoryException`. This exception is to be thrown only by the CLR infrastructure.",
+      "section": "7.3.7 OutOfMemoryException",
+      "diagnostics": [
+        "CA2201"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7049",
+      "strength": "DO NOT",
+      "text": "explicitly throw `ComException`, or `SEHException`, or `ExecutionEngineException`. These exceptions are to be thrown only by the CLR infrastructure.",
+      "section": "7.3.8 ComException, SEHException, and ExecutionEngineException",
+      "diagnostics": [
+        "CA2201"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7050",
+      "strength": "DO",
+      "text": "throw `OperationCanceledException` to represent any caller-initiated abort or cancellation.",
+      "section": "7.3.9 OperationCanceledException and TaskCanceledException",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7051",
+      "strength": "DO",
+      "text": "prefer catching `OperationCanceledException` to `TaskCanceledException`.",
+      "section": "7.3.9 OperationCanceledException and TaskCanceledException",
+      "diagnostics": [
+        "FDG7051"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7052",
+      "strength": "DO",
+      "text": "throw `FormatException` to indicate the input string in a text parsing method does not conform to the required, or specified, format.",
+      "section": "7.3.10 FormatException",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7053",
+      "strength": "DO",
+      "text": "throw `FormatException` to indicate the format specifier string to a text parsing or text formatting method is invalid.",
+      "section": "7.3.10 FormatException",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7054",
+      "strength": "DO",
+      "text": "throw `PlatformNotSupportedException` to indicate the operation cannot complete in the current runtime environment but could on a different runtime or operating system.",
+      "section": "7.3.11 PlatformNotSupportedException",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7055",
+      "strength": "DO",
+      "text": "derive exceptions from `System.Exception` or one of the other common base exceptions.",
+      "section": "7.4 Designing Custom Exceptions",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7056",
+      "strength": "AVOID",
+      "text": "deep exception hierarchies.",
+      "section": "7.4 Designing Custom Exceptions",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7057",
+      "strength": "DO",
+      "text": "end exception class names with the “Exception” suffix.",
+      "section": "7.4 Designing Custom Exceptions",
+      "diagnostics": [
+        "CA1710"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7058",
+      "strength": "DO",
+      "text": "make exceptions runtime serializable. An exception must be serializable to work correctly across application domain and remoting boundaries.",
+      "section": "7.4 Designing Custom Exceptions",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7059",
+      "strength": "DO",
+      "text": "provide (at least) these common constructors on all exceptions. Make sure the names and types of the parameters are exactly as shown in the following example.",
+      "section": "7.4 Designing Custom Exceptions",
+      "diagnostics": [
+        "CA1032"
+      ],
+      "autofix": "yes",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7060",
+      "strength": "CONSIDER",
+      "text": "providing exception properties for programmatic access to extra information (besides the message string) relevant to the exception.",
+      "section": "7.4 Designing Custom Exceptions",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7061",
+      "strength": "DO NOT",
+      "text": "use error codes because of concerns that exceptions might affect performance negatively.",
+      "section": "7.5 Exceptions and Performance",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7062",
+      "strength": "CONSIDER",
+      "text": "the Tester–Doer Pattern for members that might throw exceptions in common scenarios to avoid performance problems related to exceptions.",
+      "section": "7.5.1 The Tester–Doer Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7063",
+      "strength": "CONSIDER",
+      "text": "the Try Pattern for members that might throw exceptions in common scenarios to avoid performance problems related to exceptions.",
+      "section": "7.5.2 The Try Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "suggestion"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7064",
+      "strength": "DO",
+      "text": "use the prefix “Try” and Boolean return type for methods implementing the Try pattern.",
+      "section": "7.5.2 The Try Pattern",
+      "diagnostics": [
+        "FDG7064"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7065",
+      "strength": "DO",
+      "text": "pick one kind of reason for why your Try method can return `false`, and throw an exception for any other failure reason.",
+      "section": "7.5.2 The Try Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7066",
+      "strength": "DO",
+      "text": "provide an exception-throwing member for each member using the Try Pattern.",
+      "section": "7.5.2 The Try Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7067",
+      "strength": "DO",
+      "text": "“return” the value from a Try method via an `out` parameter.",
+      "section": "7.5.2.1 Value-Producing Try Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7068",
+      "strength": "DO",
+      "text": "write `default(T)` to the `out` parameter from a Try method that returns `false`.",
+      "section": "7.5.2.1 Value-Producing Try Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7069",
+      "strength": "AVOID",
+      "text": "writing to the `out` parameter from a Try method when throwing an exception.",
+      "section": "7.5.2.1 Value-Producing Try Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG7070",
+      "strength": "DO",
+      "text": "return `false` on null inputs to a method of the form `static bool TryParse(string, out T value)`.",
+      "section": "7.5.2.1 Static TryParse(string, out T) Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "warning"
+      },
+      "naming": null
+    },
+    {
       "id": "FDGA001",
       "strength": "DO",
       "text": "place the opening brace on the next line, indented to the same level as the block statement.",
@@ -6287,6 +7325,8 @@
     "CA1024",
     "CA1027",
     "CA1028",
+    "CA1031",
+    "CA1032",
     "CA1033",
     "CA1034",
     "CA1040",
@@ -6295,6 +7335,7 @@
     "CA1050",
     "CA1051",
     "CA1052",
+    "CA1058",
     "CA1062",
     "CA1065",
     "CA1069",
@@ -6315,9 +7356,13 @@
     "CA1802",
     "CA1810",
     "CA1819",
+    "CA2200",
+    "CA2201",
     "CA2207",
+    "CA2208",
     "CA2214",
     "CA2217",
+    "CA2219",
     "CA2225",
     "FDG3003",
     "FDG3004",
@@ -6377,6 +7422,16 @@
     "FDG5132",
     "FDG6013",
     "FDG6019",
+    "FDG7007",
+    "FDG7008",
+    "FDG7010",
+    "FDG7021",
+    "FDG7022",
+    "FDG7036",
+    "FDG7044",
+    "FDG7047",
+    "FDG7051",
+    "FDG7064",
     "FDGA003",
     "FDGA004",
     "FDGA023",
@@ -6407,10 +7462,13 @@
     "CA1043",
     "CA1051",
     "CA1052",
+    "CA1058",
     "CA1065",
     "CA1707",
+    "CA1710",
     "CA1725",
     "CA1819",
+    "CA2201",
     "CA2217",
     "FDG4013",
     "FDG5003",
@@ -6445,6 +7503,9 @@
     "FDG5132",
     "FDG6013",
     "FDG6019",
+    "FDG7007",
+    "FDG7008",
+    "FDG7064",
     "IDE0130",
     "IDE1006"
   ]

@@ -465,3 +465,59 @@ FDG6019 are counted. FDG6013 was checked at 20 evenly spaced locations, FDG6019 
   generated code excluded); the polly class is abstract, so the count is unchanged.
 - **Library only.** Both rules are `none` in the application profile, so the internal samples measure them only by
   their absence.
+
+## Chapter 7 mappings and analyzers
+
+Package 0.1.0 with the mappings of chapter 7 and its ten analyzers, enabled by the profile globalconfigs (library for
+the open-source samples, application for the internal ones). The mapped SDK diagnostics and the new analyzers are
+counted. Every report was checked, except CA1062, whose reports are the 56 of the chapter 5 (5.8 to 5.9) section.
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| CA1031 | FDG7025, FDG7026, FDG7033, FDG7038, FDG7039 | 11 | 0 | 0 | 3 | 6 | 20 | 0 | 20 | None needed. |
+| CA1032 | FDG7059 | 1 | 0 | 0 | 2 | 0 | 3 | 0 | 3 | None needed. |
+| CA1058 | FDG7040 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1062 | FDG7045 | 9 | 0 | 0 | 0 | 47 | - | - | - | None needed. Counted in the chapter 5 (5.8 to 5.9) section; true warnings under FDG5108. |
+| CA1710 | FDG7057 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA2200 | FDG7031 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA2201 | FDG7018, FDG7037, FDG7040, FDG7045, FDG7046, FDG7048, FDG7049 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA2208 | FDG7019, FDG7043 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA2219 | FDG7011 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG7007 | FDG7007 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG7008 | FDG7008 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG7010 | FDG7010 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG7021 | FDG7021 | 3 | 0 | 3 | 2 | 0 | 8 | 0 | 8 | None needed. |
+| FDG7022 | FDG7022 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG7036 | FDG7036 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG7044 | FDG7044 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG7047 | FDG7047 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG7051 | FDG7051 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG7064 | FDG7064 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1 | Narrowed after the first run (8 reports, 4 FP); see the notes. |
+
+### Notes
+
+- **CA1031.** Every report is a catch of Exception, or a parameterless catch, that does not rethrow. serilog's 11 are
+  in its logger, sinks, enrichers and formatter: 5 write the failure to its self-log or build a fallback string, and 6
+  pass the exception to a failure listener and go on. internal-a's 3 log and continue, return null, or have an empty
+  block; internal-b's 6 are empty catches or return a default value. All swallow errors, so all are true warnings
+  under FDG7025 (library profile) or FDG7026 (application profile). One internal-a catch logs and continues inside an
+  event loop, which could be read as the top-level handler that FDG7039 allows; it stays a true FDG7026 warning, since
+  the loop goes on after an unknown exception. None transfers the exception to another thread.
+- **CA1032.** serilog's 1 and internal-a's 2 are exception types without the (), (string) and (string, Exception)
+  constructors. True.
+- **CA1062.** The same 56 reports as in the chapter 5 (5.8 to 5.9) section, where they are true warnings under
+  FDG5108. For FDG7045, which is library only, only serilog's 9 count; internal-b's 47 come from the application
+  profile of FDG5108.
+- **FDG7021.** All 8 are constant or interpolated messages whose last sentence ends without a period (serilog's 3 in
+  its settings parser, newtonsoft-json's 3 in an object id, a converter and a reflection helper, and internal-a's 2).
+  True. No message ends with a question mark or exclamation point, and FDG7022 reports none.
+- **FDG7064.** The first run reported every Try method that does not return bool: 7 in polly and 1 in newtonsoft-json.
+  4 were not Try methods of 7.5.2 (best-effort methods that return void or ValueTask, and a fluent method that returns
+  its argument), so 4 of 8 were false positives. The analyzer was narrowed to Try methods with an out parameter; the
+  second run reports only newtonsoft-json's internal conversion method, which returns an enum and an out value. True.
+  polly's other 3 first-run reports, which return a nullable value or a tuple instead of an out parameter, were true
+  and are no longer seen; the coverage stays partial.
+- **Zero reports.** polly's 0 for every diagnostic is measured with its own configuration: its globalconfigs set
+  CA1032 and CA1062 to none and CA1710 to silent in some of its projects, and its code has no report for the
+  diagnostics it keeps at warning. The 0-report analyzers pass gate 2 (Ruling 21). In the samples, FDG7036 finds no
+  exception created in a catch block without the caught one as its inner exception.

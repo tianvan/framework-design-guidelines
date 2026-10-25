@@ -529,6 +529,96 @@ internal static class FdgDescriptors
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG6019.md");
 
+    public static readonly DiagnosticDescriptor FDG7007 = new DiagnosticDescriptor(
+        id: "FDG7007",
+        title: "DO NOT have public members that can either throw or not throw based on some option.",
+        messageFormat: "Do not let the parameter '{0}' decide whether '{1}' throws",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7007.md");
+
+    public static readonly DiagnosticDescriptor FDG7008 = new DiagnosticDescriptor(
+        id: "FDG7008",
+        title: "DO NOT have public members that return exceptions as the return value or an `out` parameter.",
+        messageFormat: "Throw the exception instead of returning it from '{0}'",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7008.md");
+
+    public static readonly DiagnosticDescriptor FDG7010 = new DiagnosticDescriptor(
+        id: "FDG7010",
+        title: "DO NOT throw exceptions from exception filter blocks.",
+        messageFormat: "Do not throw from the exception filter",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7010.md");
+
+    public static readonly DiagnosticDescriptor FDG7021 = new DiagnosticDescriptor(
+        id: "FDG7021",
+        title: "DO ensure that each sentence of the message text ends with a period.",
+        messageFormat: "End the exception message with a period",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7021.md");
+
+    public static readonly DiagnosticDescriptor FDG7022 = new DiagnosticDescriptor(
+        id: "FDG7022",
+        title: "AVOID question marks and exclamation points in exception messages.",
+        messageFormat: "Remove the question mark or exclamation point from the exception message",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7022.md");
+
+    public static readonly DiagnosticDescriptor FDG7036 = new DiagnosticDescriptor(
+        id: "FDG7036",
+        title: "DO specify the inner exception when wrapping exceptions.",
+        messageFormat: "Pass the caught exception as the inner exception of '{0}'",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7036.md");
+
+    public static readonly DiagnosticDescriptor FDG7044 = new DiagnosticDescriptor(
+        id: "FDG7044",
+        title: "DO use `value` for the name of the implicit value parameter of property setters.",
+        messageFormat: "Name the parameter 'value' instead of '{0}' in an argument exception thrown by a setter",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7044.md");
+
+    public static readonly DiagnosticDescriptor FDG7047 = new DiagnosticDescriptor(
+        id: "FDG7047",
+        title: "DO NOT catch `StackOverflowException`.",
+        messageFormat: "Do not catch StackOverflowException",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7047.md");
+
+    public static readonly DiagnosticDescriptor FDG7051 = new DiagnosticDescriptor(
+        id: "FDG7051",
+        title: "DO prefer catching `OperationCanceledException` to `TaskCanceledException`.",
+        messageFormat: "Catch OperationCanceledException instead of TaskCanceledException",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7051.md");
+
+    public static readonly DiagnosticDescriptor FDG7064 = new DiagnosticDescriptor(
+        id: "FDG7064",
+        title: "DO use the prefix “Try” and Boolean return type for methods implementing the Try pattern.",
+        messageFormat: "Return bool from the Try method '{0}'",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7064.md");
+
     public static readonly DiagnosticDescriptor FDGA003 = new DiagnosticDescriptor(
         id: "FDGA003",
         title: "DO place the closing brace on its own line, except the end of a `do`..`while` statement.",

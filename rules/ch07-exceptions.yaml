@@ -1,0 +1,2084 @@
+- id: FDG7001
+  strength: DO NOT
+  text: return error codes.
+  context: null
+  section: 7.1 Exception Throwing
+  anchor: sec7_1
+  body:
+    - kind: paragraph
+      text: Exceptions are the primary means of reporting errors in frameworks. The beginning section of the chapter describes the benefits of exceptions in detail.
+    - kind: annotation
+      text: 'It’s OK for exceptions to have a property returning some kind of error code, but I would be very careful about this. Each exception can carry two main pieces of information: the exception message explaining to the developer what went wrong and how to fix it, and the exception type that should be used by handlers to decide what programmatic action to take. If you think you need to have a property on your exception that would return additional error code, ask yourself who this code is for. Is it for the developer or for the exception handler? If for the developer, add additional information to the message. If for the handlers, add a new exception type.'
+      author: Krzysztof Cwalina
+    - kind: annotation
+      text: The error code property in a `System.Exception` is useful when you need to bind the issue to external documentation that details how to fix the problem. This is particularly important with different layers of a framework where the upper layer does not always (and should not) know how the lower layer is implemented. For example, a Web service call could get an exception because the associated database on the server is not started. In that case, you don’t expect the client code to explain how to restart the database when the exception is caught. Instead, you provide a pointer to the documentation and the right section where the whole restarting process is explained.
+      author: Christophe Nasarre
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not an analyzer candidate: an int, enum or bool return value cannot be told apart from an error code by its type. The Cwalina and Nasarre annotations allow an error code property on an exception. FDG7061 is the same rule for performance reasons.'
+- id: FDG7002
+  strength: DO
+  text: report execution failures by throwing exceptions.
+  context: null
+  section: 7.1 Exception Throwing
+  anchor: sec7_1
+  body:
+    - kind: paragraph
+      text: If a member cannot successfully do what it is designed to do, it should be considered an execution failure, and an exception should be thrown.
+    - kind: annotation
+      text: A good rule of thumb is that if a method does not do what its name suggests, it should be considered a method-level failure, resulting in an exception. For example, a method called `ReadByte` should throw an exception if there are no more bytes left in a stream to be read. Meanwhile, a method named `ReadChar` should not throw an exception when it reaches end of stream, because EOF is a valid char (in most character sets) that can be returned in this case while still achieving what the method’s name suggests. So a char can be “read” successfully at the end of a stream, whereas a byte cannot.
+      author: Jason Clark
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'The book shows the cross icon here; the strength word is used. Not machine-checkable: whether a member did what it was designed to do (the Clark annotation: what its name suggests) is judgment.'
+- id: FDG7003
+  strength: CONSIDER
+  text: terminating the process by calling `System.Environment.FailFast` instead of throwing an exception if your code encounters a situation where immediate process termination is necessary.
+  context: null
+  section: 7.1 Exception Throwing
+  anchor: sec7_1
+  body:
+    - kind: annotation
+      text: |-
+        An example of the operating system performing a fail fast occurs when the stack is so corrupt that the operating system cannot propagate exceptions through it. In this case, the invariant expectations of the application (i.e., that exceptions propagate) can no longer be satisfied, so the application must terminate.
+
+        An example of the CLR performing a fail fast occurs when the Garbage Collector (GC) heap is so corrupt that we can no longer track managed objects. In this case, a process-wide resource is required for further processing, but it is now corrupt and cannot be returned to a functional state.
+
+        Similar legitimate reasons for fail fast can occur in managed code. For example, if the application cannot revert a security impersonation on a thread (i.e., exceptions are thrown from `WindowsImpersonationContext.Dispose`), that thread must be doomed. But if there is no good way for the application to ensure that no more code runs on this thread— perhaps because it is the Finalizer thread or a ThreadPool thread—then the process must be destroyed. `Environment.FailFast` can be used for this purpose.
+      author: Christopher Brumme
+    - kind: annotation
+      text: '`Environment.FailFast` is a very big hammer and shouldn’t be wielded without thought. FailFast will cause all threads and I/O to terminate immediately, which might leave half-written files or other data corruption and server processes will just cease replying to their clients. If you’ve somehow detected that you’re leaking data across tenant partitions, *maybe* it’s worth an immediate shutdown.'
+      author: Jeremy Barton
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'The book shows the cross icon here; the strength word is used. Not machine-checkable: whether immediate termination is necessary is judgment (the Brumme and Barton annotations).'
+- id: FDG7004
+  strength: DO NOT
+  text: use exceptions for the normal flow of control, if possible. Prefer Tester–Doer or the Try pattern to throwing exceptions in common cases.
+  context: null
+  section: 7.1 Exception Throwing
+  anchor: sec7_1
+  body:
+    - kind: paragraph
+      text: Except for system failures and operations with potential race conditions, framework designers should design APIs so users can write code that does not throw exceptions. For example, you can provide a way to check preconditions before calling a member so users can write code that does not throw exceptions.
+    - kind: code
+      text: |-
+        ICollection<int> collection = ...
+        if(!collection.IsReadOnly){
+           collection.Add(additionalNumber);
+        }
+    - kind: paragraph
+      text: The member used to check preconditions of another member is often referred to as a tester, and the member that actually does the work is called a doer. See section 7.5.1 for more information on the Tester–Doer Pattern.
+    - kind: paragraph
+      text: Sometimes the Tester–Doer Pattern can have an unacceptable performance overhead. In such cases, consider the Try Pattern instead (see section 7.5.2 for more information).
+    - kind: annotation
+      text: The Tester–Doer Pattern should be used with caution. The potential problem occurs when you have multiple threads accessing the object at the same time. For example, one thread could execute the tester method, which reports that all is OK, and before the doer method executes, another thread could change the object, causing the doer to fail. Although this pattern might improve performance, it introduces race conditions and must be used with extreme caution.
+      author: Jeffrey Richter
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether a throw is part of the normal flow of control is judgment. CA1854 and CA1864 are not mapped: they ask callers to use TryGetValue and TryAdd instead of a second dictionary lookup, not to avoid exceptions for control flow. The Tester-Doer and Try patterns are FDG7062 and FDG7063.'
+- id: FDG7005
+  strength: CONSIDER
+  text: the performance implications of throwing exceptions. Throw rates greater than 100 per second are likely to noticeably impact the performance of most applications. See section 7.5 for details.
+  context: null
+  section: 7.1 Exception Throwing
+  anchor: sec7_1
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: throw rates are a runtime measurement.'
+- id: FDG7006
+  strength: DO
+  text: document all exceptions thrown by publicly callable members because of a violation of the member contract (rather than a system failure) and treat them as part of your contract.
+  context: null
+  section: 7.1 Exception Throwing
+  anchor: sec7_1
+  body:
+    - kind: paragraph
+      text: Exceptions that are a part of the contract should not change from one version to the next (i.e., the exception type should not change, and new exceptions should not be added).
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the contract is for the callers of publicly callable members, outside the library. Analyzer candidate rejected: which exceptions are contract violations rather than system failures is judgment, and exceptions thrown by called members are not visible to a syntax check.'
+- id: FDG7007
+  strength: DO NOT
+  text: have public members that can either throw or not throw based on some option.
+  context: null
+  section: 7.1 Exception Throwing
+  anchor: sec7_1
+  body:
+    - kind: code
+      text: |-
+        // bad design
+        public Type GetType(string name, bool throwOnError)
+    - kind: annotation
+      text: An API such as this one usually reflects the inability of the framework designer to make a decision. A method either completes successfully or it does not, in which case it should throw an exception. Failure to decide forces the decision on the caller of the API, which likely does not have enough context on implementation details of the API to make an informed decision.
+      author: Brad Abrams
+  status: draft
+  style: false
+  check:
+    kind: fdg
+    diagnostics:
+      - FDG7007
+    coverage: partial
+  autofix: breaking
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer:
+    message: Do not let the parameter '{0}' decide whether '{1}' throws
+    category: Exceptions
+  notes: "Library only: the text scopes it to public members, whose callers outside the library would have to make the decision (the Abrams annotation). FDG7007 reports a bool parameter whose first word is \"throw\" (throwOnError, throwIfNotFound), as in the body's GetType example, on an externally visible method, constructor or indexer. Overrides and interface implementations are not reported, since their parameters come from the member they override or implement. Options of other types (an enum or a settings object) are not seen, so coverage is partial. Removing the parameter changes the public signature, so the fix is breaking; there is no code fix."
+- id: FDG7008
+  strength: DO NOT
+  text: have public members that return exceptions as the return value or an `out` parameter.
+  context: null
+  section: 7.1 Exception Throwing
+  anchor: sec7_1
+  body:
+    - kind: paragraph
+      text: Returning exceptions from public APIs instead of throwing them defeats many of the benefits of exception-based error reporting.
+    - kind: code
+      text: |-
+        // bad design
+        public Exception DoSomething() { ... }
+  status: draft
+  style: false
+  check:
+    kind: fdg
+    diagnostics:
+      - FDG7008
+    coverage: full
+  autofix: breaking
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer:
+    message: Throw the exception instead of returning it from '{0}'
+    category: Exceptions
+  notes: 'Library only: the text scopes it to public members. FDG7008 reports an externally visible method whose return type, or the type of one of its out parameters, is System.Exception or derives from it. Overrides and interface implementations are not reported (Exception.GetBaseException is an override target), nor properties: the text and its DoSomething example concern the return value of a call, and an exception property such as InnerException is the extra information FDG7060 asks for. Exception builder methods (FDG7009) are not reported when they are not externally visible, as in the body of FDG7009. Changing the return type changes the public signature, so the fix is breaking; there is no code fix.'
+- id: FDG7009
+  strength: CONSIDER
+  text: using exception builder methods.
+  context: null
+  section: 7.1 Exception Throwing
+  anchor: sec7_1
+  body:
+    - kind: paragraph
+      text: It is common practice to throw the same exception from different places. To avoid code bloat, use helper methods that create exceptions and initialize their properties.
+    - kind: paragraph
+      text: 'Also, members that throw exceptions are less likely to be inlined. Moving the throw statement inside the builder might allow the member to be inlined. For example:'
+    - kind: code
+      text: |-
+        class File{
+          string fileName;
+
+          public byte[] Read(int bytes){
+            if (!ReadFile(handle, bytes)) ThrowNewFileIOException(...);
+          }
+
+          void ThrowNewFileIOException(...){
+            string description = // build localized string
+            throw new FileIOException(description);
+          }
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not an analyzer candidate: a design option. Builder methods that return the exception must not be public (FDG7008).'
+- id: FDG7010
+  strength: DO NOT
+  text: throw exceptions from exception filter blocks.
+  context: null
+  section: 7.1 Exception Throwing
+  anchor: sec7_1
+  body:
+    - kind: paragraph
+      text: When an exception filter raises an exception, the exception is caught by the CLR, and the filter returns `false`. This behavior is indistinguishable from the filter executing and returning `false` explicitly, so it is very difficult to debug.
+    - kind: code
+      text: |-
+        ' VB sample
+        ' This is bad design. The exception filter (When clause)
+        ' may throw an exception when the InnerException property
+        ' returns null.
+        Try
+           ...
+        Catch e As ArgumentException _
+        When e.InnerException.Message.StartsWith("File")
+         ...
+        End Try
+  status: draft
+  style: false
+  check:
+    kind: fdg
+    diagnostics:
+      - FDG7010
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer:
+    message: Do not throw from the exception filter
+    category: Exceptions
+  notes: FDG7010 reports a throw expression in the when clause of a catch, outside lambdas, anonymous methods and local functions, which run later. Exceptions that members called by the filter throw are not seen; the body's example is one (InnerException can be null), so coverage is partial. CA2219 does not report filters (probe with SDK 10.0.402). There is no code fix.
+- id: FDG7011
+  strength: AVOID
+  text: explicitly throwing exceptions from finally blocks. Implicitly thrown exceptions resulting from calling methods that throw are acceptable.
+  context: null
+  section: 7.1 Exception Throwing
+  anchor: sec7_1
+  body:
+    - kind: paragraph
+      text: This section covered the general issues on throwing exceptions. The next section deals with deciding which type of exception to throw.
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA2219
+    coverage: full
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA2219 reports a throw statement in a finally clause; exceptions thrown by called methods are not reported, which the text accepts. CA2219 has no code fix.
+- id: FDG7012
+  strength: DO NOT
+  text: create new exception types to communicate usage errors. Throw one of the existing base library exceptions instead. See section 7.3 for detailed usage guidelines for the most common standard exception types.
+  context: null
+  section: 7.2 Choosing the Right Type of Exception to Throw
+  anchor: sec7_2
+  body:
+    - kind: paragraph
+      text: 'Usage errors need to be communicated to the developer calling the API and should not be handled directly in code. The exception type is generally less important to developers trying to fix their code than the message string. Therefore, for exceptions that are thrown as a result of usage errors, you should concentrate on designing a really good (i.e., explanatory) exception message and using one of the existing .NET Framework exception types: `ArgumentNullException`, `ArgumentException`, `InvalidOperationException`, `NotSupportedException`, and so on.'
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether an error is a usage error is judgment. The standard exception types are in section 7.3.'
+- id: FDG7013
+  strength: CONSIDER
+  text: creating and throwing custom exceptions if you have a program error condition that can be programmatically handled in a different way than any other existing exception. Otherwise, throw one of the existing exceptions. See section 7.4 for details on creating custom exceptions.
+  context: null
+  section: 7.2 Choosing the Right Type of Exception to Throw
+  anchor: sec7_2
+  body:
+    - kind: paragraph
+      text: Program errors are errors that can be, and often are, handled in code. The way to handle such errors is to catch the exception and execute some “compensating” logic. Whether the catch statement executes is determined by the type of the exception the catch block claims it can handle. Thus, a program error is an error condition (actually the only error condition) where the exception type matters, so you should consider creating a new exception type.
+    - kind: paragraph
+      text: If you think you are dealing with a program error, validate this belief by actually writing code or describing very precisely what the catch handler would do when it catches the exception to allow the program to continue its execution. If you cannot describe it, or if the error can be avoided by changing the calling code, you are probably dealing with a usage error or a system failure.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether a handler would treat the error differently is judgment.'
+- id: FDG7014
+  strength: DO NOT
+  text: create a new exception type if the exception would not be handled differently than an existing framework exception. Throw the existing framework exception in such case. See section 7.3 for detailed usage guidelines for the most common standard exception types.
+  context: null
+  section: 7.2 Choosing the Right Type of Exception to Throw
+  anchor: sec7_2
+  body:
+    - kind: paragraph
+      text: Of course, the existing exception type must make sense for your error condition. For example, you don’t want to throw `FileNotFoundException` from an API unrelated to accessing files.
+    - kind: paragraph
+      text: Also, make sure that reusing the exception will not make an error condition ambiguous. That is, make sure that the code that wants to handle the specific error will always be able to tell whether the exception was thrown because of the error or because of some other error that happens to use the same exception. For example, you don’t want to throw (reuse) `FileNotFoundException` from a routine that calls the built-in file I/O APIs, and so can throw the same exception, unless it does not matter to the calling code whether your code or the underlying framework method threw the exception.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: how handlers would treat the exception is judgment.'
+- id: FDG7015
+  strength: DO
+  text: create a new exception type to communicate a unique program error that cannot be communicated using an existing framework exception. See section 7.4 for details on creating custom exceptions.
+  context: null
+  section: 7.2 Choosing the Right Type of Exception to Throw
+  anchor: sec7_2
+  body:
+    - kind: annotation
+      text: Keep in mind that it’s not a breaking change to change an exception your code throws to a subtype of that exception. For example, if the first version of your framework throws `FooException`, in any future version of your library, you can start throwing a subtype for `FooException` without breaking code that was compiled against the previous version of your library. This means, when in doubt, I would consider not creating new exception types until you are sure you need them. At that point, you can create a new exception type by inheriting from the currently thrown type. Sometimes it might result in slightly strange exception hierarchy (e.g., a custom exception inheriting from `InvalidOperationException`), but it’s not a big deal in comparison to the cost of having unnecessary exception types in your library, which makes the library more complex, adds development cost, increases the working set, and so on.
+      author: Krzysztof Cwalina
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether an existing exception can communicate the error is judgment.'
+- id: FDG7016
+  strength: AVOID
+  text: creating APIs that when called can result in a system failure. If such a failure can occur, call `Environment.FailFast` instead of throwing an exception when the system failure occurs.
+  context: null
+  section: 7.2 Choosing the Right Type of Exception to Throw
+  anchor: sec7_2
+  body:
+    - kind: paragraph
+      text: System failures are errors that cannot be handled by the developer or the program. The good thing is that system failures are extremely rare in reusable libraries. They are mostly caused by the execution engine. The best way to shut down a process in such cases is to call `Environment.FailFast`, which logs the state of the system— something that is very useful in diagnosing the problem.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether a failure is a system failure is judgment. FDG7003 is the rule on Environment.FailFast.'
+- id: FDG7017
+  strength: DO NOT
+  text: create and throw new exceptions just to have your feature name in the exception type or namespace name.
+  context: null
+  section: 7.2 Choosing the Right Type of Exception to Throw
+  anchor: sec7_2
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: the reason for a new exception type is intent.'
+- id: FDG7018
+  strength: DO
+  text: throw the most specific (the most derived) exception that makes sense.
+  context: null
+  section: 7.2 Choosing the Right Type of Exception to Throw
+  anchor: sec7_2
+  body:
+    - kind: paragraph
+      text: For example, throw `ArgumentNullException` and not its base type, `ArgumentException`, if a null argument is passed.
+    - kind: annotation
+      text: Throwing `System.Exception`, the base class of all CLS-compliant exceptions, is always the wrong thing to do.
+      author: Jeffrey Richter
+    - kind: annotation
+      text: As described in more detail later, catching `System.Exception` is nearly always the wrong thing to do as well.
+      author: Brent Rector
+    - kind: paragraph
+      text: Now that you have chosen the correct exception type, you can focus on ensuring that the error message your exception delivers says what you need it to say.
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA2201
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA2201 reports creating System.Exception, System.SystemException and System.ApplicationException, which are never the most specific exception (the Richter annotation). Whether another type is the most derived one that makes sense, such as ArgumentNullException rather than ArgumentException, is not checked, so coverage is partial. CA2201's reports of runtime-reserved types belong to FDG7045 to FDG7049. CA2201 has no code fix.
+- id: FDG7019
+  strength: DO
+  text: provide a rich and meaningful message text targeted at the developer when throwing an exception.
+  context: null
+  section: 7.2.1 Error Message Design
+  anchor: sec7_2_1
+  body:
+    - kind: paragraph
+      text: The message should explain the cause of the exception and clearly describe what needs to be done to avoid the exception.
+    - kind: annotation
+      text: This guideline applies to frameworks. It is likely quite appropriate in application code for the exception message to be targeted at an admin or even an end user. The high-level advice is that the message text should be targeted at whoever will have to make sense out of it.
+      author: Brad Abrams
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA2208
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA2208 reports an argument exception created without a message or parameter name (the parameterless constructor). Whether a message is rich and meaningful is judgment, and other exception types are not checked, so coverage is partial. The Abrams annotation lets application messages target an administrator or end user; it changes the audience, not the need for a message. CA2208's other reports (parameter names) belong to FDG7043. Its code fix only swaps reversed arguments, so a message must be written by hand.
+- id: FDG7020
+  strength: DO
+  text: ensure that exception messages are grammatically correct.
+  context: null
+  section: 7.2.1 Error Message Design
+  anchor: sec7_2_1
+  body:
+    - kind: paragraph
+      text: Top-level exception handlers can show the exception message to application end users.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: grammar is judgment. FDG7021 checks the final period.'
+- id: FDG7021
+  strength: DO
+  text: ensure that each sentence of the message text ends with a period.
+  context: null
+  section: 7.2.1 Error Message Design
+  anchor: sec7_2_1
+  body:
+    - kind: paragraph
+      text: This way, code that displays exception messages to the user does not have to handle the case in which a developer forgot the final period, which is relatively cumbersome and expensive.
+  status: draft
+  style: false
+  check:
+    kind: fdg
+    diagnostics:
+      - FDG7021
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer:
+    message: End the exception message with a period
+    category: Exceptions
+  notes: 'Test profile: none, because exception messages that test code creates for test doubles are not shown to users. FDG7021 reports a string literal, or an interpolated string that ends with text, passed to a parameter named message of the constructor of a type derived from System.Exception, when its trimmed text does not end with a period; a message that ends with a question mark or an exclamation point is left to FDG7022. Messages built at run time (concatenation, string.Format, resources, an interpolation that ends with a value) are not checked, so coverage is partial, and only the last sentence is checked. There is no code fix.'
+- id: FDG7022
+  strength: AVOID
+  text: question marks and exclamation points in exception messages.
+  context: null
+  section: 7.2.1 Error Message Design
+  anchor: sec7_2_1
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: fdg
+    diagnostics:
+      - FDG7022
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer:
+    message: Remove the question mark or exclamation point from the exception message
+    category: Exceptions
+  notes: 'Test profile: none, as for FDG7021. FDG7022 reports a question mark or an exclamation point in a string literal, or in the text parts of an interpolated string, passed to a parameter named message of the constructor of a type derived from System.Exception. The operators != and ?? and the ?. and ?[ of a quoted expression are not counted. Messages built at run time are not checked, so coverage is partial. There is no code fix.'
+- id: FDG7023
+  strength: DO NOT
+  text: disclose security-sensitive information in exception messages.
+  context: null
+  section: 7.2.1 Error Message Design
+  anchor: sec7_2_1
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: which information is security-sensitive is judgment.'
+- id: FDG7024
+  strength: CONSIDER
+  text: localizing the exception messages thrown by your components if you expect your components to be used by developers speaking different languages.
+  context: null
+  section: 7.2.1 Error Message Design
+  anchor: sec7_2_1
+  body:
+    - kind: annotation
+      text: |-
+        Exception messages are not relevant when an exception is handled; they only come into play when an exception is unhandled. An unhandled exception indicates a real bug in the application because the application will be terminated. The only way to fix the application now is to have the failure reported, the source code modified and recompiled, and the deployments in the field updated. So the error messages should be geared toward helping developers fix bugs in their code. End users should not see these messages.
+
+        When a Microsoft Office application gets an unhandled exception, all the dialog box says is something like this: “Microsoft Word has encountered a problem and needs to close. We are sorry for the inconvenience.” There is a bit more to the message, but there is nothing computerese in the message. The user does have the option of clicking a button that will show what’s in the error report that gets sent back to Microsoft, and this error report is very geeky.
+      author: Jeffrey Richter
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the text concerns components that other developers use. Not machine-checkable: whether the users speak other languages is judgment. CA1303 is not mapped: it reports literals passed to parameters marked as localizable, and in a probe with SDK 10.0.402 it did not report a literal exception message.'
+- id: FDG7025
+  strength: DO NOT
+  text: swallow errors by catching nonspecific exceptions, such as `System.Exception`, `System.SystemException`, and so on, in framework code.
+  context: null
+  section: 7.2.2 Exception Handling
+  anchor: sec7_2_2
+  body:
+    - kind: code
+      text: |-
+        try{
+          File.Open(...);
+        }
+        catch(Exception e){ } // swallow "all" exceptions - don't do this!
+    - kind: paragraph
+      text: A legitimate reason for catching a nonspecific exception is so that you can transfer that exception to another thread. This can happen, for example, when a GUI application transfers an operation to the UI thread, when doing asynchronous programming, using thread pool operations, and so on. Obviously, if you are transferring an exception to another thread, you aren’t actually swallowing it.
+    - kind: annotation
+      text: When transferring exceptions across threads, it is imperative that you have put safeguards in place that prevent the exception from getting missed. For example, if you catch the exception and stuff it into a list that no other thread in the system ever gets around to checking, you have essentially swallowed it. And the effects can be as disastrous as ignoring an error code in Win32.
+      author: Joe Duffy
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA1031
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the text scopes it to framework code; FDG7026 is the rule for application code. CA1031 reports a catch of System.Exception or System.SystemException, or a parameterless catch, whose block does not throw; a filtered catch is not reported. CA1031 also reports a catch that transfers the exception to another thread, which the body allows (for example a catch that passes it to TaskCompletionSource.SetException, probe with SDK 10.0.402), and other nonspecific types ("and so on") are not seen unless listed in its disallowed_symbol_names option, so coverage is partial. CA1031 has no code fix.'
+- id: FDG7026
+  strength: AVOID
+  text: swallowing errors by catching nonspecific exceptions, such as `System.Exception`, `System.SystemException`, and so on, in application code.
+  context: null
+  section: 7.2.2 Exception Handling
+  anchor: sec7_2_2
+  body:
+    - kind: paragraph
+      text: There are cases when swallowing errors in applications is acceptable, but such cases are rare.
+    - kind: paragraph
+      text: If you decide to swallow exceptions, you must realize that you don’t know exactly what went wrong, so you generally cannot predict what state might now be inconsistent. By swallowing exceptions, you are making a trade-off that the value of continuing to execute code in this application domain or process exceeds the risk of executing in the face of inconsistencies. Because a security attack might be able to exploit those inconsistencies, your decision here has deep consequences.
+    - kind: annotation
+      text: |-
+        There is surprisingly little you can do when catching an exception unless you know the following:
+
+        - Exactly what component threw it, and what the contract was (what state the object was left in)
+        - The WHOLE call stack between the thrower and the catcher, and you have determined that every method in that stack properly cleaned up any global state changes before returning
+
+        If you don’t know these two items, then you don’t know that some global state has been left in a “half done” state, which will cause strange errors if the program continues. This is *especially* true for exceptions like `OutOfMemoryException`, `StackOverflowException`, and `ThreadAbortException`, which can happen in a great many places.
+
+        In practice, you don’t know the whole call stack unless the caller and the thrower are right next to each other. This means that if you are trying to catch “any” exception, you should not continue execution. You should only be doing things like error logging and persisting critical information as a prelude to shutting down (and possibly relaunching the process). These latter operations are best done in a finally block.
+      author: Vance Morrison
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA1031
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'CA1031 reports the same catches as for FDG7025. The body accepts rare cases of swallowing in applications, and the Morrison annotation allows logging and saving state before shutting down; CA1031 cannot tell these apart, so coverage is partial. The library profile keeps it on: in a library, FDG7025 asks for the same with DO NOT. CA1031 has no code fix.'
+- id: FDG7027
+  strength: DO NOT
+  text: exclude any special exceptions when catching for the purpose of transferring exceptions.
+  context: null
+  section: 7.2.2 Exception Handling
+  anchor: sec7_2_2
+  body:
+    - kind: code
+      text: |-
+        catch (Exception e) {
+           // bad code
+           // do not do this!
+           if (e is OutOfMemoryException ||
+               e is AccessViolationException
+           ) throw;
+            ...
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: "Analyzer candidate rejected: the purpose of a catch (transferring the exception) cannot be told from syntax, and the body's pattern, a conditional rethrow of special types, is legitimate in a catch that does not transfer. CA1031 does not report the body's example, since its block throws (probe with SDK 10.0.402)."
+- id: FDG7028
+  strength: CONSIDER
+  text: catching a specific exception when you understand why it was thrown in a given context and can respond to the failure programmatically.
+  context: null
+  section: 7.2.2 Exception Handling
+  anchor: sec7_2_2
+  body:
+    - kind: annotation
+      text: You should only catch an exception when you know you can gracefully recover from it. When performing some operation, you might know why an exception was thrown—but if you don’t know how you’d recover from it, do not catch it.
+      author: Jeffrey Richter
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether the catch understands the failure and can respond is judgment (the Richter annotation).'
+- id: FDG7029
+  strength: DO NOT
+  text: overcatch. Exceptions should often be allowed to propagate up the call stack.
+  context: null
+  section: 7.2.2 Exception Handling
+  anchor: sec7_2_2
+  body:
+    - kind: annotation
+      text: This can’t be stressed enough. Far too many times I’ve seen developers catch an exception, which basically hides a bug in their program. Do not catch; flush out the bugs during testing and ship a better, more robust product.
+      author: Jeffrey Richter
+    - kind: annotation
+      text: Exception handling is robust by default—every exception that is thrown will propagate up, looking for a handler. Every place you write an exception handler is a chance for you to remove robustness from the system, and if you make a mistake it will often be hard to track down. So be minimal about it.
+      author: Eric Gunnerson
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: overcatching a specific exception is judgment. Catches of nonspecific exceptions are FDG7025, FDG7026, FDG7038 and FDG7039 (CA1031).'
+- id: FDG7030
+  strength: DO
+  text: use try-finally and avoid using try-catch for cleanup code. In well-written exception code, try-finally is far more common than try-catch.
+  context: null
+  section: 7.2.2 Exception Handling
+  anchor: sec7_2_2
+  body:
+    - kind: paragraph
+      text: It might seem counterintuitive at first, but catch blocks are not needed in a surprising number of cases. However, you should always consider whether try-finally could be of use for cleanup to ensure a consistent state of the system when an exception is thrown. Usually, the cleanup logic rolls back resource allocations.
+    - kind: code
+      text: |-
+        FileStream stream = null;
+        try{
+          stream = new FileStream(...);
+           ...
+        }finally{
+          if(stream != null) stream.Close();
+        }
+    - kind: paragraph
+      text: C# and VB.NET provide the `using` statement, which can be used instead of a plain try-finally statement to clean up objects implementing the `IDisposable` interface.
+    - kind: code
+      text: |-
+        using(var stream = new FileStream(...)){
+          ...
+        }
+    - kind: annotation
+      text: If you use catch clauses for cleanup, you should know that any code that comes after the end of the catch might not be executed. In CLR 2.0, the finally and catch blocks get special protection from thread aborts. Code after a catch does not.
+      author: Christopher Brumme
+    - kind: annotation
+      text: Don’t use catch blocks for cleanup code. Use catch blocks for error recovery code and finally blocks for cleanup code. A catch block only runs when an exception of a particular type occurs within the try block. A finally block always runs. If you always need to clean up (the typical case), you need to perform that logic in a finally block.
+      author: Brent Rector
+    - kind: annotation
+      text: I completely agree with this guideline. I recommend that almost all cleanup code go inside finally blocks, and it is quite convenient that C# and VB.NET offer many language constructs that emit try-finally blocks automatically for you. Examples are C#/VB’s `using` statement, C#’s `lock` statement, VB’s `SyncLock` statement, C#’s `foreach` statement, and VB’s `For Each` statement. In addition, when you define a finalizer in C#, the compiler makes sure that the base class’s `Finalize` is called by placing the call within a finally block. In fact, I have designed many of my own types to have methods that return an `IDisposable` object so that they can be easily used with C#/VB’s `using` statement.
+      author: Jeffrey Richter
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Analyzer candidate rejected: whether a catch block holds cleanup code or error recovery code (the Rector annotation) is intent.'
+- id: FDG7031
+  strength: DO
+  text: prefer using an empty throw when catching and rethrowing an exception. This is the best way to preserve the exception call stack.
+  context: null
+  section: 7.2.2 Exception Handling
+  anchor: sec7_2_2
+  body:
+    - kind: code
+      text: |-
+        public void DoSomething(FileStream file){
+          long position = file.Position;
+          try{
+             ... // do some reading with the file
+          }catch{
+            file.Position = position; // unwind on failure
+            throw; // rethrow
+          }
+        }
+    - kind: annotation
+      text: Every time you catch and throw and rethrow, you impact the debuggability of the system. Debugging of exceptions is based on the notion that we detect exceptions going unhandled during the first pass, when no state changes have occurred. By attaching a debugger at that time, we see the state at the time when the exception was thrown. If there is a series of catch and throw and rethrow segments up the stack, then debugging might be limited to inspecting the very last segment. This is an arbitrary distance from the original fault. The same state changes will reduce the effectiveness of Watson dumps.
+      author: Christopher Brumme
+    - kind: annotation
+      text: In addition, when you throw a new exception (versus rethrowing the original exception), you are reporting a different failure than the failure that actually occurred. This also hurts your ability to debug the application. Therefore, always prefer a rethrow to a throw, and try to avoid catching and (re)throwing altogether.
+      author: Jeffrey Richter
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA2200
+    coverage: full
+  autofix: yes
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA2200 reports throw e; where e is the caught exception, and its code fix replaces it with throw;, which changes no signature.
+- id: FDG7032
+  strength: DO
+  text: use `ExceptionDispatchInfo` when rethrowing an exception from a different context.
+  context: null
+  section: 7.2.2 Exception Handling
+  anchor: sec7_2_2
+  body:
+    - kind: paragraph
+      text: If you need to move an exception to a different thread, or anything else that prevents using the empty throw, the `ExceptionDispatchInfo` class persists the call stack across the rethrow.
+    - kind: code
+      text: |-
+        private ExceptionDispatchInfo _savedExceptionInfo;
+
+        private void BackgroundWorker() {
+          try {
+             ...
+          } catch (Exception e) {
+            _savedExceptionInfo = ExceptionDispatchInfo.Capture(e);
+          }
+        }
+        public object GetResult() {
+         if (_done) {
+           if (_savedExceptionInfo != null) {
+             _savedExceptionInfo.Throw();
+
+             // The method throws,
+             // but the compiler flow doesn't understand that,
+             // so an extra return statement is required.
+             return null;
+           }
+           ...
+         }
+         ...
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Analyzer candidate rejected: whether a stored exception was thrown before (so that its call stack matters) needs data flow across threads; a throw of a caught variable in the same catch is FDG7031 (CA2200).'
+- id: FDG7033
+  strength: DO NOT
+  text: handle non-CLS-compliant exceptions (exceptions that don’t derive from `System.Exception`) using a parameterless catch block.
+  context: null
+  section: 7.2.2 Exception Handling
+  anchor: sec7_2_2
+  body:
+    - kind: paragraph
+      text: Languages that support non-`Exception`-derived exceptions are free to handle these exceptions.
+    - kind: code
+      text: |-
+        try{ ... }
+        catch{ ... }
+    - kind: paragraph
+      text: CLR 2.0 has been modified to deliver noncompliant exceptions to compliant catch blocks wrapped up in `RuntimeWrappedException`.
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA1031
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA1031 reports a parameterless catch whose block does not throw, which handles every exception, non-CLS-compliant ones included. Its reports of catches of System.Exception and System.SystemException belong to FDG7025, FDG7026, FDG7038 and FDG7039. Since CLR 2.0 a catch of System.Exception also receives non-CLS-compliant exceptions wrapped in RuntimeWrappedException, as the body says. CA1031 has no code fix.
+- id: FDG7034
+  strength: CONSIDER
+  text: wrapping specific exceptions thrown from a lower layer in a more appropriate exception if the lower layer is just an implementation detail for the operation.
+  context: null
+  section: 7.2.3 Wrapping Exceptions
+  anchor: sec7_2_3
+  body:
+    - kind: paragraph
+      text: Such wrapping should be quite rare in a typical framework. It will likely have a negative impact on the ability to debug.
+    - kind: code
+      text: |-
+        try {
+           // read the transaction file
+        }
+        catch(FileNotFoundException e) {
+           throw new TransactionFileMissingException(...,e);
+        }
+    - kind: annotation
+      text: 'Chris Brumme’s previous annotation on rethrowing also applies to this context. The example given illustrates the point nicely: For rethrowing to help, the original exception context has to be nearly meaningless and certainly uninteresting to debug. That the original call stack was uninteresting is the controlling factor, in my opinion. In this case, nobody thinks that there is anything wrong with the file opening services— you might as well rethrow something more meaningful to indicate where we had trouble opening files and what file we were trying to open.'
+      author: Rico Mariani
+    - kind: annotation
+      text: 'Another way of stating this is: “Don’t wrap if your users will ever want to look at the inner exception.” By far the worst position to be in is to have to look at an inner exception and base your behavior on the type of the inner exception.'
+      author: Eric Gunnerson
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether the lower layer is an implementation detail is judgment. FDG7036 checks that a wrapping exception carries the inner exception.'
+- id: FDG7035
+  strength: AVOID
+  text: catching and wrapping nonspecific exceptions.
+  context: null
+  section: 7.2.3 Wrapping Exceptions
+  anchor: sec7_2_3
+  body:
+    - kind: paragraph
+      text: The catch and wrap practice is often undesired and is just another form of swallowing errors. Exceptions to this rule include cases in which the wrapper exception communicates a severe condition that is much more interesting to the caller than the actual type of the original exception. For example, the `TypeInitializationException` wraps all exceptions propagating from static constructors.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: "Analyzer candidate rejected: the body's exception (a wrapper that communicates a severe condition more interesting to the caller than the original type, as TypeInitializationException does) cannot be told from syntax. CA1031 does not report a catch that wraps, since its block throws (probe with SDK 10.0.402)."
+- id: FDG7036
+  strength: DO
+  text: specify the inner exception when wrapping exceptions.
+  context: null
+  section: 7.2.3 Wrapping Exceptions
+  anchor: sec7_2_3
+  body:
+    - kind: code
+      text: throw new ConfigurationFileMissingException(...,e);
+    - kind: annotation
+      text: It cannot be stressed enough how carefully this needs to be thought through. When in doubt, do not wrap an exception with another. An example in the CLR where wrapping is known to cause all kinds of trouble is with reflection. When you invoke a method using reflection, if that method throws an exception, the CLR catches it and throws a new `TargetInvocationException`. This is incredibly annoying because it hides the actual method and location in the method that had the problem. I have wasted much time trying to debug my code because of this exception wrapping.
+      author: Jeffrey Richter
+  status: draft
+  style: false
+  check:
+    kind: fdg
+    diagnostics:
+      - FDG7036
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer:
+    message: Pass the caught exception as the inner exception of '{0}'
+    category: Exceptions
+  notes: FDG7036 reports a new exception created in a throw statement or throw expression inside a catch block, outside lambdas, anonymous methods and local functions, when the exception type has an accessible constructor with a System.Exception parameter and no argument of the creation is an exception. A parameterless catch, or a catch without a variable, is reported too, since it could declare one. An argument for an optional inner exception parameter that the creation leaves out does not count. Wrapping through a builder method (FDG7009) is not seen, so coverage is partial. There is no code fix.
+- id: FDG7037
+  strength: DO NOT
+  text: throw `System.Exception` or `System.SystemException`.
+  context: null
+  section: 7.3.1 Exception and SystemException
+  anchor: sec7_3_1
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA2201
+    coverage: full
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA2201 reports creating System.Exception or System.SystemException, thrown or not. Its other reports belong to FDG7018, FDG7040 and FDG7045 to FDG7049. CA2201 has no code fix.
+- id: FDG7038
+  strength: DO NOT
+  text: catch `System.Exception` or `System.SystemException` in framework code, unless you intend to rethrow.
+  context: null
+  section: 7.3.1 Exception and SystemException
+  anchor: sec7_3_1
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA1031
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the text scopes it to framework code; FDG7039 is the general rule. CA1031 reports a catch of System.Exception or System.SystemException, or a parameterless catch, whose block does not throw, which matches "unless you intend to rethrow". A filtered catch that swallows is not reported, so coverage is partial. CA1031 has no code fix.'
+- id: FDG7039
+  strength: AVOID
+  text: catching `System.Exception` or `System.SystemException`, except in top-level exception handlers.
+  context: null
+  section: 7.3.1 Exception and SystemException
+  anchor: sec7_3_1
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA1031
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA1031 reports the same catches as for FDG7038, top-level exception handlers included, which the text allows, so coverage is partial. A catch that rethrows is not reported. CA1031 has no code fix.
+- id: FDG7040
+  strength: DO NOT
+  text: throw or derive from `System.ApplicationException`.
+  context: null
+  section: 7.3.2 ApplicationException
+  anchor: sec7_3_2
+  body:
+    - kind: annotation
+      text: '`System.ApplicationException` is a class that should not be part of .NET. The original idea was that classes derived from `SystemException` would indicate exceptions thrown from the CLR (or system) itself, whereas non-CLR exceptions would be derived from `ApplicationException`. However, a lot of exception classes didn’t follow this pattern. For example, `TargetInvocationException` (which is thrown by the CLR) is derived from `ApplicationException`. So the `ApplicationException` class lost all meaning. The reason to derive from this base class is to allow some code higher up the call stack to catch the base class. It was no longer possible to catch all application exceptions.'
+      author: Jeffrey Richter
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA2201
+      - CA1058
+    coverage: full
+  autofix: breaking
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA2201 reports creating System.ApplicationException, and CA1058 reports a type that derives from it. CA1058 also reports types derived from other base types (such as CollectionBase and Queue), which the collection guidelines cover. Changing the base type of a public exception changes its public API, so the fix is breaking; neither diagnostic has a code fix.
+- id: FDG7041
+  strength: DO
+  text: throw an `InvalidOperationException` if the object is in an inappropriate state.
+  context: null
+  section: 7.3.3 InvalidOperationException
+  anchor: sec7_3_3
+  body:
+    - kind: paragraph
+      text: The `System.InvalidOperationException` exception should be thrown if a property set or a method call is not appropriate given the object’s current state. An example of this is writing to a `FileStream` that’s been opened for reading.
+    - kind: annotation
+      text: The difference between `InvalidOperationException` and `ArgumentException` is that `ArgumentException` does not rely on the state of any other object besides the argument itself to determine whether it needs to be thrown. For example, if client code tries to access a nonexistent resource, `InvalidOperationException` should be thrown. On the other hand, if client code tries to access a resource using a malformed identifier, `ArgumentException` should be thrown.
+      author: Krzysztof Cwalina
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: "Not machine-checkable: whether the object's state is inappropriate is judgment (the Cwalina annotation separates it from ArgumentException)."
+- id: FDG7042
+  strength: DO
+  text: throw `ArgumentException` or one of its subtypes if bad arguments are passed to a member. Prefer the most derived exception type, if applicable.
+  context: null
+  section: 7.3.4 ArgumentException, ArgumentNullException, and ArgumentOutOfRangeException
+  anchor: sec7_3_4
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether an argument is bad is judgment. Null arguments of public members are FDG5108 (CA1062).'
+- id: FDG7043
+  strength: DO
+  text: set the `ParamName` property when throwing one of the subclasses of `ArgumentExceptions`.
+  context: null
+  section: 7.3.4 ArgumentException, ArgumentNullException, and ArgumentOutOfRangeException
+  anchor: sec7_3_4
+  body:
+    - kind: paragraph
+      text: This property represents the name of the parameter that caused the exception to be thrown. Note that the property can be set using one of the constructor overloads.
+    - kind: code
+      text: |-
+        public static FileAttributes GetAttributes(string path){
+          if(path==null){
+            throw new ArgumentNullException(nameof(path),...);
+          }
+        }
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA2208
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA2208 reports an argument exception created without a parameter name, a parameter name that is not a parameter of the method (the body's nameof(path) passes), and reversed message and parameter name arguments. It does not report ArgumentException(string message), which has no parameter name, so coverage is partial. Its code fix only swaps reversed arguments. The setter case is FDG7044.
+- id: FDG7044
+  strength: DO
+  text: use `value` for the name of the implicit value parameter of property setters.
+  context: null
+  section: 7.3.4 ArgumentException, ArgumentNullException, and ArgumentOutOfRangeException
+  anchor: sec7_3_4
+  body:
+    - kind: code
+      text: |-
+        public FileAttributes Attributes {
+           set {
+              if(value==null){
+                throw new ArgumentNullException(nameof(value),...);
+              }
+           }
+        }
+    - kind: annotation
+      text: It is very unusual to find code that catches any of these argument exceptions. When one of these exceptions is thrown, you almost always want the application to die. Then look at the exception stack trace, fix your source code so that you are passing the right argument, recompile the code, and retest.
+      author: Jeffrey Richter
+    - kind: annotation
+      text: Jeffrey is absolutely correct here. And it is the infrequency with which these exception types are caught that makes them safe to broadly reuse for throwing in your code.
+      author: Jason Clark
+  status: draft
+  style: false
+  check:
+    kind: fdg
+    diagnostics:
+      - FDG7044
+    coverage: full
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer:
+    message: Name the parameter 'value' instead of '{0}' in an argument exception thrown by a setter
+    category: Exceptions
+  notes: FDG7044 reports a constant passed to the paramName parameter of an argument exception (a type derived from System.ArgumentException) created in a property or indexer setter or init accessor, when it is neither "value" nor a parameter of the indexer. CA2208 accepts the property's own name there (probe with SDK 10.0.402), so it is not mapped. There is no code fix.
+- id: FDG7045
+  strength: DO NOT
+  text: allow publicly callable APIs to explicitly or implicitly throw `NullReferenceException`, `AccessViolationException`, or `IndexOutOfRangeException`. These exceptions are reserved and thrown by the platform and in most cases indicate a bug.
+  context: null
+  section: 7.3.5 NullReferenceException, IndexOutOfRangeException, and AccessViolationException
+  anchor: sec7_3_5
+  body:
+    - kind: paragraph
+      text: Do argument checking to avoid throwing these exceptions. Throwing these exceptions exposes implementation details of your method that might change over time.
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA2201
+      - CA1062
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: "Library only: the text scopes it to publicly callable APIs. CA2201 reports creating NullReferenceException, AccessViolationException and IndexOutOfRangeException (the explicit case). CA1062 reports a parameter of a public method that is dereferenced without a null check, which the body's argument checking prevents; implicit throws from other sources (an index out of range, a null field) are not seen, so coverage is partial. Neither has a code fix. CA1062 is mapped in chapter 5 too (FDG5108)."
+- id: FDG7046
+  strength: DO NOT
+  text: explicitly throw `StackOverflowException`. This exception should be explicitly thrown only by the CLR.
+  context: null
+  section: 7.3.6 StackOverflowException
+  anchor: sec7_3_6
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA2201
+    coverage: full
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA2201 reports creating StackOverflowException. CA2201 has no code fix.
+- id: FDG7047
+  strength: DO NOT
+  text: catch `StackOverflowException`.
+  context: null
+  section: 7.3.6 StackOverflowException
+  anchor: sec7_3_6
+  body:
+    - kind: paragraph
+      text: It is almost impossible to write managed code that remains consistent in the presence of arbitrary stack overflows. The unmanaged parts of the CLR remain consistent by using probes to move stack overflows to well-defined places rather than by backing out from arbitrary stack overflows.
+    - kind: annotation
+      text: Generally you should never special-case `StackOverflowException`. The default policy in CLR 2.0 will result in a fast shutdown of the process when a stack overflows. There are strong security and reliability reasons for this decision. In a normal process, a stack overflow won’t even result in a managed exception.
+      author: Christopher Brumme
+  status: draft
+  style: false
+  check:
+    kind: fdg
+    diagnostics:
+      - FDG7047
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer:
+    message: Do not catch StackOverflowException
+    category: Exceptions
+  notes: FDG7047 reports a catch clause whose type is System.StackOverflowException. Special-casing the type in a filter or a type test inside a broader catch (the Brumme annotation) is not seen, so coverage is partial. There is no code fix.
+- id: FDG7048
+  strength: DO NOT
+  text: explicitly throw `OutOfMemoryException`. This exception is to be thrown only by the CLR infrastructure.
+  context: null
+  section: 7.3.7 OutOfMemoryException
+  anchor: sec7_3_7
+  body:
+    - kind: annotation
+      text: |-
+        At one end of the spectrum, an `OutOfMemoryException` could be the result of a failure to obtain 12 bytes for implicitly autoboxing, or a failure to JIT some code that is required for critical backout. These cases are catastrophic failures and ideally would result in termination of the process. At the other end of the spectrum, an `OutOfMemoryException` could be the result of a thread asking for a 1 GB byte array. The fact that we failed this allocation attempt has no impact on the consistency and viability of the rest of the process.
+
+        The sad fact is that CLR 2.0 cannot distinguish among any points on this spectrum. In most managed processes, all `OutOfMemoryExceptions` are considered equivalent, and they all result in a managed exception being propagated up the thread. However, you cannot depend on your backout code being executed, because we might fail to JIT some of your backout methods, or we might fail to execute static constructors required for backout.
+
+        Also, keep in mind that all other exceptions can get folded into an `OutOfMemoryException` if there isn’t enough memory to instantiate those other exception objects. Also, we will give you a unique `OutOfMemoryException` with its own stack trace if we can. But if we are tight enough on memory, you will share an uninteresting global instance with everyone else in the process.
+
+        My best recommendation is that you treat `OutOfMemoryException` like any other application exception. You make your best attempts to handle it and remain consistent. In the future, I hope the CLR can do a better job of distinguishing catastrophic OOM from the 1 GB byte array case. If so, we might provoke termination of the process for the catastrophic cases, leaving the application to deal with the less risky ones. By treating all OOM cases as the less risky ones, you are preparing for that day.
+      author: Christopher Brumme
+    - kind: annotation
+      text: It is common practice to explicitly throw `OutOfMemoryException` when interoperating with unmanaged code to convert unmanaged error codes into managed exceptions. It is perhaps the only situation where it is acceptable to throw `OutOfMemoryException` explicitly.
+      author: Jan Kotas
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA2201
+    coverage: full
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA2201 reports creating OutOfMemoryException. The Kotas annotation accepts it when interop code converts an unmanaged error code; CA2201 reports that case too, so suppress it there. CA2201 has no code fix.
+- id: FDG7049
+  strength: DO NOT
+  text: explicitly throw `ComException`, or `SEHException`, or `ExecutionEngineException`. These exceptions are to be thrown only by the CLR infrastructure.
+  context: null
+  section: 7.3.8 ComException, SEHException, and ExecutionEngineException
+  anchor: sec7_3_8
+  body:
+    - kind: annotation
+      text: If you see an `ExecutionEngineException` thrown, treat it like any other framework exception. It was thrown from a place where the CLR is not actually in an invalid state. For instance, some invalid operations in the security code throw this exception, and backward-compatibility requirements prevent us from changing the exception type.
+      author: Christopher Brumme
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA2201
+    coverage: full
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA2201 reports creating COMException, SEHException and ExecutionEngineException (probe with SDK 10.0.402). CA2201 has no code fix.
+- id: FDG7050
+  strength: DO
+  text: throw `OperationCanceledException` to represent any caller-initiated abort or cancellation.
+  context: null
+  section: 7.3.9 OperationCanceledException and TaskCanceledException
+  anchor: sec7_3_9
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether an abort is caller-initiated is judgment. CA2250 is not mapped: it asks for ThrowIfCancellationRequested instead of a check and a throw, which keeps the exception type.'
+- id: FDG7051
+  strength: DO
+  text: prefer catching `OperationCanceledException` to `TaskCanceledException`.
+  context: null
+  section: 7.3.9 OperationCanceledException and TaskCanceledException
+  anchor: sec7_3_9
+  body:
+    - kind: paragraph
+      text: '`TaskCanceledException` derives from `OperationCanceledException`. The type is used internally by the Task execution engine, but otherwise is barely distinguishable from the parent type. Catch blocks that have special handling for `TaskCanceledException` should generally also have handling for `OperationCanceledException`.'
+  status: draft
+  style: false
+  check:
+    kind: fdg
+    diagnostics:
+      - FDG7051
+    coverage: partial
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer:
+    message: Catch OperationCanceledException instead of TaskCanceledException
+    category: Exceptions
+  notes: 'FDG7051 reports a catch clause whose type is System.Threading.Tasks.TaskCanceledException, unless the same try statement also catches OperationCanceledException, which the body accepts as the other handling. A type test in a filter is not seen, so coverage is partial. There is no code fix: catching the base type catches more exceptions.'
+- id: FDG7052
+  strength: DO
+  text: throw `FormatException` to indicate the input string in a text parsing method does not conform to the required, or specified, format.
+  context: null
+  section: 7.3.10 FormatException
+  anchor: sec7_3_10
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether a method parses text, and why it fails, is judgment.'
+- id: FDG7053
+  strength: DO
+  text: throw `FormatException` to indicate the format specifier string to a text parsing or text formatting method is invalid.
+  context: null
+  section: 7.3.10 FormatException
+  anchor: sec7_3_10
+  body:
+    - kind: paragraph
+      text: '`DateTimeOffset.Parse(string input)` throws a `FormatException` as an execution error indicating that the input value, which is generally read as data, cannot be parsed into a `DateTimeOffset` value. Conversely, `DateTimeOffset.ToString(string format)` throws a `Format Exception` as a usage error indicating that the format specifier, which is generally a value explicitly specified in the calling code, is not a value that is supported. The dual usage of this exception can be ambiguous for methods like `DateTimeOffset.ParseExact(string input, string format, IFormatProvider formatProvider)`, but only when both the input value and the format value were read as data. When the format value is specified explicitly in calling code, the developer can use the message to debug an invalid format specifier once; then all future calls that result in a `FormatException` are a result of the input value.'
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether a string is a format specifier is judgment.'
+- id: FDG7054
+  strength: DO
+  text: throw `PlatformNotSupportedException` to indicate the operation cannot complete in the current runtime environment but could on a different runtime or operating system.
+  context: null
+  section: 7.3.11 PlatformNotSupportedException
+  anchor: sec7_3_11
+  body:
+    - kind: paragraph
+      text: '`PlatformNotSupportedException` is the primary exception to throw when a method is declared in a cross-compiled library to avoid a `MissingMethodException` from the CLR, but cannot be implemented in the current build configuration. This exception is also commonly thrown when the implementation of a method requires a newer version of the current operating system or specialty hardware that is not present.'
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether an operation could complete on another runtime is judgment. CA1416 (platform compatibility) checks callers, not the exception thrown.'
+- id: FDG7055
+  strength: DO
+  text: derive exceptions from `System.Exception` or one of the other common base exceptions.
+  context: null
+  section: 7.4 Designing Custom Exceptions
+  anchor: sec7_4
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not checked: C# requires thrown and caught types to derive from System.Exception (CS0155). Which bases count as common is judgment; deriving from ApplicationException is FDG7040 (CA1058).'
+- id: FDG7056
+  strength: AVOID
+  text: deep exception hierarchies.
+  context: null
+  section: 7.4 Designing Custom Exceptions
+  anchor: sec7_4
+  body:
+    - kind: paragraph
+      text: There are a limited number of cases where it’s a good idea to create a more elaborate hierarchy of exceptions, but they’re extremely rare. The reason is that code that handles exceptions almost never cares about the hierarchy, because it almost never wants to handle more than one error at a time. If two or more errors can be handled the same way, they should not be expressed using different exception types. Of course, there are exceptions to the rule and in some cases, it may be better to create a deeper hierarchy.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Analyzer candidate rejected: the book gives no depth limit and allows deeper hierarchies in rare cases. CA1501 (inheritance depth) is not mapped: its threshold is not about exceptions.'
+- id: FDG7057
+  strength: DO
+  text: end exception class names with the “Exception” suffix.
+  context: null
+  section: 7.4 Designing Custom Exceptions
+  anchor: sec7_4
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA1710
+    coverage: full
+  autofix: breaking
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Test profile: none, because CA1710 also enforces the other suffixes of Table 3-5, and chapter 3 is off in the test profile. CA1710 reports a type derived from System.Exception whose name does not end with Exception, as for FDG3056 in chapter 3. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.'
+- id: FDG7058
+  strength: DO
+  text: make exceptions runtime serializable. An exception must be serializable to work correctly across application domain and remoting boundaries.
+  context: null
+  section: 7.4 Designing Custom Exceptions
+  anchor: sec7_4
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'CA2237 is not mapped: in a probe with SDK 10.0.402 (net10.0 and net472) it did not report exception types without SerializableAttribute. Analyzer candidate rejected: the reason of the text, application domain and remoting boundaries, does not exist on .NET Core, and .NET 8 made the serialization constructor of exceptions obsolete (SYSLIB0051), so a check would ask for code that current .NET warns against.'
+- id: FDG7059
+  strength: DO
+  text: provide (at least) these common constructors on all exceptions. Make sure the names and types of the parameters are exactly as shown in the following example.
+  context: null
+  section: 7.4 Designing Custom Exceptions
+  anchor: sec7_4
+  body:
+    - kind: code
+      text: |-
+        public class SomeException: Exception, ISerializable {
+          public SomeException();
+          public SomeException(string message);
+          public SomeException(string message, Exception inner);
+
+          // this constructor is needed for serialization.
+          protected SomeException(SerializationInfo info, StreamingContext
+        context);
+        }
+  status: draft
+  style: false
+  check:
+    kind: sdk
+    diagnostics:
+      - CA1032
+    coverage: partial
+  autofix: yes
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: CA1032 reports an exception type that lacks a public parameterless, (string message) or (string message, Exception innerException) constructor, internal exceptions included. It does not ask for the protected serialization constructor of the example, which .NET 8 made obsolete (SYSLIB0051, see FDG7058), so coverage is partial. Its code fix adds the missing constructors, which changes no existing signature.
+- id: FDG7060
+  strength: CONSIDER
+  text: providing exception properties for programmatic access to extra information (besides the message string) relevant to the exception.
+  context: null
+  section: 7.4 Designing Custom Exceptions
+  anchor: sec7_4
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: which extra information handlers need is judgment.'
+- id: FDG7061
+  strength: DO NOT
+  text: use error codes because of concerns that exceptions might affect performance negatively.
+  context: null
+  section: 7.5 Exceptions and Performance
+  anchor: sec7_5
+  body:
+    - kind: paragraph
+      text: To improve performance, it is possible to use either the Tester–Doer Pattern or the Try Pattern, described in the next two sections.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: the reason for an error code is intent. FDG7001 is the general rule.'
+- id: FDG7062
+  strength: CONSIDER
+  text: the Tester–Doer Pattern for members that might throw exceptions in common scenarios to avoid performance problems related to exceptions.
+  context: null
+  section: 7.5.1 The Tester–Doer Pattern
+  anchor: sec7_5_1
+  body:
+    - kind: annotation
+      text: Consider this when the “test” is much cheaper than the “do.”
+      author: Rico Mariani
+    - kind: annotation
+      text: This pattern needs to be used carefully. A potential problem occurs when you have multiple threads accessing the object at the same time. For example, one thread could execute the tester method, which reports that all is OK, and before the doer method executes, another thread could change the object, causing the doer to fail. Although this pattern might improve performance, it might introduce race conditions and must be used with extreme caution.
+      author: Jeffrey Richter
+    - kind: annotation
+      text: |-
+        Jeff’s comment about races is true, but only rarely should it impact your design. The reason is that unless you specifically designed your class to be threadsafe (operate properly while multiple threads simultaneously use it), it almost certainly is not. Of the thousands of classes in .NET, only a handful are designed to be threadsafe (and this is specifically noted in the documentation). If your class is not threadsafe (the default), any user must use locks to ensure that only one thread uses it at a time. As long as both the “test” and the “do” are done under the same lock (this will typically happen naturally), there is not a problem.
+
+        Thus, Jeff’s concern only applies to the design of threadsafe classes.
+      author: Vance Morrison
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether a member throws in common scenarios is judgment (the Mariani, Richter and Morrison annotations).'
+- id: FDG7063
+  strength: CONSIDER
+  text: the Try Pattern for members that might throw exceptions in common scenarios to avoid performance problems related to exceptions.
+  context: null
+  section: 7.5.2 The Try Pattern
+  anchor: sec7_5_2
+  body:
+    - kind: annotation
+      text: I like this guideline a lot. It solves the race-condition problem and the performance problem. Besides `DateTime.TryParse`, the `Dictionary` class has a `TryGetValue` method.
+      author: Jeffrey Richter
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: suggestion
+    test: suggestion
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether a member throws in common scenarios is judgment. CA1854 and CA1864 are not mapped (see FDG7004).'
+- id: FDG7064
+  strength: DO
+  text: use the prefix “Try” and Boolean return type for methods implementing the Try pattern.
+  context: null
+  section: 7.5.2 The Try Pattern
+  anchor: sec7_5_2
+  body: []
+  status: draft
+  style: false
+  check:
+    kind: fdg
+    diagnostics:
+      - FDG7064
+    coverage: partial
+  autofix: breaking
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer:
+    message: Return bool from the Try method '{0}'
+    category: Exceptions
+  notes: FDG7064 reports a method whose first word is "Try", followed by at least one more word, when it has an out parameter, as the value-producing Try methods of 7.5.2.1 do, and its return type is not bool. A Try method without an out parameter is not reported, because the name alone does not show that it follows the Try pattern; on the first noise run 7 of 8 reports had no out parameter, and 4 of them were not Try methods of 7.5.2 (best-effort methods that return void or ValueTask, and a fluent method that returns its argument), so the analyzer was narrowed. The other 3 returned a nullable value or a tuple instead of an out parameter; they are no longer seen. Overrides and interface implementations are not reported, since their names and return types come from the member they override or implement. Try methods without an out parameter and methods that implement the pattern without the prefix are not seen, so coverage is partial. Changing the return type changes the signature, so the fix is breaking; there is no code fix.
+- id: FDG7065
+  strength: DO
+  text: pick one kind of reason for why your Try method can return `false`, and throw an exception for any other failure reason.
+  context: null
+  section: 7.5.2 The Try Pattern
+  anchor: sec7_5_2
+  body:
+    - kind: paragraph
+      text: 'Many methods have only one kind of failure: a string either represents a `DateTime` or it doesn’t; when using a Dictionary the key was either present or it wasn’t; and a `ConcurrentQueue` is either empty or not. In the `CountdownEvent` class, however, the `AddCount` method has several possible errors: the object may have already counted down to done, the requested increment could overflow the counter, or the object could have already been disposed—all in addition to the usage error of providing a negative count. The most likely error is the counter having reached zero, and this is the only error for which `TryAddCount` will return `false`. Developers who call the method can write a handler for the failure case and understand what state it represents, while the less likely errors continue to throw exceptions.'
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: the kinds of failure are judgment.'
+- id: FDG7066
+  strength: DO
+  text: provide an exception-throwing member for each member using the Try Pattern.
+  context: null
+  section: 7.5.2 The Try Pattern
+  anchor: sec7_5_2
+  body:
+    - kind: code
+      text: |-
+        public struct DateTime {
+          public static DateTime Parse(string dateTime){ ... }
+          public static bool TryParse(string dateTime, out DateTime result){
+        ... }
+        }
+    - kind: annotation
+      text: But don’t provide members that nobody could reasonably use. There’s no reason to set your clients up for failure by giving them an API that’s almost guaranteed to be too slow to use. The most obvious way to use your system should also be the best way.
+      author: Rico Mariani
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Analyzer candidate rejected: the throwing member can have another name or be an indexer (TryGetValue and the indexer of a dictionary), and the Mariani annotation advises against members that nobody could reasonably use.'
+- id: FDG7067
+  strength: DO
+  text: “return” the value from a Try method via an `out` parameter.
+  context: null
+  section: 7.5.2.1 Value-Producing Try Methods
+  anchor: sec7_5_2_1
+  body:
+    - kind: paragraph
+      text: Unlike `CountdownEvent.TryAddCount`, most Try methods are expected to produce an additional value from the method—the return value of the exception-throwing alternative member. Since the Try pattern reserves the return value for reporting success or failure, the additional value must be returned via an `out` parameter (see section 5.8 for more information on `out` parameters).
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: whether a Try method produces a value is judgment. FDG7064 reports a Try method that returns its value instead of bool.'
+- id: FDG7068
+  strength: DO
+  text: write `default(T)` to the `out` parameter from a Try method that returns `false`.
+  context: null
+  section: 7.5.2.1 Value-Producing Try Methods
+  anchor: sec7_5_2_1
+  body:
+    - kind: code
+      text: |-
+        public partial class HashSet<T> {
+         public bool TryGetValue(T equalValue, out T actualValue) {
+           Node node = FindNode(equalValue);
+           if (node != null) {
+             actualValue = node.Item;
+             return true;
+           }
+           actualValue = default(T);
+           return false;
+         }
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Analyzer candidate rejected: what a method writes to its out parameter on each path that returns false needs data flow analysis.'
+- id: FDG7069
+  strength: AVOID
+  text: writing to the `out` parameter from a Try method when throwing an exception.
+  context: null
+  section: 7.5.2.1 Value-Producing Try Methods
+  anchor: sec7_5_2_1
+  body:
+    - kind: paragraph
+      text: Because the exception indicates that an error occurred, no additional value should be produced. If a Try method “leaks” a partially complete value on failure, then callers could potentially depend on the partially complete value for either error recovery or their main program flow. Once callers are depending on the internal state of your method, it becomes much harder to alter the otherwise private implementation details of the method without causing a runtime breaking change for someone. This situation is compounded when the caller is writing the `out` to a static field, since the value will persist if the exception is handled.
+    - kind: paragraph
+      text: It’s good practice to exclusively assign the `out` parameter a value immediately prior to a return statement in the method. This helps to avoid leaking implementation details in the event of an exception.
+    - kind: code
+      text: |-
+        public static bool TryDecode(byte[] data, out ParsedType value) {
+         // Careful: The caller might depend on this value being
+         // non-null on an exception from LoadFields.
+         value = new ParsedType();
+         if (!LoadFields(value, data)) {
+           value = null;
+           return false;
+         }
+         return true;
+        }
+
+        public static bool TryDecode(byte[] data, out ParsedType value) {
+         // This variant hides the implementation details better
+         ParsedType parsedType = new ParsedType();
+         if (!LoadFields(parsedType, data)) {
+           value = null;
+           return false;
+         }
+         value = parsedType;
+         return true;
+        }
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: "Analyzer candidate rejected: whether an out parameter is written before a path that throws, including a throw from a called method (the body's LoadFields), needs data flow analysis."
+- id: FDG7070
+  strength: DO
+  text: return `false` on null inputs to a method of the form `static bool TryParse(string, out T value)`.
+  context: null
+  section: 7.5.2.1 Static TryParse(string, out T) Methods
+  anchor: sec7_5_2_1a
+  body:
+    - kind: paragraph
+      text: The “kind of reason” for failure that is common to all static `TryParse` methods that take only a single string input is “the input is not a valid string representation of this type.” All static `TryParse` methods in the .NET BCL types consider a null input as “not a valid string representation” rather than a usage error. For consistency with the rest of .NET, your static `TryParse` methods should do the same.
+    - kind: paragraph
+      text: Argument validation should still be performed for any parameters other than the main string input parameter in overloads of a `TryParse` method.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: warning
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Analyzer candidate rejected: whether a null input returns false needs data flow analysis. CA1062 is not mapped: it reports a public TryParse that dereferences its input without a null check, but any null check satisfies it, including one that throws ArgumentNullException, which this rule rules out.'

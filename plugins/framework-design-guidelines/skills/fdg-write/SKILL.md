@@ -91,6 +91,7 @@ Other references:
 - [references/ch05-members-extensions-operators.md](references/ch05-members-extensions-operators.md): design extension methods and operator overloads, including conversion and inequality operators
 - [references/ch05-members-parameters.md](references/ch05-members-parameters.md): design parameters (enums versus booleans, argument validation, ref, out, params, pointers) and tuples in member signatures
 - [references/ch06-extensibility.md](references/ch06-extensibility.md): choose an extensibility mechanism (unsealed classes, protected members, events and callbacks, virtual members, abstractions, base classes) and decide when to seal
+- [references/ch07-exceptions.md](references/ch07-exceptions.md): throw, choose, catch, wrap and design exceptions, write exception messages, and use the Tester-Doer and Try patterns
 
 Each reference lists, by section, every rule of its chapter that tools do not enforce. When a rule's wording is not
 enough, follow the `examples:` link at the end of its line to the book's explanation and code.

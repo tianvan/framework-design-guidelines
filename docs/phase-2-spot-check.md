@@ -104,3 +104,28 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
   judgment; no autofix. Chosen because the C# compiler enforces it (CS0628, CS0549, CS0666), so it needs no analyzer and stays in the application profile.
 - [ ] FDG6022 CONSIDER sealing members that you override.
   judgment; no autofix; library only. Chosen because overrides are not reported: the dispose pattern of section 9.4 has subclasses override Dispose(bool) again.
+
+## Chapter 7: Exceptions
+
+- [ ] FDG7002 DO report execution failures by throwing exceptions.
+  judgment; no autofix. Chosen because the book shows the cross icon on a DO guideline (Ruling 4), and the notes say that the strength word is used.
+- [ ] FDG7007 DO NOT have public members that can either throw or not throw based on some option.
+  fdg FDG7007, partial; breaking; library only. Chosen because the new analyzer reads "some option" as a bool parameter whose first word is "throw" (throwOnError), so enum or settings options are not seen.
+- [ ] FDG7008 DO NOT have public members that return exceptions as the return value or an `out` parameter.
+  fdg FDG7008, full; breaking; library only. Chosen because properties are not reported (an exception property is the extra information of FDG7060), and private exception builder methods (FDG7009) stay allowed.
+- [ ] FDG7021 DO ensure that each sentence of the message text ends with a period.
+  fdg FDG7021, partial; no autofix; test profile none. Chosen because the new analyzer checks only the last sentence of a constant or interpolated message (which ends with text), and leaves messages that end with ? or ! to FDG7022.
+- [ ] FDG7025 DO NOT swallow errors by catching nonspecific exceptions, such as `System.Exception`, `System.SystemException`, and so on, in framework code.
+  sdk CA1031, partial; no autofix; library only. Chosen because CA1031 also reports a catch that transfers the exception to another thread (TaskCompletionSource.SetException), which the body allows.
+- [ ] FDG7036 DO specify the inner exception when wrapping exceptions.
+  fdg FDG7036, partial; no autofix. Chosen because the new analyzer counts a type as able to wrap only when it has an accessible constructor with an Exception parameter, and an omitted optional inner exception argument is still reported; it had 0 reports in the noise samples.
+- [ ] FDG7040 DO NOT throw or derive from `System.ApplicationException`.
+  sdk CA2201 and CA1058, full; breaking. Chosen because changing the base type of a public exception is breaking, which makes CA1058 a breaking diagnostic.
+- [ ] FDG7044 DO use `value` for the name of the implicit value parameter of property setters.
+  fdg FDG7044, full; no autofix. Chosen because CA2208 accepts the property name as paramName in a setter (probe with SDK 10.0.402), so a new analyzer was needed instead of the SDK rule.
+- [ ] FDG7057 DO end exception class names with the “Exception” suffix.
+  sdk CA1710, full; breaking; test profile none. Chosen because this mapping makes CA1710 a breaking diagnostic, while FDG3056 in chapter 3 maps it with no autofix.
+- [ ] FDG7058 DO make exceptions runtime serializable. An exception must be serializable to work correctly across application domain and remoting boundaries.
+  judgment; no autofix. Chosen because the analyzer candidate was rejected against the text: .NET 8 made the serialization constructor of exceptions obsolete (SYSLIB0051), and CA2237 did not report in a probe.
+- [ ] FDG7064 DO use the prefix “Try” and Boolean return type for methods implementing the Try pattern.
+  fdg FDG7064, partial; breaking. Chosen because the analyzer was narrowed after noise to Try methods with an out parameter, after 4 of 8 first-run reports were best-effort or fluent methods without one; 3 true reports that return a nullable value or a tuple are no longer seen.
