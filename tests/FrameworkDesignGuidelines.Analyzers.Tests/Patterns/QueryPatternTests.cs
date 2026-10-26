@@ -152,8 +152,6 @@ public sealed class QueryPatternTests
 
                 public IEnumerable<T> {|FDG9103:OrderByDescending|}<TKey>(Func<T, TKey> key) => this;
 
-                public OrderedRows<T> ThenBy<TKey>(Func<T, TKey> key) => null;
-
                 public IEnumerator<T> GetEnumerator() => null;
 
                 IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -192,6 +190,59 @@ public sealed class QueryPatternTests
                     public static IOrderedEnumerable<T> OrderBy<T>(this T[] source, Func<T, int> key) => null;
 
                     public static Rows<T> OrderBy<T>(this Rows<T> source, int column) => source;
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task OrderBy_on_an_ordered_sequence_type_is_not_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+            using System.Collections;
+            using System.Collections.Generic;
+            using System.Linq;
+
+            public class Rows<T> : IEnumerable<T>
+            {
+                public OrderedRows<T> OrderBy<TKey>(Func<T, TKey> key) => null;
+
+                public IEnumerator<T> GetEnumerator() => null;
+
+                IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            }
+
+            public class OrderedRows<T> : Rows<T>
+            {
+                public new OrderedRows<T> OrderBy<TKey>(Func<T, TKey> key) => this;
+
+                public OrderedRows<T> ThenBy<TKey>(Func<T, TKey> key) => this;
+            }
+
+            public interface IOrderedSeq<T> : IEnumerable<T>
+            {
+            }
+
+            namespace Library.Linq
+            {
+                public static class OrderedSeqQueries
+                {
+                    public static IOrderedSeq<T> OrderBy<T, TKey>(this IOrderedSeq<T> source, Func<T, TKey> key) =>
+                        source;
+
+                    public static IOrderedSeq<T> ThenBy<T, TKey>(this IOrderedSeq<T> source, Func<T, TKey> key) =>
+                        source;
+
+                    public static IOrderedEnumerable<T> OrderBy<T, TKey>(
+                        this IOrderedEnumerable<T> source, Func<T, TKey> key) => source;
+                }
+
+                public static class OtherQueries
+                {
+                    public static IOrderedSeq<T> {|FDG9103:OrderBy|}<T, TKey>(
+                        this IOrderedSeq<T> source, Func<T, TKey> key, int unused) => source;
                 }
             }
             """);

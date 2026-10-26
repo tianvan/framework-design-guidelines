@@ -1766,7 +1766,7 @@
   body:
   - kind: paragraph
     text: If a type is responsible for the lifetime of other disposable objects, developers need a way to dispose of them, too. Using the container’s `Dispose` method is a convenient way to make this possible.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1794,7 +1794,7 @@
   body:
   - kind: paragraph
     text: A great example of this is the `System.IO.Stream` class. Although it is an abstract base class that doesn’t hold any resources, most of its subclasses do—and because of this, it implements this pattern.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1827,7 +1827,7 @@
   - kind: annotation
     text: Jeff’s comment might seem incorrect at first glance—that is, can’t you safely access reference type objects that aren’t finalizable? The answer is yes, if and only if you are certain that the object doesn’t rely on the finalizable state itself! This is a nontrivial thing to figure out and is subject to change from release to release. Unless you’re 100 percent certain, perhaps because you own the type in question, just avoid doing it.
     author: Joe Duffy
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1878,7 +1878,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'CA1063 reports a Dispose() that does anything but call Dispose(true) and then GC.SuppressFinalize(this), the reversed order and an expression-bodied Dispose() => Dispose(true) included, on externally visible types in the library profile and on all types in the application profile; CA1816 reports a Dispose() that does not call GC.SuppressFinalize on an externally visible unsealed type, and did not report an internal type even with api_surface all (probe with SDK 10.0.402). A sealed class whose Dispose() calls no Dispose(bool) is reported by neither (probe), so coverage is partial. Both also report the pattern that FDG9072 recommends: CA1063 asks to make the explicit IDisposable.Dispose that calls Close public, and CA1816 reports the Close method that calls GC.SuppressFinalize (probe); such reports are not violations. CA1816 also reports a DisposeAsync that does not call GC.SuppressFinalize, which is FDG9082''s. Changing the body changes no signature, so autofix is no; neither diagnostic has a code fix.'
+  notes: 'CA1063 reports a Dispose() that does anything but call Dispose(true) and then GC.SuppressFinalize(this), the reversed order and an expression-bodied Dispose() => Dispose(true) included, but not a block-bodied Dispose() whose only statement is Dispose(true), which only CA1816 reports, and only on externally visible unsealed types, so in the application profile an internal type that omits GC.SuppressFinalize this way is reported by neither (probe with SDK 10.0.402); CA1063 reports on externally visible types in the library profile and on all types in the application profile; CA1816 reports a Dispose() that does not call GC.SuppressFinalize on an externally visible unsealed type, and did not report an internal type even with api_surface all (probe with SDK 10.0.402). A sealed class whose Dispose() calls no Dispose(bool) is reported by neither (probe), so coverage is partial. Both also report the pattern that FDG9072 recommends: CA1063 asks to make the explicit IDisposable.Dispose that calls Close public, and CA1816 reports the Close method that calls GC.SuppressFinalize (probe); such reports are not violations. CA1816 also reports a DisposeAsync that does not call GC.SuppressFinalize, which is FDG9082''s. Changing the body changes no signature, so autofix is no; neither diagnostic has a code fix.'
 - id: FDG9066
   strength: DO NOT
   text: make the parameterless `Dispose` method virtual.
@@ -1893,7 +1893,7 @@
   - kind: annotation
     text: If you look hard enough, there are still places in the framework where we don’t follow this pattern. By the time we finalized the `Dispose` pattern, quite a bit of the framework had already been written. Although we scrubbed everything to the best of our ability, a few things still slipped through the cracks.
     author: Brian Pepin
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1937,7 +1937,7 @@
   analyzer:
     message: Remove the Dispose overload '{0}'; declare only Dispose() and Dispose(bool)
     category: Patterns
-  notes: FDG9067 reports a method named Dispose, of any accessibility, static and extension methods included, that has parameters other than none or a single bool passed by value, or is generic. Local functions are not checked. Overrides and interface implementations take their signature from the member they override or implement, which is reported where it is declared in source, so they are not reported. CA1063 did not report a Dispose(int) or Dispose(string, bool) overload (probe with SDK 10.0.402). Removing or renaming a public method changes the public API, so the fix is breaking; there is no code fix.
+  notes: FDG9067 reports a method named Dispose, of any accessibility, static and extension methods included, that has parameters other than none or a single bool passed by value, or is generic; a static Dispose() or Dispose(bool) has an allowed signature and is not reported. Local functions and extern methods (a P/Invoke declaration such as Dispose(IntPtr), which is not part of the pattern) are not checked. Overrides and interface implementations take their signature from the member they override or implement, which is reported where it is declared in source, so they are not reported. CA1063 did not report a Dispose(int) or Dispose(string, bool) overload (probe with SDK 10.0.402). Removing or renaming a public method changes the public API, so the fix is breaking; there is no code fix.
 - id: FDG9068
   strength: DO
   text: allow the `Dispose(bool)` method to be called more than once. The method might choose to do nothing after the first call.
@@ -1947,7 +1947,7 @@
   body:
   - kind: code
     text: "public class DisposableResourceHolder : IDisposable {\n\n   bool _disposed = false;\n\n   protected virtual void Dispose(bool disposing) {\n      if (_disposed) {\n        return;\n      }\n      // cleanup\n      ...\n      disposed = true;\n   }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1976,7 +1976,7 @@
     text: "TextReader tr = new StreamReader(File.OpenRead(\"foo.txt\"));\ntry {\n  // do some stuff\n}\nfinally {\n  tr.Dispose();\n  // more stuff\n}"
   - kind: paragraph
     text: 'If `Dispose` throws an exception, further finally-block cleanup logic will not execute. To work around this, the user would need to wrap every call to `Dispose` (within the finally block!) in another try block, which leads to very complex cleanup handlers. If executing a `Dispose(bool disposing)` method, never throw an exception if `disposing` is false: Doing so will terminate the process if executing inside a finalizer context!'
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2002,7 +2002,7 @@
   body:
   - kind: code
     text: "public class DisposableResourceHolder : IDisposable {\n  bool _disposed = false;\n  SafeHandle _resource; // handle to a resource\n\n  public void DoSomething() {\n    if (_disposed) {\n      throw new ObjectDisposedException(...);\n    }\n    // now call some native methods using the resource\n    ...\n  }\n\n  protected virtual void Dispose(bool disposing) {\n    if (_disposed) {\n      return;\n    }\n    // cleanup\n    ...\n    disposed = true;\n  }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2036,7 +2036,7 @@
   - kind: annotation
     text: Object rehydration on an unsealed type is really something that you have to design for, following the extensibility principles from Chapter 6. Your `Dispose` method cleared the finalization-required marker of the derived type needed. If you rehydrate, how does the derived type know? Without some sort of event, the derived type can easily be in a corrupt state. The easiest fix? Don’t have your public types be rehydratable. Internal types have free rein, though.
     author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2066,7 +2066,7 @@
   - kind: annotation
     text: Implementing `Close` and `Dispose` so that they’re semantically equivalent helps avoid a lot of confusion. More than once, I’ve had developers tell me that you shouldn’t instantiate a `SqlConnection` in a `using` statement because the resultant code will call `Dispose` but not `Close`. In reality, it’s fine to combine `using` and `SqlConnection` because `SqlConnection.Dispose` calls `SqlConnection.Close`.
     author: Jeff Prosise
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2093,7 +2093,7 @@
     text: Public types that hold finalizable resources should instead make an internal, or private nested, type to be a finalizable resource holder. Prefer using existing resource wrappers, such as `SafeHandle`, to encapsulate unmanaged resources where possible.
   - kind: code
     text: "// wrong\npublic partial class NetworkCard : IDisposable {\n  private IntPtr _deviceHandle;\n\n  ~NetworkCard() {\n    Dispose(false);\n  }\n\n  public bool Dispose() => Dispose(true);\n\n  protected bool Dispose(bool disposing) {\n    if (_deviceHandle != IntPtr.Zero) {\n      Interop.CloseHandle(_deviceHandle);\n      _deviceHandle = IntPtr.Zero;\n    }\n  }\n}\n\n// right\npublic partial class NetworkCard : IDisposable {\n  private SafeDeviceHandle _deviceHandle;\n\n  public bool Dispose() => Dispose(true);\n  protected bool Dispose(bool disposing) {\n    if (disposing) {\n      _deviceHandle?.Dispose();\n    }\n  }\n}\ninternal sealed class SafeDeviceHandle :\n  SaveHandleZeroOrMinusOneIsInvalid {\n\n  internal SafeDeviceHandle()\n    : base(ownsHandle: true)\n  {\n  }\n  protected override bool ReleaseHandle() {\n    return Interop.CloseHandle(_handle);\n  }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2123,7 +2123,7 @@
     text: This gives users of the type a means to explicitly perform deterministic cleanup of those same resources for which the finalizer is responsible.
   - kind: paragraph
     text: Consistent use of the Basic Dispose Pattern for internal finalizable types allows new developers of your library to transfer their skills between projects, and to better interact with the few public finalizable types in .NET.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2160,7 +2160,7 @@
   - kind: annotation
     text: Note that it is OK to touch unboxed value type fields.
     author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2185,7 +2185,7 @@
   body:
   - kind: paragraph
     text: If an exception is thrown from a finalizer, the CLR will shut down the entire process, preventing other finalizers from executing and resources from being released in a controlled manner.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2213,7 +2213,7 @@
     text: Guidance from previous editions of this book suggested not redefining the finalizer when a base type was known to already implement the finalizer via the Basic Dispose Pattern. Removing the finalizer once a type has taken that dependency causes the finalizer to not run on that type, which can lead to difficult-to-diagnose resource leaks.
   - kind: paragraph
     text: Since sealed types cannot have inheritors, removing a finalizer can’t have such drastic consequences. For internal types, you are empowered to check on any derived types and move the finalizer as appropriate.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2250,7 +2250,7 @@
     text: "public partial class IndentedTextWriter {\n  public IndentationScope OpenScope(int indentAmount) {\n    if (indentAmount < 0) {\n      throw new ArgumentOutOfRangeException(nameof(indentAmount));\n    }\n    Indent += indentAmount;\n    return new IndentationScope(this, Indent, indentAmount);\n  }\n\n  public readonly struct IndentationScope : IDisposable {\n    private IndentedTextWriter _writer;\n    private int _pushedIndent;\n    private int _indentAmount;\n\n    internal IndentationScope(...) { ... }\n\n    public void Dispose() => Dispose(true);\n\n    protected void Dispose(bool disposing) {\n      // default(IndentationScope)\n      if (_writer == null) {\n        return;\n      }\n      if (_writer.Indent == _pushedIndent) {\n        _writer.Indent -= _indentAmount;\n      }\n      if (_writer.Indent > _pushedAmount) {\n        throw new InvalidOperationException(...);\n      }\n    }\n  }\n}"
   - kind: paragraph
     text: This implementation of `IndentationScope` uses a value type with no public members, other than `Dispose`, to track the disposable scope. It can use a nested type because the vast majority of callers are expected to put the `OpenScope` call in a `using` statement and not save an explicit local. This particular implementation throws an exception if the indentation is deeper than it should have been, but ignores the state when indentation is less than expected—which avoids an exception when the second of two `Dispose()` calls occurs. Other implementations, with different consequences, are also possible.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2290,7 +2290,7 @@
   - kind: annotation
     text: Since locking is a common, low-level operation, the disposable value would be better if it was a public value type, for the same reasons as described in the `IndentedTextWriter` example. Making a functionally correct implementation that doesn’t involve a mutable value type or per-operation allocation—but guarantees execution will occur exactly once—is difficult, but possible. It wouldn’t do any better as an example to illustrate the point, and bug-fixing print books is hard, so the example here was kept simple, even though we’d never actually write it this way in the BCL.
     author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2315,7 +2315,7 @@
   body:
   - kind: paragraph
     text: '`IAsyncDisposable` inherits the guidance from both the “Async” and the “Disposable” portions of its name. For example, the method should be safe to call multiple times (section 9.4), should use `ConfigureAwait(false)` unless designed for an app model that requires using the ambient task scheduler (section 9.2.5.2), and should result in an `ObjectDisposedException` for many members on the type (section 9.4.1).'
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2340,7 +2340,7 @@
   body:
   - kind: paragraph
     text: 'Synchronous `Dispose` recommends the Basic Dispose Pattern (section 9.4.1), deferring `Dispose()` to `Dispose(disposing: true)`, so as to allow the unification of cleanup code between `Dispose()` and any potential finalizer on the type. Since a finalizer is always executed in a synchronous context, it should only ever call the synchronous `Dispose` variant.'
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2388,7 +2388,7 @@
   analyzer:
     message: Implement '{0}' as only {1}, in that order
     category: Patterns
-  notes: FDG9082 reports the implementation of IAsyncDisposable.DisposeAsync, explicit or not, declared in an unsealed class of any accessibility, whose body is not exactly an await of DisposeAsyncCore() on the same instance, with or without ConfigureAwait (FDG9083 asks for it), then Dispose(false), then GC.SuppressFinalize(this). When neither the class nor its base classes declare a Dispose(bool) method, the Dispose(false) call is not expected, since there is none to call; the text gives its reason as finalizer code in the Dispose implementation of a base class. Sealed classes and structs are excepted by the text. An override of DisposeAsync, and an abstract one, which has no body, are not reported, so coverage is partial; neither is a DisposeAsync that a class inherits from a base class that does not implement IAsyncDisposable. CA1816 also reports a DisposeAsync that does not call GC.SuppressFinalize, on externally visible unsealed types (probe with SDK 10.0.402); it is listed for FDG9065 and not here, to avoid two reports of one call. Changing the body changes no signature, so autofix is no; there is no code fix.
+  notes: FDG9082 reports the implementation of IAsyncDisposable.DisposeAsync, explicit or not, declared in an unsealed class of any accessibility, whose body is not exactly an await of DisposeAsyncCore() on the same instance, with or without ConfigureAwait (FDG9083 asks for it), then Dispose(false), then GC.SuppressFinalize(this). When neither the class nor its base classes declare a Dispose(bool) method, the Dispose(false) call is not expected, since there is none to call; the text gives its reason as finalizer code in the Dispose implementation of a base class. Sealed classes and structs are excepted by the text. An override of DisposeAsync, and an abstract one, which has no body, are not reported, so coverage is partial; neither is a DisposeAsync that a class inherits from a base class that does not implement IAsyncDisposable. CA1816 also reports a DisposeAsync that does not call GC.SuppressFinalize, on externally visible unsealed types (probe with SDK 10.0.402); CA1816 is listed for FDG9065 only, so that its report on DisposeAsync is attributed to one rule. Changing the body changes no signature, so autofix is no; there is no code fix.
 - id: FDG9083
   strength: DO
   text: use the `ConfigureAwait` modifier when using `await using` in the same way that you would with `await`.
@@ -2406,7 +2406,7 @@
     text: Be aware that if an exception is thrown between the local variable assignment and the `await using` statement, the `DisposeAsync` method will not be invoked. As of C# 8.0, there is no easy way to get the statement-by-statement safety of “stacked usings” while also invoking the `ConfigureAwait` modifier. The blockless “simplified using” syntax comes closest to this goal.
   - kind: code
     text: "// (possibly) incorrect: no use of ConfigureAwait\nawait using (var value1 = new SomeType())\n// If this statement throws, value1 still has DisposeAsync called\nawait using (var value2 = ValueFactory.BuildSomeOtherType()) {\n   ...\n}\n// Uses ConfigureAwait, but does not call value1.DisposeAsync\n// when ValueFactory.BuildSomeOtherType() throws\n{\n  var value1 = new SomeType();\n  var value2 = ValueFactory.BuildSomeOtherType();\n  using (value.ConfigureAwait(false))\n  using (value.ConfigureAwait(false)) {\n    ..\n  }\n}\n\n// Fixes the problem with not calling value1.DisposeAsync, but may\n// violate your project's style guidelines\n{\n  var value1 = new SomeType();\n  await using var ignored = value1.ConfigureAwait(false);\n  var value2 = ValueFactory.BuildSomeOtherType();\n  await using (value2.ConfigureAwait(false)) {\n    ..\n  }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2435,7 +2435,7 @@
   - kind: annotation
     text: I often hear criticism that we take tool support into account when making API design decisions. To answer this, I have to say that I strongly believe that a modern framework is more than just a piece of stand-alone reusable code. It is a part of a large ecosystem of runtimes, languages, documentation packages, support networks, and, finally, tools. All parts of the ecosystem must influence each other to provide an optimal solution. A modern framework designed outside of its ecosystem loses its competitive potential.
     author: Krzysztof Cwalina
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2487,7 +2487,7 @@
   - kind: annotation
     text: Factories have both advantages and disadvantages when it comes to performance. In terms of advantages, factories enable developers to create custom implementations tailored to specific scenarios; for example, the `System.Threading.Channels` library uses a factory method to create a channel instance that is optimized based on various constraints the caller specifies, and a future implementation of the library could specialize even more combinations with additional concrete implementations. In terms of disadvantages, it can be very difficult for a tool like a tree shaker/linker to determine exactly which code paths inside of a factory are reachable, and thus which concrete types are actually used by an app; this can lead to larger app sizes when such a tool is being used to minimize code size by removing all unused code paths.
     author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2514,7 +2514,7 @@
     text: A factory can often use parameters and other context-based information to make this decision for the user.
   - kind: code
     text: "public class Type {\n  // This factory returns instances of various types including\n  // PropertyInfo, ConstructorInfo, MethodInfo, etc.\n  public MemberInfo[] GetMember(string name);\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2548,7 +2548,7 @@
   - kind: annotation
     text: This is, in fact, the pattern we use for the same concept in `ArrayList`.
     author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2579,7 +2579,7 @@
       DateTime d = DateTime.Parse("10/10/1999");'
   - kind: paragraph
     text: 'The semantics of the `Parse` operation is such that information is converted from one representation of the value into another. In fact, it doesn’t feel like we are constructing a new instance at all, but rather rehydrating one from an existing state (the string). The `System.Convert` class exposes many such static factory methods that take a value type in one representation and convert it to an instance of a different value type, retaining the same logical state in the process. Constructors have a very rigid contract with callers: A unique instance of a specific type will be created, initialized, and returned.'
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2602,7 +2602,7 @@
   section: 9.5 Factories
   anchor: sec9_5
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2640,7 +2640,7 @@
 
       ```'
     author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2665,7 +2665,7 @@
   body:
   - kind: paragraph
     text: For example, consider naming a factory method that creates buttons `CreateButton`. In some cases, a domain-specific name can be used, as in `File.Open`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2688,7 +2688,7 @@
   section: 9.5 Factories
   anchor: sec9_5
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2722,7 +2722,7 @@
   - kind: annotation
     text: Keep in mind that you’ll get your same enumeration semantics, and putting a LINQ façade on them does not make them execute any faster or use less memory.
     author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2748,7 +2748,7 @@
   body:
   - kind: paragraph
     text: For example, the `System.Linq.Enumerable.Count` method’s default implementation simply iterates over the collection. However, when the `IEnumerable<T>` implementation also implements `ICollection<T>`, the `Enumerable.Count` method returns the `ICollection<T>.Count` property value. Since most collection types that implement `ICollection<T>` offer an `O(1)` implementation of the `Count` property, this noticeably speeds up the `Enumerable.Count` method.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2775,7 +2775,7 @@
     text: The specialized support methods can also be provided as extension methods. For example, the `ImmutableArrayExtensions.Select` extension method provides a more optimized implementation of the LINQ `from` expression than the default target of `Enumerable.Select` when the source collection is strongly typed as an `ImmutableArray<T>`.
   - kind: code
     text: "public partial static class ImmutableArrayExtensions {\n  public static IEnumerable<TResult> Select<T, TResult>(\n    this ImmutableArray<T> immutableArray,\n    Func<T, TResult> selector) { ... }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2800,7 +2800,7 @@
   body:
   - kind: paragraph
     text: When querying potentially large data sets generated by remote processes or machines, it might be beneficial to execute the query remotely. An example of such a data set is a database, a directory service, or a Web service.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2827,7 +2827,7 @@
     text: Building and interpreting expression trees is expensive, and many queries can actually get slower when `IQueryable<T>` is implemented.
   - kind: paragraph
     text: This trade-off is acceptable in the LINQ to SQL case, since the alternative overhead of performing queries in memory would be far greater than the transformation of the expression to an SQL statement and the delegation of the query processing to the database server.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2852,7 +2852,7 @@
   body:
   - kind: paragraph
     text: For example, imagine representing a media stream (e.g., an Internet radio stream) as an `IQueryable<byte>`. The `Count` method is not logically supported—the stream can be considered as infinite, so the `Count` method should throw a `NotSupportedException`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2883,7 +2883,7 @@
     text: 'Prefer the following, because it’s completely natural for data sets to support `Where` methods:'
   - kind: code
     text: "public partial class MyDataSet<T>:IEnumerable<T> {\n  public MyDataSet<T> Where(Func<T, bool> query) { ... }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2906,7 +2906,7 @@
   section: 9.6.5 Supporting LINQ through the Query Pattern
   anchor: sec9_6_5
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2936,7 +2936,7 @@
     text: This allows the implementation to control which query methods get executed when they are chained. Otherwise, consider a user-defined type `MyType`, which implements `IEnumerable<T>`. The `MyType` type has an optimized `Count` method defined, but the return type of the `Where` method is `IEnumerable<T>`. In the example here, the optimization is lost after the `Where` method is called; the method returns `IEnumerable<T>`, so the built-in `Enumerable.Count` extension method is called instead of the optimized version defined on `MyType`.
   - kind: code
     text: var result = myInstance.Where(query).Count();
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2963,7 +2963,7 @@
     text: For example, consider a user-defined type `MyType`, which implements `IEnumerable<T>`. The `MyType` type has an optimized `Count` method defined but does not have `Where`. In the example here, the optimization is lost after the `Where` method is called; the method returns `IEnumerable<T>`, so the built-in `Enumerable.Count` method is called instead of the optimized one defined on `MyType`.
   - kind: code
     text: var result = myInstance.Where(query).Count();
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3004,7 +3004,7 @@
   analyzer:
     message: Return an ordered sequence type from '{0}' that is separate from the unordered type '{1}'
     category: Patterns
-  notes: The text has no body. FDG9103 reports a method of any accessibility named OrderBy or OrderByDescending, an instance method or an extension method, that takes a delegate or Expression<TDelegate> as for FDG9100 and returns the type it is applied to (the declaring type, or the type of its this parameter, by original definition) or IEnumerable<T>, the unordered sequence type of LINQ. Static methods that are not extension methods, and other methods that produce ordered sequences, are not checked, so coverage is partial. Overrides and interface implementations are not reported. Changing the return type changes the public signature, so the fix is breaking; there is no code fix.
+  notes: The text has no body. FDG9103 reports a method of any accessibility named OrderBy or OrderByDescending, an instance method or an extension method, that takes a delegate or Expression<TDelegate> as for FDG9100 and returns the type it is applied to (the declaring type, or the type of its this parameter, by original definition) or IEnumerable<T>, the unordered sequence type of LINQ. Static methods that are not extension methods, and other methods that produce ordered sequences, are not checked, so coverage is partial. An OrderBy applied to a type that is already an ordered sequence type (one that implements IOrderedEnumerable<T> or IOrderedQueryable<T>, or has a ThenBy query method) is not reported. Overrides and interface implementations are not reported. Changing the return type changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9104
   strength: DO
   text: define the `ThenBy` method, or implement `IOrderedEnumerable<T>`, on ordered sequence types.
@@ -3016,7 +3016,7 @@
     text: This follows the current pattern in the LINQ to Objects implementation and allows for early (compile-time) detection of errors such as applying `ThenBy` to an unordered sequence.
   - kind: paragraph
     text: For example, .NET provides the `IOrderedEnumerable<T>` type, which is returned by `OrderBy`. The `ThenBy` extension method is defined for this type, but not for `IEnumerable<T>`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3049,7 +3049,7 @@
       var set2 = set1.Select(x => x.SomeInt32Property);
 
       foreach(int number in set2){...} // this is when actual work happens'
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3072,7 +3072,7 @@
   section: 9.6.5 Supporting LINQ through the Query Pattern
   anchor: sec9_6_5
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3102,7 +3102,7 @@
     text: As discussed earlier, interacting with an SQL database is already done through `IQueryable<T>` (and therefore expressions) rather than `IEnumerable<T>`, since this gives an opportunity to translate lambda expressions to SQL expressions.
   - kind: paragraph
     text: An alternative reason for using expressions is performing optimizations. For example, a sorted list can implement look-up (`Where` clauses) with binary search, which can be much more efficient than the standard `IEnumerable<T>` or `IQueryable<T>` implementations.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3130,7 +3130,7 @@
   - kind: annotation
     text: If your expectation is that only a very small percentage of classes deriving from the base class or interface would actually implement the optional feature or behavior, then using interface-based design might be better. There is no real need to add additional members to all derived classes when only one of them provides the feature or behavior. Also, factored design is preferred in cases when the number of combinations of the optional features is small and the compile-time safety afforded by factorization is important.
     author: Steve Starck
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3159,7 +3159,7 @@
     text: Code that consumes the abstract base class can query this property at runtime to determine whether it can use the optional feature.
   - kind: code
     text: "if (stream.CanSeek){\n stream.Seek(position);\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3186,7 +3186,7 @@
     text: "public abstract class Stream {\n  public virtual bool CanSeek { get { return false; } }\n  public virtual void Seek(int position){\n    throw new NotSupportedException(...);\n  }\n}"
   - kind: paragraph
     text: The method can be overridden by subclasses to provide support for the optional feature. The exception should clearly communicate to the user that the feature is optional and which property the user should query to determine if the feature is supported.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3209,7 +3209,7 @@
   section: 9.8.1 Contravariance
   anchor: sec9_8_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3259,7 +3259,7 @@
   analyzer:
     message: Mark the type parameter '{0}' of the interface '{1}' as contravariant (in); it is only used as input
     category: Patterns
-  notes: 'Library only: the reason given is that altering a released interface is a breaking change, so the variance is declared up front. FDG9112 reports an invariant type parameter of an externally visible generic interface that appears only in input positions of its members and base interfaces, as the compiler does, with one exception: parameters passed by value, property setters and event types are input positions; return types, property getters and base interfaces are output positions; ref, out and in parameters, ref returns and, more strictly than the compiler, constraints of the type''s own type parameters are both; constraints of method type parameters are inputs; and in a generic type argument the position is kept for a covariant type parameter, flipped for a contravariant one and both for an invariant one; the body asks to declare contravariance whenever the compiler allows it. An interface that declares a class, struct or enum cannot have variant type parameters (CS8427) and is not reported. A type parameter that is not used at all could take either modifier and is not reported, and neither is one that a static member uses, so coverage is partial. Adding the modifier changes the declaration of a public type and can make existing conversions and overload resolutions ambiguous, so the fix is breaking; there is no code fix.'
+  notes: 'Library only: the reason given is that altering a released interface is a breaking change, so the variance is declared up front. FDG9112 reports an invariant type parameter of an externally visible generic interface that appears only in input positions of its members and base interfaces, as the compiler does, with one exception: parameters passed by value, property setters and event types are input positions; return types, property getters and base interfaces are output positions; ref, out and in parameters, ref returns and, more strictly than the compiler, constraints of the type''s own type parameters are both; constraints of method type parameters are inputs; and in a generic type argument the position is kept for a covariant type parameter, flipped for a contravariant one and both for an invariant one; the body asks to declare contravariance whenever the compiler allows it. An interface that declares a class, struct or enum cannot have variant type parameters (CS8427) and is not reported. The members of nested interfaces and delegates, which can use the outer type parameters and which the compiler checks (CS1961), count with the same positions. A type parameter that is not used at all could take either modifier and is not reported, and neither is one that a static member uses, so coverage is partial. Adding the modifier changes the declaration of a public type and can make existing conversions and overload resolutions ambiguous, so the fix is breaking; there is no code fix.'
 - id: FDG9113
   strength: DO NOT
   text: change generic type parameters from contravariant to invariant in newer versions of your library.
@@ -3269,7 +3269,7 @@
   body:
   - kind: paragraph
     text: Changing a generic type parameter from contravariant to invariant would be a breaking change for any callers that exercised the variance. Given that adding new members to an interface is a breaking change, the most likely situation in which you might want to remove the contravariant indicator is when rewriting your library from a language that can express variance (such as C#) to one that cannot (such as F#, as of language version 4.7).
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3298,7 +3298,7 @@
     text: Because interface members cannot be moved without a breaking change—only copied—and adding a sub-interface to an interface is also a breaking change, this should not be done for any public interface that has already been released.
   - kind: code
     text: "// Instead of\npublic interface IEqualityCollection<T> : ICollection<T> {\n  bool SequenceEqual(IEnumerable<T> other);\n}\n\n// Consider\npublic interface ISequenceEqual<in T> {\n  bool SequenceEqual(IEnumerable<T> other);\n}\npublic interface IEqualityCollection<T> :\n  ICollection<T>, ISequenceEqual<T> {\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3321,7 +3321,7 @@
   section: 9.8.2 Covariance
   anchor: sec9_8_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3371,7 +3371,7 @@
   analyzer:
     message: Mark the type parameter '{0}' of the interface '{1}' as covariant (out); it is only used as output
     category: Patterns
-  notes: 'Library only: as for FDG9112, altering a released interface is a breaking change. FDG9116 reports an invariant type parameter of an externally visible generic interface that appears only in output positions of its members and base interfaces, with the positions of FDG9112. A type parameter used in the element type of an array that the interface returns is not reported, since FDG9117 forbids making it covariant. An interface that declares a class, struct or enum is not reported (CS8427). The IType2<T> of the Simulated Covariance example (section 9.8.3), whose T is only in a getter, is reported. A type parameter that is not used at all could take either modifier and is not reported, and neither is one that a static member uses, so coverage is partial. Adding the modifier changes the declaration of a public type and can make existing conversions and overload resolutions ambiguous, so the fix is breaking; there is no code fix.'
+  notes: 'Library only: as for FDG9112, altering a released interface is a breaking change. FDG9116 reports an invariant type parameter of an externally visible generic interface that appears only in output positions of its members and base interfaces, with the positions of FDG9112. A type parameter used in the element type of an array that the interface returns is not reported, since FDG9117 forbids making it covariant. An interface that declares a class, struct or enum is not reported (CS8427). The members of nested interfaces and delegates, which can use the outer type parameters and which the compiler checks (CS1961), count with the same positions. The IType2<T> of the Simulated Covariance example (section 9.8.3), whose T is only in a getter, is reported. A type parameter that is not used at all could take either modifier and is not reported, and neither is one that a static member uses, so coverage is partial. Adding the modifier changes the declaration of a public type and can make existing conversions and overload resolutions ambiguous, so the fix is breaking; there is no code fix.'
 - id: FDG9117
   strength: DO NOT
   text: declare a generic type parameter covariant on an interface that returns an array based on the type parameter.
@@ -3383,7 +3383,7 @@
     text: The C# variance rules permit an interface to be covariant when returning generic arrays, but writing to an array produced by covariance can result in an `ArrayTypeMismatchException` at runtime from safe-looking code. Change the return value to be a covariant collection interface, remove the array-returning member altogether, or declare the generic type parameter as invariant on the interface.
   - kind: code
     text: "public interface IArrayProducer<out T> {\n  T[] ProduceArray(int length);\n}\npublic class ArrayProducer<T> : IArrayProducer<T> {\n  public T[] ProduceArray(int length) {\n    return new T[length];\n  }\n}\n...\nIArrayProducer<object> producer = new ArrayProducer<string>();\nobject[] array = producer.ProduceArray(1);\n// The array is actually a string[], so this write fails.\narray[0] = 3;"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3411,7 +3411,7 @@
   body:
   - kind: paragraph
     text: Changing a generic type parameter from contravariant to invariant would be a breaking change for any callers that exercised the variance. Given that adding new members to an interface is a breaking change, the most likely situation in which you might want to remove the contravariant indicator is when rewriting your library from a language that can express variance (such as C#) to one that cannot (such as F#, as of language version 4.7).
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3444,7 +3444,7 @@
     text: In this example, `IEasyCollection<T>` is split into `IEasyCollection<T>` and `IReadOnlyEasyCollection<out T>`. The `Clear()` method could have been declared on `IReadOnlyEasyCollection<T>`, but since `Clear()` doesn’t belong on a “read-only” collection, it was not moved. The `Clear()` method could be split off to a third interface, `IClearable`, but that method doesn’t seem to stand alone as an interface.
   - kind: code
     text: "// Instead of\npublic interface IEasyCollection<T> : IEnumerable<T> {\n  int Count { get; }\n  bool IsReadOnly { get; }\n  void Add(T item);\n  void Clear();\n}\n\n// Consider\npublic interface IReadOnlyEasyCollection<out T> : IEnumerable<T>{\n  int Count { get; }\n  bool IsReadOnly { get; }\n}\npublic interface IEasyCollection<T> : IReadOnlyEasyCollection<T> {\n  void Add(T item);\n  void Clear();\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3469,7 +3469,7 @@
   body:
   - kind: paragraph
     text: This pattern should not be used frivolously, because it results in additional types in the framework and can make the existing types more complex.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3496,7 +3496,7 @@
     text: There should not be an observable difference between calling a member on the root type and calling the corresponding member on the generic type. In many cases, the members of the root are implemented by calling members on the generic type.
   - kind: code
     text: "public class Foo<T> : IFoo<object> {\n\n  public T Property3 { get { ... } set { ... } }\n\n  object IFoo<object>.Property3 { get { return Property3; } }\n\n  ...\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3521,7 +3521,7 @@
   body:
   - kind: paragraph
     text: This might sometimes be a better option, because interfaces are more difficult to evolve (see section 4.3). On the other hand, some problems can arise with using abstract classes for the root. Abstract class members cannot be implemented explicitly, and the subtypes need to use the `new` modifier. This makes it tricky to implement the root’s members by delegating to the generic type members.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3546,7 +3546,7 @@
   body:
   - kind: paragraph
     text: For example, `List<T>` implements `IEnumerable` for the purpose of simulating covariance.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment

@@ -249,6 +249,91 @@ public sealed class VarianceTests
     }
 
     [Fact]
+    public Task Members_of_nested_interfaces_and_delegates_count()
+    {
+        // The compiler checks the variance of the outer type parameters in nested interfaces and delegates (CS1961).
+        return Verifier.VerifyLatestAsync(
+            """
+            public interface INested<T>
+            {
+                T Get();
+
+                interface IInner
+                {
+                    void Set(T value);
+                }
+            }
+
+            public interface INested2<T>
+            {
+                T Get();
+
+                delegate void Handler(T value);
+            }
+
+            public interface INested3<T>
+            {
+                void Set(T value);
+
+                interface IInner
+                {
+                    T Get();
+                }
+            }
+
+            public interface INested4<T>
+            {
+                void Set(T value);
+
+                delegate T Factory();
+            }
+
+            public interface INested5<{|FDG9116:T|}>
+            {
+                T Get();
+
+                interface IInner
+                {
+                    interface IDeeper
+                    {
+                        T Current { get; }
+                    }
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Pointers_containing_types_and_ref_properties_keep_a_type_parameter_invariant()
+    {
+        return Verifier.VerifyAsync(
+            """
+            public class Outer<T>
+            {
+                public class Inner
+                {
+                }
+            }
+
+            public unsafe interface IPointer<T>
+                where T : unmanaged
+            {
+                void Set(T* value);
+            }
+
+            public interface IContaining<T>
+            {
+                void Set(Outer<T>.Inner value);
+            }
+
+            public interface IRefProperty<T>
+            {
+                ref T Value { get; }
+            }
+            """);
+    }
+
+    [Fact]
     public Task Type_parameter_message_names_the_type()
     {
         return Verifier.VerifyWithAsync(

@@ -15,7 +15,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Patterns;
 /// struct or interface of any accessibility that declares an instance query method and does not implement
 /// <c>IEnumerable&lt;T&gt;</c>. FDG9103 reports an instance or extension query method named OrderBy or
 /// OrderByDescending, of any accessibility, that returns the type it is applied to (by original definition) or
-/// <c>IEnumerable&lt;T&gt;</c>. FDG9106 reports an externally visible extension query method declared in a namespace
+/// <c>IEnumerable&lt;T&gt;</c>, unless that type is already an ordered sequence type (see <see cref="IsOrdered"/>).
+/// FDG9106 reports an externally visible extension query method declared in a namespace
 /// whose last segment is not Linq, the global namespace included.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -52,8 +53,13 @@ public sealed class QueryPatternAnalyzer : DiagnosticAnalyzer
 
             start.RegisterSymbolAction(
                 symbolContext => AnalyzeType(symbolContext, enumerable, expression), SymbolKind.NamedType);
+            INamedTypeSymbol?[] ordered =
+            [
+                start.Compilation.GetTypeByMetadataName("System.Linq.IOrderedEnumerable`1"),
+                start.Compilation.GetTypeByMetadataName("System.Linq.IOrderedQueryable`1"),
+            ];
             start.RegisterSymbolAction(
-                symbolContext => AnalyzeMethod(symbolContext, enumerable, expression), SymbolKind.Method);
+                symbolContext => AnalyzeMethod(symbolContext, enumerable, ordered, expression), SymbolKind.Method);
         });
     }
 
@@ -84,7 +90,10 @@ public sealed class QueryPatternAnalyzer : DiagnosticAnalyzer
     }
 
     private static void AnalyzeMethod(
-        SymbolAnalysisContext context, INamedTypeSymbol enumerable, INamedTypeSymbol? expression)
+        SymbolAnalysisContext context,
+        INamedTypeSymbol enumerable,
+        INamedTypeSymbol?[] ordered,
+        INamedTypeSymbol? expression)
     {
         var method = (IMethodSymbol)context.Symbol;
         if (!IsQueryMethod(method, expression) || NamingSymbols.SourceLocation(method) is not { } location)
@@ -98,6 +107,7 @@ public sealed class QueryPatternAnalyzer : DiagnosticAnalyzer
             : method.ContainingType;
         if (source is not null
             && method.Name is "OrderBy" or "OrderByDescending"
+            && !IsOrdered(source, method, ordered, expression)
             && (SymbolEqualityComparer.Default.Equals(method.ReturnType.OriginalDefinition, source.OriginalDefinition)
                 || UsageSymbols.Is(method.ReturnType, enumerable)))
         {
@@ -113,6 +123,41 @@ public sealed class QueryPatternAnalyzer : DiagnosticAnalyzer
             context.ReportDiagnostic(
                 Diagnostic.Create(FdgDescriptors.FDG9106, location, name, @namespace.ToDisplayString()));
         }
+    }
+
+    /// <summary>
+    /// True when <paramref name="source"/> is already an ordered sequence type: it implements
+    /// <c>IOrderedEnumerable&lt;T&gt;</c> or <c>IOrderedQueryable&lt;T&gt;</c>, or a ThenBy or ThenByDescending query
+    /// method applies to it, as an instance method of the type or a base type, or as an extension method of the class
+    /// that declares <paramref name="method"/> whose this parameter has the same original definition.
+    /// </summary>
+    private static bool IsOrdered(
+        ITypeSymbol source, IMethodSymbol method, INamedTypeSymbol?[] ordered, INamedTypeSymbol? expression)
+    {
+        if (ordered.Any(definition => UsageSymbols.Implements(source, definition)))
+        {
+            return true;
+        }
+
+        for (ITypeSymbol? current = source; current is not null; current = current.BaseType)
+        {
+            if (current.GetMembers().OfType<IMethodSymbol>().Any(candidate =>
+                    !candidate.IsStatic && IsThenBy(candidate, expression)))
+            {
+                return true;
+            }
+        }
+
+        return method.ContainingType.GetMembers().OfType<IMethodSymbol>().Any(candidate =>
+            candidate.IsExtensionMethod
+            && IsThenBy(candidate, expression)
+            && SymbolEqualityComparer.Default.Equals(
+                candidate.Parameters[0].Type.OriginalDefinition, source.OriginalDefinition));
+    }
+
+    private static bool IsThenBy(IMethodSymbol method, INamedTypeSymbol? expression)
+    {
+        return method.Name is "ThenBy" or "ThenByDescending" && IsQueryMethod(method, expression);
     }
 
     /// <summary>

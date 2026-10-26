@@ -14,7 +14,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Patterns;
 /// constraints of method type parameters are inputs; return values, property getters and base interfaces are
 /// outputs; ref, out and in parameters, ref returns, static members and constraints of the type's own type parameters
 /// count as both. An unused type parameter is not reported, and neither is an interface that declares a class,
-/// struct or enum, which cannot have variant type parameters (CS8427). For interfaces, an array in an output position
+/// struct or enum, which cannot have variant type parameters (CS8427); the members of nested interfaces and delegates
+/// count with the same positions. For interfaces, an array in an output position
 /// counts its element type as both, so that FDG9116 does not ask for what FDG9117 forbids. FDG9117 reports a non-static
 /// method or a property with a getter, declared in an interface of any accessibility that has a covariant type
 /// parameter, whose return or property type has, in an output position, an array whose element type uses a
@@ -98,10 +99,7 @@ public sealed class VarianceAnalyzer : DiagnosticAnalyzer
                 Walk(@interface, Use.Output, uses, isInterface);
             }
 
-            foreach (ISymbol member in type.GetMembers())
-            {
-                WalkMember(member, uses, isInterface);
-            }
+            WalkInterface(type, uses);
         }
         else if (type.DelegateInvokeMethod is { } invoke)
         {
@@ -127,6 +125,36 @@ public sealed class VarianceAnalyzer : DiagnosticAnalyzer
             {
                 context.ReportDiagnostic(
                     Diagnostic.Create(descriptor, location, parameter.Name, UsageSymbols.Display(type)));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Records the members of an interface and, recursively, the base interfaces and members of its nested interfaces
+    /// and the signatures of its nested delegates, which can use the outer type parameters and which the compiler
+    /// checks (CS1961). The base interfaces of the analyzed interface itself are walked by the caller.
+    /// </summary>
+    private static void WalkInterface(INamedTypeSymbol type, Dictionary<ITypeParameterSymbol, Use> uses)
+    {
+        foreach (ISymbol member in type.GetMembers())
+        {
+            WalkMember(member, uses, isInterface: true);
+        }
+
+        foreach (INamedTypeSymbol nested in type.GetTypeMembers())
+        {
+            if (nested.TypeKind == TypeKind.Interface)
+            {
+                foreach (INamedTypeSymbol @interface in nested.Interfaces)
+                {
+                    Walk(@interface, Use.Output, uses, isInterface: true);
+                }
+
+                WalkInterface(nested, uses);
+            }
+            else if (nested.TypeKind == TypeKind.Delegate && nested.DelegateInvokeMethod is { } invoke)
+            {
+                WalkMember(invoke, uses, isInterface: false);
             }
         }
     }

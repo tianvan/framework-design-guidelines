@@ -10,7 +10,7 @@ namespace FrameworkDesignGuidelines.Analyzers.Patterns;
 /// <summary>
 /// FDG9067, FDG9073, FDG9074, FDG9081 and FDG9082 (section 9.4), the Dispose Pattern. FDG9067 reports an ordinary
 /// method named Dispose, of any accessibility, static and extension methods included, unless it has no parameters or
-/// a single bool parameter passed by value and no type parameters; FDG9081 reports a method named DisposeAsync with
+/// a single bool parameter passed by value and no type parameters, or is extern (a P/Invoke declaration); FDG9081 reports a method named DisposeAsync with
 /// parameters or type parameters. Overrides and interface implementations, which take their signature from another
 /// member, and local functions are not reported. FDG9073 reports a finalizer declared in an externally visible class,
 /// and FDG9074 one declared in a class, of any accessibility, that does not implement <c>IDisposable</c>. FDG9082
@@ -92,7 +92,7 @@ public sealed class DisposePatternAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (method.Name == "Dispose" && !IsDisposeSignature(method))
+        if (method.Name == "Dispose" && !method.IsExtern && !IsDisposeSignature(method))
         {
             context.ReportDiagnostic(
                 Diagnostic.Create(FdgDescriptors.FDG9067, location, method.ToDisplayString(_methodFormat)));
@@ -121,6 +121,7 @@ public sealed class DisposePatternAnalyzer : DiagnosticAnalyzer
     {
         if (context.OwningSymbol is not IMethodSymbol
             {
+                Name: "DisposeAsync" or "System.IAsyncDisposable.DisposeAsync",
                 IsOverride: false,
                 IsAbstract: false,
                 ContainingType: { TypeKind: TypeKind.Class, IsSealed: false, IsStatic: false } type,

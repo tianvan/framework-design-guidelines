@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Verifier = FrameworkDesignGuidelines.Analyzers.Tests.Verifiers.AnalyzerVerifier<
     FrameworkDesignGuidelines.Analyzers.Patterns.DisposePatternAnalyzer>;
@@ -278,15 +279,110 @@ public sealed class DisposePatternTests
     }
 
     [Fact]
+    public Task Extern_and_static_Dispose_methods_of_the_pattern_shape_are_not_reported()
+    {
+        // A P/Invoke declaration is not part of the Dispose Pattern; static Dispose() and Dispose(bool) have the
+        // allowed signatures.
+        return Verifier.VerifyAsync(
+            """
+            using System;
+            using System.Runtime.InteropServices;
+
+            public class Native
+            {
+                [DllImport("native")]
+                private static extern void Dispose(IntPtr handle);
+
+                public static void Dispose()
+                {
+                }
+
+                internal static void Dispose(bool disposing)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task DisposeAsync_is_checked_under_CSharp_7_3()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+            using System.Threading.Tasks;
+
+            public class Resource : IAsyncDisposable
+            {
+                public async ValueTask {|FDG9082:DisposeAsync|}()
+                {
+                    await Task.Yield();
+                }
+            }
+
+            public class Pattern : IAsyncDisposable
+            {
+                public async ValueTask DisposeAsync()
+                {
+                    await DisposeAsyncCore().ConfigureAwait(false);
+                    GC.SuppressFinalize(this);
+                }
+
+                protected virtual ValueTask DisposeAsyncCore() => default;
+            }
+            """,
+            ReferenceAssemblies.Net.Net80,
+            LanguageVersion.CSharp7_3);
+    }
+
+    [Fact]
+    public Task DisposeAsync_is_not_checked_without_IAsyncDisposable()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System.Threading.Tasks;
+
+            public class Resource
+            {
+                public async Task DisposeAsync()
+                {
+                    await Task.Yield();
+                }
+            }
+            """,
+            ReferenceAssemblies.NetFramework.Net472.Default,
+            LanguageVersion.Latest);
+    }
+
+    [Fact]
     public Task Book_examples_of_finalizable_types()
     {
-        // FDG9073 "right" and the ComplexResourceHolder of section 9.4.2 are not reported; the inherited finalizer of
-        // a SafeHandle subclass is not seen. The ExplicitRehydration example of FDG9071 is a public finalizable type.
+        // DisposableResourceHolder (section 9.4.1), FDG9073 "right" and the ComplexResourceHolder of section 9.4.2
+        // are not reported; the inherited finalizer of a SafeHandle subclass is not seen. The ExplicitRehydration example of FDG9071 is a public finalizable type.
         return Verifier.VerifyAsync(
             """
             using System;
             using System.Runtime.InteropServices;
             using Microsoft.Win32.SafeHandles;
+
+            public class DisposableResourceHolder : IDisposable
+            {
+                private SafeHandle _resource;
+
+                public void Dispose()
+                {
+                    Dispose(true);
+                    GC.SuppressFinalize(this);
+                }
+
+                protected virtual void Dispose(bool disposing)
+                {
+                    if (disposing)
+                    {
+                        _resource?.Dispose();
+                    }
+                }
+            }
 
             public partial class NetworkCard : IDisposable
             {
