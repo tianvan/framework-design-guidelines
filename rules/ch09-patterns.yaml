@@ -1919,7 +1919,7 @@
   body:
   - kind: paragraph
     text: '`Dispose` should be considered a reserved word to help codify this pattern and prevent confusion among implementers, users, and compilers. Some languages might choose to automatically implement this pattern on certain types.'
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2986,7 +2986,7 @@
   section: 9.6.5 Supporting LINQ through the Query Pattern
   anchor: sec9_6_5
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3241,7 +3241,7 @@
     text: "public interface ICalculator<in T> {\n int Sum(IEnumerable<T> inputs);\n}"
   - kind: paragraph
     text: Since changing the signature of a delegate and altering an interface are both breaking changes, declaring contravariance whenever it’s possible to do so doesn’t artificially limit future changes to the type.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3353,7 +3353,7 @@
     text: "public interface IFilter<out T> {\n IEnumerable<T> Filter(Func<T, bool> predicate);\n}"
   - kind: paragraph
     text: Since changing the signature of a delegate and altering an interface are both breaking changes, declaring covariance whenever it’s possible to do so doesn’t artificially limit future changes to the type.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
