@@ -784,8 +784,12 @@ diagnostics and the new analyzers are counted. Every report was checked.
   them. serilog and polly declare no public generic interface or delegate; newtonsoft-json declares two, an
   array pool whose type parameter is in a returned array and in a parameter (both ways, so neither FDG9112 nor
   FDG9116 applies) and a token sequence interface that is already covariant and returns no array.
-- **Rerun after the cross-check and review.** FDG9067 no longer reports extern methods, FDG9082 looks only at
-  methods named DisposeAsync, FDG9103 no longer reports an OrderBy on an ordered sequence type, and the variance
-  rules count the members of nested interfaces and delegates. Measured again for FDG9067, FDG9082, FDG9103,
-  FDG9111, FDG9112, FDG9115 and FDG9116 with the same samples and profiles: still 0 reports for each, so the
-  table does not change.
+- **Rerun after the cross-check and review.** FDG9082 looks only at methods named DisposeAsync, FDG9103 no
+  longer reports an OrderBy that returns its own type when that type is already an ordered sequence type, and the
+  variance rules count the members of nested interfaces and delegates. Measured again for FDG9067, FDG9082,
+  FDG9103, FDG9111, FDG9112, FDG9115 and FDG9116 with the same samples and profiles: still 0 reports for each, so
+  the table does not change.
+- **Second rerun.** FDG9067 reports extern Dispose overloads again (Ruling 36), FDG9103 finds ThenBy through
+  implemented interfaces too and keeps reporting an OrderBy that returns IEnumerable<T>, and the variance rules
+  skip an interface with a class, struct or enum in a nested interface (CS8427). Measured again for FDG9067,
+  FDG9103, FDG9112 and FDG9116: still 0 reports for each.

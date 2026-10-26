@@ -279,10 +279,10 @@ public sealed class DisposePatternTests
     }
 
     [Fact]
-    public Task Extern_and_static_Dispose_methods_of_the_pattern_shape_are_not_reported()
+    public Task Extern_Dispose_overloads_are_reported_and_static_pattern_shapes_are_not()
     {
-        // A P/Invoke declaration is not part of the Dispose Pattern; static Dispose() and Dispose(bool) have the
-        // allowed signatures.
+        // Dispose is a reserved name with no P/Invoke exception (DllImport's EntryPoint lets the declaration take
+        // another name); static Dispose() and Dispose(bool) have the allowed signatures.
         return Verifier.VerifyAsync(
             """
             using System;
@@ -291,7 +291,7 @@ public sealed class DisposePatternTests
             public class Native
             {
                 [DllImport("native")]
-                private static extern void Dispose(IntPtr handle);
+                private static extern void {|FDG9067:Dispose|}(IntPtr handle);
 
                 public static void Dispose()
                 {
@@ -336,7 +336,7 @@ public sealed class DisposePatternTests
     }
 
     [Fact]
-    public Task DisposeAsync_is_not_checked_without_IAsyncDisposable()
+    public Task DisposeAsync_does_not_crash_on_net472_where_IAsyncDisposable_is_unavailable()
     {
         return Verifier.VerifyAsync(
             """
@@ -357,8 +357,9 @@ public sealed class DisposePatternTests
     [Fact]
     public Task Book_examples_of_finalizable_types()
     {
-        // DisposableResourceHolder (section 9.4.1), FDG9073 "right" and the ComplexResourceHolder of section 9.4.2
-        // are not reported; the inherited finalizer of a SafeHandle subclass is not seen. The ExplicitRehydration example of FDG9071 is a public finalizable type.
+        // DisposableResourceHolder (section 9.4.1), FDG9073 "right" and the ComplexResourceHolder of section 9.4.2 are
+        // not reported; the inherited finalizer of a SafeHandle subclass is not seen. The ExplicitRehydration example
+        // of FDG9071 is a public finalizable type.
         return Verifier.VerifyAsync(
             """
             using System;

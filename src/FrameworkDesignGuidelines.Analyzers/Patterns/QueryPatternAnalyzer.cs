@@ -14,8 +14,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Patterns;
 /// implementations take their name from another member and are not query methods here. FDG9100 reports a class,
 /// struct or interface of any accessibility that declares an instance query method and does not implement
 /// <c>IEnumerable&lt;T&gt;</c>. FDG9103 reports an instance or extension query method named OrderBy or
-/// OrderByDescending, of any accessibility, that returns the type it is applied to (by original definition) or
-/// <c>IEnumerable&lt;T&gt;</c>, unless that type is already an ordered sequence type (see <see cref="IsOrdered"/>).
+/// OrderByDescending, of any accessibility, that returns <c>IEnumerable&lt;T&gt;</c> or the type it is applied to
+/// (by original definition), unless that type is already an ordered sequence type (see <see cref="IsOrdered"/>).
 /// FDG9106 reports an externally visible extension query method declared in a namespace
 /// whose last segment is not Linq, the global namespace included.
 /// </summary>
@@ -107,8 +107,9 @@ public sealed class QueryPatternAnalyzer : DiagnosticAnalyzer
             : method.ContainingType;
         if (source is not null
             && method.Name is "OrderBy" or "OrderByDescending"
-            && !IsOrdered(source, method, ordered, expression)
-            && (SymbolEqualityComparer.Default.Equals(method.ReturnType.OriginalDefinition, source.OriginalDefinition)
+            && ((!IsOrdered(source, method, ordered, expression)
+                    && SymbolEqualityComparer.Default.Equals(
+                        method.ReturnType.OriginalDefinition, source.OriginalDefinition))
                 || UsageSymbols.Is(method.ReturnType, enumerable)))
         {
             context.ReportDiagnostic(Diagnostic.Create(
@@ -128,8 +129,9 @@ public sealed class QueryPatternAnalyzer : DiagnosticAnalyzer
     /// <summary>
     /// True when <paramref name="source"/> is already an ordered sequence type: it implements
     /// <c>IOrderedEnumerable&lt;T&gt;</c> or <c>IOrderedQueryable&lt;T&gt;</c>, or a ThenBy or ThenByDescending query
-    /// method applies to it, as an instance method of the type or a base type, or as an extension method of the class
-    /// that declares <paramref name="method"/> whose this parameter has the same original definition.
+    /// method applies to it, as an instance method of the type, a base type or an interface it implements, or as an
+    /// extension method of the class that declares <paramref name="method"/> whose this parameter has the same
+    /// original definition.
     /// </summary>
     private static bool IsOrdered(
         ITypeSymbol source, IMethodSymbol method, INamedTypeSymbol?[] ordered, INamedTypeSymbol? expression)
@@ -148,6 +150,12 @@ public sealed class QueryPatternAnalyzer : DiagnosticAnalyzer
             }
         }
 
+        if (source.AllInterfaces.Any(@interface => @interface.GetMembers().OfType<IMethodSymbol>().Any(candidate =>
+                !candidate.IsStatic && IsThenBy(candidate, expression))))
+        {
+            return true;
+        }
+
         return method.ContainingType.GetMembers().OfType<IMethodSymbol>().Any(candidate =>
             candidate.IsExtensionMethod
             && IsThenBy(candidate, expression)
@@ -155,9 +163,12 @@ public sealed class QueryPatternAnalyzer : DiagnosticAnalyzer
                 candidate.Parameters[0].Type.OriginalDefinition, source.OriginalDefinition));
     }
 
+    /// <summary>
+    /// True for a ThenBy or ThenByDescending query method, an interface implementation or override included.
+    /// </summary>
     private static bool IsThenBy(IMethodSymbol method, INamedTypeSymbol? expression)
     {
-        return method.Name is "ThenBy" or "ThenByDescending" && IsQueryMethod(method, expression);
+        return method.Name is "ThenBy" or "ThenByDescending" && HasQueryShape(method, expression);
     }
 
     /// <summary>
@@ -166,10 +177,14 @@ public sealed class QueryPatternAnalyzer : DiagnosticAnalyzer
     /// </summary>
     private static bool IsQueryMethod(IMethodSymbol method, INamedTypeSymbol? expression)
     {
+        return HasQueryShape(method, expression) && !NamingSymbols.IsInherited(method);
+    }
+
+    private static bool HasQueryShape(IMethodSymbol method, INamedTypeSymbol? expression)
+    {
         return method is { MethodKind: MethodKind.Ordinary, ReturnsVoid: false, IsImplicitlyDeclared: false }
             && _queryNames.Contains(method.Name)
             && method.Parameters.Skip(method.IsExtensionMethod ? 1 : 0).Any(parameter =>
-                parameter.Type.TypeKind == TypeKind.Delegate || UsageSymbols.Is(parameter.Type, expression))
-            && !NamingSymbols.IsInherited(method);
+                parameter.Type.TypeKind == TypeKind.Delegate || UsageSymbols.Is(parameter.Type, expression));
     }
 }

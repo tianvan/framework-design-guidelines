@@ -304,6 +304,41 @@ public sealed class VarianceTests
     }
 
     [Fact]
+    public Task Interfaces_with_a_class_in_a_nested_interface_are_not_reported()
+    {
+        // CS8427 applies to a class, struct or enum declared in a nested interface too.
+        return Verifier.VerifyLatestAsync(
+            """
+            public interface IOuter<T>
+            {
+                T Get();
+
+                interface IInner
+                {
+                    class Helper
+                    {
+                    }
+                }
+            }
+
+            public interface IOuterIn<T>
+            {
+                void Set(T value);
+
+                interface IInner
+                {
+                    interface IDeeper
+                    {
+                        struct Helper
+                        {
+                        }
+                    }
+                }
+            }
+            """);
+    }
+
+    [Fact]
     public Task Pointers_containing_types_and_ref_properties_keep_a_type_parameter_invariant()
     {
         return Verifier.VerifyAsync(
@@ -318,11 +353,15 @@ public sealed class VarianceTests
             public unsafe interface IPointer<T>
                 where T : unmanaged
             {
+                T Get();
+
                 void Set(T* value);
             }
 
             public interface IContaining<T>
             {
+                T Get();
+
                 void Set(Outer<T>.Inner value);
             }
 

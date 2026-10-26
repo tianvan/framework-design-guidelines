@@ -237,6 +237,9 @@ public sealed class QueryPatternTests
 
                     public static IOrderedEnumerable<T> OrderBy<T, TKey>(
                         this IOrderedEnumerable<T> source, Func<T, TKey> key) => source;
+
+                    public static IEnumerable<T> {|FDG9103:OrderByDescending|}<T, TKey>(
+                        this IOrderedEnumerable<T> source, Func<T, TKey> key) => source;
                 }
 
                 public static class OtherQueries
@@ -244,6 +247,45 @@ public sealed class QueryPatternTests
                     public static IOrderedSeq<T> {|FDG9103:OrderBy|}<T, TKey>(
                         this IOrderedSeq<T> source, Func<T, TKey> key, int unused) => source;
                 }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task OrderBy_on_a_type_with_an_interface_ThenBy_is_not_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+            using System.Collections;
+            using System.Collections.Generic;
+
+            public interface IOrderedRows<T> : IEnumerable<T>
+            {
+                IOrderedRows<T> ThenBy<TKey>(Func<T, TKey> key);
+            }
+
+            public class Rows<T> : IEnumerable<T>
+            {
+                public OrderedRows<T> OrderBy<TKey>(Func<T, TKey> key) => null;
+
+                public IEnumerator<T> GetEnumerator() => null;
+
+                IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            }
+
+            public class OrderedRows<T> : Rows<T>, IOrderedRows<T>
+            {
+                public new OrderedRows<T> OrderBy<TKey>(Func<T, TKey> key) => this;
+
+                public IOrderedRows<T> ThenBy<TKey>(Func<T, TKey> key) => this;
+            }
+
+            public class ExplicitRows<T> : Rows<T>, IOrderedRows<T>
+            {
+                public new ExplicitRows<T> OrderBy<TKey>(Func<T, TKey> key) => this;
+
+                IOrderedRows<T> IOrderedRows<T>.ThenBy<TKey>(Func<T, TKey> key) => this;
             }
             """);
     }

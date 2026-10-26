@@ -7,19 +7,18 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace FrameworkDesignGuidelines.Analyzers.Patterns;
 
 /// <summary>
-/// FDG9111, FDG9112, FDG9115, FDG9116 and FDG9117 (section 9.8), variance of generic delegates and interfaces.
-/// FDG9111 and FDG9112 report an invariant type parameter of an externally visible generic delegate or interface that
-/// appears only in input positions, FDG9115 and FDG9116 one that appears only in output positions, following the
-/// rules of the compiler (see <see cref="Walk"/>): parameters passed by value, property setters, event types and
-/// constraints of method type parameters are inputs; return values, property getters and base interfaces are
-/// outputs; ref, out and in parameters, ref returns, static members and constraints of the type's own type parameters
-/// count as both. An unused type parameter is not reported, and neither is an interface that declares a class,
-/// struct or enum, which cannot have variant type parameters (CS8427); the members of nested interfaces and delegates
-/// count with the same positions. For interfaces, an array in an output position
-/// counts its element type as both, so that FDG9116 does not ask for what FDG9117 forbids. FDG9117 reports a non-static
-/// method or a property with a getter, declared in an interface of any accessibility that has a covariant type
-/// parameter, whose return or property type has, in an output position, an array whose element type uses a
-/// covariant type parameter of the interface.
+/// FDG9111, FDG9112, FDG9115, FDG9116 and FDG9117 (section 9.8), variance of generic delegates and interfaces. FDG9111
+/// and FDG9112 report an invariant type parameter of an externally visible generic delegate or interface that appears
+/// only in input positions, FDG9115 and FDG9116 one that appears only in output positions, following the rules of the
+/// compiler (see <see cref="Walk"/>): parameters passed by value, property setters, event types and constraints of
+/// method type parameters are inputs; return values, property getters and base interfaces are outputs; ref, out and in
+/// parameters, ref returns, static members and constraints of the type's own type parameters count as both. An unused
+/// type parameter is not reported, and neither is an interface that declares a class, struct or enum, directly or in a
+/// nested interface, which cannot have variant type parameters (CS8427); the members of nested interfaces and delegates
+/// count with the same positions. For interfaces, an array in an output position counts its element type as both, so
+/// that FDG9116 does not ask for what FDG9117 forbids. FDG9117 reports a non-static method or a property with a getter,
+/// declared in an interface of any accessibility that has a covariant type parameter, whose return or property type
+/// has, in an output position, an array whose element type uses a covariant type parameter of the interface.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class VarianceAnalyzer : DiagnosticAnalyzer
@@ -65,8 +64,7 @@ public sealed class VarianceAnalyzer : DiagnosticAnalyzer
         if (type.TypeKind == TypeKind.Interface)
         {
             CheckArrays(context, type);
-            if (type.GetTypeMembers().Any(nested =>
-                    nested.TypeKind is TypeKind.Class or TypeKind.Struct or TypeKind.Enum))
+            if (DeclaresClassStructOrEnum(type))
             {
                 return;
             }
@@ -127,6 +125,17 @@ public sealed class VarianceAnalyzer : DiagnosticAnalyzer
                     Diagnostic.Create(descriptor, location, parameter.Name, UsageSymbols.Display(type)));
             }
         }
+    }
+
+    /// <summary>
+    /// True when the interface declares a class, struct or enum, directly or in a nested interface, which makes its
+    /// type parameters unable to be variant (CS8427).
+    /// </summary>
+    private static bool DeclaresClassStructOrEnum(INamedTypeSymbol type)
+    {
+        return type.GetTypeMembers().Any(nested =>
+            nested.TypeKind is TypeKind.Class or TypeKind.Struct or TypeKind.Enum
+            || (nested.TypeKind == TypeKind.Interface && DeclaresClassStructOrEnum(nested)));
     }
 
     /// <summary>
