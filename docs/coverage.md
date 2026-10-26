@@ -12,9 +12,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 5 Member Design | 133 | 20 | 39 | 74 | 0 | 133 |
 | 6 Designing for Extensibility | 22 | 0 | 2 | 20 | 0 | 22 |
 | 7 Exceptions | 70 | 20 | 10 | 40 | 0 | 70 |
-| 8 Usage Guidelines | 107 | 28 | 21 | 58 | 0 | 0 |
+| 8 Usage Guidelines | 107 | 28 | 21 | 58 | 0 | 78 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 592 | 162 | 92 | 338 | 0 | 485 |
+| Total | 592 | 162 | 92 | 338 | 0 | 563 |
 
 ## Non-guideline content
 

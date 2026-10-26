@@ -34,7 +34,7 @@ public sealed class UsageSignatureTests
             public class Table
             {
                 public readonly int[] {|FDG8002:Values|} = new int[4];
-                protected readonly int[][] {|FDG8002:Rows|} = new int[0][];
+                protected readonly int[][] {|FDG8002:Rows|} = new int[2][];
                 internal readonly int[] Hidden = new int[1];
                 public readonly string Name = "";
                 public int[] Writable = new int[1];
@@ -43,6 +43,47 @@ public sealed class UsageSignatureTests
             internal class Internal
             {
                 public static readonly int[] Values = new int[1];
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Read_only_fields_initialized_with_an_empty_array_are_not_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+
+            public class Defaults
+            {
+                public static readonly int[] Empty = new int[0];
+                public static readonly int[] None = Array.Empty<int>();
+                public static readonly string[] Names = System.Array.Empty<string>();
+                public static readonly int[] Blank = new int[] { };
+                public static readonly int[] Braces = { };
+                public static readonly int[][] Rows = new int[0][];
+                public static readonly int[] {|FDG8002:One|} = new int[1];
+                public static readonly int[] {|FDG8002:Filled|} = new int[] { 1 };
+                public static readonly int[] {|FDG8002:Pair|} = new int[2], Zero = new int[0];
+                public readonly int[] {|FDG8002:Assigned|};
+
+                public Defaults(int[] values)
+                {
+                    Assigned = values;
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Read_only_fields_initialized_with_an_empty_collection_expression_are_not_reported()
+    {
+        return Verifier.VerifyLatestAsync(
+            """
+            public class Defaults
+            {
+                public static readonly int[] Empty = [];
+                public static readonly int[] {|FDG8002:Values|} = [1, 2];
             }
             """);
     }
@@ -294,6 +335,32 @@ public sealed class UsageSignatureTests
     }
 
     [Fact]
+    public Task ImmutableArray_of_bytes_is_not_reported()
+    {
+        return Verifier.VerifyLatestAsync(
+            """
+            using System.Collections.Immutable;
+            using System.Collections.ObjectModel;
+
+            public class Reader
+            {
+                public ImmutableArray<byte> Bytes { get; }
+
+                public void Write(ImmutableArray<byte> data)
+                {
+                }
+
+                public ImmutableList<byte> {|FDG8031:List|} { get; }
+
+                public Collection<byte> {|FDG8031:Copy|}()
+                {
+                    return null;
+                }
+            }
+            """);
+    }
+
+    [Fact]
     public Task ICloneable_in_visible_signatures_is_reported()
     {
         return Verifier.VerifyAsync(
@@ -393,7 +460,7 @@ public sealed class UsageSignatureTests
 
             public class Catalog
             {
-                public static readonly int[] {|#0:Empty|} = new int[0];
+                public static readonly int[] {|#0:Values|} = new int[1];
 
                 public ArrayList {|#1:Items|} { get; }
 
@@ -419,7 +486,7 @@ public sealed class UsageSignatureTests
                 }
             }
             """,
-            new DiagnosticResult(FdgDescriptors.FDG8002).WithLocation(0).WithArguments("Empty"),
+            new DiagnosticResult(FdgDescriptors.FDG8002).WithLocation(0).WithArguments("Values"),
             new DiagnosticResult(FdgDescriptors.FDG8014).WithLocation(1).WithArguments("Items"),
             new DiagnosticResult(FdgDescriptors.FDG8015)
                 .WithLocation(2)

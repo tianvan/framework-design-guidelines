@@ -575,7 +575,7 @@ FDG8096 are those of the rerun after fix round 1.
 | FDG8031 | FDG8031 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | None needed. |
 | FDG8050 | FDG8050 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1 | None needed. |
 | FDG8051 | FDG8051 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
-| FDG8053 | FDG8053 | 3 | 34 | 4 | 0 | 0 | 41 | 0 | 41 | Narrowed after the first run (43 reports, 1 FP); see the notes. |
+| FDG8053 | FDG8053 | 3 | 34 | 4 | 0 | 0 | 41 | 0 | 41 | Narrowed after the first run (43 reports, 0 FP); see the notes. |
 | FDG8057 | FDG8057 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
 | FDG8070 | FDG8070 | 0 | 0 | 2 | 0 | 0 | 2 | 0 | 2 | None needed. |
 | FDG8082 | FDG8082 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 1 | None needed. |
@@ -597,15 +597,21 @@ FDG8096 are those of the rerun after fix round 1.
   warning; the test profile turns these diagnostics off.
 - **CA1065.** The one report is the same `Dispose` method of internal-a as in the chapter 5 sections. It is outside
   FDG8066, FDG8075, FDG8083 and FDG8101 (Equals, GetHashCode, ToString and the equality operators), and a true warning
-  under section 9.4.1.
+  under section 9.4.1. After the cross-check the four rules have test profile none, so CA1065 is off again in the test
+  profile: it also reports the stub getters of test fakes that throw NotImplementedException, which belong to chapter 5,
+  off in that profile.
 - **CA1066.** serilog's 1 is a struct that overrides Equals without `IEquatable<T>`. True.
-- **CA1815.** serilog's 1 is a public struct that does not override Equals. True. internal-b's 1 is a struct that
-  holds only const fields: the default Equals has no field to compare, so the reason of the body (a slow
-  reflection-based Equals) does not apply. 1 of 2 is above 1 in 20, and CA1815 cannot be narrowed, so FDG8067 is now
-  a suggestion in every profile.
-- **CA1819.** internal-b's 6 are properties of array type. True under FDG8003 and FDG8032.
+- **CA1815.** serilog's 1 is a public struct that does not override Equals. True. internal-b's 1 is a struct that holds
+  only const fields, and CA1815 gives such a struct two messages (probe with SDK 10.0.402). "Should override Equals" is
+  true by the letter: the text has no exception for it. "Should override the equality operators" is a false positive:
+  FDG8105 asks for the operators only if equality is meaningful, and all values of the struct are equal. 1 false
+  positive of 2 is above 1 in 20, and CA1815 cannot be narrowed to its Equals message, so FDG8067 is a suggestion in
+  every profile. FDG8053 (warning) reports structs with an instance field that do not implement `IEquatable<T>`.
+- **CA1819.** internal-b's 6 are properties of array type. True under FDG8003 and FDG8032. The test profile turns CA1819
+  off (Ruling 32): test classes are public only for the test framework.
 - **CA2227.** internal-b's 133 are `{ get; set; }` properties of type `List<T>` or `ObservableCollection<T>` in data
-  model classes. True under FDG8020 (DO NOT provide settable collection properties); the rule stays a warning.
+  model classes. True under FDG8020 (DO NOT provide settable collection properties); the rule stays a warning in the
+  library and application profiles, and the test profile turns it off (Ruling 32).
 - **FDG8011.** polly's 3 are attribute classes in its polyfill folder that copy attributes of newer frameworks;
   newtonsoft-json's 5 are its serialization attributes. Each declares more than one public constructor, so all are
   true. polly's copies must keep the constructors of the attributes they copy, so a suppression is its fix.
@@ -621,13 +627,14 @@ FDG8096 are those of the rerun after fix round 1.
 - **FDG8031.** internal-b's 1 is a `List<byte>` in the signature of a public member. True.
 - **FDG8050.** newtonsoft-json's 1 is its token base class, which implements `ICloneable`. True.
 - **FDG8053.** The first run had 43 reports: serilog's 3, polly's 35, newtonsoft-json's 4 and internal-b's 1.
-  internal-b's 1 is the struct with only const fields of CA1815: it has no instance field to compare, so it was
-  counted as a false positive. 1 of 43 is below 1 in 20, but the case is the same as the one the body of FDG8067 does
-  not cover, so in fix round 1 the analyzer was narrowed to structs with an instance field. The rerun reports 41:
-  internal-b's struct and one empty struct of polly are no longer reported. polly's 34 are readonly structs that
-  carry the arguments of its callbacks and events; they are not compared, but the guideline has no exception for
-  them, so they are true by the letter. serilog's 3 and newtonsoft-json's 4 are public structs without the
-  interface. True.
+  internal-b's 1 is the struct with only const fields of CA1815: true by the letter, but left out as a coverage choice:
+  all its values are equal. The first run had 0 false positives in 43; in fix round 1 the analyzer was narrowed to
+  structs with an instance field. The rerun reports 41: internal-b's struct and one empty struct of polly are no longer
+  reported. polly's 34 are structs in files that already carry `#pragma warning disable CA1815`, so its maintainers
+  decided against equality on them; most carry the arguments of its callbacks and events, but not all (an outcome type,
+  a property key and an event type are among them). The guideline has no exception for them, so they are true by the
+  letter, and adding FDG8053 to those pragmas is the fix. serilog's 3 and newtonsoft-json's 4 are public structs without
+  the interface. True.
 - **FDG8070.** newtonsoft-json's 2 are classes that override Equals and have mutable instance fields (its value token
   and its naming strategy). True.
 - **FDG8082.** newtonsoft-json's 1 is the `ToString` override of its value token, which returns `string.Empty` for a
@@ -644,3 +651,7 @@ FDG8096 are those of the rerun after fix round 1.
   the signature analyzer (no top-level nullable annotation in the type names of FDG8015, FDG8016, FDG8031 and
   FDG8096), and FDG8015, FDG8026, FDG8053 and FDG8096 were measured again. FDG8015 and FDG8096 are unchanged; FDG8026
   went from 15 to 12 and FDG8053 from 43 to 41. FDG8067 became a suggestion after the run, which changes no count.
+- **Cross-check fixes (no rerun).** FDG8002 no longer reports a field initialized with an empty array, and FDG8031 no
+  longer reports `ImmutableArray<byte>`. Both changes only remove reports: FDG8002 had none, and the one FDG8031 report
+  is a `List<byte>`, which is still reported, so the counts stand. The internal-b struct of FDG8053 is recounted as true
+  (see above), which changes no count of the rerun.

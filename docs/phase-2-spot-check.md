@@ -133,7 +133,7 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
 ## Chapter 8: Usage Guidelines
 
 - [ ] FDG8002 DO remember that arrays are mutable types—even arrays of immutable types.
-  fdg FDG8002, partial; breaking. Chosen because the new analyzer reports only readonly array fields, as in the Path.InvalidPathChars example of the body; a method that hands out an internal array is not seen, and array properties are left to CA1819 (FDG8003).
+  fdg FDG8002, partial; breaking; test profile none. Chosen because the new analyzer reports only readonly array fields, as in the Path.InvalidPathChars example of the body; a method that hands out an internal array is not seen, and array properties are left to CA1819 (FDG8003). Fix round 1 stopped reporting a field initialized with an empty array, which has no elements to change, and set the test profile to none (Ruling 32).
 - [ ] FDG8011 AVOID overloading custom attribute constructors.
   fdg FDG8011, full; breaking. Chosen because the analyzer counts only the constructors an attribute application can call (neither private, protected nor private protected), and polly's polyfill copies of framework attributes are true reports that only a suppression can fix.
 - [ ] FDG8015 DO NOT use `Hashtable` or `Dictionary<TKey,TValue>` in public APIs.
@@ -143,14 +143,14 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
 - [ ] FDG8027 DO NOT return snapshot collections from properties. Properties should return live collections.
   judgment; no autofix. Chosen because an analyzer for ToArray or ToList in a getter was rejected: FDG8028 allows a snapshot for a volatile collection, and whether a collection is volatile is design.
 - [ ] FDG8053 DO implement `IEquatable<T>` on value types.
-  fdg FDG8053, partial; no autofix. Chosen because ref structs, enumerator structs and (after fix round 1) structs without instance fields are left out, while polly's 34 readonly argument structs stay true by the letter.
+  fdg FDG8053, partial; no autofix. Chosen because ref structs, enumerator structs and (after fix round 1) structs without instance fields are left out, while polly's 34 structs, whose files already suppress CA1815 by pragma, stay true by the letter.
 - [ ] FDG8067 DO override `Equals` on value types.
-  sdk CA1815, partial; no autofix; suggestion in every profile. Chosen because CA1815 reported a struct with only const fields, where the reflection-based default Equals of the body has nothing to compare (1 of 2 reports), so the rule became a suggestion.
+  sdk CA1815, partial; no autofix; suggestion in every profile. Chosen because CA1815 also reports the missing equality operators, which FDG8105 asks for only if equality is meaningful, and gave that report to a struct with only const fields, whose values are all equal (1 false positive of 2); CA1815 cannot be narrowed to its Equals message, so the rule became a suggestion.
 - [ ] FDG8091 DO use `System.Uri` to represent URI and URL data.
   sdk CA1054, CA1055 and CA1056, partial; breaking; test profile none. Chosen because changing a string parameter, return value or property to Uri changes the public signature, which makes the three diagnostics breaking (Ruling 24); they had 95 true reports in the internal samples.
 - [ ] FDG8096 DO NOT use `XmlNode` or `XmlDocument` to represent XML data. Instead, favor using instances of `IXPathNavigable`, `XmlReader`, `XmlWriter`, or subtypes of `XNode`. `XmlNode` and `XmlDocument` are not designed for exposing in public APIs.
   fdg FDG8096, partial; breaking; library only. Chosen because, unlike FDG8014 and FDG8015, types derived from XmlNode are reported too (XmlDocument and XmlElement are named or implied by the text), and the message drops the nullable annotation.
 - [ ] FDG8104 AVOID defining `operator==` with arguments of different types.
-  fdg FDG8104, full; breaking. Chosen because the analyzer also reports the operators of the OK examples of FDG8103, which define == with arguments of different types as that guideline asks.
+  fdg FDG8104, full; breaking. Chosen because the analyzer also reports the operators of the OK examples of FDG8103; their labels rate the reflexive and transitive properties, and FDG8104's own body asks of such a set "Why do this much work?", so the reports stand and a type that keeps the operators suppresses them.
 - [ ] FDG8105 DO overload the equality operators on value types, if equality is meaningful.
   sdk CA2231, partial; autofix yes. Chosen because CA2231 reports only a struct that overrides Equals, which is how "if equality is meaningful" is read, and its code fix adds the operators without changing an existing signature.

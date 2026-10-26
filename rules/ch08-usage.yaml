@@ -11,7 +11,7 @@
           public Collection<OrderItem> Items { get { ... } }
           ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -73,14 +73,14 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer:
     message: Callers can change the elements of the read-only array field '{0}'
     category: Usage
-  notes: 'FDG8002 reports an externally visible readonly field, static or instance, whose type is an array, as for Path.InvalidPathChars in the body: readonly protects the field, not the elements. Other ways of handing out an internal array (a method or property that returns it) are not seen, so coverage is partial; array properties are CA1819 (FDG8003). Replacing the field with a read-only collection or a method that returns a copy changes the public signature, so the fix is breaking; there is no code fix.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. FDG8002 reports an externally visible readonly field, static or instance, whose type is an array, as for Path.InvalidPathChars in the body: readonly protects the field, not the elements. A field initialized with an empty array is not reported: it has no elements to change. Other ways of handing out an internal array (a method or property that returns it) are not seen, so coverage is partial; array properties are CA1819 (FDG8003). Replacing the field with a read-only collection or a method that returns a copy changes the public signature, so the fix is breaking; there is no code fix.'
 - id: FDG8003
   strength: AVOID
   text: array properties.
@@ -151,12 +151,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1819 reports an externally visible property that returns an array; in a probe with SDK 10.0.402 it did not report the array property of an attribute class, so coverage is partial. The body allows an array transport type such as ArraySegment<T> to return its array directly from a property; a report on such a type is not a violation and can be suppressed. CA1819 has no code fix, and turning the property into a method or a collection property changes the public signature, so the fix is breaking. CA1819 is shared with FDG5025 and FDG8032.
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. CA1819 reports an externally visible property that returns an array; in a probe with SDK 10.0.402 it did not report the array property of an attribute class, so coverage is partial. The body allows an array transport type such as ArraySegment<T> to return its array directly from a property; a report on such a type is not a violation and can be suppressed. CA1819 has no code fix, and turning the property into a method or a collection property changes the public signature, so the fix is breaking. CA1819 is shared with FDG5025 and FDG8032.'
 - id: FDG8004
   strength: CONSIDER
   text: using jagged arrays instead of multidimensional arrays.
@@ -186,7 +186,7 @@
     - kind: annotation
       text: In general, I have found that usage of non-SZ (one dimension, zero lower bound) arrays in mainstream public APIs is very rare. Their usage should be constrained to problem areas that inherently lend themselves to multidimensional cases (such as matrix multiplication). All other usages should prefer defining a custom data structure or passing multiple arrays.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -218,7 +218,7 @@
     kind: sdk
     diagnostics:
       - CA1710
-    coverage: full
+    coverage: partial
   autofix: breaking
   severity:
     library: warning
@@ -228,7 +228,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Test profile: none, because CA1710 also enforces the other suffixes of Table 3-5, and chapter 3 is off in the test profile. CA1710 reports a type derived from System.Attribute whose name does not end with Attribute, as for FDG3049 in chapter 3. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.'
+  notes: 'Test profile: none, because CA1710 also enforces the other suffixes of Table 3-5, and chapter 3 is off in the test profile. CA1710 reports a class derived directly from System.Attribute whose name does not end with Attribute; with its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report an attribute derived from another attribute class (probe with SDK 10.0.402), so coverage is partial. FDG3049 in chapter 3 is the same guideline. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.'
 - id: FDG8006
   strength: DO
   text: apply the `AttributeUsageAttribute` to custom attributes.
@@ -240,7 +240,7 @@
       text: |-
         [AttributeUsage(...)]
         public class ObsoleteAttribute{}
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -270,7 +270,7 @@
           ...
           public int Age { get{..} set{..} } // optional argument
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -293,7 +293,7 @@
   section: 8.2 Attributes
   anchor: sec8_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -344,7 +344,7 @@
         End Clas
         ```
       author: Krzysztof Cwalina
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -370,7 +370,7 @@
   body:
     - kind: paragraph
       text: In other words, do not have properties that can be set with both a constructor and a setter. This guideline makes very explicit which arguments are optional and which are required, and it avoids having two ways of doing the same thing.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -396,7 +396,7 @@
   body:
     - kind: paragraph
       text: Having only one constructor clearly communicates to the user which arguments are required and which are optional.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -427,7 +427,7 @@
     - kind: annotation
       text: In the exception section, I cautioned against the reuse of somebody else’s exception type. Here I am going to do the same for custom attributes. Reuse of somebody else’s custom attribute, unless it means exactly the same thing, puts your mutual clients in the awkward position of having to choose between avoiding your API and applying the co-opted attribute, which involves the risk of unexpected or expected (but undesirable) side effects from the original code that used the attribute.
       author: Jason Clark
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -465,7 +465,7 @@
           public Collection<Component> Components { get { ... } }
           ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -509,7 +509,7 @@
           public IList<OrderItem> Items { get { ... } }
           ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -538,7 +538,7 @@
   body:
     - kind: paragraph
       text: These types are data structures designed to be used in internal implementation. Public APIs should use `IDictionary`, `IDictionary <TKey, TValue>`, or a custom type implementing one or both of the interfaces.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -580,14 +580,14 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer:
     message: Do not use the enumerator type '{0}' in the signature of '{1}'
     category: Usage
-  notes: FDG8016 reports a type that is or implements IEnumerator (so IEnumerator<T> too) as the type of a parameter, a return value or the result of a returned Task<T> or ValueTask<T>, a property or indexer, or a field of an externally visible member. The return value of a method named GetEnumerator is not reported, as the text allows. Overrides and interface implementations are not reported. Uses as a type argument are not seen, so coverage is partial. Changing the type changes the public signature, so the fix is breaking; there is no code fix.
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. FDG8016 reports a type that is or implements IEnumerator (so IEnumerator<T> too) as the type of a parameter, a return value or the result of a returned Task<T> or ValueTask<T>, a property or indexer, or a field of an externally visible member. The return value of a method named GetEnumerator is not reported, as the text allows. Overrides and interface implementations are not reported. Uses as a type argument are not seen, so coverage is partial. Changing the type changes the public signature, so the fix is breaking; there is no code fix.'
 - id: FDG8017
   strength: DO NOT
   text: implement both `IEnumerator<T>` and `IEnumerable<T>` on the same type. The same applies to the non-generic interfaces `IEnumerator` and `IEnumerable`.
@@ -597,7 +597,7 @@
   body:
     - kind: paragraph
       text: In other words, a type should be either a collection or an enumerator, but not both.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -654,12 +654,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Not an analyzer candidate: the least-specialized type a member can take depends on what it does with the parameter, and the Moore annotation treats out parameters and the properties of interfaces differently. CA1859 (use concrete types for performance) is not mapped: it is about non-public locals, fields and return types, not parameters.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. Not an analyzer candidate: the least-specialized type a member can take depends on what it does with the parameter, and the Moore annotation treats out parameters and the properties of interfaces differently. CA1859 (use concrete types for performance) is not mapped: it is about non-public locals, fields and return types, not parameters.'
 - id: FDG8019
   strength: AVOID
   text: using `ICollection<T>` or `ICollection` as a parameter just to access the `Count` property.
@@ -691,12 +691,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Analyzer candidate rejected: telling that a parameter is used only for its Count needs every use of the parameter, including the members it is passed to; a parameter passed on to a member that needs ICollection<T> must keep the type.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. Analyzer candidate rejected: telling that a parameter is used only for its Count needs every use of the parameter, including the members it is passed to; a parameter passed on to a member that needs ICollection<T> must keep the type.'
 - id: FDG8020
   strength: DO NOT
   text: provide settable collection properties.
@@ -729,12 +729,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA2227 reports an externally visible property with a public setter whose type is a writable collection (Collection<T>, IList<T>, Dictionary<TKey, TValue> in a probe with SDK 10.0.402). It does not report an array (CA1819, FDG8003), a ReadOnlyCollection<T>, IReadOnlyList<T> or IEnumerable<T> property, a private setter or an init accessor, so coverage is partial. Removing a public setter changes the public API, so the fix is breaking; CA2227 has no code fix.
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. CA2227 reports an externally visible property with a public setter whose type is a writable collection (Collection<T>, IList<T>, Dictionary<TKey, TValue> in a probe with SDK 10.0.402). It does not report an array (CA1819, FDG8003), a ReadOnlyCollection<T>, IReadOnlyList<T> or IEnumerable<T> property, a private setter or an init accessor, so coverage is partial. Removing a public setter changes the public API, so the fix is breaking; CA2227 has no code fix.'
 - id: FDG8021
   strength: DO
   text: use `Collection<T>` or a subclass of `Collection<T>` for properties or return values representing read/write collections.
@@ -756,12 +756,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Not machine-checkable: whether a collection is meant to be read/write is design intent. CA1002 (FDG8014) reports List<T> in public signatures, the usual alternative to Collection<T>.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. Not machine-checkable: whether a collection is meant to be read/write is design intent. CA1002 (FDG8014) reports List<T> in public signatures, the usual alternative to Collection<T>.'
 - id: FDG8022
   strength: DO
   text: use `ReadOnlyCollection<T>`, a subclass of `ReadOnlyCollection<T>`, or in rare cases `IEnumerable<T>` for properties or return values representing read-only collections.
@@ -821,12 +821,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Not machine-checkable: whether a collection is meant to be read-only, and whether forward-only iteration is the only scenario (the rare IEnumerable<T> case), is design intent. The Sells annotation shows an iterator method returning IEnumerable<T>.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. Not machine-checkable: whether a collection is meant to be read-only, and whether forward-only iteration is the only scenario (the rare IEnumerable<T> case), is design intent. The Sells annotation shows an iterator method returning IEnumerable<T>. The body says ICollection<T>.ReadOnly should return false; the member is ICollection<T>.IsReadOnly, and a read-only collection returns true from it, as ReadOnlyCollection<T> does.'
 - id: FDG8023
   strength: CONSIDER
   text: using subclasses of generic base collections instead of using the collections directly.
@@ -860,12 +860,12 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Not machine-checkable: whether a better name or helper members are worth a subclass is judgment; the text applies it especially to high-level APIs.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. Not machine-checkable: whether a better name or helper members are worth a subclass is judgment; the text applies it especially to high-level APIs.'
 - id: FDG8024
   strength: CONSIDER
   text: returning a subclass of `Collection<T>` or `ReadOnlyCollection<T>` from very commonly used methods and properties.
@@ -895,12 +895,12 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Not machine-checkable: how commonly a method or property is used is not in the code.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. Not machine-checkable: how commonly a method or property is used is not in the code.'
 - id: FDG8025
   strength: CONSIDER
   text: using a keyed collection if the items stored in the collection have unique keys (e.g., names, IDs). Keyed collections are collections that can be indexed by both an integer and a key, and they are usually implemented by inheriting from `KeyedCollection<TKey,TItem>`.
@@ -931,12 +931,12 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Not machine-checkable: whether items have unique keys, and whether the memory overhead outweighs the benefits, is judgment.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. Not machine-checkable: whether items have unique keys, and whether the memory overhead outweighs the benefits, is judgment.'
 - id: FDG8026
   strength: DO NOT
   text: return null values from collection properties or from methods returning collections. Return an empty collection or an empty array instead.
@@ -954,7 +954,7 @@
         }
     - kind: paragraph
       text: The general rule is that null and empty (zero-item) collections or arrays should be treated the same.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -988,7 +988,7 @@
         }
     - kind: paragraph
       text: Property getters should be very lightweight operations. Returning a snapshot generally requires creating a copy of an internal collection in an *O*(*n*) operation.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1021,7 +1021,7 @@
              // or
           public FileInfoCollection GetFiles(); // snapshot
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1058,12 +1058,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Not an analyzer candidate: the text allows arrays in low-level APIs (FDG8030) and for bytes (FDG8031). FDG8001 states the same preference in section 8.1; CA1819 reports array properties (FDG8003, FDG8032).'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. Not an analyzer candidate: the text allows arrays in low-level APIs (FDG8030) and for bytes (FDG8031). FDG8001 states the same preference in section 8.1; CA1819 reports array properties (FDG8003, FDG8032).'
 - id: FDG8030
   strength: CONSIDER
   text: using arrays in low-level APIs to minimize memory consumption and maximize performance.
@@ -1081,12 +1081,12 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'The text has no body. Not machine-checkable: whether an API is low level is judgment.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. The text has no body. Not machine-checkable: whether an API is low level is judgment.'
 - id: FDG8031
   strength: DO
   text: use byte arrays instead of collections of bytes.
@@ -1116,14 +1116,14 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer:
     message: Use a byte array instead of '{0}' in the signature of '{1}'
     category: Usage
-  notes: 'FDG8031 reports a collection of bytes, a type that implements ICollection<byte> or IReadOnlyCollection<byte> (such as Collection<byte>, List<byte> or IList<byte>) other than byte[] and ArraySegment<byte>, as the type of a parameter, a return value or the result of a returned Task<T> or ValueTask<T>, a property or indexer, or a field of an externally visible member. IEnumerable<byte> is not reported: FDG8018 prefers it for parameters, and it is not a stored collection. Overrides and interface implementations are not reported. Span<byte> and Memory<byte>, the more performant designs of the body, are not collections. Coverage is partial. Changing the type changes the public signature, so the fix is breaking; there is no code fix.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. FDG8031 reports a collection of bytes, a type that implements ICollection<byte> or IReadOnlyCollection<byte> (such as Collection<byte>, List<byte> or IList<byte>) other than byte[], ArraySegment<byte> and ImmutableArray<byte>, which are views over a byte array with its memory footprint and element access, the reasons section 8.3.3 gives for arrays, as the type of a parameter, a return value or the result of a returned Task<T> or ValueTask<T>, a property or indexer, or a field of an externally visible member. IEnumerable<byte> is not reported: FDG8018 prefers it for parameters, and it is not a stored collection. Overrides and interface implementations are not reported. Span<byte> and Memory<byte>, the more performant designs of the body, are not collections. Coverage is partial. Changing the type changes the public signature, so the fix is breaking; there is no code fix.'
 - id: FDG8032
   strength: DO NOT
   text: use arrays for properties if the property would have to return a new array (e.g., a copy of an internal array) every time the property getter is called.
@@ -1150,12 +1150,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1819 reports every externally visible array property, whether or not the getter returns a new array; a property that returns its array directly is FDG8003's concern. Array properties of attribute classes are not reported (probe with SDK 10.0.402), so coverage is partial. Turning the property into a method or a collection property changes the public signature, so the fix is breaking; CA1819 has no code fix. CA1819 is shared with FDG5025 and FDG8003.
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. CA1819 reports every externally visible array property, whether or not the getter returns a new array; a property that returns its array directly is FDG8003''s concern. Array properties of attribute classes are not reported (probe with SDK 10.0.402), so coverage is partial. Turning the property into a method or a collection property changes the public signature, so the fix is breaking; CA1819 has no code fix. CA1819 is shared with FDG5025 and FDG8003.'
 - id: FDG8033
   strength: CONSIDER
   text: inheriting from `Collection<T>`, `ReadOnlyCollection<T>`, or `KeyedCollection<TKey,TItem>` when designing new collections.
@@ -1170,7 +1170,7 @@
             ...
           }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1200,7 +1200,7 @@
         }
     - kind: paragraph
       text: When implementing such a custom collection, follow the API pattern established by `Collection<T>` and `ReadOnlyCollection<T>` as closely as possible. That is, implement the same members explicitly, name the parameters in the same way that these two collections name them, and so on. In other words, make your custom collection different from these two collections only when you have a very good reason to do so.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1229,7 +1229,7 @@
         public class OrderCollection : IList<Order>, IList {
           ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1254,7 +1254,7 @@
   body:
     - kind: paragraph
       text: In other words, a collection should be a simple type used to store, access, and manipulate items, and not much more.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1277,7 +1277,7 @@
   section: 8.3.4 Implementing Custom Collections
   anchor: sec8_3_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1317,7 +1317,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'The text has no body. Test profile: none, because CA1710 also enforces the other suffixes of Table 3-5, and chapter 3 is off in the test profile. CA1710 reports a type that implements IDictionary<TKey, TValue> or IDictionary and whose name does not end with Dictionary (it also accepts Collection); a type derived from Dictionary<TKey, TValue> was not reported in a probe with SDK 10.0.402, so coverage is partial. FDG3057 is the same guideline in chapter 3. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.'
+  notes: 'The text has no body. Test profile: none, because CA1710 also enforces the other suffixes of Table 3-5, and chapter 3 is off in the test profile. CA1710 reports a type that implements IDictionary<TKey, TValue> or IDictionary and whose name does not end with Dictionary (it also accepts Collection); a type derived from Dictionary<TKey, TValue> was not reported in a probe with SDK 10.0.402 (CA1710''s default dotnet_code_quality.CA1710.exclude_indirect_base_types = true; setting it to false reports such types, but it would change CA1710 for chapters 3 and 7), so coverage is partial. FDG3057 is the same guideline in chapter 3. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.'
 - id: FDG8039
   strength: DO
   text: use the “Collection” suffix in names of types implementing `IEnumerable` (or any of its descendants) and representing a list of items.
@@ -1346,7 +1346,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Test profile: none, because CA1710 also enforces the other suffixes of Table 3-5, and chapter 3 is off in the test profile. CA1710 reports a type that implements ICollection, ICollection<T> or the non-generic IEnumerable and whose name does not end with Collection (or Dictionary, Set, Stack or Queue). In a probe with SDK 10.0.402 it did not report a type that implements only IEnumerable<T>, as OrderCollection does in the body, nor a type derived from List<T> or Collection<T>, so coverage is partial. CA1710 cannot tell a list of items from a custom data structure (FDG8040); a report on a data structure is not a violation and can be suppressed. FDG3058 is the same guideline in chapter 3. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.'
+  notes: 'Test profile: none, because CA1710 also enforces the other suffixes of Table 3-5, and chapter 3 is off in the test profile. CA1710 reports a type that implements ICollection, ICollection<T> or the non-generic IEnumerable and whose name does not end with Collection (or Dictionary, Set, Stack or Queue). In a probe with SDK 10.0.402 it did not report a type that implements only IEnumerable<T>, as OrderCollection does in the body, nor a type derived from List<T> or Collection<T> (CA1710''s default dotnet_code_quality.CA1710.exclude_indirect_base_types = true; setting it to false reports such types, but it would change CA1710 for chapters 3 and 7), so coverage is partial. CA1710 cannot tell a list of items from a custom data structure (FDG8040); a report on a data structure is not a violation and can be suppressed. FDG3058 is the same guideline in chapter 3. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.'
 - id: FDG8040
   strength: DO
   text: use the appropriate data structure name for custom data structures.
@@ -1358,7 +1358,7 @@
       text: |-
         public class LinkedList<T> : IEnumerable<T> ,... { ... }
         public class Stack<T> : ICollection<Customer> { ... }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1381,7 +1381,7 @@
   section: 8.3.4.1 Naming Custom Collections
   anchor: sec8_3_4_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1404,7 +1404,7 @@
   section: 8.3.4.1 Naming Custom Collections
   anchor: sec8_3_4_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1429,7 +1429,7 @@
   body:
     - kind: paragraph
       text: For example, a read-only collection of strings should be called `ReadOnlyStringCollection`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1452,7 +1452,7 @@
   section: 8.4 DateTime and DateTimeOffset
   anchor: sec8_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1475,7 +1475,7 @@
   section: 8.4 DateTime and DateTimeOffset
   anchor: sec8_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1498,7 +1498,7 @@
   section: 8.4 DateTime and DateTimeOffset
   anchor: sec8_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1523,7 +1523,7 @@
   body:
     - kind: paragraph
       text: '`DateTimeKind` is an enum stored in `DateTime` to indicate whether the instance represents UTC, local time, or unspecified time zone.'
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1546,7 +1546,7 @@
   section: 8.4 DateTime and DateTimeOffset
   anchor: sec8_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1572,7 +1572,7 @@
     - kind: annotation
       text: We have considered adding Date and Time types in future releases of .NET. Although the idea is not off the table completely, we are concerned that such additions will complicate the framework without providing enough value to offset the negatives.
       author: Anthony Moore
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1595,7 +1595,7 @@
   section: 8.5 ICloneable
   anchor: sec8_5
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1621,7 +1621,7 @@
   section: 8.5 ICloneable
   anchor: sec8_5
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1653,7 +1653,7 @@
           public Customer Clone();
           ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1683,7 +1683,7 @@
         public struct Int32 : IEquatable<Int32> {
           public bool Equals(Int32 other){ ... }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1711,7 +1711,7 @@
   body:
     - kind: paragraph
       text: See section 8.9.1 for detailed guidelines on overriding `Object.Equals`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1745,7 +1745,7 @@
             return Equals((PositiveInt32)obj);
           }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1782,7 +1782,7 @@
         }
     - kind: paragraph
       text: See section 8.10 for more details about implementing the equality operators.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1812,7 +1812,7 @@
         public struct Decimal : IComparable<Decimal>, IEquatable<Decimal> {
            ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1852,7 +1852,7 @@
         }
     - kind: paragraph
       text: See section 5.7 for details on when to overload operators.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1876,7 +1876,7 @@
   section: 8.8 Nullable<T>
   anchor: sec8_8
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1912,7 +1912,7 @@
           public Foo(string name, int id);
           public Foo(string name);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1937,7 +1937,7 @@
   body:
     - kind: paragraph
       text: '`Nullable<bool>` should only be used to represent truly optional Boolean values: true, false, and not available. If you simply want to represent three states (e.g., yes, no, cancel), consider using an enum.'
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1963,7 +1963,7 @@
     - kind: annotation
       text: '`Nullable<T>` is, in general, a better representation of optional database values. One thing to consider, though, is that while `Nullable<T>` gives you the ability to represent null values, you don’t get database null operational semantics. Specifically, you don’t get null propagation through operators and functions. If you deeply care about the propagation semantics, consider sticking with `DBNull`.'
       author: Pablo Castro
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1995,7 +1995,7 @@
         - If `(x.Equals(y) && y.Equals(z))` returns true, then `x.Equals(z)` returns true.
         - Successive invocations of `x.Equals(y)` return the same value as long as the objects `x` and `y` are not modified.
         - `x.Equals(null)` returns false.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2020,7 +2020,7 @@
   body:
     - kind: paragraph
       text: The contracts of `Equals` and `GetHashCode` are interdependent. For more information, see section 8.9.2 on implementing `GetHashCode`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2043,7 +2043,7 @@
   section: 8.9.1 Object.Equals
   anchor: sec8_9_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2080,12 +2080,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1065 reports an exception created directly in Equals(object) or IEquatable<T>.Equals (probe with SDK 10.0.402). Exceptions from methods that Equals calls, such as a null dereference of the argument, are not seen, so coverage is partial. Returning false changes no signature, but CA1065 has no code fix. CA1065 is shared with FDG5031, FDG5054, FDG5092, FDG8075, FDG8083 and FDG8101.
+  notes: 'Test profile: none, because CA1065 also reports property getters, static constructors and implicit conversion operators (FDG5031, FDG5054, FDG5092), and chapter 5 is off in the test profile; test fakes often throw NotImplementedException from stub getters, which CA1065 reports (probe with SDK 10.0.402). CA1065 reports an exception created directly in Equals(object) or IEquatable<T>.Equals (probe with SDK 10.0.402). Exceptions from methods that Equals calls, such as a null dereference of the argument, are not seen, so coverage is partial. Returning false changes no signature, but CA1065 has no code fix. CA1065 is shared with FDG5031, FDG5054, FDG5092, FDG8075, FDG8083 and FDG8101.'
 - id: FDG8067
   strength: DO
   text: override `Equals` on value types.
@@ -2111,7 +2111,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'CA1815 reports an externally visible struct that does not override Equals; it also reports a struct without the equality operators, which FDG8105 asks for. In a probe with SDK 10.0.402 it did not report a struct without fields, an enumerator struct or an internal struct, so coverage is partial; a struct with only const fields is reported (noise samples). The SDK code fix adds Equals and GetHashCode overrides that throw NotImplementedException (probe), so autofix is no. A suggestion: in the noise samples 1 of 2 reports was a struct with only const fields, which has no field for the default Equals to compare.'
+  notes: 'CA1815 reports an externally visible struct that does not override Equals; it also reports a struct without the equality operators, which FDG8105 asks for. In a probe with SDK 10.0.402 it did not report a struct without fields, an enumerator struct or an internal struct, so coverage is partial; a struct with only const fields is reported (noise samples). The SDK code fix adds Equals and GetHashCode overrides that throw NotImplementedException (probe), so autofix is no. A suggestion: CA1815 also reports the missing equality operators, which FDG8105 asks for only if equality is meaningful; in the noise samples it gave that report to a struct with only const fields, whose values are all equal (1 false positive of 2), and it cannot be narrowed to its Equals message. FDG8053 (warning) reports structs with an instance field that do not implement IEquatable<T>.'
 - id: FDG8068
   strength: DO
   text: provide an overload of `Equals` taking the value type parameter by implementing `IEquatable<T>`.
@@ -2127,7 +2127,7 @@
           public bool Equals (MyStruct value) { ... }
            ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2151,7 +2151,7 @@
   section: 8.9.1.2 Equals on Reference Types
   anchor: sec8_9_1_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2194,7 +2194,7 @@
   analyzer:
     message: Type '{0}' has value equality but is mutable
     category: Usage
-  notes: FDG8070 reports a class declared in source that overrides Object.Equals, or a record class, when the class or one of its base classes declared in source (the fields of base classes from other assemblies are not seen) has an instance field that is neither readonly nor const (the field of an auto-property with a set accessor counts; an init accessor does not, and neither does the field of an event). State that is mutable through a readonly field of a mutable type is not seen, so coverage is partial. Making the type immutable or removing value equality changes its public API, so the fix is breaking; there is no code fix.
+  notes: 'FDG8070 reports a class declared in source that overrides Object.Equals, or a record class, when the class or one of its base classes declared in source (the fields of base classes from other assemblies are not seen) has an instance field that is neither readonly nor const (the field of an auto-property with a set accessor counts; an init accessor does not, and neither does the field of an event). Any such field counts, private ones included: a private field that is not readonly, such as a cached hash code, makes the type count as mutable. State that is mutable through a readonly field of a mutable type is not seen, so coverage is partial. Making the type immutable or removing value equality changes its public API, so the fix is breaking; there is no code fix.'
 - id: FDG8071
   strength: DO
   text: override `GetHashCode` if you override `Object.Equals`.
@@ -2204,7 +2204,7 @@
   body:
     - kind: paragraph
       text: This guarantees that two objects considered equal have the same hash code. The following guidelines provide more information.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2232,7 +2232,7 @@
     - kind: annotation
       text: This means that if `obj1.Equals(obj2)` returns true, both of the objects should have the same hash code. If the objects aren’t equal, they might or might not have the same hash code. Strictly speaking, all objects could have a hash code of 1. This would really be terrible from a performance point of view when looking up such items in a hashtable, of course.
       author: Christopher Brumme
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2267,7 +2267,7 @@
           public override readonly int GetHashCode() =>
              HashCode.Combine(Width, Height);
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2295,7 +2295,7 @@
     - kind: annotation
       text: 'This has tripped me up more than once: Make sure `GetHashCode` always returns the same value across the lifetime of an instance. Remember that hash codes are used to identify “buckets” in most hashtable implementations. If an object’s “bucket” changes, a hashtable may not be able to find your object. These can be very hard bugs to find, so get it right the first time.'
       author: Brian Pepin
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2329,12 +2329,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: The text has no body. CA1065 reports an exception created directly in GetHashCode (probe with SDK 10.0.402). Exceptions from methods that GetHashCode calls are not seen, so coverage is partial. CA1065 has no code fix.
+  notes: 'Test profile: none, as for FDG8066. The text has no body. CA1065 reports an exception created directly in GetHashCode (probe with SDK 10.0.402). Exceptions from methods that GetHashCode calls are not seen, so coverage is partial. CA1065 has no code fix.'
 - id: FDG8076
   strength: DO
   text: override `ToString` whenever an interesting human-readable string can be returned.
@@ -2353,7 +2353,7 @@
     - kind: annotation
       text: The most important value of `ToString` is that the debugger uses it as the default way of displaying the object. This is really valuable and is well worth doing. Sadly, all too often we don’t do this and the debuggability of our code suffers. In my own code, for nontrivial types, I found that writing something that looked like an XML fragment was quite useful (it is unambiguous, and programmers understand its syntax).
       author: Vance Morrison
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2381,7 +2381,7 @@
     - kind: annotation
       text: In terms of debugging experience, you should decorate your type with `DebuggerDisplayAttribute` in addition to overriding `ToString` for that particular purpose.
       author: Christophe Nasarre
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2404,7 +2404,7 @@
   section: 8.9.3 Object.ToString
   anchor: sec8_9_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2427,7 +2427,7 @@
   section: 8.9.3 Object.ToString
   anchor: sec8_9_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2453,7 +2453,7 @@
     - kind: annotation
       text: To be more explicit, use the `CultureInfo` instance returned by a thread’s `CurrentCulture` property to format any numeric value or date, and the one returned by `CurrentUICulture` to look up any resource. People often confuse these two properties.
       author: Christophe Nasarre
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2476,7 +2476,7 @@
   section: 8.9.3 Object.ToString
   anchor: sec8_9_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2499,7 +2499,7 @@
   section: 8.9.3 Object.ToString
   anchor: sec8_9_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2536,12 +2536,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: The text has no body. CA1065 reports an exception created directly in ToString (probe with SDK 10.0.402). Exceptions from methods that ToString calls are not seen, so coverage is partial. CA1065 has no code fix.
+  notes: 'Test profile: none, as for FDG8066. The text has no body. CA1065 reports an exception created directly in ToString (probe with SDK 10.0.402). Exceptions from methods that ToString calls are not seen, so coverage is partial. CA1065 has no code fix.'
 - id: FDG8084
   strength: DO
   text: ensure that `ToString` has no observable side effects.
@@ -2551,7 +2551,7 @@
   body:
     - kind: paragraph
       text: One reason for this is that `ToString` is called by debuggers during debugging, and such side effects can make debugging difficult.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2580,7 +2580,7 @@
       text: |-
         DateTime now = DateTime.Now;
         DateTime parsed = DateTime.Parse(now.ToString());
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2611,7 +2611,7 @@
       text: General-purpose types within general-purpose libraries should concentrate on functionality and usability within a programming context, and leave the decisions on serialization technologies to the application developer.
     - kind: paragraph
       text: Exception types and other types that explicitly support serialization across AppDomain boundaries—in the .NET runtimes that support multiple AppDomains per process—should continue to use the `[Serializable]` attribute.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2642,7 +2642,7 @@
       text: Forward compatibility is also important, but is an often overlooked area. When an unknown property is encountered, should you ignore it, or should the application fail? Unfortunately, the answer is usually context-specific and depends on what the property represented. The most conservative answer is to fail on unknown data and to take the stance that once you’ve released a serializable type, you can’t ever add to it.
     - kind: paragraph
       text: Test compatibility of serialization when making changes to serializable types. Try deserializing the new version into an old version, and vice versa, across as broad a range as you expect your users to need.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2673,7 +2673,7 @@
             ...
           }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2707,7 +2707,7 @@
             ...
           }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2748,7 +2748,7 @@
     - kind: annotation
       text: Link demands are part of the now-deprecated Code Access Security (CAS) system. The guidance may feel antiquated, but since the platforms that support CAS and the platforms that support AppDomains are the same, it’s still something you should do when using the `ISerializable` interface.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2783,7 +2783,7 @@
     - kind: annotation
       text: '`System.Uri` is a much safer and richer way of representing URIs. Extensive manipulation of URI-related data using plain strings has been shown to cause many security and correctness problems.'
       author: Mark Alcazar
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2829,12 +2829,12 @@
   severity:
     library: suggestion
     application: suggestion
-    test: suggestion
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Not machine-checkable: which members are commonly used with strings from users is judgment; the string overload should call the Uri overload, as in the body.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. Not machine-checkable: which members are commonly used with strings from users is judgment; the string overload should call the Uri overload, as in the body.'
 - id: FDG8093
   strength: DO NOT
   text: automatically overload all `Uri`-based members with a version that accepts a string.
@@ -2861,12 +2861,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Not machine-checkable: whether a string overload is for one of the most common variants is judgment. CA1054 accepts a string parameter when a Uri overload exists (its message offers that), which is the string-overload helper of FDG8092.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. Not machine-checkable: whether a string overload is for one of the most common variants is judgment. CA1054 accepts a string parameter when a Uri overload exists (its message offers that), which is the string-overload helper of FDG8092.'
 - id: FDG8094
   strength: DO
   text: call the `Uri`-based overloads, if available.
@@ -2874,7 +2874,7 @@
   section: 8.11.1 System.Uri Implementation Guidelines
   anchor: sec8_11_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2911,7 +2911,7 @@
             this.location = location;
          }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -2946,7 +2946,7 @@
            ...
            public IXPathNavigable ConfigurationData { get { ... } }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2984,12 +2984,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Not machine-checkable as a positive rule: FDG8096 reports XmlNode and XmlDocument in public signatures. XPathDocument, which the body also names, is not reported there.'
+  notes: 'Test profile: test classes are public only for the test framework; their signatures are not API. Not machine-checkable as a positive rule: FDG8096 reports XmlNode and XmlDocument in public signatures. XPathDocument, which the body also names, is not reported there.'
 - id: FDG8098
   strength: DO NOT
   text: subclass `XmlDocument` if you want to create a type representing an XML view of an underlying object model or data source.
@@ -3005,7 +3005,7 @@
 
         Implementing a custom `XPathNavigator` gets around the inefficiency problems because the navigator is a cursor; there is no need to create objects for each node in the tree. It also reduces the data/XML impedance mismatch. Because the main goal of `XmlDataDocument` was to enable users to either write out the `DataSet` as XML or query it with `XPath`, there is no need to support editability via the DOM. In addition, the simpler data model of the `XPathNavigator` leads to fewer edge cases in mapping your data model to XML.
       author: Dare Obasanjo
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -3031,7 +3031,7 @@
   body:
     - kind: paragraph
       text: It is very surprising to developers when they discover that a type overloads just one of the operators.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3069,7 +3069,7 @@
           }
           ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -3106,12 +3106,12 @@
   severity:
     library: warning
     application: warning
-    test: warning
+    test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1065 reports an exception created directly in operator == or operator != (probe with SDK 10.0.402). Exceptions from methods the operator calls, such as a NullReferenceException from a null argument, are not seen, so coverage is partial. CA1065 has no code fix.
+  notes: 'Test profile: none, as for FDG8066. CA1065 reports an exception created directly in operator == or operator != (probe with SDK 10.0.402). Exceptions from methods the operator calls, such as a NullReferenceException from a null argument, are not seen, so coverage is partial. CA1065 has no code fix.'
 - id: FDG8102
   strength: DO
   text: implement `IEquatable<T>`, with the same behavior as the operator, on any type that defines `operator==`.
@@ -3121,7 +3121,7 @@
   body:
     - kind: paragraph
       text: For more information on `IEquatable<T>`, see section 8.6.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3180,7 +3180,7 @@
            => right == left;
          public static bool operator==(SomeType left, SomeType right) { ... }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3260,7 +3260,7 @@
   analyzer:
     message: Avoid operator == with arguments of different types ({0} and {1})
     category: Usage
-  notes: "FDG8104 reports an operator == declared in source whose two parameter types differ; a Nullable<T> of the other parameter's type counts as the same type. The body's alternatives (a conversion operator or a property) replace the operator, which removes a public member, so the fix is breaking; there is no code fix. FDG8104 reports the OK examples of FDG8103 too: they show how to define such operators when a type does, which AVOID allows."
+  notes: 'FDG8104 reports an operator == declared in source whose two parameter types differ; a Nullable<T> of the other parameter''s type counts as the same type. The body''s alternatives (a conversion operator or a property) replace the operator, which removes a public member, so the fix is breaking; there is no code fix. FDG8104 reports the OK examples of FDG8103 too: their labels rate the reflexive and transitive properties, and FDG8104''s own body asks of such a set of operators "Why do this much work?" and proposes a conversion operator or a property instead. A type that keeps the operators on purpose suppresses the report, as AVOID allows.'
 - id: FDG8105
   strength: DO
   text: overload the equality operators on value types, if equality is meaningful.
@@ -3270,7 +3270,7 @@
   body:
     - kind: paragraph
       text: In most programming languages, there is no default implementation of `operator==` for value types.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -3316,7 +3316,7 @@
   analyzer:
     message: Avoid overloading equality operators on the mutable reference type '{0}'
     category: Usage
-  notes: 'FDG8106 reports the first operator == declared in a class when the class or one of its base classes declared in source has an instance field that is neither readonly nor const (the field of an auto-property with a set accessor counts; an init accessor does not, and neither does the field of an event), the same mutability test as FDG8070. Immutable types are not reported, as the body allows. State that is mutable through a readonly field of a mutable type is not seen, so coverage is partial. CA1046 is mapped to FDG8100 instead: it reports immutable types too and leaves out types that override Equals. Removing the operators changes the public API, so the fix is breaking; there is no code fix.'
+  notes: 'FDG8106 reports the first operator == declared in a class when the class or one of its base classes declared in source has an instance field that is neither readonly nor const (the field of an auto-property with a set accessor counts; an init accessor does not, and neither does the field of an event), the same mutability test as FDG8070. Any such field counts, private ones included: a private field that is not readonly, such as a cached hash code, makes the type count as mutable. Immutable types are not reported, as the body allows. State that is mutable through a readonly field of a mutable type is not seen, so coverage is partial. CA1046 is mapped to FDG8100 instead: it reports immutable types too and leaves out types that override Equals. Removing the operators changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG8107
   strength: AVOID
   text: overloading equality operators on reference types if the implementation would be significantly slower than that of reference equality.
@@ -3326,7 +3326,7 @@
   body:
     - kind: paragraph
       text: The next chapter discusses a set of design patterns used in the design of types in .NET that we feel will be of help to other framework designers.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment

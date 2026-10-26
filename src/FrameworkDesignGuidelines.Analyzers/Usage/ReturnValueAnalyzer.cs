@@ -135,8 +135,8 @@ public sealed class ReturnValueAnalyzer : DiagnosticAnalyzer
         return type is IArrayTypeSymbol
             || type.OriginalDefinition.SpecialType is SpecialType.System_Collections_IEnumerable
                 or SpecialType.System_Collections_Generic_IEnumerable_T
-            || (IsFromCollectionNamespace(type)
-                && collections.Any(collection => UsageSymbols.Implements(type, collection)));
+            || (collections.Any(collection => UsageSymbols.Implements(type, collection))
+                && IsFromCollectionNamespace(type));
     }
 
     /// <summary>

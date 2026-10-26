@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using FrameworkDesignGuidelines.Analyzers.Exceptions;
 using FrameworkDesignGuidelines.Analyzers.Naming;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace FrameworkDesignGuidelines.Analyzers.Usage;
@@ -9,12 +10,15 @@ namespace FrameworkDesignGuidelines.Analyzers.Usage;
 /// <summary>
 /// FDG8002, FDG8014, FDG8015, FDG8016, FDG8031, FDG8051 and FDG8096 (sections 8.1, 8.3, 8.5 and 8.12): the types
 /// that externally visible members use in their signatures. FDG8002 reports a readonly field whose type is an array:
-/// readonly protects the field, not the elements. The others report a type used as the type of a parameter, a return
-/// value (or the result type of a returned <c>Task&lt;T&gt;</c> or <c>ValueTask&lt;T&gt;</c>), a property or
-/// indexer, or a field: <c>ArrayList</c> (FDG8014); <c>Hashtable</c> or <c>Dictionary&lt;TKey, TValue&gt;</c>
-/// (FDG8015); a type that is or implements <c>IEnumerator</c>, except as the return type of a method named
-/// GetEnumerator (FDG8016); a type other than <c>ArraySegment&lt;byte&gt;</c> that implements
-/// <c>ICollection&lt;byte&gt;</c> or <c>IReadOnlyCollection&lt;byte&gt;</c> (FDG8031); <c>ICloneable</c>
+/// readonly protects the field, not the elements. A field initialized with an empty array (<c>new T[0]</c>,
+/// <c>new T[] { }</c>, <c>{ }</c>, <c>[]</c> or <c>Array.Empty&lt;T&gt;()</c>) is not reported: it has no elements
+/// to change. The others report a type used as the type of a parameter, a return value (or the result type of a
+/// returned <c>Task&lt;T&gt;</c> or <c>ValueTask&lt;T&gt;</c>), a property or indexer, or a field:
+/// <c>ArrayList</c> (FDG8014); <c>Hashtable</c> or <c>Dictionary&lt;TKey, TValue&gt;</c> (FDG8015); a type that is
+/// or implements <c>IEnumerator</c>, except as the return type of a method named GetEnumerator (FDG8016); a type
+/// that implements <c>ICollection&lt;byte&gt;</c> or <c>IReadOnlyCollection&lt;byte&gt;</c>, other than
+/// <c>ArraySegment&lt;byte&gt;</c> and <c>ImmutableArray&lt;byte&gt;</c>, which are views over a byte array, the
+/// design the text asks for (FDG8031); <c>ICloneable</c>
 /// (FDG8051); and <c>XmlNode</c> or a type derived from it (FDG8096). Types derived from the reported types, other
 /// than those of XmlNode, and uses as a type argument are not reported. Overrides and interface implementations take
 /// their signature from another member and are not reported, and neither are the properties that a record declares
@@ -89,6 +93,7 @@ public sealed class UsageSignatureAnalyzer : DiagnosticAnalyzer
                 type = field.Type;
                 if (field.IsReadOnly
                     && field.Type is IArrayTypeSymbol
+                    && !IsInitializedEmpty(field, context.CancellationToken)
                     && NamingSymbols.SourceLocation(field) is { } fieldLocation)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(FdgDescriptors.FDG8002, fieldLocation, field.Name));
@@ -157,13 +162,50 @@ public sealed class UsageSignatureAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    /// True for a named type other than <c>ArraySegment&lt;byte&gt;</c> that is or implements
-    /// <c>ICollection&lt;byte&gt;</c> or <c>IReadOnlyCollection&lt;byte&gt;</c>; <c>byte[]</c> is an array type.
+    /// True when the declarator of the field has an empty array as its initializer: an array creation with a size of
+    /// 0 in its first rank or with an empty initializer, an empty array initializer or collection expression, or a
+    /// call to <c>Array.Empty&lt;T&gt;()</c>. The check is syntactic; a size that is a named constant is not seen.
+    /// </summary>
+    private static bool IsInitializedEmpty(IFieldSymbol field, CancellationToken cancellationToken)
+    {
+        return field.DeclaringSyntaxReferences.Any(reference =>
+            reference.GetSyntax(cancellationToken) is VariableDeclaratorSyntax { Initializer.Value: { } value }
+            && IsEmptyArray(value));
+    }
+
+    private static bool IsEmptyArray(ExpressionSyntax value)
+    {
+        return value switch
+        {
+            ArrayCreationExpressionSyntax { Initializer: { } initializer } => initializer.Expressions.Count == 0,
+            ArrayCreationExpressionSyntax creation => creation.Type.RankSpecifiers[0].Sizes.Any(
+                size => size is LiteralExpressionSyntax { Token.ValueText: "0" }),
+            InitializerExpressionSyntax initializer => initializer.Expressions.Count == 0,
+            CollectionExpressionSyntax collection => collection.Elements.Count == 0,
+            InvocationExpressionSyntax
+            {
+                Expression: MemberAccessExpressionSyntax
+                {
+                    Name: GenericNameSyntax { Identifier.ValueText: "Empty", TypeArgumentList.Arguments.Count: 1 },
+                    Expression: IdentifierNameSyntax { Identifier.ValueText: "Array" }
+                        or MemberAccessExpressionSyntax { Name.Identifier.ValueText: "Array" },
+                },
+                ArgumentList.Arguments.Count: 0,
+            } => true,
+            _ => false,
+        };
+    }
+
+    /// <summary>
+    /// True for a named type other than <c>ArraySegment&lt;byte&gt;</c> and <c>ImmutableArray&lt;byte&gt;</c> that
+    /// is or implements <c>ICollection&lt;byte&gt;</c> or <c>IReadOnlyCollection&lt;byte&gt;</c>; <c>byte[]</c> is an
+    /// array type.
     /// </summary>
     private static bool IsByteCollection(ITypeSymbol type, SignatureTypes types)
     {
         return type is INamedTypeSymbol named
             && !UsageSymbols.Is(named, types.ArraySegment)
+            && !UsageSymbols.Is(named, types.ImmutableArray)
             && new[] { named }.Concat(named.AllInterfaces).Any(@interface =>
                 (UsageSymbols.Is(@interface, types.Collection) || UsageSymbols.Is(@interface, types.ReadOnlyCollection))
                 && @interface.TypeArguments[0].SpecialType == SpecialType.System_Byte);
@@ -201,6 +243,9 @@ public sealed class UsageSignatureAnalyzer : DiagnosticAnalyzer
             compilation.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyCollection_T);
 
         public INamedTypeSymbol? ArraySegment { get; } = compilation.GetTypeByMetadataName("System.ArraySegment`1");
+
+        public INamedTypeSymbol? ImmutableArray { get; } =
+            compilation.GetTypeByMetadataName("System.Collections.Immutable.ImmutableArray`1");
 
         public INamedTypeSymbol? Cloneable { get; } = compilation.GetTypeByMetadataName("System.ICloneable");
 
