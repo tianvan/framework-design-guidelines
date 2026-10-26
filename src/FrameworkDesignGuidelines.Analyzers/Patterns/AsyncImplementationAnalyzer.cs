@@ -18,10 +18,11 @@ namespace FrameworkDesignGuidelines.Analyzers.Patterns;
 /// return statement that is the whole branch of an if statement whose condition reads
 /// <c>CancellationToken.IsCancellationRequested</c>, in an async method, local function or lambda that returns a
 /// task-like type. FDG9043 reports, in the body of an externally visible async method itself (not in a lambda or local
-/// function), before the first await expression, await foreach or await using of that body, a throw of
-/// <c>ArgumentException</c> or a type derived from it, or a call to a static method whose name starts with ThrowIf
-/// declared on such a type. FDG9049 reports an await foreach over a parameter of type <c>IAsyncEnumerable&lt;T&gt;</c>,
-/// directly or through ConfigureAwait, when the method, local function or lambda that declares the parameter also has a
+/// function), earlier in the text than every await expression and await foreach of that body and than the end of every
+/// await using statement (an await using declaration does not count), a throw of <c>ArgumentException</c> or a type
+/// derived from it, or a call to a static method whose name starts with ThrowIf declared on such a type. FDG9049
+/// reports an await foreach over a parameter of type <c>IAsyncEnumerable&lt;T&gt;</c>, directly or through
+/// ConfigureAwait, when the method, local function or lambda that declares the parameter also has a
 /// <c>CancellationToken</c> parameter and WithCancellation is not called on the way.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -212,14 +213,15 @@ public sealed class AsyncImplementationAnalyzer : DiagnosticAnalyzer
         }
 
         int start = context.Operation.Syntax.SpanStart;
-        return Awaits(body).Any(awaited => awaited.Syntax.SpanStart < start) ? null : method;
+        return AwaitPositions(body).Any(position => position <= start) ? null : method;
     }
 
     /// <summary>
-    /// The await expressions, await foreach loops and await using statements and declarations of a body, outside
-    /// lambdas and local functions.
+    /// Where the awaits of a body take effect in the text, outside lambdas and local functions: the start of an await
+    /// expression or await foreach loop, and the end of an await using statement, whose DisposeAsync runs when the
+    /// statement ends. An await using declaration awaits only at the end of its scope and is left out.
     /// </summary>
-    private static IEnumerable<IOperation> Awaits(IOperation operation)
+    private static IEnumerable<int> AwaitPositions(IOperation operation)
     {
         foreach (IOperation child in operation.ChildOperations)
         {
@@ -228,15 +230,16 @@ public sealed class AsyncImplementationAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            if (child is IAwaitOperation
-                || child is IForEachLoopOperation { IsAsynchronous: true }
-                || child is IUsingOperation { IsAsynchronous: true }
-                || child is IUsingDeclarationOperation { IsAsynchronous: true })
+            if (child is IAwaitOperation or IForEachLoopOperation { IsAsynchronous: true })
             {
-                yield return child;
+                yield return child.Syntax.SpanStart;
+            }
+            else if (child is IUsingOperation { IsAsynchronous: true })
+            {
+                yield return child.Syntax.Span.End;
             }
 
-            foreach (IOperation nested in Awaits(child))
+            foreach (int nested in AwaitPositions(child))
             {
                 yield return nested;
             }

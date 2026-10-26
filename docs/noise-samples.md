@@ -730,7 +730,8 @@ the narrowing of FDG9020, FDG9022 and FDG9037; the first-run counts are in the T
   guidance does not apply; none was seen in these samples.
 - **internal-b.** No report in the measured project.
 - **Fix round 1.** The analyzers of FDG9027, FDG9028, FDG9029 (now also checking methods that return
-  `IAsyncEnumerable<T>`), FDG9043 (no longer reporting a throw after an await, await foreach or await using in the
-  body) and FDG9054 and FDG9057 (a SetValue call whose value is not the value parameter moved from FDG9054 to
-  FDG9057) changed. A rerun of these six diagnostics gave the same counts as the table: internal-a's FDG9043 report
-  stays, and the others have 0 reports.
+  `IAsyncEnumerable<T>`), FDG9043 (no longer reporting a throw after an await or await foreach in the text of the body,
+  or after the end of an await using statement, as narrowed in fix round 2) and FDG9054 and FDG9057 (a SetValue call
+  whose value is not the value parameter moved from FDG9054 to FDG9057) changed. A rerun of these six diagnostics gave
+  the same counts as the table: internal-a's FDG9043 report stays, and the others have 0 reports. The FDG9043 rerun of
+  fix round 2 gave the same 1.

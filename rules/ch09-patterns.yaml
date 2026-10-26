@@ -697,7 +697,7 @@
     text: "public Task<bool> TryParseAsync(\n  TextReader reader,\n  out ParsedData value) {\n\n  Task<ParsedData> parseTask = ParseAsync(reader);\n\n  // This method isn't actually asynchronous;\n  // it does a synchronous wait!\n  parseTask.Wait();\n\n  if (parseTask.IsFaulted) {\n    value = default;\n    return Task.FromResult(false);\n }\n\n value = parseTask.Result;\n return Task.FromResult(true);\n}"
   - kind: paragraph
     text: To maintain the ability to write to the `out` parameter, the `TryParseAsync` method instead became a blocking synchronous method masquerading as an asynchronous method. This is not only misleading to the callers of this method, but also can cause deadlock due to the use of `Task.Wait()` (see section 9.2.5.3 for more information).
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -723,7 +723,7 @@
   section: 9.2.2 Task-Based Async Pattern
   anchor: sec9_2_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -760,7 +760,7 @@
   - kind: annotation
     text: While the example here just has a linear flow, things get trickier if the mutable `struct` is a field and the application is multithreaded. A concurrent write could happen between the argument validation phase and the value copy to the Core method, violating the contract that the base class was trying to uphold. Since this awkwardness only comes up when ignoring the guideline against public mutable value types (section 4.7) *and* the guidelines against using `in` (`ref readonly`) parameters in public APIs (section 5.8.3), hopefully no one will run into it when using your library.
     author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -880,7 +880,7 @@
     text: 'When the synchronous method has no parameters passed as `out` or `ref`, and neither the return value or any of the parameters are ref-like value types (`ref struct` types), then you can declare the asynchronous variant by just adding the “Async” suffix, changing the return type to the appropriate Task-like type (section 9.2.3), and accepting a `CancellationToken`. For example:'
   - kind: code
     text: "public partial class XDocument {\n  public static XDocument Load(\n    TextReader textReader, LoadOptions options) { ... }\n\n  // The real XDocument.LoadAsync does not have a default value for\n  // cancellationToken; this version is better aligned with the\n  // guidance in this section.\n  public static Task<XDocument> LoadAsync(\n    TextReader textReader, LoadOptions options,\n    CancellationToken cancellationToken = default) { ... }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1020,7 +1020,7 @@
   - kind: annotation
     text: This `Created` state is a good example of a public API that probably shouldn’t have ever existed. The ability to create a Task separately from `Start`ing it helps as an implementation detail in a very, very small number of cases. In catering to that need by exposing the `Created` state, the relevant constructors, and the `Start` method, we ended up creating a pit of failure that developers can easily fall into, while also making it a lot more difficult for us to optimize certain common use cases. This is an example where actually cutting back on the functionality exposed would have led to a greater good.
     author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1105,7 +1105,7 @@
 
       ```'
     author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1251,7 +1251,7 @@
   analyzer:
     message: 'Throw ''{0}'' before the task of ''{1}'' starts: move the check out of the async method'
     category: Patterns
-  notes: 'FDG9043 reports, in an externally visible async method (public or protected, as the body says), a throw of ArgumentException or an exception derived from it, or a call to one of their static ThrowIf methods (such as ArgumentNullException.ThrowIfNull), in the method''s own body rather than in a lambda or local function. Async iterators and overrides are reported too: their body is their own. A throw that follows an await in the body, which can depend on the result of an asynchronous operation (FDG9044), is not reported; an await foreach or await using counts as an await. Other usage errors, such as InvalidOperationException for a wrong state, are not seen, since the same types also report execution errors, so coverage is partial. The fix moves the checks into a method without the async keyword that returns the task of an async implementation, as the body shows, without changing the signature; there is no code fix.'
+  notes: 'FDG9043 reports, in an externally visible async method (public or protected, as the body says), a throw of ArgumentException or an exception derived from it, or a call to one of their static ThrowIf methods (such as ArgumentNullException.ThrowIfNull), in the method''s own body rather than in a lambda or local function. Async iterators and overrides are reported too: their body is their own. A throw that comes after an await or an await foreach in the text of the body, which can depend on the result of an asynchronous operation (FDG9044), is not reported; an await using awaits only at disposal, so it counts only after its statement ends, and an await using declaration does not count. The order is the order in the text, not control flow: a throw in the else branch of an if whose other branch awaits is not reported, and neither is a throw inside the operand of an await (await F(x ?? throw ...)). Other usage errors, such as InvalidOperationException for a wrong state, are not seen, since the same types also report execution errors, so coverage is partial. The fix moves the checks into a method without the async keyword that returns the task of an async implementation, as the body shows, without changing the signature; there is no code fix.'
 - id: FDG9044
   strength: DO
   text: throw execution error exceptions via the Task-like value returned from an Async method.
@@ -1435,7 +1435,7 @@
   body:
   - kind: paragraph
     text: The `ConfigureAwait` extension method for `IAsyncEnumerable<T>` produces a value that effectively proxies the `ConfigureAwait` to each call to `MoveNextAsync()`. You should use it the same way, and in the same situations, as the `ConfigureAwait` modifier for Tasks (see section 9.2.5.2).
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1518,7 +1518,7 @@
   body:
   - kind: code
     text: "public class TextButton : DependencyObject {\n\n  public string Text {\n    get { return (string)GetValue(TextProperty); }\n    set { SetValue(TextProperty, value); }\n  }\n\n  public static readonly DependencyProperty TextProperty =\n    DependencyProperty.Register(\n      \"Text\",\n      typeof(string),\n      typeof(TextButton));\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1546,7 +1546,7 @@
   body:
   - kind: code
     text: "public class TextButton : DependencyObject {\n\n   public string Text {\n      get { return (string)GetValue(TextProperty); }\n      set { SetValue(TextProperty, value); }\n   }\n\n   public static readonly DependencyProperty TextProperty = ...\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1606,7 +1606,7 @@
     text: If you set a property default explicitly, you might prevent that property from being set by some implicit means, such as a styling.
   - kind: code
     text: "public class TextButton : DependencyObject {\n\n  public TextButton(){\n    // do not set DP default values explicitly\n    Text = String.Empty;  // this is bad!\n  }\n\n  public static readonly DependencyProperty TextProperty =\n    DependencyProperty.Register(\n        \"Text\",\n        typeof(string),\n        typeof(TextButton),\n        new PropertyMetadata(String.Empty)); // this is good!\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1636,7 +1636,7 @@
     text: That code won’t execute if the property is set by implicit means, such as a styling, because styling uses the static field directly.
   - kind: code
     text: "public string Text {\n  get { return (string)GetValue(TextProperty); }\n  set {\n    SetValue(TextProperty, value);\n    DoWorkOnTextChanged(); // this is bad!\n  }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg

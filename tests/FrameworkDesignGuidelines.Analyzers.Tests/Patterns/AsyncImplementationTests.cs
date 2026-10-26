@@ -284,12 +284,29 @@ public sealed class AsyncImplementationTests
                     await Task.Yield();
                     if (stream.Length == 0) throw new ArgumentException("Empty.", nameof(stream));
                 }
+
+                public async Task SendAsync(string text, bool later)
+                {
+                    if (later)
+                    {
+                        await Task.Yield();
+                    }
+                    else if (text == null)
+                    {
+                        throw new ArgumentNullException(nameof(text));
+                    }
+                }
+
+                public async Task<int> SizeAsync(string text)
+                {
+                    return await Task.FromResult((text ?? throw new ArgumentNullException(nameof(text))).Length);
+                }
             }
             """);
     }
 
     [Fact]
-    public Task Usage_error_after_await_foreach_or_await_using_is_not_reported()
+    public Task Usage_error_after_await_foreach_or_an_await_using_statement_is_not_reported()
     {
         return Verifier.VerifyLatestAsync(
             """
@@ -316,6 +333,16 @@ public sealed class AsyncImplementationTests
                 public async Task CopyAsync(Stream source, string name)
                 {
                     await using var copy = new MemoryStream();
+                    if (name.Length == 0) {|FDG9043:throw new ArgumentException("Empty.", nameof(name));|}
+                }
+
+                public async Task WriteAsync(Stream target, string name)
+                {
+                    await using (var buffer = new MemoryStream())
+                    {
+                        if (name == null) {|FDG9043:throw new ArgumentNullException(nameof(name));|}
+                    }
+
                     if (name.Length == 0) throw new ArgumentException("Empty.", nameof(name));
                 }
             }
