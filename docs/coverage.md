@@ -13,8 +13,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 6 Designing for Extensibility | 22 | 0 | 2 | 20 | 0 | 22 |
 | 7 Exceptions | 70 | 20 | 10 | 40 | 0 | 70 |
 | 8 Usage Guidelines | 107 | 28 | 21 | 58 | 0 | 107 |
+| 9 Common Design Patterns | 175 | 6 | 21 | 148 | 0 | 0 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 592 | 162 | 92 | 338 | 0 | 592 |
+| Total | 767 | 168 | 113 | 486 | 0 | 592 |
 
 ## Non-guideline content
 
@@ -144,6 +145,31 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 - **8.11.1** (background): The one-sentence introduction (the subsection helps implement code that uses System.Uri) is background for FDG8094 and FDG8095.
 - **8.12** (background): The one-sentence introduction (the section covers System.Xml types that can represent XML data) is background for FDG8096 to FDG8098.
 - **8.13** (background): The introduction (operator== and operator!= are called the equality operators) is background for FDG8099 to FDG8107. The closing sentence of the chapter (the next chapter covers design patterns) follows FDG8107 and is kept in its body by the extractor; it states no guideline.
+
+### Chapter 9: Common Design Patterns
+
+- **9** (background): The chapter introduction (guidelines and discussion for a limited set of patterns used frequently in the design of .NET APIs) is background for the whole chapter.
+- **9.1** (rationale): The definition of an aggregate component (a facade over lower-level factored types that supports component-oriented design and is the entry point for exploring its namespace), the It-Just-Works principle with its limit (do not open a file implicitly and then require an explicit close), and the Cwalina annotations (HttpClient and other examples; hide complexity completely or not at all; System.ServiceProcess would reach more developers with event handlers than with overrides) are rationale for FDG9001 to FDG9017.
+- **9.1.1** (rationale): The definition of component-oriented design and the Create-Set-Call Pattern (with the MessageQueue and PerformanceCounter examples), the advice to report invalid states with InvalidOperationException when an operation is performed rather than from the constructor or a setter, the Clarke and Nasarre annotations, and the list of additional requirements of aggregate components (a simple constructor, constructor parameters that initialize properties, properties with getters, setters and sensible defaults, options as properties, callbacks as events) are rationale for FDG9006 to FDG9010.
+- **9.1.2** (rationale): The definition of factored types (the richer types under an aggregate component, without modes and with clear lifetimes), the SerialPort.BaseStream example and the Haack annotation (factored types with an explicit lifetime could implement IDisposable) are rationale for FDG9014 and FDG9017.
+- **9.1.3** (background): The one-sentence introduction (the following guidelines apply to designing aggregate components) is background for FDG9001 to FDG9017.
+- **9.2** (background): The introduction (operations that feature I/O benefit from asynchronous APIs; .NET has three asynchronous API patterns: the Classic Async Pattern, the Event-Based Async Pattern and the Task-Based Async Pattern) is background for FDG9018 to FDG9050.
+- **9.2.1** (rationale): The history of the patterns (the Event-Based Async Pattern optimized for usability and designers, the Classic Async Pattern for power and small surface area) and the conclusion that both are now legacy patterns, not suitable for new types, are rationale for FDG9018 and FDG9019.
+- **9.2.2** (rationale): The definition of the Task-Based Async Pattern (a naming, signature and behavioral convention based on Task and Task<TResult>), its elements (the -Async method, the returned task, an optional CancellationToken parameter, with the File.ReadAllBytesAsync example) and the Barton annotation (the async keyword is a good start but does not enforce naming, usage exceptions, parameter alignment or cancellation) are rationale for FDG9020 to FDG9029.
+- **9.2.3** (rationale): The four predefined task-like return types, footnote 1 (async void methods are closer to the Event-Based Async Pattern and are not recommended in public code; no guideline icon states it), footnote 2 (the versions that introduced Task<TResult> and ValueTask<TResult>), the motivation and usability costs of ValueTask<TResult>, and the simple flow (no result: Task; commonly completes synchronously: ValueTask<TResult>; otherwise Task<TResult>) are rationale for FDG9030 to FDG9032.
+- **9.2.4** (background): The introduction (design reviews call the asynchronous version of a synchronous method its async overload; think of the two as overloads for their behavior but not their names) is background for FDG9033 to FDG9035.
+- **9.2.5** (background): The introduction (the section covers the parts of an implementation that callers can observe, such as returning a null Task, which should be consistent with other Task-Based Async Pattern methods) is background for FDG9036 to FDG9044.
+- **9.2.5.1** (background): The introduction (the machinery that drives Task needs the Status value to match the state of the operation) is background for FDG9037 and FDG9038.
+- **9.2.7** (background): The section says that the Classic Async Pattern is not recommended for new APIs and that existing APIs should be upgraded to the Task-Based Async Pattern, which FDG9018 and FDG9019 state; its former guidelines moved to Appendix B (section B.9.2.2), and its code example is marked as deprecated.
+- **9.2.8** (background): The section says that the Event-Based Async Pattern is not recommended for new APIs and that existing APIs should be upgraded to the Task-Based Async Pattern, which FDG9018 and FDG9019 state, and that a new type may carry the new methods when mixing the patterns is confusing; its former guidelines moved to Appendix B (section B.9.2.4), and its code example is marked as deprecated.
+- **9.2.9** (background): The section only says that IAsyncDisposable is covered with the Dispose Pattern in section 9.4.4; it states no guideline.
+- **9.2.10** (background): The introduction (IAsyncEnumerable<T> is mainly used to generate asynchronous iterators for the await foreach statement) is background for FDG9045 to FDG9048.
+- **9.3** (rationale): The definitions of a dependency property (a property that stores its value in a property store instead of a field) and of an attached dependency property (static Get and Set methods that describe a relationship between objects and their containers), with the style trigger and data binding examples, are rationale for FDG9051 to FDG9061.
+- **9.3.1** (background): The one-sentence introduction (the following guidelines describe details of dependency property design) is background for FDG9052 to FDG9058.
+- **9.3.2** (background): The description of attached dependency properties (defined on one type and set on objects of another, the Grid.Column example, accessors as static Get and Set methods registered with RegisterAttached) and the Nasarre annotation state no guideline of their own: the dependency property guidelines apply to attached dependency properties as well.
+- **9.3.3** (rationale): The introduction (validation runs when a property value changes; dependency property accessors cannot contain arbitrary validation code, so it is specified at registration), with a validating setter of an ordinary property, is rationale for FDG9059.
+- **9.3.4** (rationale): The introduction (dependency property accessors should not raise change notifications, because XAML-generated code does not call them), with a notifying setter of an ordinary property, is rationale for FDG9060.
+- **9.3.5** (rationale): The definition of coercion (the setter modifies the value before the store is changed), with a coercing setter of an ordinary property, and the statement that dependency properties specify it at registration are rationale for FDG9061.
 
 ### Appendix A: C# Coding Style Conventions
 

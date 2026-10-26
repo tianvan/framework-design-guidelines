@@ -655,3 +655,77 @@ FDG8096 are those of the rerun after fix round 1.
   longer reports `ImmutableArray<byte>`. Both changes only remove reports: FDG8002 had none, and the one FDG8031 report
   is a `List<byte>`, which is still reported, so the counts stand. The internal-b struct of FDG8053 is recounted as true
   (see above), which changes no count of the rerun.
+
+## Chapter 9 (9.1 to 9.3) mappings and analyzers
+
+Package 0.1.0 with the mappings of sections 9.1 to 9.3 and four analyzers (21 diagnostics), enabled by the
+profile globalconfigs (library for the open-source samples, application for the internal ones). The mapped SDK
+diagnostics and the new analyzers are counted. Every report was checked. The counts are those of the rerun after
+the narrowing of FDG9020, FDG9022 and FDG9037; the first-run counts are in the Treatment column and the notes.
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| CA1068 | FDG9024 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1849 | FDG9040, FDG9041 | 0 | 0 | 3 | 0 | 0 | 3 | 0 | 3 | None needed (see notes). |
+| CA2007 | FDG9039, FDG9050 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1 | None needed; library only (see notes). |
+| CA2012 | FDG9042 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9020 | FDG9020 | 0 | 2 | 0 | 0 | 0 | 2 | 0 | 2 | Narrowed after the first run (6 reports, 4 FP); see the notes. |
+| FDG9022 | FDG9022 | 2 | 6 | 0 | 11 | 0 | 19 | 0 | 19 | Narrowed after the first run (24 reports, 5 FP); see the notes. |
+| FDG9023 | FDG9023 | 0 | 0 | 4 | 2 | 0 | 6 | 0 | 6 | None needed (see notes). |
+| FDG9027 | FDG9027 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9028 | FDG9028 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports); library only. |
+| FDG9029 | FDG9029 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9033 | FDG9033 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9036 | FDG9036 | 0 | 0 | 2 | 0 | 0 | 2 | 0 | 2 | None needed (see notes). |
+| FDG9037 | FDG9037 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Narrowed after the first run (2 reports, 2 FP); see the notes. |
+| FDG9038 | FDG9038 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 1 | None needed (see notes). |
+| FDG9043 | FDG9043 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | None needed. |
+| FDG9045 | FDG9045 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9047 | FDG9047 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9048 | FDG9048 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports); library only. |
+| FDG9049 | FDG9049 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9052 | FDG9052 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9053 | FDG9053 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9054 | FDG9054 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9055 | FDG9055 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9056 | FDG9056 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9057 | FDG9057 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+
+### Notes
+
+- **FDG9020 and FDG9022 (narrowed).** In the first run, 4 of polly's 6 FDG9020 reports, with 4 of its 10
+  FDG9022 reports, were static methods that return a completed `ValueTask` (`new(result)`) as a shared
+  result, the way `Task.FromResult` does. Section 9.2.2 describes the "-Async" method as the one "which initiates
+  an asynchronous operation", and these start none, so a static method without the async keyword whose every
+  return value is a completed task is no longer reported by either. The same change removed 1 of internal-a's 12
+  FDG9022 reports, a static setup method that returns a completed task. Positive test:
+  `Static_method_returning_only_completed_tasks_is_not_reported`.
+- **FDG9020 (rerun).** polly's 2 are the protected abstract template method ExecuteCore of its two strategy
+  base classes, generic and not. True: section 9.2.10 names the combined suffix "AsyncCore".
+- **FDG9022 (rerun).** serilog's 2 are batch-sink interface methods without a token. polly's 6 are strategy
+  methods that receive the token inside a context object rather than as a parameter. internal-a's 11 are
+  public interface and instance methods, none of which accepts a token. All are true by the letter of the rule,
+  which asks for the parameter.
+- **FDG9023.** newtonsoft-json's 4 are protected virtual writer methods whose token has no default value.
+  internal-a's 2 are public methods whose token is required. True: FDG5011 bans default values on virtual and
+  interface methods for every parameter type other than `CancellationToken`, so the virtual methods have no
+  reason to leave the default out.
+- **FDG9036.** newtonsoft-json's 2 are a cancellation helper that returns null, by its own convention, when
+  cancellation is not requested. True.
+- **FDG9037 (narrowed).** In the first run, both reports were newtonsoft-json's polyfill of `Task.FromCanceled`,
+  which returns `new Task(action, cancellationToken)` with a token that is already canceled. Such a task starts
+  in the Canceled state, not Created, so a constructor call that passes a `CancellationToken` is no longer
+  reported. Positive test: `Task_created_with_a_cancellation_token_is_not_reported`.
+- **FDG9038.** polly's 1 returns an outcome holding an `OperationCanceledException` when cancellation is
+  requested, instead of throwing it. True by the letter: polly returns failures as values by design, which a
+  suppression records.
+- **FDG9043.** internal-a's 1 is a null check that throws `ArgumentNullException` inside a public async method.
+  True.
+- **CA1849.** newtonsoft-json's 3 are two reads of `Task<TResult>.Result` after an `IsCompletedSuccessfully`
+  check and one synchronous write call in an async method. True by the letter of FDG9040 and FDG9041; the
+  `Result` reads cannot block, which a suppression records.
+- **CA2007.** serilog's 1 is an await without `ConfigureAwait`. True. CA2007 (FDG9039, FDG9050), FDG9028 and
+  FDG9048 are library only, so they did not run on the internal samples, which use the application profile.
+- **CA1068.** 0 reports. CA1068 also reports synchronous methods, for which FDG9026 says the last-parameter
+  guidance does not apply; none was seen in these samples.
+- **internal-b.** No report in the measured project.

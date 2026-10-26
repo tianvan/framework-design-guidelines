@@ -94,6 +94,13 @@ Other references:
 - [references/ch07-exceptions.md](references/ch07-exceptions.md): throw, choose, catch, wrap and design exceptions, write exception messages, and use the Tester-Doer and Try patterns
 - [references/ch08-usage-arrays-attributes-collections.md](references/ch08-usage-arrays-attributes-collections.md): use arrays, design custom attributes, and choose, return and implement collections in public APIs
 - [references/ch08-usage-types.md](references/ch08-usage-types.md): use DateTime and DateTimeOffset, ICloneable, IComparable<T>, IEquatable<T>, Nullable<T>, Uri and System.Xml types, override Equals, GetHashCode and ToString, design serializable types, and overload equality operators
+- [references/ch09-patterns-aggregate-async.md](references/ch09-patterns-aggregate-async.md): design aggregate components and factored types, asynchronous methods (Task-Based Async Pattern, IAsyncEnumerable<T>), and dependency properties
+- [references/ch09-patterns-dispose.md](references/ch09-patterns-dispose.md): implement the Dispose Pattern, finalizers, scoped operations and IAsyncDisposable
+- [references/ch09-patterns-factories-linq.md](references/ch09-patterns-factories-linq.md): design factories and support LINQ
+- [references/ch09-patterns-optional-variance.md](references/ch09-patterns-optional-variance.md): apply the Optional Feature Pattern, covariance and contravariance
+- [references/ch09-patterns-template-timeouts-xaml.md](references/ch09-patterns-template-timeouts-xaml.md): apply the Template Method Pattern, design timeouts and XAML readable types
+- [references/ch09-patterns-buffers.md](references/ch09-patterns-buffers.md): design operations on buffers, data transformations and fixed-size writes
+- [references/ch09-patterns-buffers-try-write.md](references/ch09-patterns-buffers-try-write.md): write values to buffers with the Try-Write Pattern and report partial writes with OperationStatus
 
 Each reference lists, by section, every rule of its chapter that tools do not enforce. When a rule's wording is not
 enough, follow the `examples:` link at the end of its line to the book's explanation and code.

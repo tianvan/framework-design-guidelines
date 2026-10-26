@@ -154,3 +154,22 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
   fdg FDG8104, full; breaking. Chosen because the analyzer also reports the operators of the OK examples of FDG8103; their labels rate the reflexive and transitive properties, and FDG8104's own body asks of such a set "Why do this much work?", so the reports stand and a type that keeps the operators suppresses them.
 - [ ] FDG8105 DO overload the equality operators on value types, if equality is meaningful.
   sdk CA2231, partial; autofix yes. Chosen because CA2231 reports only a struct that overrides Equals, which is how "if equality is meaningful" is read, and its code fix adds the operators without changing an existing signature.
+
+## Chapter 9: Common Design Patterns (9.1 to 9.3)
+
+- [ ] FDG9020 DO use the suffix “Async” when naming an asynchronous method.
+  fdg FDG9020, partial; breaking. Chosen because static methods that only return completed tasks are left out after 4 of polly's 6 first-run reports were completed-ValueTask factories (section 9.2.2 gives the suffix to the method that initiates an operation), and the book's own "WriteAync" example is reported.
+- [ ] FDG9022 DO accept a `CancellationToken` parameter, named “cancellation-Token,” in asynchronous methods.
+  fdg FDG9022, partial; breaking. Chosen because the name check reads the hyphen as a line-end break, an overload that takes a token excuses one that does not, and polly's methods that receive the token in a context object stay true by the letter.
+- [ ] FDG9023 DO provide a default value to the `CancellationToken` value.
+  fdg FDG9023, partial; no autofix. Chosen because overloads, a required parameter after the token and protected ...Core template methods are exempt, while newtonsoft-json's protected virtual methods without a default are kept as true (FDG5011 excepts `CancellationToken` from its ban on defaults).
+- [ ] FDG9024 CONSIDER keeping the `CancellationToken` as the last parameter, for better alignment with a synchronous version of the method.
+  sdk CA1068, partial; breaking. Chosen because CA1068 also reports synchronous methods, which FDG9026 excludes, and does not report a token followed by optional parameters.
+- [ ] FDG9037 DO NOT return tasks in the `Created` state.
+  fdg FDG9037, partial; no autofix. Chosen because the book shows the check icon and the strength word is used, and a constructor call with a `CancellationToken` is exempt after both first-run reports were a `Task.FromCanceled` polyfill whose task starts Canceled.
+- [ ] FDG9039 DO use `await task.ConfigureAwait(false)` when awaiting an Async operation, except in application models that depend on the synchronization context.
+  sdk CA2007, partial; no autofix; library only. Chosen because CA2007 does not report ConfigureAwait(true) (probe with SDK 10.0.402) and the application exception is left to the profile.
+- [ ] FDG9043 DO throw usage error exceptions directly from the Async method, to aid in debuggability.
+  fdg FDG9043, partial; no autofix. Chosen because only ArgumentException and its derived types (and their ThrowIf helpers) count as usage errors, since other exception types also report execution errors.
+- [ ] FDG9056 DO NOT set default values of dependency properties explicitly in code; instead, set them in metadata.
+  fdg FDG9056, partial; no autofix. Chosen because only constant-like values set in an instance constructor are reported, and the constructor of the FDG9058 example in the book is reported.

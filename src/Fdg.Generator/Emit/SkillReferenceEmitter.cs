@@ -6,8 +6,8 @@ namespace Fdg.Generator.Emit;
 /// <summary>
 /// Writes the <c>fdg-write</c> skill's reference files: per chapter, a one-line-per-rule index of what tools cannot
 /// check, and a second file with the book's explanations and examples for those rules. A chapter can be split by
-/// section into several such pairs (<c>references</c> in <c>meta.yaml</c>); no file may exceed
-/// <see cref="MaxReferenceBytes"/>.
+/// section into several such pairs (<c>references</c> in <c>meta.yaml</c>); a rule goes to the split with the longest
+/// matching section prefix, and no file may exceed <see cref="MaxReferenceBytes"/>.
 /// </summary>
 public static class SkillReferenceEmitter
 {
@@ -68,7 +68,7 @@ public static class SkillReferenceEmitter
         foreach (Rule rule in file.Rules)
         {
             string number = RuleText.SectionNumber(rule);
-            ReferenceSplit[] matches = file.References.Where(r => r.Sections.Any(prefix => IsInSection(number, prefix))).ToArray();
+            ReferenceSplit[] matches = LongestMatches(file.References, number);
             if (matches.Length == 0)
             {
                 throw new GenerationException(
@@ -93,6 +93,24 @@ public static class SkillReferenceEmitter
         }
 
         return file.References.Select(r => new ReferencePart(r.File, rulesBySplit[r], SectionRange(r))).ToList();
+    }
+
+    /// <summary>
+    /// The splits whose longest matching prefix is the longest of all, so a split that lists <c>9.12.3</c> takes
+    /// section 9.12.3 from a split that lists <c>9.12</c>; two splits that match with prefixes of the same length both
+    /// come back.
+    /// </summary>
+    private static ReferenceSplit[] LongestMatches(IReadOnlyList<ReferenceSplit> references, string number)
+    {
+        var matches = references
+            .Select(r => (Split: r, Length: r.Sections.Where(prefix => IsInSection(number, prefix))
+                .Select(prefix => prefix.Length)
+                .DefaultIfEmpty(-1)
+                .Max()))
+            .Where(m => m.Length >= 0)
+            .ToArray();
+        int longest = matches.Length == 0 ? -1 : matches.Max(m => m.Length);
+        return matches.Where(m => m.Length == longest).Select(m => m.Split).ToArray();
     }
 
     /// <summary>

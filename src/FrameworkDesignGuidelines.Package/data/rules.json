@@ -7786,6 +7786,2510 @@
       "naming": null
     },
     {
+      "id": "FDG9001",
+      "strength": "CONSIDER",
+      "text": "providing aggregate components for commonly used feature areas.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9002",
+      "strength": "DO",
+      "text": "model high-level concepts (physical objects) rather than system-level tasks with aggregate components.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9003",
+      "strength": "DO",
+      "text": "increase the visibility of aggregate components by giving them names that correspond to well-known entities of the system, such as `MessageQueue`, `Process`, or `EventLog`.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9004",
+      "strength": "DO",
+      "text": "design aggregate components so they can be used after very simple initialization. If some initialization is necessary, the exception resulting from not having the component initialized should clearly explain what needs to be done.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9005",
+      "strength": "DO NOT",
+      "text": "require the users of aggregate components to explicitly instantiate multiple objects in a single scenario.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9006",
+      "strength": "DO",
+      "text": "make sure aggregate components support the Create–Set–Call usage pattern, where developers expect to be able to implement most scenarios by instantiating the component, setting its properties, and calling simple methods.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9007",
+      "strength": "DO",
+      "text": "provide a default or a very simple constructor for all aggregate components.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9008",
+      "strength": "DO",
+      "text": "provide properties with getters and setters corresponding to all parameters of aggregate component constructors.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9009",
+      "strength": "DO",
+      "text": "use events instead of delegate-based APIs in aggregate components.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9010",
+      "strength": "DO",
+      "text": "use events in aggregate components instead of virtual members that need to be overridden.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9011",
+      "strength": "DO NOT",
+      "text": "require users of aggregate components to inherit, override methods, or implement any interfaces in common scenarios.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9012",
+      "strength": "DO NOT",
+      "text": "require users of aggregate components to do anything besides writing code in common scenarios. For example, users should not have to configure components in the configuration file, generate any resource files, and so on.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9013",
+      "strength": "CONSIDER",
+      "text": "making changes to aggregate components’ modes automatic.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9014",
+      "strength": "DO NOT",
+      "text": "design factored types that have modes.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9015",
+      "strength": "CONSIDER",
+      "text": "integrating your aggregate components with Visual Studio designers.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9016",
+      "strength": "CONSIDER",
+      "text": "separating aggregate components and factored types into different assemblies.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9017",
+      "strength": "CONSIDER",
+      "text": "exposing access to internal factored types of an aggregate component.",
+      "section": "9.1.3 Aggregate Component Guidelines",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9018",
+      "strength": "DO",
+      "text": "implement new asynchronous API using the Task-Based Async Pattern.",
+      "section": "9.2.1 Choosing Between the Async Patterns",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9019",
+      "strength": "CONSIDER",
+      "text": "upgrading a Classic Async Pattern or Event-Based Async Pattern API to the Task-Based Async Pattern.",
+      "section": "9.2.1 Choosing Between the Async Patterns",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9020",
+      "strength": "DO",
+      "text": "use the suffix “Async” when naming an asynchronous method.",
+      "section": "9.2.2 Task-Based Async Pattern",
+      "diagnostics": [
+        "FDG9020"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9021",
+      "strength": "CONSIDER",
+      "text": "adding synchronous variants of Async methods.",
+      "section": "9.2.2 Task-Based Async Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9022",
+      "strength": "DO",
+      "text": "accept a `CancellationToken` parameter, named “cancellation-Token,” in asynchronous methods.",
+      "section": "9.2.2 Task-Based Async Pattern",
+      "diagnostics": [
+        "FDG9022"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9023",
+      "strength": "DO",
+      "text": "provide a default value to the `CancellationToken` value.",
+      "section": "9.2.2 Task-Based Async Pattern",
+      "diagnostics": [
+        "FDG9023"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9024",
+      "strength": "CONSIDER",
+      "text": "keeping the `CancellationToken` as the last parameter, for better alignment with a synchronous version of the method.",
+      "section": "9.2.2 Task-Based Async Pattern",
+      "diagnostics": [
+        "CA1068"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9025",
+      "strength": "CONSIDER",
+      "text": "accepting a `CancellationToken` in long-running or blocking synchronous methods.",
+      "section": "9.2.2 Task-Based Async Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9026",
+      "strength": "DO NOT",
+      "text": "return Tasks for long-running synchronous methods.",
+      "section": "9.2.2 Task-Based Async Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9027",
+      "strength": "DO NOT",
+      "text": "use `ref` or `out` parameter modifiers in an Async method.",
+      "section": "9.2.2 Task-Based Async Pattern",
+      "diagnostics": [
+        "FDG9027"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9028",
+      "strength": "DO NOT",
+      "text": "use the `in` (ref readonly) parameter modifier in a virtual or abstract Async method.",
+      "section": "9.2.2 Task-Based Async Pattern",
+      "diagnostics": [
+        "FDG9028"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9029",
+      "strength": "AVOID",
+      "text": "the `in` (ref readonly) parameter modifier in nonvirtual Async methods.",
+      "section": "9.2.2 Task-Based Async Pattern",
+      "diagnostics": [
+        "FDG9029"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9030",
+      "strength": "DO",
+      "text": "use (non-generic) `Task` as the preferred return type for an asynchronous method that does not produce a value.",
+      "section": "9.2.3 Async Method Return Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9031",
+      "strength": "DO",
+      "text": "use `Task<TResult>` as the preferred return type for an asynchronous method that produces a value.",
+      "section": "9.2.3 Async Method Return Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9032",
+      "strength": "CONSIDER",
+      "text": "returning `ValueTask<TResult>` from an asynchronous method when the method commonly completes synchronously.",
+      "section": "9.2.3 Async Method Return Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9033",
+      "strength": "DO",
+      "text": "keep parameters in the same order in the synchronous and asynchronous variants of a method, when possible.",
+      "section": "9.2.4 Making an Async Variant of an Existing Synchronous Method",
+      "diagnostics": [
+        "FDG9033"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9034",
+      "strength": "DO",
+      "text": "convert the signature as needed to remove any `ref` or `out` parameters from an asynchronous method.",
+      "section": "9.2.4 Making an Async Variant of an Existing Synchronous Method",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9035",
+      "strength": "CONSIDER",
+      "text": "replacing synchronous callbacks with asynchronous callbacks in the Async method, or accepting both via overloading.",
+      "section": "9.2.4 Making an Async Variant of an Existing Synchronous Method",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9036",
+      "strength": "DO NOT",
+      "text": "return a null `Task` or `Task<TResult>`.",
+      "section": "9.2.5 Implementation Guidelines for Async Pattern Consistency",
+      "diagnostics": [
+        "FDG9036"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9037",
+      "strength": "DO NOT",
+      "text": "return tasks in the `Created` state.",
+      "section": "9.2.5.1 Task.Status Consistency",
+      "diagnostics": [
+        "FDG9037"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9038",
+      "strength": "DO",
+      "text": "throw an `OperationCanceledException` when aborting work due to a `CancellationToken`.",
+      "section": "9.2.5.1 Task.Status Consistency",
+      "diagnostics": [
+        "FDG9038"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9039",
+      "strength": "DO",
+      "text": "use `await task.ConfigureAwait(false)` when awaiting an Async operation, except in application models that depend on the synchronization context.",
+      "section": "9.2.5.2 Awaiting on the Correct Context",
+      "diagnostics": [
+        "CA2007"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9040",
+      "strength": "DO NOT",
+      "text": "invoke `Task.Wait()` or read the `Task.Result` property in an Async method; instead, use `await`.",
+      "section": "9.2.5.3 Avoiding Deadlock",
+      "diagnostics": [
+        "CA1849"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9041",
+      "strength": "DO",
+      "text": "call asynchronous method variants, instead of synchronous method variants, in the implementation of Async methods.",
+      "section": "9.2.5.3 Avoiding Deadlock",
+      "diagnostics": [
+        "CA1849"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9042",
+      "strength": "DO NOT",
+      "text": "operate on an instance of `ValueTask` or `ValueTask<TResult>` more than once or save it; only ever `await` or `return` it.",
+      "section": "9.2.5.4 Properly Handling ValueTask and ValueTask<TResult>",
+      "diagnostics": [
+        "CA2012"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9043",
+      "strength": "DO",
+      "text": "throw usage error exceptions directly from the Async method, to aid in debuggability.",
+      "section": "9.2.5.5 Exceptions from Async Methods",
+      "diagnostics": [
+        "FDG9043"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9044",
+      "strength": "DO",
+      "text": "throw execution error exceptions via the Task-like value returned from an Async method.",
+      "section": "9.2.5.5 Exceptions from Async Methods",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9045",
+      "strength": "DO",
+      "text": "use the suffix “Async” for methods returning `IAsyncEnumerable<T>`.",
+      "section": "9.2.10 IAsyncEnumerable<T>",
+      "diagnostics": [
+        "FDG9045"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9046",
+      "strength": "DO",
+      "text": "add the `[EnumeratorCancellation]` attribute to the `CancellationToken` parameter of an `IAsyncEnumerable<T>` method using `yield return`.",
+      "section": "9.2.10 IAsyncEnumerable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9047",
+      "strength": "DO NOT",
+      "text": "use `IAsyncEnumerator<T>`, or any other type that implements or extends that interface, except as the return type of a `GetAsyncEnumerator` method.",
+      "section": "9.2.10 IAsyncEnumerable<T>",
+      "diagnostics": [
+        "FDG9047"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9048",
+      "strength": "DO NOT",
+      "text": "implement both `IAsyncEnumerator<T>` and `IAsyncEnumerable<T>` on the same public type.",
+      "section": "9.2.10 IAsyncEnumerable<T>",
+      "diagnostics": [
+        "FDG9048"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9049",
+      "strength": "DO",
+      "text": "use the `WithCancellation` modifier when using `await foreach` on an `IAsyncEnumerable<T>` parameter for the purpose of using your `CancellationToken` with the enumerator.",
+      "section": "9.2.6.5 Usage Guidelines for await foreach",
+      "diagnostics": [
+        "FDG9049"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9050",
+      "strength": "DO",
+      "text": "use the `ConfigureAwait` modifier when using `await foreach` in the same way that you would with `await`.",
+      "section": "9.2.6.5 Usage Guidelines for await foreach",
+      "diagnostics": [
+        "CA2007"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9051",
+      "strength": "DO",
+      "text": "provide properties as dependency properties if you need the properties to support WPF features such as styling, triggers, data binding, animations, dynamic resources, and inheritance.",
+      "section": "9.3 Dependency Properties",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9052",
+      "strength": "DO",
+      "text": "inherit from `DependencyObject`, or one of its subtypes, when implementing dependency properties. The type provides a very efficient implementation of a property store and automatically supports WPF data binding.",
+      "section": "9.3.1 Dependency Property Design",
+      "diagnostics": [
+        "FDG9052"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9053",
+      "strength": "DO",
+      "text": "provide a regular CLR property and public static read-only field storing an instance of `System.Windows.DependencyProperty` for each dependency property.",
+      "section": "9.3.1 Dependency Property Design",
+      "diagnostics": [
+        "FDG9053"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9054",
+      "strength": "DO",
+      "text": "implement dependency properties by calling instance methods `DependencyObject.GetValue` and `DependencyObject.SetValue`.",
+      "section": "9.3.1 Dependency Property Design",
+      "diagnostics": [
+        "FDG9054"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9055",
+      "strength": "DO",
+      "text": "name the dependency property static field by suffixing the name of the property with “Property.”",
+      "section": "9.3.1 Dependency Property Design",
+      "diagnostics": [
+        "FDG9055"
+      ],
+      "autofix": "breaking",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9056",
+      "strength": "DO NOT",
+      "text": "set default values of dependency properties explicitly in code; instead, set them in metadata.",
+      "section": "9.3.1 Dependency Property Design",
+      "diagnostics": [
+        "FDG9056"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9057",
+      "strength": "DO NOT",
+      "text": "put code in the property accessors other than the standard code to access the static field.",
+      "section": "9.3.1 Dependency Property Design",
+      "diagnostics": [
+        "FDG9057"
+      ],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9058",
+      "strength": "DO NOT",
+      "text": "use dependency properties to store secure data. Even private dependency properties can be accessed publicly.",
+      "section": "9.3.1 Dependency Property Design",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9059",
+      "strength": "DO NOT",
+      "text": "put dependency property validation logic in the property’s accessors. Instead, pass a validation callback to `DependencyProperty.Register` method.",
+      "section": "9.3.3 Dependency Property Validation",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9060",
+      "strength": "DO NOT",
+      "text": "implement change notification logic in dependency property accessors. Dependency properties have a built-in change notifications feature that is used by supplying a change notification callback to the `PropertyMetadata`.",
+      "section": "9.3.4 Dependency Property Change Notifications",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9061",
+      "strength": "DO NOT",
+      "text": "implement coercion logic in dependency property accessors.",
+      "section": "9.3.5 Dependency Property Value Coercion",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9062",
+      "strength": "DO",
+      "text": "implement the Basic Dispose Pattern on types containing instances of disposable types. See section 9.4.1 for details on the basic pattern.",
+      "section": "9.4 Dispose Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9063",
+      "strength": "CONSIDER",
+      "text": "implementing the Basic Dispose Pattern on classes that themselves don’t hold unmanaged resources or disposable objects, but are likely to have subtypes that do.",
+      "section": "9.4 Dispose Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9064",
+      "strength": "DO",
+      "text": "declare a protected virtual void `Dispose(bool disposing)` method to centralize all logic related to releasing managed and unmanaged resources.",
+      "section": "9.4.1 Basic Dispose Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9065",
+      "strength": "DO",
+      "text": "implement the `IDisposable` interface by simply calling `Dispose(true)` followed by `GC.SuppressFinalize(this)`.",
+      "section": "9.4.1 Basic Dispose Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9066",
+      "strength": "DO NOT",
+      "text": "make the parameterless `Dispose` method virtual.",
+      "section": "9.4.1 Basic Dispose Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9067",
+      "strength": "DO NOT",
+      "text": "declare any overloads of the `Dispose` method other than `Dispose()` and `Dispose(bool)`.",
+      "section": "9.4.1 Basic Dispose Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9068",
+      "strength": "DO",
+      "text": "allow the `Dispose(bool)` method to be called more than once. The method might choose to do nothing after the first call.",
+      "section": "9.4.1 Basic Dispose Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9069",
+      "strength": "AVOID",
+      "text": "throwing an exception from within `Dispose(bool)` except under critical situations where the containing process has been corrupted (e.g., leaks, inconsistent shared state).",
+      "section": "9.4.1 Basic Dispose Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9070",
+      "strength": "DO",
+      "text": "throw an `ObjectDisposedException` from any member that cannot be used after the object has been disposed of.",
+      "section": "9.4.1 Basic Dispose Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9071",
+      "strength": "AVOID",
+      "text": "allowing an object to regain meaningful state after a call to `Dispose()`.",
+      "section": "9.4.1 Basic Dispose Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9072",
+      "strength": "CONSIDER",
+      "text": "providing a `Close()` method, in addition to the `Dispose()` method, if “close” is standard terminology in the area.",
+      "section": "9.4.1 Basic Dispose Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9073",
+      "strength": "DO NOT",
+      "text": "make public types finalizable.",
+      "section": "9.4.2 Finalizable Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9074",
+      "strength": "DO",
+      "text": "implement the Basic Dispose Pattern on every finalizable type. See section 9.4.1 for details on the basic pattern.",
+      "section": "9.4.2 Finalizable Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9075",
+      "strength": "DO NOT",
+      "text": "access any finalizable objects in the finalizer code path, because there is significant risk that they will have already been finalized.",
+      "section": "9.4.2 Finalizable Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9076",
+      "strength": "DO NOT",
+      "text": "let exceptions escape from the finalizer logic, except for system-critical failures.",
+      "section": "9.4.2 Finalizable Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9077",
+      "strength": "DO NOT",
+      "text": "remove a finalizer from an unsealed public type once it has one.",
+      "section": "9.4.2 Finalizable Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9078",
+      "strength": "CONSIDER",
+      "text": "returning a disposable value instead of making callers manually pair “begin” and “end” methods.",
+      "section": "9.4.3 Scoped Operations",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9079",
+      "strength": "CONSIDER",
+      "text": "returning a disposable value instead of making callers manually pair “begin” and “end” methods when the “end” method must be in a `finally` block for program correctness.",
+      "section": "9.4.3 Scoped Operations",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9080",
+      "strength": "DO",
+      "text": "follow the guidance for both asynchronous design (section 9.2) and synchronous `Dispose` (section 9.4), except as otherwise noted, when implementing `IAsyncDisposable`.",
+      "section": "9.4.4 IAsyncDisposable",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9081",
+      "strength": "DO NOT",
+      "text": "declare any overloads of `DisposeAsync()`.",
+      "section": "9.4.4 IAsyncDisposable",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9082",
+      "strength": "DO",
+      "text": "implement `DisposeAsync` as only calling and awaiting `Dispose-AsyncCore()`, calling `Dispose(false)`, and calling `GC.SuppressFinalize(this)`, in that order—except on sealed types.",
+      "section": "9.4.4 IAsyncDisposable",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9083",
+      "strength": "DO",
+      "text": "use the `ConfigureAwait` modifier when using `await using` in the same way that you would with `await`.",
+      "section": "9.4.4.1 Usage Guidelines for await using",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9084",
+      "strength": "DO",
+      "text": "prefer constructors to factories, because they are generally more usable, consistent, and convenient than specialized construction mechanisms.",
+      "section": "9.5 Factories",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9085",
+      "strength": "CONSIDER",
+      "text": "using a factory if you need more control than can be provided by constructors over the creation of the instances.",
+      "section": "9.5 Factories",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9086",
+      "strength": "DO",
+      "text": "use a factory in cases where a developer might not know which type to construct, such as when coding against a base type or interface.",
+      "section": "9.5 Factories",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9087",
+      "strength": "CONSIDER",
+      "text": "using a factory if having a named method is the only way to make the operation self-explanatory.",
+      "section": "9.5 Factories",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9088",
+      "strength": "DO",
+      "text": "use a factory for conversion-style operations, such as `Parse` or `Decode`.",
+      "section": "9.5 Factories",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9089",
+      "strength": "DO",
+      "text": "prefer implementing factory operations as methods rather than properties.",
+      "section": "9.5 Factories",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9090",
+      "strength": "DO",
+      "text": "return created instances as method return values, not as `out` parameters.",
+      "section": "9.5 Factories",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9091",
+      "strength": "CONSIDER",
+      "text": "naming factory methods by concatenating `Create` and the name of the type being created, when the factory method is declared on a disctinct factory type.",
+      "section": "9.5 Factories",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9092",
+      "strength": "CONSIDER",
+      "text": "naming factory types by concatenating the name of the type being created and `Factory`. For example, consider naming a factory type that creates `Control` objects `ControlFactory`.",
+      "section": "9.5 Factories",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9093",
+      "strength": "DO",
+      "text": "implement `IEnumerable<T>` to enable basic LINQ support.",
+      "section": "9.6.3 Supporting LINQ through IEnumerable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9094",
+      "strength": "CONSIDER",
+      "text": "implementing `ICollection<T>` to improve the performance of query operators.",
+      "section": "9.6.3 Supporting LINQ through IEnumerable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9095",
+      "strength": "CONSIDER",
+      "text": "supporting selected methods of `System.Linq.Enumerable` or the Query Pattern (see section 9.6.5) directly on new types implementing `IEnumerable<T>` if it is desirable to override the default `System.Linq.Enumerable` implementation (e.g., for performance optimization reasons).",
+      "section": "9.6.3 Supporting LINQ through IEnumerable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9096",
+      "strength": "CONSIDER",
+      "text": "implementing `IQueryable<T>` when access to the query expression, passed to members of `IQueryable`, is necessary.",
+      "section": "9.6.4 Supporting LINQ through IQueryable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9097",
+      "strength": "DO NOT",
+      "text": "implement `IQueryable<T>` without understanding the performance implications of doing so.",
+      "section": "9.6.4 Supporting LINQ through IQueryable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9098",
+      "strength": "DO",
+      "text": "throw `NotSupportedException` from `IQueryable<T>` methods that cannot be logically supported by your data source.",
+      "section": "9.6.4 Supporting LINQ through IQueryable<T>",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9099",
+      "strength": "DO",
+      "text": "implement the Query Pattern as instance members on the new type, if the members make sense on the type even outside the context of LINQ. Otherwise, implement them as extension methods.",
+      "section": "9.6.5 Supporting LINQ through the Query Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9100",
+      "strength": "DO",
+      "text": "implement `IEnumerable<T>` on types implementing the Query Pattern.",
+      "section": "9.6.5 Supporting LINQ through the Query Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9101",
+      "strength": "CONSIDER",
+      "text": "designing the LINQ operators to return domain-specific enumerable types. Essentially, you can return anything from a `Select` query method; however, the expectation is that the query result type should be at least enumerable.",
+      "section": "9.6.5 Supporting LINQ through the Query Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9102",
+      "strength": "AVOID",
+      "text": "implementing just a part of the Query Pattern if fallback to the basic `IEnumerable<T>` implementations is undesirable.",
+      "section": "9.6.5 Supporting LINQ through the Query Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9103",
+      "strength": "DO",
+      "text": "represent ordered sequences as a separate type from their unordered counterpart.",
+      "section": "9.6.5 Supporting LINQ through the Query Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9104",
+      "strength": "DO",
+      "text": "define the `ThenBy` method, or implement `IOrderedEnumerable<T>`, on ordered sequence types.",
+      "section": "9.6.5 Supporting LINQ through the Query Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9105",
+      "strength": "DO",
+      "text": "defer execution of query operator implementations. The expected behavior of most of the Query Pattern members is that they simply construct a new object which, upon enumeration, produces the elements of the set that match the query.",
+      "section": "9.6.5 Supporting LINQ through the Query Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9106",
+      "strength": "DO",
+      "text": "place query extensions methods in a “Linq” subnamespace of the main namespace. For example, extension methods for `System.Data` features reside in `System.Data.Linq` namespace.",
+      "section": "9.6.5 Supporting LINQ through the Query Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9107",
+      "strength": "DO",
+      "text": "use `Expression<Func<...>>` as a parameter instead of `Func<...>` when it is necessary to inspect the query. See section 9.6.5 for more details.",
+      "section": "9.6.5 Supporting LINQ through the Query Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9108",
+      "strength": "CONSIDER",
+      "text": "using the Optional Feature Pattern for optional features in abstractions.",
+      "section": "9.7 Optional Feature Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9109",
+      "strength": "DO",
+      "text": "provide a simple Boolean property that clients can use to determine whether an optional feature is supported.",
+      "section": "9.7 Optional Feature Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9110",
+      "strength": "DO",
+      "text": "use virtual methods on the base class that throw `NotSupportedException` to define optional features.",
+      "section": "9.7 Optional Feature Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9111",
+      "strength": "DO",
+      "text": "mark generic type parameters on generic delegates as contravariant when the type parameter is used as input, but not output, and your language supports creating contravariant types.",
+      "section": "9.8.1 Contravariance",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9112",
+      "strength": "DO",
+      "text": "mark generic type parameters on generic interfaces as contravariant when the type parameter is only ever used as an input parameter to methods on the interface.",
+      "section": "9.8.1 Contravariance",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9113",
+      "strength": "DO NOT",
+      "text": "change generic type parameters from contravariant to invariant in newer versions of your library.",
+      "section": "9.8.1 Contravariance",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9114",
+      "strength": "CONSIDER",
+      "text": "making a sub-interface of a new generic interface if removing members would allow a generic type parameter to be contravariant and the remaining members provide a coherent interface.",
+      "section": "9.8.1 Contravariance",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9115",
+      "strength": "DO",
+      "text": "mark generic type parameters on generic delegates as covariant when the type parameter is used as output, but not input, and your language supports creating covariant types.",
+      "section": "9.8.2 Covariance",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9116",
+      "strength": "DO",
+      "text": "mark generic type parameters on generic interfaces as covariant when the type parameter is only ever used in output roles for members on the interface.",
+      "section": "9.8.2 Covariance",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9117",
+      "strength": "DO NOT",
+      "text": "declare a generic type parameter covariant on an interface that returns an array based on the type parameter.",
+      "section": "9.8.2 Covariance",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9118",
+      "strength": "DO NOT",
+      "text": "change generic type parameters from covariant to invariant in newer versions of your library.",
+      "section": "9.8.2 Covariance",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9119",
+      "strength": "CONSIDER",
+      "text": "making a sub-interface of a new generic interface if removing members would allow a generic type parameter to be covariant and the remaining members provide a coherent interface.",
+      "section": "9.8.2 Covariance",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9120",
+      "strength": "CONSIDER",
+      "text": "using the Simulated Covariance Pattern if there is a need to have a representation for all instantiations of a generic type.",
+      "section": "9.8.3 Simulated Covariance Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9121",
+      "strength": "DO",
+      "text": "ensure that the implementation of the root’s members is equivalent to the implementation of the corresponding generic type members.",
+      "section": "9.8.3 Simulated Covariance Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9122",
+      "strength": "CONSIDER",
+      "text": "using an abstract class instead of an interface to represent the root.",
+      "section": "9.8.3 Simulated Covariance Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9123",
+      "strength": "CONSIDER",
+      "text": "using a non-generic root type if such type is already available.",
+      "section": "9.8.3 Simulated Covariance Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9124",
+      "strength": "AVOID",
+      "text": "making public members virtual.",
+      "section": "9.9 Template Method",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9125",
+      "strength": "CONSIDER",
+      "text": "using the Template Method Pattern to provide more controlled extensibility.",
+      "section": "9.9 Template Method",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9126",
+      "strength": "CONSIDER",
+      "text": "naming protected virtual members that provide extensibility points for nonvirtual members by suffixing the nonvirtual member name with “Core.”",
+      "section": "9.9 Template Method",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9127",
+      "strength": "DO",
+      "text": "perform argument and state validation in the nonvirtual member of the Template Method Pattern before calling the virtual member.",
+      "section": "9.9 Template Method",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9128",
+      "strength": "DO",
+      "text": "only perform argument and state validation unique to the derived type in the virtual member of the Template Method Pattern. That is, do not repeat validation from the nonvirtual member.",
+      "section": "9.9 Template Method",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9129",
+      "strength": "DO",
+      "text": "prefer method parameters as the mechanism for users to provide timeout time.",
+      "section": "9.10 Timeouts",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9130",
+      "strength": "DO",
+      "text": "prefer using `TimeSpan` to represent timeout time.",
+      "section": "9.10 Timeouts",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9131",
+      "strength": "DO",
+      "text": "throw `System.TimeoutException` when a timeout elapses.",
+      "section": "9.10 Timeouts",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9132",
+      "strength": "DO NOT",
+      "text": "return error codes to indicate timeout expiration.",
+      "section": "9.10 Timeouts",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9133",
+      "strength": "CONSIDER",
+      "text": "providing the default constructor if you want a type to work with XAML.",
+      "section": "9.11 XAML Readable Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9134",
+      "strength": "DO",
+      "text": "provide markup extension if you want an immutable type to work with XAML readers.",
+      "section": "9.11 XAML Readable Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9135",
+      "strength": "AVOID",
+      "text": "defining new type converters unless the conversion is natural and intuitive. In general, limit type converter usage to the ones already provided by .NET.",
+      "section": "9.11 XAML Readable Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9136",
+      "strength": "CONSIDER",
+      "text": "applying the `ContentPropertyAttribute` to enable convenient XAML syntax for the most commonly used property.",
+      "section": "9.11 XAML Readable Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9137",
+      "strength": "CONSIDER",
+      "text": "using Spans as a representation of buffers.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9138",
+      "strength": "DO",
+      "text": "use `ReadOnlySpan<T>` instead of `Span<T>` where possible.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9139",
+      "strength": "AVOID",
+      "text": "returning a `Span<T>` or `ReadOnlySpan<T>` unless the lifetime of the returned Span is very clear.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9140",
+      "strength": "DO",
+      "text": "provide very clear documentation for the ownership rules on a Span that you return that did not come from the caller.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9141",
+      "strength": "CONSIDER",
+      "text": "returning a `ReadOnlySpan<T>` from a get-only property or parameter-less method to represent fixed data, when `T` is an immutable type.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9142",
+      "strength": "CONSIDER",
+      "text": "returning `System.Range` representing the bounds of a Span parameter, rather than a slice of the parameter.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9143",
+      "strength": "DO",
+      "text": "use `ReadOnlyMemory<T>` in place of `ReadOnlySpan<T>` in asynchronous methods.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9144",
+      "strength": "DO",
+      "text": "use `Memory<T>` in place of `Span<T>` in asynchronous methods.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9145",
+      "strength": "DO",
+      "text": "use `ReadOnlyMemory<T>` in place of `ReadOnlySpan<T>` for parameters when the purpose of the constructor or method is to store a reference to the buffer.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9146",
+      "strength": "DO",
+      "text": "use `Memory<T>` in place of `Span<T>` for parameters when the purpose of the constructor or method is to save a reference to the buffer.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9147",
+      "strength": "AVOID",
+      "text": "overloading a method across `Span<T>` and `ReadOnlySpan<T>`, or `Memory<T>` and `ReadOnlyMemory<T>`.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9148",
+      "strength": "AVOID",
+      "text": "overloading a method across `Span<T>` and `Memory<T>`, or `ReadOnlySpan<T>` and `ReadOnlyMemory<T>`.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9149",
+      "strength": "CONSIDER",
+      "text": "adding Span- or Memory-based alternatives to methods that accept arrays or strings.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9150",
+      "strength": "CONSIDER",
+      "text": "providing array-accepting alternatives for methods that accept Span or Memory values.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9151",
+      "strength": "CONSIDER",
+      "text": "providing `System.String`-accepting alternatives for methods that accept `ReadOnlySpan<char>` or `ReadOnlyMemory<char>`.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9152",
+      "strength": "CONSIDER",
+      "text": "providing an array-returning alternative to buffer-writing methods.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9153",
+      "strength": "DO",
+      "text": "perform normal parameter validation in array or string alternatives to Span or Memory methods.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9154",
+      "strength": "DO",
+      "text": "prefer the name “source” for the input buffer parameter of methods that accept an output buffer and a single input buffer.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9155",
+      "strength": "DO",
+      "text": "prefer the name “destination” for the output buffer parameter of methods that write to a single buffer.",
+      "section": "9.12 Operating on Buffers",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9156",
+      "strength": "DO",
+      "text": "position the input buffer parameter (“source”) as the first method parameter, when there is an explicit input buffer parameter.",
+      "section": "9.12.1 Data Transformation Operations",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9157",
+      "strength": "DO",
+      "text": "position the output buffer parameter (“destination”) as the first method parameter after the source parameter(s).",
+      "section": "9.12.1 Data Transformation Operations",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9158",
+      "strength": "DO",
+      "text": "let the caller know the number of elements written into each destination buffer.",
+      "section": "9.12.1 Data Transformation Operations",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9159",
+      "strength": "CONSIDER",
+      "text": "naming an `out` parameter that reports the number of values written by a buffer-writing method “bytesWritten,” “charsWritten,” or “valuesWritten” (as appropriate to the data type).",
+      "section": "9.12.1 Data Transformation Operations",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9160",
+      "strength": "DO",
+      "text": "provide a simple buffer-writing method for operations that write a small, effectively fixed, number of elements to the destination buffer.",
+      "section": "9.12.2 Writing Fixed or Predetermined Sizes to a Buffer",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9161",
+      "strength": "DO",
+      "text": "use the Try-Write Pattern for buffer-writing methods that write variable amounts of data when the amount of data is small, or the operation cannot meaningfully produce partial results.",
+      "section": "9.12.3 Writing Values to Buffers with the Try-Write Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9162",
+      "strength": "DO",
+      "text": "use the prefix “Try” and a Boolean return type for methods implementing the Try-Write Pattern.",
+      "section": "9.12.3 Writing Values to Buffers with the Try-Write Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9163",
+      "strength": "DO",
+      "text": "report the number of values written by a Try-Write method via an `out` parameter.",
+      "section": "9.12.3 Writing Values to Buffers with the Try-Write Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9164",
+      "strength": "DO",
+      "text": "return `false` from a Try-Write method if, and only if, the destination is too small.",
+      "section": "9.12.3 Writing Values to Buffers with the Try-Write Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9165",
+      "strength": "DO",
+      "text": "throw an exception, instead of returning `false`, for any error other than the destination being too small in a Try-Write method.",
+      "section": "9.12.3 Writing Values to Buffers with the Try-Write Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9166",
+      "strength": "DO",
+      "text": "provide a way of determining a sufficient output length if your Try-Write method can produce large results.",
+      "section": "9.12.3 Writing Values to Buffers with the Try-Write Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9167",
+      "strength": "CONSIDER",
+      "text": "providing an API to compute a sufficient output buffer size for Try-Write methods, even when the output size is small.",
+      "section": "9.12.3 Writing Values to Buffers with the Try-Write Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9168",
+      "strength": "CONSIDER",
+      "text": "providing an exception-throwing alternative for each member using the Try-Write Pattern.",
+      "section": "9.12.3 Writing Values to Buffers with the Try-Write Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9169",
+      "strength": "CONSIDER",
+      "text": "also using the Try-Write Pattern for methods that write fixed or predetermined amounts of data to a buffer.",
+      "section": "9.12.3 Writing Values to Buffers with the Try-Write Pattern",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9170",
+      "strength": "CONSIDER",
+      "text": "using the `OperationStatus` method pattern for buffer- writing methods that can produce partial results.",
+      "section": "9.12.4 Partial Writes to Buffers and OperationStatus",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9171",
+      "strength": "DO",
+      "text": "report the number of input values successfully processed by an `OperationStatus` method via an `out` parameter.",
+      "section": "9.12.4 Partial Writes to Buffers and OperationStatus",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9172",
+      "strength": "CONSIDER",
+      "text": "naming the `out` parameter that reports the number of values successfully processed by an `OperationStatus` method “bytesConsumed,” “charsConsumed,” or “valuesConsumed” (as appropriate to the data type).",
+      "section": "9.12.4 Partial Writes to Buffers and OperationStatus",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9173",
+      "strength": "DO",
+      "text": "report the number of output values successfully written by an `OperationStatus` method via an `out` parameter, declared after the out parameter that reports the number of input values that were successfully processed.",
+      "section": "9.12.4 Partial Writes to Buffers and OperationStatus",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9174",
+      "strength": "DO",
+      "text": "include a Boolean parameter named “isFinalBlock,” if an `OperationStatus` method needs to treat the last input block in a special way. The parameter should be optional and have a default value of true.",
+      "section": "9.12.4 Partial Writes to Buffers and OperationStatus",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "warning",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDG9175",
+      "strength": "CONSIDER",
+      "text": "providing a Try-Write alternative to an `OperationStatus` method.",
+      "section": "9.12.4 Partial Writes to Buffers and OperationStatus",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "suggestion",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
       "id": "FDGA001",
       "strength": "DO",
       "text": "place the opening brace on the next line, indented to the same level as the block statement.",
@@ -8955,6 +11459,7 @@
     "CA1065",
     "CA1066",
     "CA1067",
+    "CA1068",
     "CA1069",
     "CA1507",
     "CA1510",
@@ -8980,6 +11485,9 @@
     "CA1814",
     "CA1815",
     "CA1819",
+    "CA1849",
+    "CA2007",
+    "CA2012",
     "CA2200",
     "CA2201",
     "CA2207",
@@ -9081,6 +11589,27 @@
     "FDG8103",
     "FDG8104",
     "FDG8106",
+    "FDG9020",
+    "FDG9022",
+    "FDG9023",
+    "FDG9027",
+    "FDG9028",
+    "FDG9029",
+    "FDG9033",
+    "FDG9036",
+    "FDG9037",
+    "FDG9038",
+    "FDG9043",
+    "FDG9045",
+    "FDG9047",
+    "FDG9048",
+    "FDG9049",
+    "FDG9052",
+    "FDG9053",
+    "FDG9054",
+    "FDG9055",
+    "FDG9056",
+    "FDG9057",
     "FDGA003",
     "FDGA004",
     "FDGA023",
@@ -9118,6 +11647,7 @@
     "CA1056",
     "CA1058",
     "CA1065",
+    "CA1068",
     "CA1707",
     "CA1710",
     "CA1711",
@@ -9179,6 +11709,18 @@
     "FDG8096",
     "FDG8104",
     "FDG8106",
+    "FDG9020",
+    "FDG9022",
+    "FDG9027",
+    "FDG9028",
+    "FDG9029",
+    "FDG9033",
+    "FDG9045",
+    "FDG9047",
+    "FDG9048",
+    "FDG9052",
+    "FDG9053",
+    "FDG9055",
     "IDE0130",
     "IDE1006"
   ]
