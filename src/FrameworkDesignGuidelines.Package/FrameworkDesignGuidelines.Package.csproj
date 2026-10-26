@@ -13,6 +13,8 @@
     <Authors>tianvan</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/tianvan/framework-design-guidelines</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/tianvan/framework-design-guidelines</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <DevelopmentDependency>true</DevelopmentDependency>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
@@ -38,6 +40,7 @@
     <None Include="build\FrameworkDesignGuidelines.Analyzers.targets" Pack="true" PackagePath="build/" />
     <None Include="build\globalconfigs\*.globalconfig" Pack="true" PackagePath="build/globalconfigs/" />
     <None Include="data\rules.json" Pack="true" PackagePath="data/" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
   <!-- The props carry the package version, so the packed copy has its @FDG_PACKAGE_VERSION@ token replaced. -->
