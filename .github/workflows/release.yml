@@ -1,0 +1,100 @@
+name: Release
+
+# Pushing a tag vX.Y.Z publishes FrameworkDesignGuidelines.Analyzers and dotnet-fdg X.Y.Z to nuget.org and creates
+# a GitHub release with both packages. See docs/releasing.md.
+on:
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: publish
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: nuget
+    permissions:
+      contents: write   # gh release create
+      id-token: write   # NuGet trusted publishing (OIDC)
+    env:
+      DOTNET_NOLOGO: "1"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      # The tag, the package version and the plugin manifests must agree, or users get a plugin and a tool that
+      # do not match.
+      - name: Tag matches the versions in the repository
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Directory.Build.props)"
+          status=0
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match <Version>$version</Version> in Directory.Build.props."
+            status=1
+          fi
+          for file in .claude-plugin/marketplace.json \
+                      plugins/framework-design-guidelines/.claude-plugin/plugin.json \
+                      plugins/framework-design-guidelines/.codex-plugin/plugin.json \
+                      src/FrameworkDesignGuidelines.Package/data/rules.json; do
+            for found in $(grep -o '"version": *"[^"]*"' "$file" | sed 's/.*"\([^"]*\)"$/\1/'); do
+              if [ "$found" != "$version" ]; then
+                echo "::error file=$file::version $found does not match $version."
+                status=1
+              fi
+            done
+          done
+          exit $status
+
+      - name: Pack
+        run: dotnet pack -c Release -o artifacts/packages
+
+      - name: Both packages were produced
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          for id in FrameworkDesignGuidelines.Analyzers dotnet-fdg; do
+            test -f "artifacts/packages/$id.$version.nupkg" || { echo "::error::Missing $id.$version.nupkg"; exit 1; }
+          done
+          ls -l artifacts/packages
+
+      - name: Log in to nuget.org
+        id: nuget
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Push to nuget.org
+        run: >-
+          dotnet nuget push "artifacts/packages/*.nupkg"
+          --api-key "${{ steps.nuget.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prerelease=()
+          case "$GITHUB_REF_NAME" in v0.*|*-*) prerelease=(--prerelease) ;; esac
+          gh release create "$GITHUB_REF_NAME" artifacts/packages/*.nupkg \
+            --title "$GITHUB_REF_NAME" --generate-notes --verify-tag "${prerelease[@]}"

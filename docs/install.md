@@ -10,8 +10,8 @@ the `dotnet-fdg` .NET tool that the hooks run. Both are needed.
 - Windows: Git for Windows (Claude Code runs the hooks in Git Bash) and, for Codex, PowerShell 7 (`pwsh`) on the
   PATH.
 
-Until the first release is published, `dotnet tool install -g dotnet-fdg` and the marketplace repository below do not
-work: use `artifacts/packages` as the NuGet source of both packages, and add the marketplace from a local clone.
+To try an unreleased build, run `dotnet pack -c Release -o artifacts/packages` in a clone, use `artifacts/packages`
+as the NuGet source of both packages, and add the marketplace from the local clone.
 
 ## 1. Install the tool
 
