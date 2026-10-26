@@ -23,6 +23,11 @@ gives the workflow a short-lived token, so no API key is stored in the repositor
    - Repository: `framework-design-guidelines`
    - Workflow file: `release.yml`
    - Environment: `nuget` (optional; if you leave it empty, any job of `release.yml` may publish)
+   - Select Scopes: **Push new packages and package versions** (the first release creates both package ids)
+   - Select Packages: Glob Pattern `*`. Neither package exists yet, so there is nothing to tick in the package
+     list. After the first release you can narrow it: tick `FrameworkDesignGuidelines.Analyzers` and `dotnet-fdg`
+     instead of the pattern, and choose **Push only new package versions** (if the page does not let you change
+     the scope, add a new policy with these settings and delete the old one).
 2. In the GitHub repository, open **Settings → Secrets and variables → Actions → Variables** and add the repository
    variable `NUGET_USER` with your nuget.org user name (the profile name, not the email address).
 3. Optional: **Settings → Environments → nuget** → add yourself as a required reviewer, so that each release waits
