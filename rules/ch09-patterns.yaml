@@ -1233,7 +1233,7 @@
     text: One effect of this guidance is that usage error exceptions should not be thrown from `public async` or `protected async` methods. Instead, the public (or protected) method should do usage validation and then defer to a non-public async method (or an async local function, or another means of separating “inside” and “outside” the Task).
   - kind: code
     text: "// Wrong: The exception is thrown inside the Task;\n// the call stack will be less clear\npublic async Task SaveAsync(string filename) {\n  if (filename == null)\n    throw new ArgumentNullException(nameof(filename));\n\n  ...\n}\n\n// Right: The exception is thrown instead of a Task being returned.\npublic Task SaveAsync(string filename) {\n  if (filename == null)\n    throw new ArgumentNullException(nameof(filename));\n\n  return SaveAsyncCore(uri);\n}\n\nprivate async Task SaveAsyncCore(string filename){ ... }"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
