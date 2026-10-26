@@ -444,7 +444,7 @@ chapters:
       - { file: ch09-patterns-factories-linq, sections: ["9.5", "9.6"] }
       - { file: ch09-patterns-optional-variance, sections: ["9.7", "9.8"] }
       - { file: ch09-patterns-template-timeouts-xaml, sections: ["9.9", "9.10", "9.11"] }
-      - { file: ch09-patterns-buffers, sections: ["9.12", "9.12.1", "9.12.2"] }
+      - { file: ch09-patterns-buffers, sections: ["=9.12", "9.12.1", "9.12.2"] }
       - { file: ch09-patterns-buffers-try-write, sections: ["9.12.3", "9.12.4"] }
   - token: "A"
     file: app01.xhtml

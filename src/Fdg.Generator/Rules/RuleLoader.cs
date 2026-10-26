@@ -21,7 +21,8 @@ public sealed record ChapterMeta(string Token, string File, string Rules, string
 {
     /// <summary>
     /// How the chapter's skill references are split by section prefix; optional in <c>meta.yaml</c>. Empty: one pair of
-    /// files for the whole chapter.
+    /// files for the whole chapter. A section written after <c>=</c>, such as <c>=9.12</c>, matches only that section,
+    /// not its subsections; every rule must match exactly one split.
     /// </summary>
     public IReadOnlyList<ReferenceSplit> References { get; init; } = Array.Empty<ReferenceSplit>();
 
@@ -43,6 +44,11 @@ public static class RuleLoader
     private const string MetaFileName = "meta.yaml";
 
     private static readonly Regex SplitStem = new("^[a-z0-9-]+$");
+
+    /// <summary>
+    /// A references section: a section number, optionally after <c>=</c> to leave out its subsections.
+    /// </summary>
+    private static readonly Regex SplitSection = new(@"\A=?[0-9]+(\.[0-9]+)*\z");
 
     private static readonly IDeserializer MetaDeserializer = new DeserializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
@@ -118,6 +124,14 @@ public static class RuleLoader
         {
             throw new FormatException(
                 $"meta.yaml: reference file '{dto.File}' of chapter {chapter} must contain only lowercase letters, digits and '-'.");
+        }
+
+        string? invalid = dto.Sections.FirstOrDefault(s => !SplitSection.IsMatch(s!));
+        if (invalid is not null)
+        {
+            throw new FormatException(
+                $"meta.yaml: reference section '{invalid}' of chapter {chapter} must be a section number " +
+                "such as 9.12, or one after '=' (=9.12) to leave out its subsections.");
         }
 
         return new ReferenceSplit(dto.File, dto.Sections.Select(s => s!).ToList());

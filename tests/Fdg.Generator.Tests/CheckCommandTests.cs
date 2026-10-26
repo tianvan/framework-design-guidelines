@@ -170,6 +170,45 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
         Assert.Contains("testProfile of chapter 9 must be on or off", error);
     }
 
+    private void SetChapterReferenceSections(string sections)
+    {
+        File.WriteAllText(
+            Path.Combine(_rulesDir, "meta.yaml"),
+            "repositoryUrl: https://example.test/repo\n" +
+            "chapters:\n" +
+            "  - token: \"9\"\n" +
+            "    file: sample.xhtml\n" +
+            "    rules: ch09-sample.yaml\n" +
+            "    title: Sample Chapter\n" +
+            "    references:\n" +
+            $"      - {{ file: ch09-sample, sections: [{sections}] }}\n");
+    }
+
+    [Theory]
+    [InlineData("\"9.1x\"")]
+    [InlineData("\"9.\"")]
+    [InlineData("\"=\"")]
+    [InlineData("\"==9.1\"")]
+    [InlineData("\"9.1=\"")]
+    [InlineData("\"9..1\"")]
+    [InlineData("\"9.1\\n\"")]
+    public void Reference_section_must_be_a_section_number(string section)
+    {
+        SetChapterReferenceSections(section);
+
+        string error = Assert.Single(Check());
+        Assert.StartsWith("meta.yaml:", error);
+        Assert.Contains("of chapter 9 must be a section number such as 9.12", error);
+    }
+
+    [Fact]
+    public void Reference_section_may_be_marked_exact()
+    {
+        SetChapterReferenceSections("\"9\", \"=9.1\", \"9.2\", \"9.3\"");
+
+        Assert.Empty(Check());
+    }
+
     [Fact]
     public void Chapters_are_on_for_tests_unless_the_meta_says_otherwise()
     {

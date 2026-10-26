@@ -346,29 +346,64 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
-    public void Longest_nested_prefix_takes_the_section()
+    public void Nested_prefixes_in_two_splits_fail()
     {
         GeneratorInput input = Edit(
             Split(_ => true, Part("ch09-a", "9.1", "9.2", "9.3"), Part("ch09-b", "9.1.2")),
             r => r.Id == "FDG9001" ? r with { Section = "9.1.2 Foo" } : r);
 
-        IReadOnlyList<GeneratedFile> files = SkillReferenceEmitter.Emit(input);
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
 
-        string Content(string path) => files.Single(f => f.Path.EndsWith(path, StringComparison.Ordinal)).Content;
-        Assert.Contains("**FDG9001**", Content("references/ch09-b.md"));
-        Assert.DoesNotContain("**FDG9001**", Content("references/ch09-a.md"));
+        Assert.Contains("matches more than one reference split (ch09-a, ch09-b)", exception.Message);
     }
 
     [Fact]
-    public void Same_nested_prefix_in_two_splits_fails()
+    public void Exact_section_matches_the_section_itself()
     {
         GeneratorInput input = Edit(
-            Split(_ => true, Part("ch09-a", "9.1", "9.2", "9.3"), Part("ch09-b", "9.1.2"), Part("ch09-c", "9.1.2")),
-            r => r.Id == "FDG9001" ? r with { Section = "9.1.2 Foo" } : r);
+            Split(_ => true, Part("ch09-a", "=9.12"), Part("ch09-b", "9.1", "9.2", "9.3")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.12 Foo" } : r);
+
+        string main = SkillReferenceEmitter.Emit(input).Single(f => f.Path.EndsWith("references/ch09-a.md", StringComparison.Ordinal)).Content;
+
+        Assert.Contains("**FDG9001**", main);
+        Assert.Contains("# Chapter 9: Sample Chapter — 9.12\n", main);
+    }
+
+    [Fact]
+    public void Exact_section_does_not_match_a_subsection()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-a", "=9.12"), Part("ch09-b", "9.1", "9.2", "9.3")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.12.3 Foo" } : r);
 
         GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
 
-        Assert.Contains("matches more than one reference split (ch09-b, ch09-c)", exception.Message);
+        Assert.Contains("Chapter 9: rule FDG9001 (section 9.12.3) matches no reference split.", exception.Message);
+    }
+
+    [Fact]
+    public void Exact_section_leaves_an_unlisted_subsection_unmatched()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("a", "=9.12", "9.1", "9.2", "9.3"), Part("b", "9.12.3")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.12.1 Foo" } : r);
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("(section 9.12.1) matches no reference split.", exception.Message);
+    }
+
+    [Fact]
+    public void Exact_section_and_prefix_in_two_splits_fail()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-a", "=9.12", "9.1", "9.2", "9.3"), Part("ch09-b", "9.12")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.12 Foo" } : r);
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("matches more than one reference split (ch09-a, ch09-b)", exception.Message);
     }
 
     [Fact]
