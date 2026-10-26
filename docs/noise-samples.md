@@ -560,7 +560,7 @@ FDG8096 are those of the rerun after fix round 1.
 | CA1710 | FDG8005, FDG8038, FDG8039 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
 | CA1813 | FDG8012 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
 | CA1814 | FDG8004 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
-| CA1815 | FDG8067 | 1 | 0 | 0 | 0 | 1 | 2 | 1 | 1 | FDG8067 is now a suggestion; see the notes. |
+| CA1815 | FDG8067 | 1 | 0 | 0 | 0 | 1 | 2 | 1 | 1 | FDG8067 is now a suggestion; see the notes. Counted per struct. |
 | CA1819 | FDG8003, FDG8032 | 0 | 0 | 0 | 0 | 6 | 6 | 0 | 6 | None needed. |
 | CA2227 | FDG8020 | 0 | 0 | 0 | 0 | 133 | 133 | 0 | 133 | None needed (see notes). |
 | CA2231 | FDG8105 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |

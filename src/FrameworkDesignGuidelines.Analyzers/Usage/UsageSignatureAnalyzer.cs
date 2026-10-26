@@ -12,8 +12,9 @@ namespace FrameworkDesignGuidelines.Analyzers.Usage;
 /// that externally visible members use in their signatures. FDG8002 reports a readonly field whose type is an array:
 /// readonly protects the field, not the elements. A field initialized with an empty array (<c>new T[0]</c>,
 /// <c>new T[] { }</c>, <c>{ }</c>, <c>[]</c> or <c>Array.Empty&lt;T&gt;()</c>) is not reported: it has no elements
-/// to change. The others report a type used as the type of a parameter, a return value (or the result type of a
-/// returned <c>Task&lt;T&gt;</c> or <c>ValueTask&lt;T&gt;</c>), a property or indexer, or a field:
+/// to change (a constructor that assigns it a new array is not seen). The others report a type used as the type of
+/// a parameter, a return value (or the result type of a returned <c>Task&lt;T&gt;</c> or
+/// <c>ValueTask&lt;T&gt;</c>), a property or indexer, or a field:
 /// <c>ArrayList</c> (FDG8014); <c>Hashtable</c> or <c>Dictionary&lt;TKey, TValue&gt;</c> (FDG8015); a type that is
 /// or implements <c>IEnumerator</c>, except as the return type of a method named GetEnumerator (FDG8016); a type
 /// that implements <c>ICollection&lt;byte&gt;</c> or <c>IReadOnlyCollection&lt;byte&gt;</c>, other than
