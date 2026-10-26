@@ -246,6 +246,83 @@ public sealed class AsyncImplementationTests
     }
 
     [Fact]
+    public Task Usage_error_after_an_await_is_not_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+            using System.IO;
+            using System.Threading.Tasks;
+
+            public class Loader
+            {
+                public async Task<string> LoadAsync(string id)
+                {
+                    if (id == null) {|FDG9043:throw new ArgumentNullException(nameof(id));|}
+
+                    string text = await Task.FromResult(id);
+                    if (text.Length == 0) throw new ArgumentException("Empty.", nameof(id));
+
+                    return text;
+                }
+
+                public async Task<int> ParseAsync(string id)
+                {
+                    try
+                    {
+                        string text = await Task.FromResult(id);
+                        return int.Parse(text);
+                    }
+                    catch (FormatException e)
+                    {
+                        throw new ArgumentException("Not a number.", nameof(id), e);
+                    }
+                }
+
+                public async Task ReadAsync(Stream stream)
+                {
+                    await Task.Yield();
+                    if (stream.Length == 0) throw new ArgumentException("Empty.", nameof(stream));
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Usage_error_after_await_foreach_or_await_using_is_not_reported()
+    {
+        return Verifier.VerifyLatestAsync(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.IO;
+            using System.Threading.Tasks;
+
+            public class Loader
+            {
+                public async Task<int> SumAsync(IAsyncEnumerable<int> values, int limit)
+                {
+                    int sum = 0;
+                    await foreach (int value in values)
+                    {
+                        sum += value;
+                    }
+
+                    if (sum > limit) throw new ArgumentOutOfRangeException(nameof(limit));
+
+                    return sum;
+                }
+
+                public async Task CopyAsync(Stream source, string name)
+                {
+                    await using var copy = new MemoryStream();
+                    if (name.Length == 0) throw new ArgumentException("Empty.", nameof(name));
+                }
+            }
+            """);
+    }
+
+    [Fact]
     public Task Throw_helpers_inside_a_public_async_method_are_reported()
     {
         return Verifier.VerifyLatestAsync(

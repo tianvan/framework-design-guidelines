@@ -18,10 +18,11 @@ namespace FrameworkDesignGuidelines.Analyzers.Patterns;
 /// return statement that is the whole branch of an if statement whose condition reads
 /// <c>CancellationToken.IsCancellationRequested</c>, in an async method, local function or lambda that returns a
 /// task-like type. FDG9043 reports, in the body of an externally visible async method itself (not in a lambda or local
-/// function), a throw of <c>ArgumentException</c> or a type derived from it, or a call to a static method whose name
-/// starts with ThrowIf declared on such a type. FDG9049 reports an await foreach over a parameter of type
-/// <c>IAsyncEnumerable&lt;T&gt;</c>, directly or through ConfigureAwait, when the method, local function or lambda that
-/// declares the parameter also has a <c>CancellationToken</c> parameter and WithCancellation is not called on the way.
+/// function), before the first await expression, await foreach or await using of that body, a throw of
+/// <c>ArgumentException</c> or a type derived from it, or a call to a static method whose name starts with ThrowIf
+/// declared on such a type. FDG9049 reports an await foreach over a parameter of type <c>IAsyncEnumerable&lt;T&gt;</c>,
+/// directly or through ConfigureAwait, when the method, local function or lambda that declares the parameter also has a
+/// <c>CancellationToken</c> parameter and WithCancellation is not called on the way.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class AsyncImplementationAnalyzer : DiagnosticAnalyzer
@@ -199,15 +200,47 @@ public sealed class AsyncImplementationAnalyzer : DiagnosticAnalyzer
             return null;
         }
 
+        IOperation body = context.Operation;
         for (IOperation? current = context.Operation.Parent; current is not null; current = current.Parent)
         {
             if (current is IAnonymousFunctionOperation or ILocalFunctionOperation)
             {
                 return null;
             }
+
+            body = current;
         }
 
-        return method;
+        int start = context.Operation.Syntax.SpanStart;
+        return Awaits(body).Any(awaited => awaited.Syntax.SpanStart < start) ? null : method;
+    }
+
+    /// <summary>
+    /// The await expressions, await foreach loops and await using statements and declarations of a body, outside
+    /// lambdas and local functions.
+    /// </summary>
+    private static IEnumerable<IOperation> Awaits(IOperation operation)
+    {
+        foreach (IOperation child in operation.ChildOperations)
+        {
+            if (child is IAnonymousFunctionOperation or ILocalFunctionOperation)
+            {
+                continue;
+            }
+
+            if (child is IAwaitOperation
+                || child is IForEachLoopOperation { IsAsynchronous: true }
+                || child is IUsingOperation { IsAsynchronous: true }
+                || child is IUsingDeclarationOperation { IsAsynchronous: true })
+            {
+                yield return child;
+            }
+
+            foreach (IOperation nested in Awaits(child))
+            {
+                yield return nested;
+            }
+        }
     }
 
     /// <summary>

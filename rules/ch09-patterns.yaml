@@ -10,7 +10,7 @@
   - kind: annotation
     text: An easy trick to increase the visibility of an aggregate component is to choose the most “attractive” name for the component and less attractive names for the corresponding factored types. For example, a name representing a well-known system entity like `File` will attract more attention than `StreamReader`.
     author: Krzysztof Cwalina
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -35,7 +35,7 @@
   body:
   - kind: paragraph
     text: For example, the components should model files, directories, and drives, rather than streams, formatters, and comparers.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -58,7 +58,7 @@
   section: 9.1.3 Aggregate Component Guidelines
   anchor: sec9_1_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -81,7 +81,7 @@
   section: 9.1.3 Aggregate Component Guidelines
   anchor: sec9_1_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -111,7 +111,7 @@
   - kind: annotation
     text: Book publishers say that the number of copies a book will sell is inversely proportional to the number of equations in the book. The API designer version of this law is that the number of developers who will use your API is inversely proportional to the number of `new` statements in your simple scenarios.
     author: Krzysztof Cwalina
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -134,7 +134,7 @@
   section: 9.1.3 Aggregate Component Guidelines
   anchor: sec9_1_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -159,7 +159,7 @@
   body:
   - kind: code
     text: "public class MessageQueue {\n   public MessageQueue() { ... }\n   public MessageQueue(string path) { ... }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -186,7 +186,7 @@
     text: It should always be possible to use the default constructor and then set some properties instead of calling a parameterized constructor.
   - kind: code
     text: "public class MessageQueue {\n   public MessageQueue() { ... }\n   public MessageQueue(string path) { ... }\n\n   public string Path { get { ... } set { ... } }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -211,7 +211,7 @@
   body:
   - kind: paragraph
     text: Aggregate components are optimized for ease of use, and events are much easier to use than APIs using delegates. See section 5.4 for more details.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -234,7 +234,7 @@
   section: 9.1.3 Aggregate Component Guidelines
   anchor: sec9_1_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -259,7 +259,7 @@
   body:
   - kind: paragraph
     text: Components should mostly rely on properties and composition as the means of modifying their behavior.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -282,7 +282,7 @@
   section: 9.1.3 Aggregate Component Guidelines
   anchor: sec9_1_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -307,7 +307,7 @@
   body:
   - kind: paragraph
     text: For example, a single instance of `MessageQueue` can be used to send and receive messages, but the user should not be aware that mode switching is occurring.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -332,7 +332,7 @@
   body:
   - kind: paragraph
     text: Factored types should have a well-defined life span scoped to a single mode. For example, instances of `Stream` can either read or write, and an instantiated stream is already opened.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -357,7 +357,7 @@
   body:
   - kind: paragraph
     text: Integration allows placing the component on the Visual Studio Toolbox and adds support for drag and drop, property grid, event hookup, and so on. The integration is simple and can be done by implementing `IComponent` or inheriting from a type implementing this interface, such as `Component` or `Control`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -382,7 +382,7 @@
   body:
   - kind: paragraph
     text: This allows the component to aggregate arbitrary functionality provided by factored types without circular dependencies.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -407,7 +407,7 @@
   body:
   - kind: paragraph
     text: Factored types are ideal for integrating different feature areas. For example, the `SerialPort` component exposes access to its stream, thus allowing integration with reusable APIs, such as compression APIs that operate on streams.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -430,7 +430,7 @@
   section: 9.2.1 Choosing Between the Async Patterns
   anchor: sec9_2_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -457,7 +457,7 @@
     text: The `TaskFactory` and `TaskFactory<TResult>` types can be used to provide Task-Based Async Pattern methods by wrapping existing Classic Async Pattern and Event-Based Async Pattern APIs. However, the prevalence of Task-Based Async Pattern APIs in .NET generally makes it easier to write the new Task-Based Async Pattern methods directly and continue to support existing async methods from the older patterns in terms of the new methods.
   - kind: code
     text: "// Synchronous method\npublic ParsedData Parse(string filename) { ... }\n\n// Classic Async Pattern\npublic IAsyncResult BeginParse(\n  string filename,\n  AsyncCallback callback,\n  object state) { ... }\n\npublic ParsedData EndParse(IAsyncResult asyncResult) { ... }\n\n// Task-Based Async Pattern\n//\n// Written to wrap an existing Classic Async Pattern method,\n// which does not support cancellation.\npublic Task<ParsedData> ParseAsync(string filename) {\n if (filename == null)\n   throw new ArgumentNullException(nameof(filename));\n\n return TaskFactory<ParsedData>.FromAsync(\n   BeginParse, EndParse, filename, null);\n}\n\n// Event-Based Async Pattern\npublic event EventHandler<ParseEventArgs> ParseCompleted;\n\n// Written to call the new Task-Based Async Pattern method instead\npublic void ParseAsync(string filename, object userState) {\n  ParseAsync(filename).\n   ContinueWith(\n     FireEapEvent,\n     AsyncOperationManager.CreateOperation(userState));\n}\n\nprivate void FireEapEvent(Task<ParsedData> task, object userState){\n  EventHandler<ParseEventArgs> completed = ParseCompleted;\n\n  if (completed != null) {\n    AsyncOperation op = (AsyncOperation)userState;\n    ParseEventArgs args;\n\n  if (task.IsFaulted) {\n    args = ParseEventArgs.FromException(\n      task.Exception.InnerException, op.UserSuppliedState);\n  } else {\n    args = ParseEventArgs.FromResult(\n      task.Result, op.UserSuppliedState);\n }\n\n op.PostOperationCompleted(\n   a => completed(this, (ParseEventArgs)a), args);\n }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -487,7 +487,7 @@
   - kind: annotation
     text: One reason that I’ve heard for why the “Async” suffix isn’t needed is that it’s obvious from usage, and that you’ll fail to compile if you forget to `await` the result. But reading a property named `IsCompleted` or `Exception`, or calling a method named `Dispose` or `Wait`, is easy to mistakenly do on the returned Task-like value instead of the value that should have been produced from `await`.
     author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -517,7 +517,7 @@
     text: "// asynchronous method\npublic Task<ParsedData> ParseAsync(\n  string filename,\n  CancellationToken cancellationToken = default) { ... }\n// synchronous variant\npublic ParsedData Parse(string filename) { ... }"
   - kind: paragraph
     text: Existing codebases may already have a large number of synchronous methods, and converting them to support asynchronous calls may not be a high priority for those developers compared to the functional value that your component offers. If you only provide asynchronous operations, then a synchronous caller is forced to call the blocking `GetResult()` method, creating a condition called “sync-over-async.” See section 9.2.5.3 for more information.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -544,7 +544,7 @@
     text: Long-running operations generally warrant an “abort” option, and asynchronous operations tend to be long-running. The Task-Based Async Pattern uses the `System.Threading.CancellationToken` type to control cancelations.
   - kind: code
     text: "// Incorrect: The caller has no way of cancelling this operation\npublic Task WriteAsync(string text) { ... }\n\n// Correct: Cancellation is supported, as an optional parameter\npublic Task WriteAync(\n  string text,\n  CancellationToken cancellationToken = default) { ... }"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -570,7 +570,7 @@
   section: 9.2.2 Task-Based Async Pattern
   anchor: sec9_2_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -606,7 +606,7 @@
     text: These overloads should instead have been
   - kind: code
     text: "public Task WriteAsync(\n  string text,\n  CancellationToken cancellationToken) { ... }\n\npublic Task WriteAsync(\n  string text,\n  Encoding encoding,\n  CancellationToken cancellationToken) { ... }"
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -638,7 +638,7 @@
     text: "public partial class BlockingCollection<T> {\n  public void Add(T item) {}\n  public void Add(T item, CancellationToken cancellationToken) {}\n}"
   - kind: paragraph
     text: 'The cancelable `Add` overload is not an asynchronous operation: It uses a synchronous `Wait()` instead of an asynchronous yield to pause until there’s space in the collection. This same type of cancelation support would apply to a long-running, nonblocking operation such as prime factorization.'
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -668,7 +668,7 @@
     author: Stephen Toub
   - kind: paragraph
     text: Because the previous example of `BlockingCollection<T>.Add` uses synchronous `Wait()`, it is correct that it doesn’t follow the Task-Based Asynchronous Pattern.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -715,7 +715,7 @@
   analyzer:
     message: Remove the {1} modifier from the parameter '{0}' of the asynchronous method '{2}'
     category: Patterns
-  notes: FDG9027 reports a ref or out parameter of an externally visible method that returns a task-like type (as for FDG9020); the compiler already rejects them on async methods (CS1988). Overrides and interface implementations take their signature from another member and are not reported, and private and internal methods are not checked, so coverage is partial. Removing the modifier changes the public signature, so the fix is breaking (FDG9034 describes the conversions); there is no code fix.
+  notes: FDG9027 reports a ref or out parameter of an externally visible method that returns a task-like type (as for FDG9020) or IAsyncEnumerable<T>; the compiler already rejects them on async methods (CS1988). Overrides and interface implementations take their signature from another member and are not reported, and private and internal methods are not checked, so coverage is partial. Removing the modifier changes the public signature, so the fix is breaking (FDG9034 describes the conversions); there is no code fix.
 - id: FDG9028
   strength: DO NOT
   text: use the `in` (ref readonly) parameter modifier in a virtual or abstract Async method.
@@ -741,7 +741,7 @@
   analyzer:
     message: Remove the in modifier from the parameter '{0}' of the virtual asynchronous method '{1}'
     category: Patterns
-  notes: 'Library only: the reason given is the developers who extend the type, who cannot use the async keyword in an override. FDG9028 reports an in or ref readonly parameter of an externally visible method that returns a task-like type (as for FDG9020) and is virtual or abstract, or of an interface method. Overrides and interface implementations take their signature from another member and are not reported. Changing the modifier changes the public signature, so the fix is breaking; there is no code fix.'
+  notes: 'Library only: the reason given is the developers who extend the type, who cannot use the async keyword in an override. FDG9028 reports an in or ref readonly parameter of an externally visible method that returns a task-like type (as for FDG9020) or IAsyncEnumerable<T> and is virtual or abstract, or of an interface method. Overrides and interface implementations take their signature from another member and are not reported. Changing the modifier changes the public signature, so the fix is breaking; there is no code fix.'
 - id: FDG9029
   strength: AVOID
   text: the `in` (ref readonly) parameter modifier in nonvirtual Async methods.
@@ -778,7 +778,7 @@
   analyzer:
     message: Avoid the in modifier on the parameter '{0}' of the asynchronous method '{1}'
     category: Patterns
-  notes: 'FDG9029 reports an in or ref readonly parameter of an externally visible method that returns a task-like type (as for FDG9020) and is neither virtual nor abstract, unless the parameter type is a readonly struct, which the body allows. Whether a type is a readonly struct comes from its declaration: primitive types are readonly structs in .NET Core and .NET 5 and later, but not in the .NET Framework reference assemblies. Overrides and interface implementations are not reported, and private and internal methods are not checked, so coverage is partial. FDG5115 (library only) reports in parameters of value types in general. Changing the modifier changes the public signature, so the fix is breaking; there is no code fix.'
+  notes: 'FDG9029 reports an in or ref readonly parameter of an externally visible method that returns a task-like type (as for FDG9020) or IAsyncEnumerable<T> and is neither virtual nor abstract, unless the parameter type is a readonly struct, which the body allows. Whether a type is a readonly struct comes from its declaration: primitive types are readonly structs in .NET Core and .NET 5 and later, but not in the .NET Framework reference assemblies. Overrides and interface implementations are not reported, and private and internal methods are not checked, so coverage is partial. FDG5115 (library only) reports in parameters of value types in general. Changing the modifier changes the public signature, so the fix is breaking; there is no code fix.'
 - id: FDG9030
   strength: DO
   text: use (non-generic) `Task` as the preferred return type for an asynchronous method that does not produce a value.
@@ -788,7 +788,7 @@
   body:
   - kind: paragraph
     text: The `Task` class has better usability than the `ValueTask` struct, and both types have similar performance characteristics for methods generated with the `async` keyword.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -819,7 +819,7 @@
 
       Some asynchronous methods that are built manually also cache their own common return values to provide both good critical-path performance and better usability of `Task<TResult>`.'
     author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -853,7 +853,7 @@
   - kind: annotation
     text: This guidance may make you question why the non-generic `ValueTask` exists at all. It exists as a performance optimization for critical-path methods that frequently complete asynchronously and where the implementation is able to employ some kind of object reuse to avoid allocation. Many more details are available in [https://devblogs.microsoft.com/dotnet/understanding-the-whys-whats-and-whens-of-valuetask/](https://devblogs.microsoft.com/dotnet/understanding-the-whys-whats-and-whens-of-valuetask/).
     author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -898,7 +898,7 @@
   analyzer:
     message: Keep the parameters of '{0}' in the same order as in the synchronous method '{1}'
     category: Patterns
-  notes: FDG9033 reports an externally visible method whose name ends with "Async" and which returns a task-like type (as for FDG9020) when a method of the same type named without the suffix, its synchronous variant, static or not as it is, has the parameters of the same names in a different relative order. CancellationToken parameters are left out, since the asynchronous variant adds its token last (FDG9024), and parameters that only one of the two has are ignored, as the conversions of ref and out parameters (FDG9034) need. Overrides and interface implementations are not reported, and variants in other types or with other names are not seen, so coverage is partial. FDG5003 compares the order across overloads. Reordering changes the public signature, so the fix is breaking; there is no code fix.
+  notes: FDG9033 reports an externally visible method whose name ends with "Async" and which returns a task-like type (as for FDG9020) when the methods of the same type named without the suffix, its synchronous variants, static or not as it is and not returning a task-like type, that share at least two parameter names with it all have those names in a different relative order. There is no report when one such variant has the same order, since the asynchronous method then aligns with it, and a variant that shares fewer than two names is not compared. CancellationToken parameters are left out, since the asynchronous variant adds its token last (FDG9024), and parameters that only one of the two has are ignored, as the conversions of ref and out parameters (FDG9034) need. Overrides and interface implementations are not reported, and variants in other types or with other names are not seen, so coverage is partial. FDG5003 compares the order across overloads. Reordering changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9034
   strength: DO
   text: convert the signature as needed to remove any `ref` or `out` parameters from an asynchronous method.
@@ -935,7 +935,7 @@
 
       That, combined with the fact that there is no public `RefWrapper<T>` type in .NET, should suggest that the answer most commonly chosen by the BCL team is to just redesign the method.'
     author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -962,7 +962,7 @@
     text: Given a method that accepts a synchronous callback, such as `public void DoWork(Action<State> callback)`, you need to understand if the caller is expected to do synchronous or asynchronous work in the callback. If the callback is intended to save data, and the `DoWorkAsync` will call the callback asynchronously, then `DoWorkAsync` probably only needs an asynchronous callback. Conversely, a progress notification callback from an asynchronous version of loading saved state might only warrant a synchronous callback. If it’s unclear, consider offering both.
   - kind: code
     text: "   // The original synchronous method\n   public void DoWork(Action<State> callback) { ... }\n\n   // An asynchronous variant with a synchronous callback\n   public void DoWorkAsync(\n     Action<State> callback,\n     CancellationToken cancellationToken = default) { ... }\n\n   // An asynchronous variant with an asynchronous callback\n   public void DoWorkAsync(\n     Func<State, CancellationToken, Task> asyncCallback,\n     CancellationToken cancellationToken = default) { ... }"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -987,7 +987,7 @@
   body:
   - kind: paragraph
     text: Very few callers would ever check an Async method for a null `Task` being returned. Instead of returning null, consider what this value means and then choose a better alternative. For example, if an Async method cannot be started, it should throw an exception (see section 9.2.6.5). Alternatively, if the work is already done, return `Task.CompletedTask` or `Task.FromResult(result)`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1038,7 +1038,7 @@
   analyzer:
     message: Do not return a task in the Created state from '{0}'
     category: Patterns
-  notes: 'The book shows the check icon here; the strength word is used. FDG9037 reports a Task or Task<TResult> created with a constructor and returned directly from a method, local function or property getter that is not async. A constructor call that passes a CancellationToken is not reported: when the token is already canceled, the task starts in the Canceled state, not Created, which is how code without Task.FromCanceled makes a canceled task. A task created into a variable and returned without Start is not seen, so coverage is partial. Starting the task, or creating it with Task.Run, changes no signature; there is no code fix.'
+  notes: 'The book shows the check icon here; the strength word is used. FDG9037 reports a Task or Task<TResult> created with a constructor and returned directly from a method, local function or property getter that is not async. A constructor call that passes a CancellationToken is not reported: when the token is already canceled, the task starts in the Canceled state, not Created, which is how code without Task.FromCanceled makes a canceled task. A token that is not canceled leaves such a task in the Created state, and it is not reported either. A task created into a variable and returned without Start is not seen, so coverage is partial. Starting the task, or creating it with Task.Run, changes no signature; there is no code fix.'
 - id: FDG9038
   strength: DO
   text: throw an `OperationCanceledException` when aborting work due to a `CancellationToken`.
@@ -1054,7 +1054,7 @@
     text: The easiest way to ensure that the correct behaviors happen is to invoke the `ThrowIfCancellationRequested()` method on the `CancellationToken`, but manually throwing an instance of `OperationCanceledException` works as well.
   - kind: code
     text: "try {\n  await SaveData(data, cancellationToken);\n  QueueNotification(\"Data saved successfully!\");\n} catch (OperationCanceledException) {\n  QueueNotification(\"Save was canceled.\");\n}\n...\n\nprivate async Task SaveData(\n  byte[] data, CancellationToken cancellationToken) {\n\n  // Bad: this causes the success message\n  if (cancellationToken.IsCancellationRequested) {\n    return;\n  }\n\n  // Good: this causes the canceled message for our caller\n  if (cancellationToken.IsCancellationRequested) {\n    throw new OperationCanceledException(cancellationToken);\n  }\n\n  // Good: this causes the canceled message for our caller\n  cancellationToken.ThrowIfCancellationRequested();\n\n  ...\n }"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1121,7 +1121,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Library only: the text excepts application models that depend on the synchronization context (WinForms and WPF in the body), and whether an application''s code runs under one is the application''s choice, which CA2007 cannot see. CA2007 reports an await of a task without ConfigureAwait, and await foreach and await using too; it does not report ConfigureAwait(true) (probe with SDK 10.0.402), which marks code that needs the context, so an unneeded ConfigureAwait(true) is not seen and coverage is partial. Library code that needs the context, such as a WPF control library, falls under the exception and uses ConfigureAwait(true) or suppresses CA2007. CA2007 has a code fix that adds ConfigureAwait(false), but whether the code after the await needs the context is judgment, so autofix is no. FDG9050 shares CA2007.'
+  notes: 'Library only: the text excepts application models that depend on the synchronization context (WinForms and WPF in the body), and whether an application''s code runs under one is the application''s choice, which CA2007 cannot see. CA2007 reports an await of a task without ConfigureAwait, and await foreach and await using declarations too, but not an await foreach over WithCancellation(...) or an await using of an existing variable that lack ConfigureAwait; it does not report ConfigureAwait(true) (probe with SDK 10.0.402), which marks code that needs the context, so an unneeded ConfigureAwait(true) is not seen and coverage is partial. Library code that needs the context, such as a WPF control library, falls under the exception and uses ConfigureAwait(true) or suppresses CA2007. CA2007 has a code fix that adds ConfigureAwait(false), but whether the code after the await needs the context is judgment, so autofix is no. FDG9050 shares CA2007.'
 - id: FDG9040
   strength: DO NOT
   text: invoke `Task.Wait()` or read the `Task.Result` property in an Async method; instead, use `await`.
@@ -1131,7 +1131,7 @@
   body:
   - kind: paragraph
     text: The `await` keyword causes the Task to yield, which allows other Tasks to continue. The `Task.Wait()` method—and the `Task.Result` property—instead do a blocking synchronous wait, which is inefficient and can lead to deadlock in some situations.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1157,7 +1157,7 @@
   body:
   - kind: paragraph
     text: In general, if there are both a synchronous variant and an asynchronous variant for a method, the synchronous method will potentially block and the asynchronous method will potentially yield. Calling a blocking method from an asynchronous method is inefficient, and can lead to resource starvation and deadlock.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1197,7 +1197,7 @@
 
       ```'
     author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1251,7 +1251,7 @@
   analyzer:
     message: 'Throw ''{0}'' before the task of ''{1}'' starts: move the check out of the async method'
     category: Patterns
-  notes: 'FDG9043 reports, in an externally visible async method (public or protected, as the body says), a throw of ArgumentException or an exception derived from it, or a call to one of their static ThrowIf methods (such as ArgumentNullException.ThrowIfNull), in the method''s own body rather than in a lambda or local function. Async iterators and overrides are reported too: their body is their own. Other usage errors, such as InvalidOperationException for a wrong state, are not seen, since the same types also report execution errors, so coverage is partial. The fix moves the checks into a method without the async keyword that returns the task of an async implementation, as the body shows, without changing the signature; there is no code fix.'
+  notes: 'FDG9043 reports, in an externally visible async method (public or protected, as the body says), a throw of ArgumentException or an exception derived from it, or a call to one of their static ThrowIf methods (such as ArgumentNullException.ThrowIfNull), in the method''s own body rather than in a lambda or local function. Async iterators and overrides are reported too: their body is their own. A throw that follows an await in the body, which can depend on the result of an asynchronous operation (FDG9044), is not reported; an await foreach or await using counts as an await. Other usage errors, such as InvalidOperationException for a wrong state, are not seen, since the same types also report execution errors, so coverage is partial. The fix moves the checks into a method without the async keyword that returns the task of an async implementation, as the body shows, without changing the signature; there is no code fix.'
 - id: FDG9044
   strength: DO
   text: throw execution error exceptions via the Task-like value returned from an Async method.
@@ -1265,7 +1265,7 @@
     text: 'This example can incorrectly throw a `FileNotFoundException`, an execution error exception, in such a way that it is not captured within the `Task<byte[]>`:'
   - kind: code
     text: "public static Task<byte[]> ReadAllBytesAsync(string path) {\n  // Maybe we can just let OpenRead throw the\n  // ArgumentNullException for us?\n  Stream stream = File.OpenRead(path);\n  // Unfortunately, it also could have thrown\n  // AccessDeniedException, FileNotFoundException,\n  // and a number of other execution error-based exceptions.\n  return ReadAllBytesAsyncCore(stream);\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1290,7 +1290,7 @@
   body:
   - kind: paragraph
     text: Methods that return `IAsyncEnumerable<T>` follow the same naming conventions as methods returning Tasks with the Task-Based Async Pattern, including using the combined suffix “AsyncCore” when making use of the Template Method Pattern (section 9.9).
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1320,7 +1320,7 @@
     text: The `[EnumeratorCancellation]` attribute indicates that the compiler should bind the `CancellationToken` value from the call to `GetAsyncEnumerator` to the parameter with the attribute, or combine the `CancellationToken` values from `GetAsyncEnumerator` and the token passed as a parameter to the `IAsyncEnumerable<T>` method. When the attribute is not specified, the `CancellationToken` value from `GetAsyncEnumerator` is ignored for compiler-generated implementations.
   - kind: code
     text: "// incorrect\npublic static async IAsyncEnumerable<int> ValueGenerator(\n  int start,\n  int count,\n  CancellationToken cancellationToken = default) {\n\n  int end = start + count;\n  for (int i = start; i < end; i++) {\n    await Task.Delay(i, cancellationToken).ConfigureAwait(false);\n    yield return i;\n  }\n}\n\n// correct\npublic static async IAsyncEnumerable<int> ValueGenerator(\n  int start,\n  int count,\n  [EnumeratorCancellation]\n  CancellationToken cancellationToken = default) {\n\n  int end = start + count;\n  for (int i = start; i < end; i++) {\n    await Task.Delay(i, cancellationToken).ConfigureAwait(false);\n    yield return i;\n  }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1343,7 +1343,7 @@
   section: 9.2.10 IAsyncEnumerable<T>
   anchor: sec9_2_10
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1371,7 +1371,7 @@
   body:
   - kind: paragraph
     text: These guidelines are the asynchronous versions of the guidelines for `IEnumerator<T>` and `IEnumerable<T>` from section 8.3. See that section for more information.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1407,7 +1407,7 @@
     text: When using `await foreach` directly on the result of a method that accepted a `CancellationToken`, there is no need, nor any value, in also calling `WithCancellation`. But there’s also no significant penalty, other than line length.
   - kind: code
     text: "// WithCancellation(cancellationToken) is not needed,\n// because it was passed into ValueGenerator already.\nasync foreach (int value in\n  ValueGenerator(10, 5, cancellationToken).ConfigureAwait(false)) {\n  ...\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1451,7 +1451,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Library only: as for FDG9039, the text excepts application models that depend on the synchronization context. CA2007 reports an await foreach without ConfigureAwait, and not one with ConfigureAwait(true) (probe with SDK 10.0.402), so coverage is partial; FDG9039 shares CA2007 and its notes give the details.'
+  notes: 'Library only: as for FDG9039, the text excepts application models that depend on the synchronization context. CA2007 reports an await foreach without ConfigureAwait, and not one with ConfigureAwait(true) (probe with SDK 10.0.402); an await foreach over WithCancellation(...) without ConfigureAwait is not reported either, so coverage is partial; FDG9039 shares CA2007 and its notes give the details.'
 - id: FDG9051
   strength: DO
   text: provide properties as dependency properties if you need the properties to support WPF features such as styling, triggers, data binding, animations, dynamic resources, and inheritance.
@@ -1467,7 +1467,7 @@
     text: 'Here’s an example using the property with data binding:'
   - kind: code
     text: <TextButton Text="{Binding FirstName}" />
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1490,7 +1490,7 @@
   section: 9.3.1 Dependency Property Design
   anchor: sec9_3_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1536,7 +1536,7 @@
   analyzer:
     message: Declare the dependency property field '{0}' public static readonly
     category: Patterns
-  notes: FDG9053 reports a static field of type DependencyProperty initialized with DependencyProperty.Register or RegisterAttached that is not declared public static readonly; the private field of the FDG9058 example is reported. Whether the class has the CLR property is not checked, since the examples of FDG9055 and FDG9056 leave it out, and fields initialized otherwise (the DependencyProperty of a read-only property, taken from its key) are not seen, so coverage is partial. Making the field public or read-only changes the public API, so the fix is breaking; there is no code fix.
+  notes: FDG9053 reports a static field of type DependencyProperty initialized with DependencyProperty.Register or RegisterAttached that is not declared public static readonly; the private field of the FDG9058 example, which the book labels as bad code ("Do not do this!"), is reported, as intended. Whether the class has the CLR property is not checked, since the examples of FDG9055 and FDG9056 leave it out, and fields initialized otherwise (the DependencyProperty of a read-only property, taken from its key) are not seen, so coverage is partial. Making the field public or read-only changes the public API, so the fix is breaking; there is no code fix.
 - id: FDG9054
   strength: DO
   text: implement dependency properties by calling instance methods `DependencyObject.GetValue` and `DependencyObject.SetValue`.
@@ -1564,7 +1564,7 @@
   analyzer:
     message: Implement the accessor of the dependency property '{0}' with {1}
     category: Patterns
-  notes: FDG9054 reports, in the CLR property of a dependency property, which is a property P of a class derived from DependencyObject that declares a static DependencyProperty field named P followed by "Property", a get accessor that does not call DependencyObject.GetValue with the field, or a set accessor that does not call SetValue with the field (or with a DependencyPropertyKey field named P followed by "PropertyKey") and the value. Wrappers whose field has another name or is declared in another class are not seen, so coverage is partial. FDG9057 reports accessors that make the call and do more. The fix rewrites the accessor body; there is no code fix.
+  notes: FDG9054 reports, in the CLR property of a dependency property, which is a property P of a class derived from DependencyObject that declares a static DependencyProperty field named P followed by "Property", a get accessor that does not call DependencyObject.GetValue with the field, or a set accessor that does not call SetValue with the field (or with a DependencyPropertyKey field named P followed by "PropertyKey"). Wrappers whose field has another name or is declared in another class are not seen, so coverage is partial. FDG9057 reports accessors that make the call and do more; a SetValue call whose value is not the value parameter is FDG9057's. The fix rewrites the accessor body; there is no code fix.
 - id: FDG9055
   strength: DO
   text: name the dependency property static field by suffixing the name of the property with “Property.”
@@ -1576,7 +1576,7 @@
     text: The first parameter to the `DependencyProperty.Register` method should be the name of the wrapper property.
   - kind: code
     text: "public class TextButton : DependencyObject {\n  public static readonly DependencyProperty TextProperty =\n    DependencyProperty.Register(\n      \"Text\",\n      typeof(string),\n      typeof(TextButton));\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1624,7 +1624,7 @@
   analyzer:
     message: Set the default value of the dependency property '{0}' in its metadata, not in the constructor
     category: Patterns
-  notes: 'FDG9056 reports, in an instance constructor of a class derived from DependencyObject, an assignment to the CLR property of one of the class''s own dependency properties (found as for FDG9054), or a SetValue call with its field, when the value is one that metadata can hold: a constant, default, typeof, or a static field or property (String.Empty in the body). A value computed for each instance, such as a constructor argument or a new object, is not a default that metadata could hold and is not reported, so coverage is partial; so are assignments in lambdas and in other methods. The constructor of the FDG9058 example, which sets a constant through SetValue, is reported. The fix moves the value into the PropertyMetadata of the registration; there is no code fix.'
+  notes: 'FDG9056 reports, in an instance constructor of a class derived from DependencyObject, an assignment to the CLR property of one of the class''s own dependency properties (found as for FDG9054), or a SetValue call with its field, when the value is one that metadata can hold: a constant, default, typeof, or a static field or property (String.Empty in the body). A value computed for each instance, such as a constructor argument or a new object, is not a default that metadata could hold and is not reported, so coverage is partial; so are assignments in lambdas and in other methods. The constructor of the FDG9058 example, which the book labels as bad code ("Do not do this!"), sets a constant through SetValue and is reported, as intended. The fix moves the value into the PropertyMetadata of the registration; there is no code fix.'
 - id: FDG9057
   strength: DO NOT
   text: put code in the property accessors other than the standard code to access the static field.
@@ -1654,7 +1654,7 @@
   analyzer:
     message: Remove the code other than the {1} call from the accessor of the dependency property '{0}'
     category: Patterns
-  notes: 'FDG9057 reports an accessor of the CLR property of a dependency property, which is a property P of a class derived from DependencyObject that declares a static DependencyProperty field named P followed by "Property" that calls GetValue or SetValue with the field (as FDG9054 checks) and holds other code too: the standard get accessor only returns the result of GetValue, cast or converted to the property type, and the standard set accessor only calls SetValue. Validation, change notification and coercion in accessors (FDG9059, FDG9060, FDG9061) are such code, and FDG9057 reports them. Wrappers that FDG9054 does not find are not seen, so coverage is partial. The fix moves the code into the callbacks of the registration; there is no code fix.'
+  notes: 'FDG9057 reports an accessor of the CLR property of a dependency property, which is a property P of a class derived from DependencyObject that declares a static DependencyProperty field named P followed by "Property" that calls GetValue or SetValue with the field (as FDG9054 checks) and holds other code too: the standard get accessor only returns the result of GetValue, cast or converted to the property type, and the standard set accessor only calls SetValue with the field and the value parameter. Validation, change notification and coercion in accessors (FDG9059, FDG9060, FDG9061) are such code, and FDG9057 reports them. Wrappers that FDG9054 does not find are not seen, so coverage is partial. The fix moves the code into the callbacks of the registration; there is no code fix.'
 - id: FDG9058
   strength: DO NOT
   text: use dependency properties to store secure data. Even private dependency properties can be accessed publicly.
@@ -1664,7 +1664,7 @@
   body:
   - kind: code
     text: "public class BadType : DependencyObject {\n  // Do not do this! It's not secure!\n  private static readonly DependencyProperty SecretProperty =\n    DependencyProperty.Register(\n      \"Secret\",\n      typeof(string),\n      typeof(BadType));\n\n  public BadType() {\n    SetValue(SecretProperty, \"password\");\n  }\n\n  private static void Main() {\n    var b = new BadType();\n    var enumerator = b.GetLocalValueEnumerator();\n    while (enumerator.MoveNext()) {\n      Console.WriteLine(\"{0}={1}\",\n        enumerator.Current.Property,\n        enumerator.Current.Value);\n    )\n  }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1689,7 +1689,7 @@
   body:
   - kind: code
     text: "public static readonly DependencyProperty TextProperty =\n  DependencyProperty.Register(\n    \"Text\",\n    typeof(string),\n    typeof(TextButton),\n    new PropertyMetadata(string.Empty),\n    value => value != null); // validation"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1714,7 +1714,7 @@
   body:
   - kind: code
     text: "public static readonly DependencyProperty TextProperty =\n  DependencyProperty.Register(\n    \"Text\",\n    typeof(string),\n    typeof(TextButton),\n    new PropertyMetadata(\n      string.Empty,\n      (obj, args) => {\n        // property changed\n        ...\n      }));"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1741,7 +1741,7 @@
     text: Dependency properties have a built-in coercion feature, and it can be used by supplying a coercion callback to the `PropertyMetadata`.
   - kind: code
     text: "public static readonly DependencyProperty TextProperty =\n  DependencyProperty.Register(\n    \"Text\",\n    typeof(string),\n    typeof(TextButton),\n      new PropertyMetadata(\n        string.Empty,\n        (obj, args) => {\n          // change notification callback\n        },\n        (obj, value) => value ?? string.Empty)); // coercion"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment

@@ -719,8 +719,8 @@ the narrowing of FDG9020, FDG9022 and FDG9037; the first-run counts are in the T
 - **FDG9038.** polly's 1 returns an outcome holding an `OperationCanceledException` when cancellation is
   requested, instead of throwing it. True by the letter: polly returns failures as values by design, which a
   suppression records.
-- **FDG9043.** internal-a's 1 is a null check that throws `ArgumentNullException` inside a public async method.
-  True.
+- **FDG9043.** internal-a's 1 is a null check that throws `ArgumentNullException` inside a public async method,
+  before its first await. True.
 - **CA1849.** newtonsoft-json's 3 are two reads of `Task<TResult>.Result` after an `IsCompletedSuccessfully`
   check and one synchronous write call in an async method. True by the letter of FDG9040 and FDG9041; the
   `Result` reads cannot block, which a suppression records.
@@ -729,3 +729,8 @@ the narrowing of FDG9020, FDG9022 and FDG9037; the first-run counts are in the T
 - **CA1068.** 0 reports. CA1068 also reports synchronous methods, for which FDG9026 says the last-parameter
   guidance does not apply; none was seen in these samples.
 - **internal-b.** No report in the measured project.
+- **Fix round 1.** The analyzers of FDG9027, FDG9028, FDG9029 (now also checking methods that return
+  `IAsyncEnumerable<T>`), FDG9043 (no longer reporting a throw after an await, await foreach or await using in the
+  body) and FDG9054 and FDG9057 (a SetValue call whose value is not the value parameter moved from FDG9054 to
+  FDG9057) changed. A rerun of these six diagnostics gave the same counts as the table: internal-a's FDG9043 report
+  stays, and the others have 0 reports.

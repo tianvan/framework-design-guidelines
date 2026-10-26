@@ -170,6 +170,6 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
 - [ ] FDG9039 DO use `await task.ConfigureAwait(false)` when awaiting an Async operation, except in application models that depend on the synchronization context.
   sdk CA2007, partial; no autofix; library only. Chosen because CA2007 does not report ConfigureAwait(true) (probe with SDK 10.0.402) and the application exception is left to the profile.
 - [ ] FDG9043 DO throw usage error exceptions directly from the Async method, to aid in debuggability.
-  fdg FDG9043, partial; no autofix. Chosen because only ArgumentException and its derived types (and their ThrowIf helpers) count as usage errors, since other exception types also report execution errors.
+  fdg FDG9043, partial; no autofix. Chosen because only ArgumentException and its derived types (and their ThrowIf helpers) count as usage errors, since other exception types also report execution errors, and (fix round 1) a throw after an await, await foreach or await using in the body is not reported, since it can depend on the result of an asynchronous operation (FDG9044).
 - [ ] FDG9056 DO NOT set default values of dependency properties explicitly in code; instead, set them in metadata.
-  fdg FDG9056, partial; no autofix. Chosen because only constant-like values set in an instance constructor are reported, and the constructor of the FDG9058 example in the book is reported.
+  fdg FDG9056, partial; no autofix. Chosen because only constant-like values set in an instance constructor are reported, and the constructor of the FDG9058 example, which the book labels "Do not do this!", is reported as intended.

@@ -377,7 +377,7 @@ chapters:
         note: "The chapter introduction (guidelines and discussion for a limited set of patterns used frequently in the design of .NET APIs) is background for the whole chapter."
       - section: "9.1"
         disposition: rationale
-        note: "The definition of an aggregate component (a facade over lower-level factored types that supports component-oriented design and is the entry point for exploring its namespace), the It-Just-Works principle with its limit (do not open a file implicitly and then require an explicit close), and the Cwalina annotations (HttpClient and other examples; hide complexity completely or not at all; System.ServiceProcess would reach more developers with event handlers than with overrides) are rationale for FDG9001 to FDG9017."
+        note: "The definition of an aggregate component (a facade over lower-level factored types that supports component-oriented design and is the entry point for exploring its namespace), the It-Just-Works principle with its limit (do not open a file implicitly and then require an explicit close), the File.ReadAllLines example of a single call that does a whole task, the point that users should not have to implement interfaces or edit configuration files to get started (default implementations, optional settings with sensible defaults, tool support), the integration with Visual Studio designers by implementing IComponent or deriving from a UI element class, and the Cwalina annotations (HttpClient and other examples; hide complexity completely or not at all; System.ServiceProcess would reach more developers with event handlers than with overrides) are rationale for FDG9001 to FDG9017."
       - section: "9.1.1"
         disposition: rationale
         note: "The definition of component-oriented design and the Create-Set-Call Pattern (with the MessageQueue and PerformanceCounter examples), the advice to report invalid states with InvalidOperationException when an operation is performed rather than from the constructor or a setter, the Clarke and Nasarre annotations, and the list of additional requirements of aggregate components (a simple constructor, constructor parameters that initialize properties, properties with getters, setters and sensible defaults, options as properties, callbacks as events) are rationale for FDG9006 to FDG9010."
@@ -422,7 +422,7 @@ chapters:
         note: "The introduction (IAsyncEnumerable<T> is mainly used to generate asynchronous iterators for the await foreach statement) is background for FDG9045 to FDG9048."
       - section: "9.3"
         disposition: rationale
-        note: "The definitions of a dependency property (a property that stores its value in a property store instead of a field) and of an attached dependency property (static Get and Set methods that describe a relationship between objects and their containers), with the style trigger and data binding examples, are rationale for FDG9051 to FDG9061."
+        note: "The definitions of a dependency property (a property that stores its value in a property store instead of a field) and of an attached dependency property (static Get and Set methods that describe a relationship between objects and their containers) are rationale for FDG9051 to FDG9061."
       - section: "9.3.1"
         disposition: background
         note: "The one-sentence introduction (the following guidelines describe details of dependency property design) is background for FDG9052 to FDG9058."

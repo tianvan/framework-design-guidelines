@@ -508,6 +508,60 @@ public sealed class AsyncSignatureTests
     }
 
     [Fact]
+    public Task Async_enumerable_methods_get_the_parameter_modifier_checks()
+    {
+        return Verifier.VerifyLatestAsync(
+            """
+            using System.Collections.Generic;
+            using System.Threading;
+
+            public struct Mutable
+            {
+                public int Value;
+            }
+
+            public abstract class Reader
+            {
+                public virtual IAsyncEnumerable<int> ReadAllAsync(
+                    in int {|FDG9028:start|},
+                    CancellationToken cancellationToken = default)
+                {
+                    return null;
+                }
+
+                public IAsyncEnumerable<int> ScanAsync(in Mutable {|FDG9029:item|}) => null;
+
+                public IAsyncEnumerable<int> SkipAsync(ref int {|FDG9027:count|}) => null;
+
+                public IAsyncEnumerable<int> TakeAsync(in int count) => null;
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Protected_internal_core_method_needs_no_default_token()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System.Threading;
+            using System.Threading.Tasks;
+
+            public class Writer
+            {
+                protected internal virtual Task FlushAsyncCore(CancellationToken cancellationToken)
+                {
+                    return Task.FromResult(0);
+                }
+
+                internal protected virtual Task CloseAsyncCore(CancellationToken cancellationToken)
+                {
+                    return Task.FromResult(0);
+                }
+            }
+            """);
+    }
+
+    [Fact]
     public Task Message_names_the_method_and_parameter()
     {
         return Verifier.VerifyWithAsync(

@@ -92,8 +92,8 @@ public sealed class PatternsDescriptorTests
 
                 public async Task CheckAsync(string name, CancellationToken cancellationToken = default)
                 {
-                    await Task.Yield();
                     if (name == null) throw new ArgumentNullException(nameof(name));
+                    await Task.Yield();
                 }
 
                 public async Task EachAsync(IAsyncEnumerable<int> source, CancellationToken cancellationToken = default)

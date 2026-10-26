@@ -13,20 +13,20 @@ namespace FrameworkDesignGuidelines.Analyzers.Patterns;
 /// <summary>
 /// FDG9052 to FDG9057 (section 9.3.1): WPF dependency properties, found through the
 /// <c>System.Windows.DependencyObject</c> and <c>System.Windows.DependencyProperty</c> types of the compilation. A
-/// registration is a field initialized with a call to <c>DependencyProperty.Register</c>, <c>RegisterReadOnly</c>
-/// or <c>RegisterAttached</c>. FDG9052 reports a static field initialized with Register or RegisterReadOnly in a
-/// class that does not derive from DependencyObject. For a DependencyProperty field initialized with Register or
-/// RegisterAttached, FDG9053 reports a field that is not public static readonly, and FDG9055 a static field whose
-/// name is not the registered name, when it is a constant, followed by "Property". The CLR property of a dependency
-/// property is an instance property P of a class derived from DependencyObject that declares a static
-/// DependencyProperty field named P followed by "Property". FDG9054 reports its get accessor when it does not call
-/// GetValue with that field, and its set accessor when it does not call SetValue with that field (or a
-/// DependencyPropertyKey field named P followed by "PropertyKey") and the value. FDG9057 reports an accessor that
-/// makes the call but holds other code: the get accessor may only return the result, cast or converted, and the set
-/// accessor may only make the call. FDG9056 reports, in the body of an instance constructor of a class derived from
-/// DependencyObject (not in a lambda or local function), an assignment to the CLR property of a dependency property
-/// of the class, or a SetValue call with a DependencyProperty field of the class, when the value is a constant,
-/// default, typeof, or a static field or property.
+/// registration is a field initialized with a call to <c>DependencyProperty.Register</c>, <c>RegisterReadOnly</c> or
+/// <c>RegisterAttached</c>. FDG9052 reports a static field initialized with Register or RegisterReadOnly in a class
+/// that does not derive from DependencyObject. For a DependencyProperty field initialized with Register or
+/// RegisterAttached, FDG9053 reports a field that is not public static readonly, and FDG9055 a static field whose name
+/// is not the registered name, when it is a constant, followed by "Property". The CLR property of a dependency property
+/// is an instance property P of a class derived from DependencyObject that declares a static DependencyProperty field
+/// named P followed by "Property". FDG9054 reports its get accessor when it does not call GetValue with that field, and
+/// its set accessor when it does not call SetValue with that field (or a DependencyPropertyKey field named P followed
+/// by "PropertyKey"). FDG9057 reports an accessor that makes the call but holds other code: the get accessor may only
+/// return the result, cast or converted, and the set accessor may only make the call, with the value parameter as the
+/// value. FDG9056 reports, in the body of an instance constructor of a class derived from DependencyObject (not in a
+/// lambda or local function), an assignment to the CLR property of a dependency property of the class, or a SetValue
+/// call with a DependencyProperty field of the class, when the value is a constant, default, typeof, or a static field
+/// or property.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class DependencyPropertyAnalyzer : DiagnosticAnalyzer
@@ -194,9 +194,7 @@ public sealed class DependencyPropertyAnalyzer : DiagnosticAnalyzer
         IInvocationOperation? call = body is null
             ? null
             : Calls(context, body, "SetValue", types).FirstOrDefault(invocation =>
-                IsFieldArgument(invocation, field, key)
-                && Argument(invocation, 1) is { } value
-                && UnwrapConversions(value) is IParameterReferenceOperation { Parameter.Name: "value" });
+                IsFieldArgument(invocation, field, key));
         if (call is null)
         {
             context.ReportDiagnostic(
@@ -209,7 +207,9 @@ public sealed class DependencyPropertyAnalyzer : DiagnosticAnalyzer
                 ? only.Expression
                 : null
             : body;
-        if (statement != call.Syntax)
+        if (statement != call.Syntax
+            || Argument(call, 1) is not { } value
+            || UnwrapConversions(value) is not IParameterReferenceOperation { Parameter.Name: "value" })
         {
             context.ReportDiagnostic(
                 Diagnostic.Create(FdgDescriptors.FDG9057, location, property.Name, "SetValue"));

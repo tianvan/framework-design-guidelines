@@ -319,6 +319,102 @@ public sealed class DependencyPropertyTests
     }
 
     [Fact]
+    public Task Setter_that_converts_the_value_is_code_besides_the_standard_call()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System.Windows;
+
+            public class Toggle : DependencyObject
+            {
+                private static readonly object True = true;
+
+                private static readonly object False = false;
+
+                public static readonly DependencyProperty IsOnProperty =
+                    DependencyProperty.Register("IsOn", typeof(bool), typeof(Toggle));
+
+                public static readonly DependencyProperty IsOpenProperty =
+                    DependencyProperty.Register("IsOpen", typeof(bool), typeof(Toggle));
+
+                public bool IsOn
+                {
+                    get { return (bool)GetValue(IsOnProperty); }
+                    {|FDG9057:set|} { SetValue(IsOnProperty, value ? True : False); }
+                }
+
+                public bool IsOpen
+                {
+                    get { return (bool)GetValue(IsOpenProperty); }
+                    {|FDG9057:set|} { SetValue(IsOpenProperty, Box(value)); }
+                }
+
+                private static object Box(bool value)
+                {
+                    return value ? True : False;
+                }
+            }
+            """,
+            ("/Wpf.cs", Wpf));
+    }
+
+    [Fact]
+    public Task Default_value_set_in_a_lambda_or_local_function_is_not_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System;
+            using System.Windows;
+
+            public class TextButton : DependencyObject
+            {
+                public static readonly DependencyProperty TextProperty =
+                    DependencyProperty.Register("Text", typeof(string), typeof(TextButton));
+
+                public TextButton()
+                {
+                    Action reset = () => Text = String.Empty;
+                    Clear();
+
+                    void Clear()
+                    {
+                        SetValue(TextProperty, String.Empty);
+                    }
+                }
+
+                public string Text
+                {
+                    get { return (string)GetValue(TextProperty); }
+                    set { SetValue(TextProperty, value); }
+                }
+            }
+            """,
+            ("/Wpf.cs", Wpf));
+    }
+
+    [Fact]
+    public Task Attached_property_field_is_checked_like_a_dependency_property_field()
+    {
+        return Verifier.VerifyAsync(
+            """
+            using System.Windows;
+
+            public class Grid : DependencyObject
+            {
+                public static readonly DependencyProperty {|FDG9055:ColumnDp|} =
+                    DependencyProperty.RegisterAttached("Column", typeof(int), typeof(Grid));
+
+                private static readonly DependencyProperty {|FDG9053:RowProperty|} =
+                    DependencyProperty.RegisterAttached("Row", typeof(int), typeof(Grid));
+
+                public static readonly DependencyProperty SpanProperty =
+                    DependencyProperty.RegisterAttached("Span", typeof(int), typeof(Grid));
+            }
+            """,
+            ("/Wpf.cs", Wpf));
+    }
+
+    [Fact]
     public Task Nothing_is_reported_without_the_wpf_types()
     {
         return Verifier.VerifyAsync(

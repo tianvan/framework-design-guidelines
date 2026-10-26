@@ -13,17 +13,18 @@ namespace FrameworkDesignGuidelines.Analyzers.Patterns;
 /// <see cref="AsyncTypes.IsTaskLike"/>) or <c>IAsyncEnumerable&lt;T&gt;</c>. Overrides and interface implementations
 /// take their signature from another member and are not reported, and neither is a static method named Main, the entry
 /// point of a program. FDG9020 (task-like) and FDG9045 (<c>IAsyncEnumerable&lt;T&gt;</c>) report a name that does not
-/// end with "Async" or "AsyncCore". The others apply to task-like returns only. FDG9020 and FDG9022 leave out a static
-/// method without the async keyword whose every return value, outside lambdas and local functions, is a completed task
-/// (see <see cref="IsCompleted"/>): like Task.FromResult, it starts no operation. FDG9022 reports a method without a
-/// <c>CancellationToken</c> parameter, unless it is named DisposeAsyncCore or another method of the same name in the
-/// type takes one, or, at the first token, one without a token named cancellationToken. FDG9023 reports a token without
-/// a default value, unless another method of the same name is in the type, a required parameter follows the token, or
-/// the method is protected and its name ends with "Core". FDG9027 reports ref and out parameters. FDG9028 reports in
-/// and ref readonly parameters of virtual, abstract and interface methods, and FDG9029 those of other methods unless
-/// the parameter type is a readonly struct. FDG9033 reports a method whose name ends with "Async" when every method of
-/// the type named without the suffix that is static or not as it is, does not return a task-like type, and shares at
-/// least two parameter names with it, other than tokens, has those names in another relative order.
+/// end with "Async" or "AsyncCore". FDG9027, FDG9028 and FDG9029 apply to both; the others apply to task-like returns
+/// only. FDG9020 and FDG9022 leave out a static method without the async keyword whose every return value, outside
+/// lambdas and local functions, is a completed task (see <see cref="IsCompleted"/>): like Task.FromResult, it starts no
+/// operation. FDG9022 reports a method without a <c>CancellationToken</c> parameter, unless it is named
+/// DisposeAsyncCore or another method of the same name in the type takes one, or, at the first token, one without a
+/// token named cancellationToken. FDG9023 reports a token without a default value, unless another method of the same
+/// name is in the type, a required parameter follows the token, or the method is protected and its name ends with
+/// "Core". FDG9027 reports ref and out parameters. FDG9028 reports in and ref readonly parameters of virtual, abstract
+/// and interface methods, and FDG9029 those of other methods unless the parameter type is a readonly struct. FDG9033
+/// reports a method whose name ends with "Async" when every method of the type named without the suffix that is static
+/// or not as it is, does not return a task-like type, and shares at least two parameter names with it, other than
+/// tokens, has those names in another relative order.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class AsyncSignatureAnalyzer : DiagnosticAnalyzer
@@ -100,6 +101,7 @@ public sealed class AsyncSignatureAnalyzer : DiagnosticAnalyzer
                 context.ReportDiagnostic(Diagnostic.Create(FdgDescriptors.FDG9045, location, method.Name));
             }
 
+            CheckModifiers(context, method);
             return;
         }
 
