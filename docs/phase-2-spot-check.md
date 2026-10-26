@@ -173,3 +173,22 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
   fdg FDG9043, partial; no autofix. Chosen because only ArgumentException and its derived types (and their ThrowIf helpers) count as usage errors, since other exception types also report execution errors, and a throw that comes after an await or an await foreach in the text is not reported, since it can depend on the result of an asynchronous operation (FDG9044); an await using awaits only at disposal, so it counts only after its statement ends. The order is the text order, not control flow: a throw in the else branch of an if whose other branch awaits, or inside the operand of an await, is not reported.
 - [ ] FDG9056 DO NOT set default values of dependency properties explicitly in code; instead, set them in metadata.
   fdg FDG9056, partial; no autofix. Chosen because only constant-like values set in an instance constructor are reported, and the constructor of the FDG9058 example, which the book labels "Do not do this!", is reported as intended.
+
+## Chapter 9: Common Design Patterns (9.4 to 9.8)
+
+- [ ] FDG9065 DO implement the `IDisposable` interface by simply calling `Dispose(true)` followed by `GC.SuppressFinalize(this)`.
+  sdk CA1063, CA1816, partial; no autofix. Chosen because CA1063 and CA1816 cover the two calls between them, the reports both make on the Close pattern of FDG9072 are called out as not violations, and internal-b's reports are one public type that misses GC.SuppressFinalize.
+- [ ] FDG9067 DO NOT declare any overloads of the `Dispose` method other than `Dispose()` and `Dispose(bool)`.
+  fdg FDG9067, full; breaking. Chosen because the only allowed shapes are Dispose() and Dispose(bool) passed by value, overrides and interface implementations are reported where the member is declared, and CA1063 did not report a Dispose(int) overload (probe with SDK 10.0.402), so FDG9067 is full.
+- [ ] FDG9069 AVOID throwing an exception from within `Dispose(bool)` except under critical situations where the containing process has been corrupted (e.g., leaks, inconsistent shared state).
+  sdk CA1065, partial; no autofix. Chosen because CA1065 sees only Dispose(), not the Dispose(bool) the text names (probe with SDK 10.0.402), and the critical situations the text excepts, like the throw of the IndentationScope example, stay a judgment.
+- [ ] FDG9073 DO NOT make public types finalizable.
+  fdg FDG9073, partial; no autofix; library only. Chosen because it is library only, because the text is about public types, and an inherited finalizer such as that of a SafeHandle subclass, the replacement the text recommends, is not reported.
+- [ ] FDG9082 DO implement `DisposeAsync` as only calling and awaiting `Dispose-AsyncCore()`, calling `Dispose(false)`, and calling `GC.SuppressFinalize(this)`, in that order—except on sealed types.
+  fdg FDG9082, partial; no autofix. Chosen because the Dispose(false) call is expected only when the class or a base class declares Dispose(bool), sealed classes and structs are excepted as the text says, and the book's SomeType example is not reported, with or without ConfigureAwait.
+- [ ] FDG9100 DO implement `IEnumerable<T>` on types implementing the Query Pattern.
+  fdg FDG9100, partial; no autofix. Chosen because only instance query methods that take a delegate or an expression count, so a type with Union or Take alone is not a Query Pattern type, and implementing IQueryable<T> counts as IEnumerable<T>.
+- [ ] FDG9112 DO mark generic type parameters on generic interfaces as contravariant when the type parameter is only ever used as an input parameter to methods on the interface.
+  fdg FDG9112, partial; breaking; library only. Chosen because the positions follow the compiler, except that constraints of the type's own type parameters count as both, unused and statically used type parameters are not reported, and the book's ICalculator<in T> and IFilter<out T> examples are not reported.
+- [ ] FDG9117 DO NOT declare a generic type parameter covariant on an interface that returns an array based on the type parameter.
+  fdg FDG9117, partial; breaking. Chosen because an array whose element uses a covariant type parameter is reported in any output position of a returned type, and FDG9116 counts such an array as both, so it never asks for the covariance that FDG9117 forbids.

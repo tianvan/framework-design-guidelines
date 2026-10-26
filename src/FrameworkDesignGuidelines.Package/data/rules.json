@@ -8698,7 +8698,11 @@
       "strength": "DO",
       "text": "implement the Basic Dispose Pattern on types containing instances of disposable types. See section 9.4.1 for details on the basic pattern.",
       "section": "9.4 Dispose Pattern",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA1001",
+        "CA1063",
+        "CA2213"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -8716,7 +8720,7 @@
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -8726,8 +8730,10 @@
       "strength": "DO",
       "text": "declare a protected virtual void `Dispose(bool disposing)` method to centralize all logic related to releasing managed and unmanaged resources.",
       "section": "9.4.1 Basic Dispose Pattern",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "CA1063"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -8740,7 +8746,10 @@
       "strength": "DO",
       "text": "implement the `IDisposable` interface by simply calling `Dispose(true)` followed by `GC.SuppressFinalize(this)`.",
       "section": "9.4.1 Basic Dispose Pattern",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA1063",
+        "CA1816"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -8754,8 +8763,10 @@
       "strength": "DO NOT",
       "text": "make the parameterless `Dispose` method virtual.",
       "section": "9.4.1 Basic Dispose Pattern",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "CA1063"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -8768,8 +8779,10 @@
       "strength": "DO NOT",
       "text": "declare any overloads of the `Dispose` method other than `Dispose()` and `Dispose(bool)`.",
       "section": "9.4.1 Basic Dispose Pattern",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9067"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -8796,7 +8809,9 @@
       "strength": "AVOID",
       "text": "throwing an exception from within `Dispose(bool)` except under critical situations where the containing process has been corrupted (e.g., leaks, inconsistent shared state).",
       "section": "9.4.1 Basic Dispose Pattern",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA1065"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -8852,11 +8867,13 @@
       "strength": "DO NOT",
       "text": "make public types finalizable.",
       "section": "9.4.2 Finalizable Types",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG9073"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -8866,7 +8883,10 @@
       "strength": "DO",
       "text": "implement the Basic Dispose Pattern on every finalizable type. See section 9.4.1 for details on the basic pattern.",
       "section": "9.4.2 Finalizable Types",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG9074",
+        "CA1063"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -8894,7 +8914,9 @@
       "strength": "DO NOT",
       "text": "let exceptions escape from the finalizer logic, except for system-critical failures.",
       "section": "9.4.2 Finalizable Types",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA1065"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -8912,7 +8934,7 @@
       "autofix": "no",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -8964,8 +8986,10 @@
       "strength": "DO NOT",
       "text": "declare any overloads of `DisposeAsync()`.",
       "section": "9.4.4 IAsyncDisposable",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9081"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -8978,7 +9002,9 @@
       "strength": "DO",
       "text": "implement `DisposeAsync` as only calling and awaiting `Dispose-AsyncCore()`, calling `Dispose(false)`, and calling `GC.SuppressFinalize(this)`, in that order—except on sealed types.",
       "section": "9.4.4 IAsyncDisposable",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG9082"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -8992,11 +9018,13 @@
       "strength": "DO",
       "text": "use the `ConfigureAwait` modifier when using `await using` in the same way that you would with `await`.",
       "section": "9.4.4.1 Usage Guidelines for await using",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA2007"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9132,7 +9160,9 @@
       "strength": "DO",
       "text": "implement `IEnumerable<T>` to enable basic LINQ support.",
       "section": "9.6.3 Supporting LINQ through IEnumerable<T>",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA1010"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -9230,7 +9260,9 @@
       "strength": "DO",
       "text": "implement `IEnumerable<T>` on types implementing the Query Pattern.",
       "section": "9.6.5 Supporting LINQ through the Query Pattern",
-      "diagnostics": [],
+      "diagnostics": [
+        "FDG9100"
+      ],
       "autofix": "no",
       "severity": {
         "library": "warning",
@@ -9272,8 +9304,10 @@
       "strength": "DO",
       "text": "represent ordered sequences as a separate type from their unordered counterpart.",
       "section": "9.6.5 Supporting LINQ through the Query Pattern",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9103"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -9314,11 +9348,13 @@
       "strength": "DO",
       "text": "place query extensions methods in a “Linq” subnamespace of the main namespace. For example, extension methods for `System.Data` features reside in `System.Data.Linq` namespace.",
       "section": "9.6.5 Supporting LINQ through the Query Pattern",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9106"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9384,11 +9420,13 @@
       "strength": "DO",
       "text": "mark generic type parameters on generic delegates as contravariant when the type parameter is used as input, but not output, and your language supports creating contravariant types.",
       "section": "9.8.1 Contravariance",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9111"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9398,11 +9436,13 @@
       "strength": "DO",
       "text": "mark generic type parameters on generic interfaces as contravariant when the type parameter is only ever used as an input parameter to methods on the interface.",
       "section": "9.8.1 Contravariance",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9112"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9416,7 +9456,7 @@
       "autofix": "no",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9430,7 +9470,7 @@
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9440,11 +9480,13 @@
       "strength": "DO",
       "text": "mark generic type parameters on generic delegates as covariant when the type parameter is used as output, but not input, and your language supports creating covariant types.",
       "section": "9.8.2 Covariance",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9115"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9454,11 +9496,13 @@
       "strength": "DO",
       "text": "mark generic type parameters on generic interfaces as covariant when the type parameter is only ever used in output roles for members on the interface.",
       "section": "9.8.2 Covariance",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9116"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9468,8 +9512,10 @@
       "strength": "DO NOT",
       "text": "declare a generic type parameter covariant on an interface that returns an array based on the type parameter.",
       "section": "9.8.2 Covariance",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9117"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -9486,7 +9532,7 @@
       "autofix": "no",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9500,7 +9546,7 @@
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -11425,6 +11471,7 @@
     }
   ],
   "registeredDiagnostics": [
+    "CA1001",
     "CA1002",
     "CA1003",
     "CA1008",
@@ -11456,6 +11503,7 @@
     "CA1056",
     "CA1058",
     "CA1062",
+    "CA1063",
     "CA1065",
     "CA1066",
     "CA1067",
@@ -11484,6 +11532,7 @@
     "CA1813",
     "CA1814",
     "CA1815",
+    "CA1816",
     "CA1819",
     "CA1849",
     "CA2007",
@@ -11492,6 +11541,7 @@
     "CA2201",
     "CA2207",
     "CA2208",
+    "CA2213",
     "CA2214",
     "CA2217",
     "CA2219",
@@ -11610,6 +11660,19 @@
     "FDG9055",
     "FDG9056",
     "FDG9057",
+    "FDG9067",
+    "FDG9073",
+    "FDG9074",
+    "FDG9081",
+    "FDG9082",
+    "FDG9100",
+    "FDG9103",
+    "FDG9106",
+    "FDG9111",
+    "FDG9112",
+    "FDG9115",
+    "FDG9116",
+    "FDG9117",
     "FDGA003",
     "FDGA004",
     "FDGA023",
@@ -11646,6 +11709,7 @@
     "CA1055",
     "CA1056",
     "CA1058",
+    "CA1063",
     "CA1065",
     "CA1068",
     "CA1707",
@@ -11721,6 +11785,15 @@
     "FDG9052",
     "FDG9053",
     "FDG9055",
+    "FDG9067",
+    "FDG9081",
+    "FDG9103",
+    "FDG9106",
+    "FDG9111",
+    "FDG9112",
+    "FDG9115",
+    "FDG9116",
+    "FDG9117",
     "IDE0130",
     "IDE1006"
   ]

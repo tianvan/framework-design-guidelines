@@ -44,20 +44,6 @@ public abstract class Stream {
 
 The method can be overridden by subclasses to provide support for the optional feature. The exception should clearly communicate to the user that the feature is optional and which property the user should query to determine if the feature is supported.
 
-## FDG9112
-
-DO mark generic type parameters on generic interfaces as contravariant when the type parameter is only ever used as an input parameter to methods on the interface.
-
-These two guidelines really boil down to “declare contravariance when the compiler lets you do so.” In addition to the simple cases where the generic type parameter is used as a parameter type, the type parameter can be used as a generic type argument to covariant interfaces or delegates as methods inputs, or to contravariant interfaces or delegates as method return types.
-
-```csharp
-public interface ICalculator<in T> {
- int Sum(IEnumerable<T> inputs);
-}
-```
-
-Since changing the signature of a delegate and altering an interface are both breaking changes, declaring contravariance whenever it’s possible to do so doesn’t artificially limit future changes to the type.
-
 ## FDG9113
 
 DO NOT change generic type parameters from contravariant to invariant in newer versions of your library.
@@ -85,42 +71,6 @@ public interface ISequenceEqual<in T> {
 public interface IEqualityCollection<T> :
   ICollection<T>, ISequenceEqual<T> {
 }
-```
-
-## FDG9116
-
-DO mark generic type parameters on generic interfaces as covariant when the type parameter is only ever used in output roles for members on the interface.
-
-As with contravariance, these two guidelines essentially boil down to “declare covariance when the compiler lets you do so.” In addition to the simple cases where the generic type parameter is used as a parameter type, the type parameter can be used as a generic type argument to contravariant interfaces or delegates as method inputs, or to covariant interfaces or delegates as method return types.
-
-```csharp
-public interface IFilter<out T> {
- IEnumerable<T> Filter(Func<T, bool> predicate);
-}
-```
-
-Since changing the signature of a delegate and altering an interface are both breaking changes, declaring covariance whenever it’s possible to do so doesn’t artificially limit future changes to the type.
-
-## FDG9117
-
-DO NOT declare a generic type parameter covariant on an interface that returns an array based on the type parameter.
-
-The C# variance rules permit an interface to be covariant when returning generic arrays, but writing to an array produced by covariance can result in an `ArrayTypeMismatchException` at runtime from safe-looking code. Change the return value to be a covariant collection interface, remove the array-returning member altogether, or declare the generic type parameter as invariant on the interface.
-
-```csharp
-public interface IArrayProducer<out T> {
-  T[] ProduceArray(int length);
-}
-public class ArrayProducer<T> : IArrayProducer<T> {
-  public T[] ProduceArray(int length) {
-    return new T[length];
-  }
-}
-...
-IArrayProducer<object> producer = new ArrayProducer<string>();
-object[] array = producer.ProduceArray(1);
-// The array is actually a string[], so this write fails.
-array[0] = 3;
 ```
 
 ## FDG9118

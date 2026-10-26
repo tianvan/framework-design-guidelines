@@ -13,9 +13,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 6 Designing for Extensibility | 22 | 0 | 2 | 20 | 0 | 22 |
 | 7 Exceptions | 70 | 20 | 10 | 40 | 0 | 70 |
 | 8 Usage Guidelines | 107 | 28 | 21 | 58 | 0 | 107 |
-| 9 Common Design Patterns | 175 | 6 | 21 | 148 | 0 | 61 |
+| 9 Common Design Patterns | 175 | 14 | 34 | 127 | 0 | 61 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 767 | 168 | 113 | 486 | 0 | 653 |
+| Total | 767 | 176 | 126 | 465 | 0 | 653 |
 
 ## Non-guideline content
 
@@ -170,6 +170,21 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 - **9.3.3** (rationale): The introduction (validation runs when a property value changes; dependency property accessors cannot contain arbitrary validation code, so it is specified at registration), with a validating setter of an ordinary property, is rationale for FDG9059.
 - **9.3.4** (rationale): The introduction (dependency property accessors should not raise change notifications, because XAML-generated code does not call them), with a notifying setter of an ordinary property, is rationale for FDG9060.
 - **9.3.5** (rationale): The definition of coercion (the setter modifies the value before the store is changed), with a coercing setter of an ordinary property, and the statement that dependency properties specify it at registration are rationale for FDG9061.
+- **9.4** (rationale): The introduction (managed memory is released by the GC, unmanaged resources must be released explicitly; finalizers run at an undetermined time and postpone collection, so IDisposable and GC.SuppressFinalize give a manual, earlier release; the Dispose Pattern standardizes finalizers and IDisposable) and the Pepin and Duffy annotations (call Dispose when ownership is obvious; neglecting it when ownership is shared does no harm) are rationale for FDG9062 to FDG9083.
+- **9.4.1** (rationale): The description of the Basic Dispose Pattern (IDisposable with a Dispose(bool) method that holds all cleanup logic shared with the optional finalizer), the DisposableResourceHolder example, the Sutter annotation on C++ destructors, the meaning of the disposing parameter (reference objects are accessed only when it is true), and the advice to override Dispose(bool) when a base class already implements the pattern are rationale for FDG9064 to FDG9072; no guideline icon states the last advice, which CA2215 checks and which is not mapped (FDG9064).
+- **9.4.2** (rationale): The definition of finalizable types (types that override the finalizer and provide a finalization code path in Dispose(bool)), the statement that the guidelines also apply to code called from a finalizer, the advice not to override Finalize again when the base class is finalizable, the Sutter annotation (finalizers make a type more expensive to use) and the ComplexResourceHolder example are rationale for FDG9073 to FDG9077.
+- **9.4.3** (rationale): The introduction (most operations are one-off, a few are inherently scoped, such as obtaining and releasing a lock, and IDisposable with the using statement can map them to lexical scopes) is rationale for FDG9078 and FDG9079.
+- **9.4.4** (background): The introduction (IAsyncDisposable permits the same cleanup as IDisposable with asynchronous methods when the work involves I/O) is background for FDG9080 to FDG9083.
+- **9.5** (rationale): The definition of factories (operations that abstract object creation), the two groups (factory methods such as File.Open and Activator.CreateInstance, and factory types with virtual instance factory methods, the StreamFactory example) are rationale for FDG9084 to FDG9092.
+- **9.6** (background): The introduction (LINQ makes it easier to interact with data sources; the following sections list guidelines for LINQ support, including the Query Pattern) is background for FDG9093 to FDG9107.
+- **9.6.1** (background): The overview of LINQ (its features: extension methods, lambda expressions, Func and Action, Expression, IQueryable<T>, the Query Pattern and query expressions), the query example and the Mariani and Trofin annotations are background for FDG9093 to FDG9107.
+- **9.6.2** (background): The list of the three ways to support LINQ (implement IEnumerable<T>, IQueryable<T> or the Query Pattern) is background for the sections that follow, FDG9093 to FDG9107.
+- **9.6.5** (rationale): The definition of the Query Pattern (the methods of Figure 9-1 defined without implementing IQueryable<T> or another LINQ interface), the notation of Figure 9-1 (S for a collection type, O<T> for an ordered subtype, the this parameter for the source, member or extension methods, Expression<Func<...>> in place of Func<...>) are rationale for FDG9099 to FDG9107; FDG9100, FDG9103 and FDG9106 take the method names of the figure.
+- **9.7** (rationale): The introduction (some implementations of an abstraction support a feature that others do not; a factored design with interfaces for optional features, the stream example, adds types and needs dynamic casts; the Optional Feature Pattern, as System.IO.Stream uses it, queries support through a property and calls the members directly) and the Cwalina annotation are rationale for FDG9108 to FDG9110.
+- **9.8** (rationale): The introduction (List<string> cannot be cast to List<object> because T is in both input and output positions; CountedReference<T> has T only in output positions; the EnumeratorAdapter and ComparerAdapter examples of covariance and contravariance) and the Cwalina annotation are rationale for FDG9111 to FDG9123.
+- **9.8.1** (background): The statement that contravariance is indicated with the in keyword in C# and the In modifier in VB.NET, with the invariant and contravariant delegate example, is background for FDG9111 to FDG9114.
+- **9.8.2** (background): The statement that covariance is indicated with the out keyword in C# and the Out modifier in VB.NET, with the invariant and covariant delegate example, is background for FDG9115 to FDG9119.
+- **9.8.3** (rationale): The description of the Simulated Covariance Pattern (a root interface without members that use T in contravariant positions, implemented explicitly by the generic type, with the Foo<T> and CountedReference<T> examples) is rationale for FDG9120 to FDG9123.
 
 ### Appendix A: C# Coding Style Conventions
 

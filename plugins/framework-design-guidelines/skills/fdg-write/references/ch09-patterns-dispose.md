@@ -6,27 +6,18 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 9.4 Dispose Pattern
 
-- **FDG9062** DO implement the Basic Dispose Pattern on types containing instances of disposable types. See section 9.4.1 for details on the basic pattern. — examples: examples/ch09-patterns-dispose.md#fdg9062
 - **FDG9063** CONSIDER implementing the Basic Dispose Pattern on classes that themselves don’t hold unmanaged resources or disposable objects, but are likely to have subtypes that do. — examples: examples/ch09-patterns-dispose.md#fdg9063
 
 ## 9.4.1 Basic Dispose Pattern
 
-- **FDG9064** DO declare a protected virtual void `Dispose(bool disposing)` method to centralize all logic related to releasing managed and unmanaged resources. — examples: examples/ch09-patterns-dispose.md#fdg9064
-- **FDG9065** DO implement the `IDisposable` interface by simply calling `Dispose(true)` followed by `GC.SuppressFinalize(this)`. — examples: examples/ch09-patterns-dispose.md#fdg9065
-- **FDG9066** DO NOT make the parameterless `Dispose` method virtual. — examples: examples/ch09-patterns-dispose.md#fdg9066
-- **FDG9067** DO NOT declare any overloads of the `Dispose` method other than `Dispose()` and `Dispose(bool)`. — examples: examples/ch09-patterns-dispose.md#fdg9067
 - **FDG9068** DO allow the `Dispose(bool)` method to be called more than once. The method might choose to do nothing after the first call. — examples: examples/ch09-patterns-dispose.md#fdg9068
-- **FDG9069** AVOID throwing an exception from within `Dispose(bool)` except under critical situations where the containing process has been corrupted (e.g., leaks, inconsistent shared state). — examples: examples/ch09-patterns-dispose.md#fdg9069
 - **FDG9070** DO throw an `ObjectDisposedException` from any member that cannot be used after the object has been disposed of. — examples: examples/ch09-patterns-dispose.md#fdg9070
 - **FDG9071** AVOID allowing an object to regain meaningful state after a call to `Dispose()`. — examples: examples/ch09-patterns-dispose.md#fdg9071
 - **FDG9072** CONSIDER providing a `Close()` method, in addition to the `Dispose()` method, if “close” is standard terminology in the area. — examples: examples/ch09-patterns-dispose.md#fdg9072
 
 ## 9.4.2 Finalizable Types
 
-- **FDG9073** DO NOT make public types finalizable. — examples: examples/ch09-patterns-dispose.md#fdg9073
-- **FDG9074** DO implement the Basic Dispose Pattern on every finalizable type. See section 9.4.1 for details on the basic pattern. — examples: examples/ch09-patterns-dispose.md#fdg9074
 - **FDG9075** DO NOT access any finalizable objects in the finalizer code path, because there is significant risk that they will have already been finalized. — examples: examples/ch09-patterns-dispose.md#fdg9075
-- **FDG9076** DO NOT let exceptions escape from the finalizer logic, except for system-critical failures. — examples: examples/ch09-patterns-dispose.md#fdg9076
 - **FDG9077** DO NOT remove a finalizer from an unsealed public type once it has one. — examples: examples/ch09-patterns-dispose.md#fdg9077
 
 ## 9.4.3 Scoped Operations
@@ -37,9 +28,3 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 ## 9.4.4 IAsyncDisposable
 
 - **FDG9080** DO follow the guidance for both asynchronous design (section 9.2) and synchronous `Dispose` (section 9.4), except as otherwise noted, when implementing `IAsyncDisposable`. — examples: examples/ch09-patterns-dispose.md#fdg9080
-- **FDG9081** DO NOT declare any overloads of `DisposeAsync()`. — examples: examples/ch09-patterns-dispose.md#fdg9081
-- **FDG9082** DO implement `DisposeAsync` as only calling and awaiting `Dispose-AsyncCore()`, calling `Dispose(false)`, and calling `GC.SuppressFinalize(this)`, in that order—except on sealed types. — examples: examples/ch09-patterns-dispose.md#fdg9082
-
-## 9.4.4.1 Usage Guidelines for await using
-
-- **FDG9083** DO use the `ConfigureAwait` modifier when using `await using` in the same way that you would with `await`. — examples: examples/ch09-patterns-dispose.md#fdg9083

@@ -735,3 +735,52 @@ the narrowing of FDG9020, FDG9022 and FDG9037; the first-run counts are in the T
   whose value is not the value parameter moved from FDG9054 to FDG9057) changed. A rerun of these six diagnostics gave
   the same counts as the table: internal-a's FDG9043 report stays, and the others have 0 reports. The FDG9043 rerun of
   fix round 2 gave the same 1.
+
+## Chapter 9 (9.4 to 9.8) mappings and analyzers
+
+Package 0.1.0 with the mappings of sections 9.4 to 9.8 and three analyzers (13 diagnostics), enabled by the
+profile globalconfigs (library for the open-source samples, application for the internal ones). The mapped SDK
+diagnostics and the new analyzers are counted. Every report was checked.
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| CA1001 | FDG9062 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| CA1010 | FDG9093 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports); shared with FDG8034. |
+| CA1063 | FDG9062, FDG9064, FDG9065, FDG9066, FDG9074 | 0 | 0 | 0 | 0 | 2 | 2 | 0 | 2 | None needed (see notes). |
+| CA1065 | FDG9069, FDG9076 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | None needed (see notes). |
+| CA1816 | FDG9065 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 1 | None needed (see notes). |
+| CA2007 | FDG9083 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | None needed; the report belongs to FDG9039 (see notes); library only. |
+| CA2213 | FDG9062 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1 | None needed (see notes). |
+| FDG9067 | FDG9067 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9073 | FDG9073 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports); library only. |
+| FDG9074 | FDG9074 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9081 | FDG9081 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9082 | FDG9082 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9100 | FDG9100 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9103 | FDG9103 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9106 | FDG9106 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports); library only. |
+| FDG9111 | FDG9111 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports); library only. |
+| FDG9112 | FDG9112 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports); library only. |
+| FDG9115 | FDG9115 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports); library only. |
+| FDG9116 | FDG9116 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports); library only. |
+| FDG9117 | FDG9117 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+
+### Notes
+
+- **CA1063 and CA1816.** internal-b's 3 reports are one public unsealed disposable type: CA1063 asks for an
+  overridable Dispose(bool) (FDG9064) and for a Dispose() that only calls Dispose(true) and then
+  GC.SuppressFinalize (FDG9065), and CA1816 reports the missing GC.SuppressFinalize call (FDG9065). True.
+- **CA1065.** internal-a's 1 report is an `InvalidOperationException` created in the Dispose() of a public
+  type. True by the shape of FDG9069 (users expect Dispose not to throw); whether the throw is one of the
+  critical situations that the rule excepts is left to review, as the notes of FDG9069 say.
+- **CA2007.** serilog's 1 report is a plain await of a task in a batching sink, not an await using, so it
+  belongs to FDG9039 (it is the same report as in the 9.1 to 9.3 section) and is not counted as true for
+  FDG9083. Not a false positive of CA2007 either.
+- **CA2213.** serilog's 1 report is a `CancellationTokenSource` field that the batching sink creates and
+  never disposes. True for FDG9062.
+- **New analyzers.** The 13 diagnostics of DisposePatternAnalyzer, QueryPatternAnalyzer and VarianceAnalyzer
+  have 0 reports, so they pass gate 2 (Ruling 21). FDG9073, FDG9106 and the variance rules FDG9111, FDG9112,
+  FDG9115 and FDG9116 are off in the application profile, so only the open-source samples are measured for
+  them. serilog and polly declare no public generic interface or delegate; newtonsoft-json declares two, an
+  array pool whose type parameter is in a returned array and in a parameter (both ways, so neither FDG9112 nor
+  FDG9116 applies) and a token sequence interface that is already covariant and returns no array.

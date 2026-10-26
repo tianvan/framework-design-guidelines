@@ -1769,9 +1769,12 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+    - CA1001
+    - CA1063
+    - CA2213
+    coverage: partial
   autofix: 'no'
   severity:
     library: warning
@@ -1781,7 +1784,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1001 reports a type of any accessibility that owns a disposable field (one it assigns a newly created object) and does not implement IDisposable; a field assigned from a constructor parameter was not reported, since the type does not own it (probe with SDK 10.0.402). CA1063 reports an implementation of IDisposable that departs from the Basic Dispose Pattern of section 9.4.1 (no overridable Dispose(bool) on an unsealed type, a virtual or explicit Dispose(), a Dispose() that does more than call Dispose(true) and then GC.SuppressFinalize(this), a finalizer that does not call Dispose(false)); it honors api_surface, so the library profile checks externally visible types and the application profile all types (probe). CA2213 reports a disposable field that Dispose never disposes, in a type of any accessibility (probe). Disposable objects held other than in fields, such as in a collection, are not seen, so coverage is partial. The CA1001 code fix adds a Dispose method that throws NotImplementedException (probe), so autofix is no; implementing IDisposable adds to the public API without changing a signature. The CA1063 reports on the signatures of Dispose methods belong to FDG9064 and FDG9066, whose fixes are breaking. CA1063 also reports the explicit IDisposable.Dispose that FDG9072 recommends together with Close (probe); such a report is not a violation. CA1063 is shared with FDG9064, FDG9065, FDG9066 and FDG9074.
 - id: FDG9063
   strength: CONSIDER
   text: implementing the Basic Dispose Pattern on classes that themselves don’t hold unmanaged resources or disposable objects, but are likely to have subtypes that do.
@@ -1800,13 +1803,13 @@
   autofix: 'no'
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the reason given is subtypes that hold resources, which users of the framework write by deriving from the class (System.IO.Stream). Not machine-checkable: whether subtypes are likely to hold unmanaged resources or disposable objects is a design judgment.'
 - id: FDG9064
   strength: DO
   text: declare a protected virtual void `Dispose(bool disposing)` method to centralize all logic related to releasing managed and unmanaged resources.
@@ -1827,10 +1830,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: sdk
+    diagnostics:
+    - CA1063
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1839,7 +1843,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1063 reports an unsealed class that implements IDisposable without an overridable Dispose(bool) ("Provide an overridable implementation of Dispose(bool) ... or mark the type as sealed") and a Dispose(bool) that is not protected, virtual and unsealed (probe with SDK 10.0.402). It honors api_surface: the library profile checks externally visible types and the application profile all types (probe). Sealed classes are not reported, as a sealed class cannot declare a virtual method (CS0549). Whether all cleanup logic is in Dispose(bool) is not seen, so coverage is partial. CA2215 (an override of Dispose(bool) that does not call the base method) checks the advice before the guidelines of section 9.4.1 to override Dispose(bool) when the base class already implements the pattern; no guideline states it, so it is not mapped. Adding Dispose(bool) or changing its accessibility or virtual modifier changes the public API, so the fix is breaking; CA1063 has no code fix. CA1063 is shared with FDG9062, FDG9065, FDG9066 and FDG9074.'
 - id: FDG9065
   strength: DO
   text: implement the `IDisposable` interface by simply calling `Dispose(true)` followed by `GC.SuppressFinalize(this)`.
@@ -1860,9 +1864,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+    - CA1063
+    - CA1816
+    coverage: partial
   autofix: 'no'
   severity:
     library: warning
@@ -1872,7 +1878,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'CA1063 reports a Dispose() that does anything but call Dispose(true) and then GC.SuppressFinalize(this), the reversed order and an expression-bodied Dispose() => Dispose(true) included, on externally visible types in the library profile and on all types in the application profile; CA1816 reports a Dispose() that does not call GC.SuppressFinalize on an externally visible unsealed type, and did not report an internal type even with api_surface all (probe with SDK 10.0.402). A sealed class whose Dispose() calls no Dispose(bool) is reported by neither (probe), so coverage is partial. Both also report the pattern that FDG9072 recommends: CA1063 asks to make the explicit IDisposable.Dispose that calls Close public, and CA1816 reports the Close method that calls GC.SuppressFinalize (probe); such reports are not violations. CA1816 also reports a DisposeAsync that does not call GC.SuppressFinalize, which is FDG9082''s. Changing the body changes no signature, so autofix is no; neither diagnostic has a code fix.'
 - id: FDG9066
   strength: DO NOT
   text: make the parameterless `Dispose` method virtual.
@@ -1890,10 +1896,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: sdk
+    diagnostics:
+    - CA1063
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1902,7 +1909,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1063 reports a virtual Dispose() ("Ensure that ... is declared as public and sealed") on externally visible types in the library profile and on all types in the application profile (probe with SDK 10.0.402), so in the library profile an internal unsealed type is not checked and coverage is partial. It reports an explicit IDisposable.Dispose with the same message, which is not virtual; FDG9072 recommends that form together with Close, so such a report is not a violation. Removing the virtual modifier breaks overrides in derived types and changes the public signature, so the fix is breaking; CA1063 has no code fix.
 - id: FDG9067
   strength: DO NOT
   text: declare any overloads of the `Dispose` method other than `Dispose()` and `Dispose(bool)`.
@@ -1915,10 +1922,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9067
+    coverage: full
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1926,8 +1934,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Remove the Dispose overload '{0}'; declare only Dispose() and Dispose(bool)
+    category: Patterns
+  notes: FDG9067 reports a method named Dispose, of any accessibility, static and extension methods included, that has parameters other than none or a single bool passed by value, or is generic. Local functions are not checked. Overrides and interface implementations take their signature from the member they override or implement, which is reported where it is declared in source, so they are not reported. CA1063 did not report a Dispose(int) or Dispose(string, bool) overload (probe with SDK 10.0.402). Removing or renaming a public method changes the public API, so the fix is breaking; there is no code fix.
 - id: FDG9068
   strength: DO
   text: allow the `Dispose(bool)` method to be called more than once. The method might choose to do nothing after the first call.
@@ -1952,7 +1962,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether a second call is safe depends on what the cleanup does, such as the _disposed flag of the example. FDG9080 asks the same of DisposeAsync.'
 - id: FDG9069
   strength: AVOID
   text: throwing an exception from within `Dispose(bool)` except under critical situations where the containing process has been corrupted (e.g., leaks, inconsistent shared state).
@@ -1969,9 +1979,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+    - CA1065
+    coverage: partial
   autofix: 'no'
   severity:
     library: warning
@@ -1981,7 +1992,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1065 reports an exception created directly in Dispose(), the IDisposable.Dispose implementation, of an externally visible type, an ObjectDisposedException included (probe with SDK 10.0.402); the body's reason, that users expect a call to Dispose not to raise an exception, covers Dispose(). In the probe it did not report a throw in Dispose(bool), the method the text names, nor in DisposeAsync, nor in Dispose() of an internal type with api_surface all, and exceptions from called methods are not seen, so coverage is partial. The critical situations the text excepts are a judgment; the IndentationScope example of FDG9078 throws InvalidOperationException from Dispose(bool) when the indentation is inconsistent. Finalizers are FDG9076. CA1065 is shared with FDG5031, FDG5054, FDG5092, FDG8066, FDG8075, FDG8083, FDG8101 and FDG9076. Not throwing changes no signature; CA1065 has no code fix.
 - id: FDG9070
   strength: DO
   text: throw an `ObjectDisposedException` from any member that cannot be used after the object has been disposed of.
@@ -2006,7 +2017,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: which members cannot be used after disposal is a design judgment. CA1513 only asks for ObjectDisposedException.ThrowIf in place of a throw statement, which this rule does not state, so it is not mapped.'
 - id: FDG9071
   strength: AVOID
   text: allowing an object to regain meaningful state after a call to `Dispose()`.
@@ -2040,7 +2051,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether a member recreates disposed state, as the lazily created resource of the ImplicitRehydration example does, depends on the state model of the type; a method that clearly acquires new resources, such as Open, may revive the object.'
 - id: FDG9072
   strength: CONSIDER
   text: providing a `Close()` method, in addition to the `Dispose()` method, if “close” is standard terminology in the area.
@@ -2070,7 +2081,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether close is standard terminology in the area is a judgment. CA1063 reports the explicit IDisposable.Dispose of the example ("Rename ... to ''Dispose'' and ensure that it is declared as public and sealed"), and CA1816 reports its Close method because it calls GC.SuppressFinalize (probe with SDK 10.0.402); for a type that follows this rule those reports are not violations (FDG9062, FDG9065, FDG9066).'
 - id: FDG9073
   strength: DO NOT
   text: make public types finalizable.
@@ -2085,19 +2096,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+    - FDG9073
+    coverage: partial
   autofix: 'no'
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Move the finalizer of the public type '{0}' to an internal or private nested resource holder
+    category: Patterns
+  notes: 'Library only: the text is about public types, and moves the finalizer to an internal or private nested type. FDG9073 reports a finalizer declared in an externally visible class. A public type that inherits a finalizer, such as a public subclass of SafeHandle, is not reported, so coverage is partial. Removing an override of Finalize changes no public signature, so autofix is no; there is no code fix. On a type that already shipped with a finalizer, FDG9077 asks to keep it. CA2216 (disposable types should declare a finalizer) asks for the opposite and is not mapped.'
 - id: FDG9074
   strength: DO
   text: implement the Basic Dispose Pattern on every finalizable type. See section 9.4.1 for details on the basic pattern.
@@ -2112,9 +2126,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+    - FDG9074
+    - CA1063
+    coverage: partial
   autofix: 'no'
   severity:
     library: warning
@@ -2123,8 +2139,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Implement the Basic Dispose Pattern on the finalizable type '{0}'
+    category: Patterns
+  notes: FDG9074 reports a finalizer declared in a class, of any accessibility, that does not implement IDisposable. CA1063 reports a finalizable class that implements IDisposable but whose finalizer does not call Dispose(false), and the other departures from the pattern listed for FDG9062; it honors api_surface, so the library profile checks externally visible types only (probe with SDK 10.0.402). The other parts of the pattern are FDG9064 to FDG9066. Implementing IDisposable adds to the public API without changing a signature, so autofix is no; there is no code fix.
 - id: FDG9075
   strength: DO NOT
   text: access any finalizable objects in the finalizer code path, because there is significant risk that they will have already been finalized.
@@ -2157,7 +2175,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether an object is finalizable depends on its runtime type (a Stream field can hold a finalizable FileStream), and the finalizer code path includes the part of Dispose(bool) that runs when disposing is false, which depends on the argument. Unboxed value type fields may be used (Richter annotation).'
 - id: FDG9076
   strength: DO NOT
   text: let exceptions escape from the finalizer logic, except for system-critical failures.
@@ -2170,9 +2188,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+    - CA1065
+    coverage: partial
   autofix: 'no'
   severity:
     library: warning
@@ -2182,7 +2201,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1065 reports an exception created directly in a finalizer, in a type of any accessibility (probe with SDK 10.0.402). Exceptions from methods that the finalizer calls, such as Dispose(false), are not seen, and neither is the finalizer code path inside Dispose(bool), so coverage is partial; the system-critical failures the text excepts cannot be told apart. CA1821 reports a finalizer whose only statement is a throw as empty (probe); it is not mapped. CA1065 is shared with FDG9069 and the chapter 5 and 8 rules listed there. Not throwing changes no signature; CA1065 has no code fix.
 - id: FDG9077
   strength: DO NOT
   text: remove a finalizer from an unsealed public type once it has one.
@@ -2203,13 +2222,13 @@
   autofix: 'no'
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the text is about unsealed public types, whose derived types in other assemblies depend on the finalizer; sealed and internal types are excepted. Not machine-checkable: it needs the previous version of the type.'
 - id: FDG9078
   strength: CONSIDER
   text: returning a disposable value instead of making callers manually pair “begin” and “end” methods.
@@ -2246,7 +2265,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: which pairs of methods or property changes begin and end an operation (the Indent property of IndentedTextWriter) is a design judgment.'
 - id: FDG9079
   strength: CONSIDER
   text: returning a disposable value instead of making callers manually pair “begin” and “end” methods when the “end” method must be in a `finally` block for program correctness.
@@ -2286,7 +2305,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether the end method must run in a finally block for correctness, as for a lock, is a judgment. The disposable value follows the Dispose guidelines, such as FDG9068.'
 - id: FDG9080
   strength: DO
   text: follow the guidance for both asynchronous design (section 9.2) and synchronous `Dispose` (section 9.4), except as otherwise noted, when implementing `IAsyncDisposable`.
@@ -2311,7 +2330,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not an analyzer candidate of its own: the text points to other guidelines, which check their parts: ConfigureAwait (FDG9039 and FDG9083, CA2007), calls more than once (FDG9068), ObjectDisposedException (FDG9070), and the IAsyncDisposable guidelines FDG9081 and FDG9082.'
 - id: FDG9081
   strength: DO NOT
   text: declare any overloads of `DisposeAsync()`.
@@ -2324,10 +2343,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9081
+    coverage: full
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2335,8 +2355,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Remove the DisposeAsync overload '{0}'; declare only DisposeAsync()
+    category: Patterns
+  notes: FDG9081 reports a method named DisposeAsync, of any accessibility, static and extension methods included, that has parameters or is generic, such as DisposeAsync(CancellationToken). Overrides and interface implementations are not reported, as for FDG9067. Removing or renaming a public method changes the public API, so the fix is breaking; there is no code fix.
 - id: FDG9082
   strength: DO
   text: implement `DisposeAsync` as only calling and awaiting `Dispose-AsyncCore()`, calling `Dispose(false)`, and calling `GC.SuppressFinalize(this)`, in that order—except on sealed types.
@@ -2351,9 +2373,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+    - FDG9082
+    coverage: partial
   autofix: 'no'
   severity:
     library: warning
@@ -2362,8 +2385,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Implement '{0}' as only {1}, in that order
+    category: Patterns
+  notes: FDG9082 reports the implementation of IAsyncDisposable.DisposeAsync, explicit or not, declared in an unsealed class of any accessibility, whose body is not exactly an await of DisposeAsyncCore() on the same instance, with or without ConfigureAwait (FDG9083 asks for it), then Dispose(false), then GC.SuppressFinalize(this). When neither the class nor its base classes declare a Dispose(bool) method, the Dispose(false) call is not expected, since there is none to call; the text gives its reason as finalizer code in the Dispose implementation of a base class. Sealed classes and structs are excepted by the text. An override of DisposeAsync, and an abstract one, which has no body, are not reported, so coverage is partial; neither is a DisposeAsync that a class inherits from a base class that does not implement IAsyncDisposable. CA1816 also reports a DisposeAsync that does not call GC.SuppressFinalize, on externally visible unsealed types (probe with SDK 10.0.402); it is listed for FDG9065 and not here, to avoid two reports of one call. Changing the body changes no signature, so autofix is no; there is no code fix.
 - id: FDG9083
   strength: DO
   text: use the `ConfigureAwait` modifier when using `await using` in the same way that you would with `await`.
@@ -2384,19 +2409,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+    - CA2007
+    coverage: partial
   autofix: 'no'
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: as for FDG9039, ConfigureAwait is used in the same situations as for tasks, and the text excepts application models that depend on the synchronization context. CA2007 reports an await using statement or declaration whose resource is created in it without ConfigureAwait, and not one that uses ConfigureAwait(false) or ConfigureAwait(true) (probe with SDK 10.0.402); an await using of an existing variable without ConfigureAwait, such as await using (value), is not reported, so coverage is partial. The CA2007 code fix adds ConfigureAwait(false), but whether the code needs the context is judgment, so autofix is no, as for FDG9039. CA2007 is shared with FDG9039 and FDG9050.'
 - id: FDG9084
   strength: DO
   text: prefer constructors to factories, because they are generally more usable, consistent, and convenient than specialized construction mechanisms.
@@ -2424,7 +2450,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether a factory is needed (FDG9085 to FDG9088) is a design judgment.'
 - id: FDG9085
   strength: CONSIDER
   text: using a factory if you need more control than can be provided by constructors over the creation of the instances.
@@ -2476,7 +2502,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether creation needs more control than a constructor gives (caching, throttling, sharing, the Singleton or Builder patterns) is a design judgment.'
 - id: FDG9086
   strength: DO
   text: use a factory in cases where a developer might not know which type to construct, such as when coding against a base type or interface.
@@ -2503,7 +2529,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether a developer knows which type to construct is a design judgment.'
 - id: FDG9087
   strength: CONSIDER
   text: using a factory if having a named method is the only way to make the operation self-explanatory.
@@ -2537,7 +2563,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether a constructor is self-explanatory (the String(char, int) example) is a judgment.'
 - id: FDG9088
   strength: DO
   text: use a factory for conversion-style operations, such as `Parse` or `Decode`.
@@ -2568,7 +2594,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether an operation converts one representation of a value into another (Parse, Decode) is a judgment; a constructor that takes a string can also initialize a new instance.'
 - id: FDG9089
   strength: DO
   text: prefer implementing factory operations as methods rather than properties.
@@ -2591,7 +2617,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'The text has no body. Not machine-checkable: whether a property creates an instance is not visible in its signature. CA1024 asks for the opposite (a property instead of a Get method, FDG5024) and is not mapped.'
 - id: FDG9090
   strength: DO
   text: return created instances as method return values, not as `out` parameters.
@@ -2629,7 +2655,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not an analyzer candidate: whether an out parameter returns a created instance is a judgment. CA1021 (FDG5113) reports out parameters of externally visible methods except the Try pattern, which the Cwalina and Barton annotations except here too, and cannot tell a created instance from other outputs, so it is not mapped.'
 - id: FDG9091
   strength: CONSIDER
   text: naming factory methods by concatenating `Create` and the name of the type being created, when the factory method is declared on a disctinct factory type.
@@ -2654,7 +2680,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not an analyzer candidate: which types are factory types is a judgment, and the text allows domain-specific names (File.Open).'
 - id: FDG9092
   strength: CONSIDER
   text: naming factory types by concatenating the name of the type being created and `Factory`. For example, consider naming a factory type that creates `Control` objects `ControlFactory`.
@@ -2677,7 +2703,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'The text has no body. Not machine-checkable: which types are factory types, and which type each creates, is a judgment.'
 - id: FDG9093
   strength: DO
   text: implement `IEnumerable<T>` to enable basic LINQ support.
@@ -2699,9 +2725,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+    - CA1010
+    coverage: partial
   autofix: 'no'
   severity:
     library: warning
@@ -2711,7 +2738,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: CA1010 reports a type that implements the non-generic IEnumerable, ICollection or IList without the generic counterpart; it honors api_surface, so the library profile checks externally visible types and the application profile all types (probe with SDK 10.0.402). Which other types are data sets that need LINQ support is a judgment, so coverage is partial. Adding the generic interface adds to the public API without changing a signature; CA1010 has no code fix. CA1010 is shared with FDG8034.
 - id: FDG9094
   strength: CONSIDER
   text: implementing `ICollection<T>` to improve the performance of query operators.
@@ -2736,7 +2763,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether a type can offer a cheap Count and the other ICollection<T> members is a design judgment.'
 - id: FDG9095
   strength: CONSIDER
   text: supporting selected methods of `System.Linq.Enumerable` or the Query Pattern (see section 9.6.5) directly on new types implementing `IEnumerable<T>` if it is desirable to override the default `System.Linq.Enumerable` implementation (e.g., for performance optimization reasons).
@@ -2763,7 +2790,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether the default System.Linq.Enumerable implementation is too slow for a type is a judgment.'
 - id: FDG9096
   strength: CONSIDER
   text: implementing `IQueryable<T>` when access to the query expression, passed to members of `IQueryable`, is necessary.
@@ -2788,7 +2815,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether access to the query expression is necessary, as for a remote data source, is a judgment.'
 - id: FDG9097
   strength: DO NOT
   text: implement `IQueryable<T>` without understanding the performance implications of doing so.
@@ -2815,7 +2842,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: the understanding the text asks for is not visible in code.'
 - id: FDG9098
   strength: DO
   text: throw `NotSupportedException` from `IQueryable<T>` methods that cannot be logically supported by your data source.
@@ -2840,7 +2867,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: which query methods a data source cannot support logically is a judgment.'
 - id: FDG9099
   strength: DO
   text: implement the Query Pattern as instance members on the new type, if the members make sense on the type even outside the context of LINQ. Otherwise, implement them as extension methods.
@@ -2871,7 +2898,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether the members make sense on the type outside the context of LINQ is a judgment.'
 - id: FDG9100
   strength: DO
   text: implement `IEnumerable<T>` on types implementing the Query Pattern.
@@ -2882,9 +2909,10 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: fdg
+    diagnostics:
+    - FDG9100
+    coverage: partial
   autofix: 'no'
   severity:
     library: warning
@@ -2893,8 +2921,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Implement IEnumerable<T> on '{0}', which declares the query method '{1}'
+    category: Patterns
+  notes: The text has no body. FDG9100 reports a class, struct or interface of any accessibility that declares an instance method of the Query Pattern of Figure 9-1 that takes a delegate (Where, Select, SelectMany, OrderBy, ThenBy, SkipWhile and Join, with OrderByDescending and ThenByDescending), with a parameter of a delegate type or of Expression<TDelegate> and a return value, and does not implement IEnumerable<T>; IQueryable<T> extends it and counts. A Query Pattern provided by extension methods, and the members of Figure 9-1 without a delegate (Union, Take, Skip, ElementAt), are not seen, so coverage is partial. Overrides and interface implementations are not reported, as they take their name from another member. Implementing an interface adds to the public API without changing a signature, so autofix is no; there is no code fix.
 - id: FDG9101
   strength: CONSIDER
   text: designing the LINQ operators to return domain-specific enumerable types. Essentially, you can return anything from a `Select` query method; however, the expectation is that the query result type should be at least enumerable.
@@ -2921,7 +2951,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether a domain-specific result type is worth providing is a design judgment; the expectation that a query result is at least enumerable is not checked.'
 - id: FDG9102
   strength: AVOID
   text: implementing just a part of the Query Pattern if fallback to the basic `IEnumerable<T>` implementations is undesirable.
@@ -2948,7 +2978,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether falling back to the basic IEnumerable<T> implementations is undesirable is a judgment.'
 - id: FDG9103
   strength: DO
   text: represent ordered sequences as a separate type from their unordered counterpart.
@@ -2959,10 +2989,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9103
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2970,8 +3001,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Return an ordered sequence type from '{0}' that is separate from the unordered type '{1}'
+    category: Patterns
+  notes: The text has no body. FDG9103 reports a method of any accessibility named OrderBy or OrderByDescending, an instance method or an extension method, that takes a delegate or Expression<TDelegate> as for FDG9100 and returns the type it is applied to (the declaring type, or the type of its this parameter, by original definition) or IEnumerable<T>, the unordered sequence type of LINQ. Static methods that are not extension methods, and other methods that produce ordered sequences, are not checked, so coverage is partial. Overrides and interface implementations are not reported. Changing the return type changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9104
   strength: DO
   text: define the `ThenBy` method, or implement `IOrderedEnumerable<T>`, on ordered sequence types.
@@ -2998,7 +3031,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not an analyzer candidate: ThenBy can be an extension method declared in any assembly, as Enumerable.ThenBy is for IOrderedEnumerable<T>, so whether an ordered sequence type has ThenBy cannot be decided from the type.'
 - id: FDG9105
   strength: DO
   text: defer execution of query operator implementations. The expected behavior of most of the Query Pattern members is that they simply construct a new object which, upon enumeration, produces the elements of the set that match the query.
@@ -3031,7 +3064,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether an implementation runs the query before enumeration depends on its data flow; the methods the text excepts (All, Any, Count, First and the others listed) run immediately.'
 - id: FDG9106
   strength: DO
   text: place query extensions methods in a “Linq” subnamespace of the main namespace. For example, extension methods for `System.Data` features reside in `System.Data.Linq` namespace.
@@ -3042,19 +3075,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9106
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Place the query extension method '{0}' in a Linq subnamespace instead of '{1}'
+    category: Patterns
+  notes: 'Library only: the text is about where the users of a feature find its query extensions (System.Data.Linq for System.Data). The text has no body. FDG9106 reports an externally visible extension method named after a method of the Query Pattern that takes a delegate (as for FDG9100) whose namespace does not end in a segment named Linq; the global namespace is reported too. Query extension methods with other names, such as Take or Count, are not checked, and neither is whether the namespace is a subnamespace of the main namespace of the feature, so coverage is partial. Moving a method to another namespace changes the full name of its type for callers, so the fix is breaking; there is no code fix.'
 - id: FDG9107
   strength: DO
   text: use `Expression<Func<...>>` as a parameter instead of `Func<...>` when it is necessary to inspect the query. See section 9.6.5 for more details.
@@ -3081,7 +3117,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether the query must be inspected, for translation to SQL or for a binary search in a sorted list, is a judgment.'
 - id: FDG9108
   strength: CONSIDER
   text: using the Optional Feature Pattern for optional features in abstractions.
@@ -3109,7 +3145,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: which features of an abstraction are optional is a design judgment; the Starck annotation prefers interfaces when few implementations have the feature.'
 - id: FDG9109
   strength: DO
   text: provide a simple Boolean property that clients can use to determine whether an optional feature is supported.
@@ -3138,7 +3174,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not an analyzer candidate: which members are optional features, and which Boolean property goes with each (CanSeek for Seek), is a design judgment.'
 - id: FDG9110
   strength: DO
   text: use virtual methods on the base class that throw `NotSupportedException` to define optional features.
@@ -3165,7 +3201,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not an analyzer candidate: whether a feature is optional is a design judgment; a virtual method that throws NotSupportedException is visible, but a required feature should not be declared that way.'
 - id: FDG9111
   strength: DO
   text: mark generic type parameters on generic delegates as contravariant when the type parameter is used as input, but not output, and your language supports creating contravariant types.
@@ -3176,19 +3212,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9111
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Mark the type parameter '{0}' of the delegate '{1}' as contravariant (in); it is only used as input
+    category: Patterns
+  notes: 'Library only: the reason given (in the FDG9112 body, which covers both) is that changing a released delegate is a breaking change, so the variance is declared up front. The text has no body of its own. FDG9111 reports an invariant type parameter of an externally visible generic delegate that appears only in input positions of its signature, as the compiler does, with one exception: parameters passed by value, property setters and event types are input positions; return types, property getters and base interfaces are output positions; ref, out and in parameters, ref returns and, more strictly than the compiler, constraints of the type''s own type parameters are both; constraints of method type parameters are inputs; and in a generic type argument the position is kept for a covariant type parameter, flipped for a contravariant one and both for an invariant one. A type parameter that is not used at all could take either modifier and is not reported, and neither is one that a static member uses, so coverage is partial. Adding the modifier changes the declaration of a public type and can make existing conversions and overload resolutions ambiguous, so the fix is breaking; there is no code fix.'
 - id: FDG9112
   strength: DO
   text: mark generic type parameters on generic interfaces as contravariant when the type parameter is only ever used as an input parameter to methods on the interface.
@@ -3205,19 +3244,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9112
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Mark the type parameter '{0}' of the interface '{1}' as contravariant (in); it is only used as input
+    category: Patterns
+  notes: 'Library only: the reason given is that altering a released interface is a breaking change, so the variance is declared up front. FDG9112 reports an invariant type parameter of an externally visible generic interface that appears only in input positions of its members and base interfaces, as the compiler does, with one exception: parameters passed by value, property setters and event types are input positions; return types, property getters and base interfaces are output positions; ref, out and in parameters, ref returns and, more strictly than the compiler, constraints of the type''s own type parameters are both; constraints of method type parameters are inputs; and in a generic type argument the position is kept for a covariant type parameter, flipped for a contravariant one and both for an invariant one; the body asks to declare contravariance whenever the compiler allows it. An interface that declares a class, struct or enum cannot have variant type parameters (CS8427) and is not reported. A type parameter that is not used at all could take either modifier and is not reported, and neither is one that a static member uses, so coverage is partial. Adding the modifier changes the declaration of a public type and can make existing conversions and overload resolutions ambiguous, so the fix is breaking; there is no code fix.'
 - id: FDG9113
   strength: DO NOT
   text: change generic type parameters from contravariant to invariant in newer versions of your library.
@@ -3236,13 +3278,13 @@
   autofix: 'no'
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: a versioning rule about delegates and interfaces already shipped to callers. Not machine-checkable: it needs the previous version of the library.'
 - id: FDG9114
   strength: CONSIDER
   text: making a sub-interface of a new generic interface if removing members would allow a generic type parameter to be contravariant and the remaining members provide a coherent interface.
@@ -3265,13 +3307,13 @@
   autofix: 'no'
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: as for FDG9112, the variance serves the callers of a released interface. Not machine-checkable: whether the remaining members form a coherent interface is a design judgment; the text excludes public interfaces that already shipped.'
 - id: FDG9115
   strength: DO
   text: mark generic type parameters on generic delegates as covariant when the type parameter is used as output, but not input, and your language supports creating covariant types.
@@ -3282,19 +3324,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9115
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Mark the type parameter '{0}' of the delegate '{1}' as covariant (out); it is only used as output
+    category: Patterns
+  notes: 'Library only: as for FDG9111, changing a released delegate is a breaking change (FDG9116 body). The text has no body of its own. FDG9115 reports an invariant type parameter of an externally visible generic delegate that appears only in output positions of its signature, as for FDG9111. A type parameter that is not used at all could take either modifier and is not reported, and neither is one that a static member uses, so coverage is partial. Adding the modifier changes the declaration of a public type and can make existing conversions and overload resolutions ambiguous, so the fix is breaking; there is no code fix.'
 - id: FDG9116
   strength: DO
   text: mark generic type parameters on generic interfaces as covariant when the type parameter is only ever used in output roles for members on the interface.
@@ -3311,19 +3356,22 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9116
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Mark the type parameter '{0}' of the interface '{1}' as covariant (out); it is only used as output
+    category: Patterns
+  notes: 'Library only: as for FDG9112, altering a released interface is a breaking change. FDG9116 reports an invariant type parameter of an externally visible generic interface that appears only in output positions of its members and base interfaces, with the positions of FDG9112. A type parameter used in the element type of an array that the interface returns is not reported, since FDG9117 forbids making it covariant. An interface that declares a class, struct or enum is not reported (CS8427). The IType2<T> of the Simulated Covariance example (section 9.8.3), whose T is only in a getter, is reported. A type parameter that is not used at all could take either modifier and is not reported, and neither is one that a static member uses, so coverage is partial. Adding the modifier changes the declaration of a public type and can make existing conversions and overload resolutions ambiguous, so the fix is breaking; there is no code fix.'
 - id: FDG9117
   strength: DO NOT
   text: declare a generic type parameter covariant on an interface that returns an array based on the type parameter.
@@ -3338,10 +3386,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9117
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -3349,8 +3398,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Do not return the array type '{0}' from '{1}'; the type parameter of '{2}' is covariant
+    category: Patterns
+  notes: 'FDG9117 reports a method, or a property with a getter, declared in an interface of any accessibility, whose return type is, or contains in an output position, an array whose element type uses a covariant (out) type parameter of the interface, such as T[] ProduceArray(int length). Arrays reached through a base interface (IFoo<out T> : IEnumerable<T[]>) and static members are not checked, so coverage is partial. The fixes the text gives (a covariant collection interface as the return type, removing the member, or an invariant type parameter) all change the public signature, so the fix is breaking; there is no code fix.'
 - id: FDG9118
   strength: DO NOT
   text: change generic type parameters from covariant to invariant in newer versions of your library.
@@ -3369,13 +3420,13 @@
   autofix: 'no'
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: a versioning rule about delegates and interfaces already shipped to callers. Not machine-checkable: it needs the previous version of the library. The body repeats the contravariance text of FDG9113 word for word.'
 - id: FDG9119
   strength: CONSIDER
   text: making a sub-interface of a new generic interface if removing members would allow a generic type parameter to be covariant and the remaining members provide a coherent interface.
@@ -3402,13 +3453,13 @@
   autofix: 'no'
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: as for FDG9116, the variance serves the callers of a released interface. Not machine-checkable: whether the remaining members form a coherent interface is a design judgment; the text excludes public interfaces that already shipped.'
 - id: FDG9120
   strength: CONSIDER
   text: using the Simulated Covariance Pattern if there is a need to have a representation for all instantiations of a generic type.
@@ -3433,7 +3484,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether a representation of all instantiations of a generic type is needed is a design judgment.'
 - id: FDG9121
   strength: DO
   text: ensure that the implementation of the root’s members is equivalent to the implementation of the corresponding generic type members.
@@ -3460,7 +3511,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether two implementations are equivalent cannot be decided; implementing the root members by calling the generic members, as the example does, is one way to ensure it.'
 - id: FDG9122
   strength: CONSIDER
   text: using an abstract class instead of an interface to represent the root.
@@ -3485,7 +3536,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether an abstract class or an interface is the better root is a design judgment (section 4.3).'
 - id: FDG9123
   strength: CONSIDER
   text: using a non-generic root type if such type is already available.
@@ -3510,7 +3561,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether an existing non-generic type can serve as the root (IEnumerable for List<T>) is a design judgment.'
 - id: FDG9124
   strength: AVOID
   text: making public members virtual.

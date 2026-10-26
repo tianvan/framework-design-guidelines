@@ -997,6 +997,123 @@ internal static class FdgDescriptors
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9057.md");
 
+    public static readonly DiagnosticDescriptor FDG9067 = new DiagnosticDescriptor(
+        id: "FDG9067",
+        title: "DO NOT declare any overloads of the `Dispose` method other than `Dispose()` and `Dispose(bool)`.",
+        messageFormat: "Remove the Dispose overload '{0}'; declare only Dispose() and Dispose(bool)",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9067.md");
+
+    public static readonly DiagnosticDescriptor FDG9073 = new DiagnosticDescriptor(
+        id: "FDG9073",
+        title: "DO NOT make public types finalizable.",
+        messageFormat: "Move the finalizer of the public type '{0}' to an internal or private nested resource holder",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9073.md");
+
+    public static readonly DiagnosticDescriptor FDG9074 = new DiagnosticDescriptor(
+        id: "FDG9074",
+        title: "DO implement the Basic Dispose Pattern on every finalizable type. See section 9.4.1 for details on the basic pattern.",
+        messageFormat: "Implement the Basic Dispose Pattern on the finalizable type '{0}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9074.md");
+
+    public static readonly DiagnosticDescriptor FDG9081 = new DiagnosticDescriptor(
+        id: "FDG9081",
+        title: "DO NOT declare any overloads of `DisposeAsync()`.",
+        messageFormat: "Remove the DisposeAsync overload '{0}'; declare only DisposeAsync()",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9081.md");
+
+    public static readonly DiagnosticDescriptor FDG9082 = new DiagnosticDescriptor(
+        id: "FDG9082",
+        title: "DO implement `DisposeAsync` as only calling and awaiting `Dispose-AsyncCore()`, calling `Dispose(false)`, and calling `GC.SuppressFinalize(this)`, in that order—except on sealed types.",
+        messageFormat: "Implement '{0}' as only {1}, in that order",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9082.md");
+
+    public static readonly DiagnosticDescriptor FDG9100 = new DiagnosticDescriptor(
+        id: "FDG9100",
+        title: "DO implement `IEnumerable<T>` on types implementing the Query Pattern.",
+        messageFormat: "Implement IEnumerable<T> on '{0}', which declares the query method '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9100.md");
+
+    public static readonly DiagnosticDescriptor FDG9103 = new DiagnosticDescriptor(
+        id: "FDG9103",
+        title: "DO represent ordered sequences as a separate type from their unordered counterpart.",
+        messageFormat: "Return an ordered sequence type from '{0}' that is separate from the unordered type '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9103.md");
+
+    public static readonly DiagnosticDescriptor FDG9106 = new DiagnosticDescriptor(
+        id: "FDG9106",
+        title: "DO place query extensions methods in a “Linq” subnamespace of the main namespace. For example, extension methods for `System.Data` features reside in `System.Data.Linq` namespace.",
+        messageFormat: "Place the query extension method '{0}' in a Linq subnamespace instead of '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9106.md");
+
+    public static readonly DiagnosticDescriptor FDG9111 = new DiagnosticDescriptor(
+        id: "FDG9111",
+        title: "DO mark generic type parameters on generic delegates as contravariant when the type parameter is used as input, but not output, and your language supports creating contravariant types.",
+        messageFormat: "Mark the type parameter '{0}' of the delegate '{1}' as contravariant (in); it is only used as input",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9111.md");
+
+    public static readonly DiagnosticDescriptor FDG9112 = new DiagnosticDescriptor(
+        id: "FDG9112",
+        title: "DO mark generic type parameters on generic interfaces as contravariant when the type parameter is only ever used as an input parameter to methods on the interface.",
+        messageFormat: "Mark the type parameter '{0}' of the interface '{1}' as contravariant (in); it is only used as input",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9112.md");
+
+    public static readonly DiagnosticDescriptor FDG9115 = new DiagnosticDescriptor(
+        id: "FDG9115",
+        title: "DO mark generic type parameters on generic delegates as covariant when the type parameter is used as output, but not input, and your language supports creating covariant types.",
+        messageFormat: "Mark the type parameter '{0}' of the delegate '{1}' as covariant (out); it is only used as output",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9115.md");
+
+    public static readonly DiagnosticDescriptor FDG9116 = new DiagnosticDescriptor(
+        id: "FDG9116",
+        title: "DO mark generic type parameters on generic interfaces as covariant when the type parameter is only ever used in output roles for members on the interface.",
+        messageFormat: "Mark the type parameter '{0}' of the interface '{1}' as covariant (out); it is only used as output",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9116.md");
+
+    public static readonly DiagnosticDescriptor FDG9117 = new DiagnosticDescriptor(
+        id: "FDG9117",
+        title: "DO NOT declare a generic type parameter covariant on an interface that returns an array based on the type parameter.",
+        messageFormat: "Do not return the array type '{0}' from '{1}'; the type parameter of '{2}' is covariant",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9117.md");
+
     public static readonly DiagnosticDescriptor FDGA003 = new DiagnosticDescriptor(
         id: "FDGA003",
         title: "DO place the closing brace on its own line, except the end of a `do`..`while` statement.",

@@ -97,28 +97,6 @@ CONSIDER naming factory methods by concatenating `Create` and the name of the ty
 
 For example, consider naming a factory method that creates buttons `CreateButton`. In some cases, a domain-specific name can be used, as in `File.Open`.
 
-## FDG9093
-
-DO implement `IEnumerable<T>` to enable basic LINQ support.
-
-Such basic support should be sufficient for most in-memory data sets. The basic LINQ support will use the extension methods on `IEnumerable<T>` provided in .NET. For example, simply define the methods as follows:
-
-```csharp
-public class RangeOfInt32s : IEnumerable<int> {
-  public IEnumerator<int> GetEnumerator() {...}
-  IEnumerator IEnumerable.GetEnumerator() {...}
-}
-```
-
-Doing so allows for the following code, despite the fact that `RangeOfInt32s` did not implement a `Where` method:
-
-```csharp
-   var a = new RangeOfInt32s();
-   var b = a.Where(x => x>10);
-```
-
-> **Rico Mariani:** Keep in mind that you’ll get your same enumeration semantics, and putting a LINQ façade on them does not make them execute any faster or use less memory.
-
 ## FDG9094
 
 CONSIDER implementing `ICollection<T>` to improve the performance of query operators.

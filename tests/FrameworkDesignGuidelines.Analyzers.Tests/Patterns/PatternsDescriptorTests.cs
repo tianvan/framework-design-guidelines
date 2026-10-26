@@ -12,7 +12,8 @@ public sealed class PatternsDescriptorTests
     [
         "FDG9020", "FDG9022", "FDG9023", "FDG9027", "FDG9028", "FDG9029", "FDG9033", "FDG9036", "FDG9037", "FDG9038",
         "FDG9043", "FDG9045", "FDG9047", "FDG9048", "FDG9049", "FDG9052", "FDG9053", "FDG9054", "FDG9055", "FDG9056",
-        "FDG9057",
+        "FDG9057", "FDG9067", "FDG9073", "FDG9074", "FDG9081", "FDG9082", "FDG9100", "FDG9103", "FDG9106", "FDG9111",
+        "FDG9112", "FDG9115", "FDG9116", "FDG9117",
     ];
 
     private static readonly ImmutableArray<DiagnosticAnalyzer> _analyzers =
@@ -21,6 +22,9 @@ public sealed class PatternsDescriptorTests
         new AsyncImplementationAnalyzer(),
         new AsyncEnumeratorAnalyzer(),
         new DependencyPropertyAnalyzer(),
+        new DisposePatternAnalyzer(),
+        new QueryPatternAnalyzer(),
+        new VarianceAnalyzer(),
     ];
 
     [Fact]
@@ -151,6 +155,59 @@ public sealed class PatternsDescriptorTests
                 }
 
                 private void Changed() { }
+            }
+
+            internal class Holder
+            {
+                public void Dispose(int timeout) { }
+
+                public void DisposeAsync(int timeout) { }
+            }
+
+            public class Finalizable : IDisposable
+            {
+                ~Finalizable() { }
+
+                public void Dispose() { }
+            }
+
+            internal class Leaky
+            {
+                ~Leaky() { }
+            }
+
+            internal class Query
+            {
+                public Query Where(Func<int, bool> predicate) => this;
+            }
+
+            internal static class Ordering
+            {
+                public static IEnumerable<int> OrderBy(this IEnumerable<int> source, Func<int, int> key) => source;
+            }
+
+            public static class QueryExtensions
+            {
+                public static IEnumerable<int> Where(this IEnumerable<int> source, Func<int, bool> predicate) => source;
+            }
+
+            public delegate void Handler<T>(T value);
+
+            public delegate T Factory<T>();
+
+            public interface IConsumer<T>
+            {
+                void Consume(T value);
+            }
+
+            public interface IProducer<T>
+            {
+                T Produce();
+            }
+
+            internal interface IArrays<out T>
+            {
+                T[] ToArray();
             }
 
             namespace System.Windows

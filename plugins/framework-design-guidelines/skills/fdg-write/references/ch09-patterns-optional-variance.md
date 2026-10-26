@@ -12,16 +12,11 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 9.8.1 Contravariance
 
-- **FDG9111** DO mark generic type parameters on generic delegates as contravariant when the type parameter is used as input, but not output, and your language supports creating contravariant types.
-- **FDG9112** DO mark generic type parameters on generic interfaces as contravariant when the type parameter is only ever used as an input parameter to methods on the interface. — examples: examples/ch09-patterns-optional-variance.md#fdg9112
 - **FDG9113** DO NOT change generic type parameters from contravariant to invariant in newer versions of your library. — examples: examples/ch09-patterns-optional-variance.md#fdg9113
 - **FDG9114** CONSIDER making a sub-interface of a new generic interface if removing members would allow a generic type parameter to be contravariant and the remaining members provide a coherent interface. — examples: examples/ch09-patterns-optional-variance.md#fdg9114
 
 ## 9.8.2 Covariance
 
-- **FDG9115** DO mark generic type parameters on generic delegates as covariant when the type parameter is used as output, but not input, and your language supports creating covariant types.
-- **FDG9116** DO mark generic type parameters on generic interfaces as covariant when the type parameter is only ever used in output roles for members on the interface. — examples: examples/ch09-patterns-optional-variance.md#fdg9116
-- **FDG9117** DO NOT declare a generic type parameter covariant on an interface that returns an array based on the type parameter. — examples: examples/ch09-patterns-optional-variance.md#fdg9117
 - **FDG9118** DO NOT change generic type parameters from covariant to invariant in newer versions of your library. — examples: examples/ch09-patterns-optional-variance.md#fdg9118
 - **FDG9119** CONSIDER making a sub-interface of a new generic interface if removing members would allow a generic type parameter to be covariant and the remaining members provide a coherent interface. — examples: examples/ch09-patterns-optional-variance.md#fdg9119
 
