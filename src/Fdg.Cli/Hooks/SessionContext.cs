@@ -33,8 +33,8 @@ public sealed class SessionContext
         "issues reported to you.";
 
     private const string SkillsLine =
-        "- Before designing or changing types, members, or public APIs, use the fdg-write skill; use fdg-review to review " +
-        "an API.";
+        "- Before designing or changing types, members, exception handling or common patterns, read the fdg-write " +
+        "skill. Use fdg-review to review an API.";
 
     private const string BuildProps = "Directory.Build.props";
 

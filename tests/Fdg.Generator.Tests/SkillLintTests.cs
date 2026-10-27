@@ -11,9 +11,9 @@ namespace Fdg.Generator.Tests;
 /// </summary>
 public sealed class SkillLintTests
 {
-    private const int MaxTopRules = 40;
+    private const int MaxTopRules = 60;
 
-    private const int MaxFdgWriteBodyLines = 120;
+    private const int MaxFdgWriteBodyLines = 250;
 
     private static readonly string[] SkillNames = ["fdg-write", "fdg-setup", "fdg-fix", "fdg-review"];
 
@@ -280,11 +280,11 @@ public sealed class SkillLintTests
     }
 
     /// <summary>
-    /// The top rules are at most 40 rules the references list (judgment rules, or CONSIDER rules analyzers only
-    /// suggest), ordered naming (chapter 3) first, then appendix A section A.1.6, then the rest of appendix A.
+    /// fdg-write's top rules are at most 60 rules, ordered by importance, not by chapter: each appears once and is a
+    /// rule the references list (a judgment rule, or a CONSIDER rule analyzers only suggest).
     /// </summary>
     [Fact]
-    public void Fdg_write_top_rules_are_listed_rules_naming_first()
+    public void Fdg_write_top_rules_are_distinct_listed_rules()
     {
         string[] ids = Read(SkillPath("fdg-write")).Lines
             .Select(l => RuleLine.Match(l))
@@ -300,9 +300,38 @@ public sealed class SkillLintTests
                 SkillReferenceEmitter.IsListed(Rules.Value[id]),
                 $"{id} is checked by tools; it does not belong in fdg-write.");
         }
+    }
 
-        int[] groups = ids.Select(id => Group(Rules.Value[id])).ToArray();
-        Assert.Equal(groups.Order(), groups);
+    /// <summary>fdg-write's routing table names every reference file, so every chapter can be reached.</summary>
+    [Fact]
+    public void Fdg_write_routes_to_every_reference_file()
+    {
+        string body = Read(SkillPath("fdg-write")).Body;
+
+        string[] files = TopLevelReferenceFiles();
+        Assert.NotEmpty(files);
+        foreach (string file in files)
+        {
+            Assert.True(body.Contains(file, StringComparison.Ordinal), $"fdg-write/SKILL.md does not name {file}.");
+        }
+    }
+
+    /// <summary>
+    /// fdg-review links every reference file by its path from fdg-review's directory, so a review in a session without
+    /// subagents can read the rules of any topic.
+    /// </summary>
+    [Fact]
+    public void Fdg_review_routes_to_every_reference_file()
+    {
+        string body = Read(SkillPath("fdg-review")).Body;
+
+        string[] files = TopLevelReferenceFiles();
+        Assert.NotEmpty(files);
+        foreach (string file in files)
+        {
+            string path = "../fdg-write/references/" + file;
+            Assert.True(body.Contains(path, StringComparison.Ordinal), $"fdg-review/SKILL.md does not name {path}.");
+        }
     }
 
     /// <summary>
@@ -359,16 +388,6 @@ public sealed class SkillLintTests
         }
     }
 
-    private static int Group(Rule rule)
-    {
-        if (!rule.Id.StartsWith("FDGA", StringComparison.Ordinal))
-        {
-            return 0;
-        }
-
-        return rule.Section.StartsWith("A.1.6 ", StringComparison.Ordinal) ? 1 : 2;
-    }
-
     private static string Statement(Rule rule) =>
         $"{rule.Strength.ToText()}{(rule.Strength.IsVerdict() ? ": " : " ")}{rule.Text}";
 
@@ -397,6 +416,14 @@ public sealed class SkillLintTests
 
         return line;
     }
+
+    /// <summary>The <c>.md</c> files directly in fdg-write's <c>references/</c>, not in <c>examples/</c>.</summary>
+    private static string[] TopLevelReferenceFiles() =>
+        Directory.GetFiles(FdgWriteReferences, "*.md")
+            .Select(Path.GetFileName)
+            .OfType<string>()
+            .Order(StringComparer.Ordinal)
+            .ToArray();
 
     private static IEnumerable<string> ReferencePaths(string text) =>
         ReferencePath.Matches(text).Select(m => m.Groups["path"].Value).Distinct();
