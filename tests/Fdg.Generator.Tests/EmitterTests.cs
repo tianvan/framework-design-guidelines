@@ -758,6 +758,25 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Coverage_lists_other_parts_of_the_book()
+    {
+        string coverage = CoverageEmitter.Emit(Input());
+
+        int nonGuideline = coverage.IndexOf("\n## Non-guideline content\n", StringComparison.Ordinal);
+        int otherParts = coverage.IndexOf("\n## Other parts of the book\n", StringComparison.Ordinal);
+        int preface = coverage.IndexOf(
+            "\n### Preface\n\n- **Guideline Presentation** (rationale): The legend of the strengths.\n",
+            StringComparison.Ordinal);
+        int obsolete = coverage.IndexOf("\n### Obsolete Guidance\n\n- **B.3.8** (obsolete): Superseded by FDG9001.\n" +
+            "- **B.4.1** (obsolete): No current rule replaces it.\n", StringComparison.Ordinal);
+        Assert.True(nonGuideline >= 0, "the non-guideline section is missing");
+        Assert.True(otherParts > nonGuideline, "the other parts must follow the non-guideline content");
+        Assert.True(preface > otherParts, "the preface entries are missing");
+        Assert.True(obsolete > preface, "the appendix B entries must follow the preface, in meta.yaml order");
+        Assert.EndsWith("No current rule replaces it.\n", coverage);
+    }
+
+    [Fact]
     public void Generate_is_idempotent()
     {
         string root = TempDir();

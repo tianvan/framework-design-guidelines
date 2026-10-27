@@ -3,7 +3,10 @@ using Fdg.Generator.Rules;
 
 namespace Fdg.Generator.Emit;
 
-/// <summary>Writes <c>docs/coverage.md</c>: rule counts per chapter and where the book's non-guideline text went.</summary>
+/// <summary>
+/// Writes <c>docs/coverage.md</c>: rule counts per chapter, where the book's non-guideline text went, and the parts
+/// of the book without rules.
+/// </summary>
 public static class CoverageEmitter
 {
     public static string Emit(GeneratorInput input)
@@ -35,13 +38,27 @@ public static class CoverageEmitter
                 continue;
             }
 
-            foreach (NonGuidelineEntry entry in file.NonGuideline)
-            {
-                text.Append($"- **{entry.Section}** ({RuleYaml.EnumText(entry.Disposition)}): {entry.Note}\n");
-            }
+            AppendEntries(text, file.NonGuideline);
+        }
+
+        text.Append("\n## Other parts of the book\n\n");
+        text.Append("The parts of the book outside the chapters and appendices above, which carry no rules, ");
+        text.Append("and where their text went.\n");
+        foreach (OtherContent part in input.Meta.OtherContent)
+        {
+            text.Append($"\n### {part.Title}\n\n");
+            AppendEntries(text, part.Entries);
         }
 
         return text.ToString();
+    }
+
+    private static void AppendEntries(StringBuilder text, IEnumerable<NonGuidelineEntry> entries)
+    {
+        foreach (NonGuidelineEntry entry in entries)
+        {
+            text.Append($"- **{entry.Section}** ({RuleYaml.EnumText(entry.Disposition)}): {entry.Note}\n");
+        }
     }
 
     private static string Row(string label, IReadOnlyCollection<Rule> rules)

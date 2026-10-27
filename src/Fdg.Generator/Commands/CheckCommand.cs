@@ -7,7 +7,8 @@ namespace Fdg.Generator.Commands;
 
 /// <summary>
 /// <c>check [--book &lt;OEBPS dir&gt;]</c>: validates every rule file against the schema and the mapping
-/// conventions, and every referenced CA/IDE diagnostic against the installed SDK. With <c>--book</c> it also
+/// conventions, every referenced CA/IDE diagnostic against the installed SDK, and every rule id cited in a
+/// <c>meta.yaml</c> note against the rules. With <c>--book</c> it also
 /// runs <c>verify-source</c>. It also checks that the plugin manifests carry the version of
 /// <c>Directory.Build.props</c> in the parent of the rules directory.
 /// </summary>
@@ -87,17 +88,18 @@ public static class CheckCommand
             profiles = new Dictionary<string, IReadOnlyList<string>>();
         }
 
-        IReadOnlyList<ChapterMeta> metaChapters;
+        MetaFile? meta;
         try
         {
-            metaChapters = RuleLoader.LoadMeta(rulesDir).Chapters;
+            meta = RuleLoader.LoadMeta(rulesDir);
         }
         catch (Exception exception) when (exception is YamlException or FormatException)
         {
             errors.Add(new CheckError("meta.yaml", CheckError.NoRule, exception.Message));
-            metaChapters = Array.Empty<ChapterMeta>();
+            meta = null;
         }
 
+        IReadOnlyList<ChapterMeta> metaChapters = meta?.Chapters ?? Array.Empty<ChapterMeta>();
         var chapters = new List<ChapterRules>();
         foreach (ChapterMeta chapter in metaChapters)
         {
@@ -126,6 +128,13 @@ public static class CheckCommand
         }
 
         errors.AddRange(MappingValidator.Validate(chapters, profiles, catalog));
+
+        // A rule file that failed to load hides its ids, so the notes are only checked when every chapter loaded.
+        if (meta is not null && chapters.Count == metaChapters.Count)
+        {
+            errors.AddRange(MappingValidator.ValidateNotes(meta, chapters));
+        }
+
         errors.AddRange(ManifestVersionValidator.Validate(Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(Path.GetFullPath(rulesDir)))!));
         return errors;
     }

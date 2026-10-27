@@ -36,7 +36,17 @@ public sealed record ChapterMeta(string Token, string File, string Rules, string
     public IReadOnlyList<NonGuidelineEntry> NonGuideline { get; init; } = Array.Empty<NonGuidelineEntry>();
 }
 
-public sealed record MetaFile(string RepositoryUrl, IReadOnlyList<ChapterMeta> Chapters);
+/// <summary>
+/// A part of the book outside the rule-bearing chapters, such as the preface or appendix B: the xhtml file it comes
+/// from, its title, and where its text went.
+/// </summary>
+public sealed record OtherContent(string Source, string Title, IReadOnlyList<NonGuidelineEntry> Entries);
+
+public sealed record MetaFile(string RepositoryUrl, IReadOnlyList<ChapterMeta> Chapters)
+{
+    /// <summary>The coverage-document entries for the parts of the book without rules; optional.</summary>
+    public IReadOnlyList<OtherContent> OtherContent { get; init; } = Array.Empty<OtherContent>();
+}
 
 /// <summary>Loads <c>meta.yaml</c> and the rule files it lists.</summary>
 public static class RuleLoader
@@ -65,10 +75,13 @@ public static class RuleLoader
             dto.RepositoryUrl,
             dto.Chapters.Select(c => new ChapterMeta(c.Token, c.File, c.Rules, c.Title)
             {
-                NonGuideline = c.NonGuideline.Select(e => ToEntry(c.Token, e)).ToList(),
+                NonGuideline = c.NonGuideline.Select(e => ToEntry("nonGuideline", $"chapter {c.Token}", e)).ToList(),
                 References = (c.References ?? new()).Select(r => ToSplit(c.Token, r)).ToList(),
                 TestProfileOn = ToTestProfile(c.Token, c.TestProfile),
-            }).ToList());
+            }).ToList())
+        {
+            OtherContent = (dto.OtherContent ?? new()).Select(ToOtherContent).ToList(),
+        };
     }
 
     public static IReadOnlyList<Rule> LoadRules(string path)
@@ -90,17 +103,36 @@ public static class RuleLoader
             .ToList();
     }
 
-    private static NonGuidelineEntry ToEntry(string chapter, NonGuidelineDto dto)
+    /// <summary>
+    /// Converts one entry of the <paramref name="list"/> (<c>nonGuideline</c> or <c>otherContent</c>) of
+    /// <paramref name="owner"/>, a chapter or a source file, which name the entry in errors.
+    /// </summary>
+    private static NonGuidelineEntry ToEntry(string list, string owner, NonGuidelineDto? dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.Section) || string.IsNullOrWhiteSpace(dto.Note))
+        if (dto is null || string.IsNullOrWhiteSpace(dto.Section) || string.IsNullOrWhiteSpace(dto.Note))
         {
-            throw new FormatException($"meta.yaml: a nonGuideline entry of chapter {chapter} needs a section and a note.");
+            throw new FormatException($"meta.yaml: each {list} entry of {owner} needs a section and a note.");
         }
 
         return new NonGuidelineEntry(
             dto.Section,
-            RuleYaml.ParseEnum<NonGuidelineDisposition>(dto.Disposition, $"nonGuideline disposition of chapter {chapter}"),
+            RuleYaml.ParseEnum<NonGuidelineDisposition>(dto.Disposition, $"{list} disposition of {owner}"),
             dto.Note);
+    }
+
+    private static OtherContent ToOtherContent(OtherContentDto? dto)
+    {
+        if (dto is null || string.IsNullOrWhiteSpace(dto.Source) || string.IsNullOrWhiteSpace(dto.Title)
+            || dto.Entries is null || dto.Entries.Count == 0)
+        {
+            throw new FormatException(
+                "meta.yaml: an otherContent part needs a source, a title and at least one entry.");
+        }
+
+        return new OtherContent(
+            dto.Source,
+            dto.Title,
+            dto.Entries.Select(e => ToEntry("otherContent", dto.Source, e)).ToList());
     }
 
     private static bool ToTestProfile(string chapter, string? value)
@@ -143,6 +175,17 @@ public static class RuleLoader
         public string RepositoryUrl { get; set; } = string.Empty;
 
         public List<ChapterDto> Chapters { get; set; } = new();
+
+        public List<OtherContentDto?>? OtherContent { get; set; }
+    }
+
+    private sealed class OtherContentDto
+    {
+        public string? Source { get; set; }
+
+        public string? Title { get; set; }
+
+        public List<NonGuidelineDto?>? Entries { get; set; }
     }
 
     private sealed class ChapterDto

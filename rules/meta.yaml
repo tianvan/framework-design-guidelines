@@ -545,3 +545,202 @@ chapters:
       - section: "D.13"
         disposition: background
         note: "A Final Note: the appendix is not exhaustive, and its general heuristic (changing an existing member probably breaks someone; adding new things probably does not) is background for FDGD001 to FDGD063."
+otherContent:
+  - source: pref00.xhtml
+    title: About This eBook
+    entries:
+      - section: About This eBook
+        disposition: background
+        note: "The publisher's note on reading the ebook: code listings also appear as images behind \"Click here to view code image\" links. The extractor drops those link paragraphs and keeps the code as text. No guideline is stated."
+  - source: ded01.xhtml
+    title: Dedication
+    entries:
+      - section: Dedication
+        disposition: background
+        note: "The authors' dedications. No technical content and no guideline."
+  - source: fig01.xhtml
+    title: Figures
+    entries:
+      - section: Figures
+        disposition: background
+        note: "The list of figures. The figures themselves are recorded with their chapters: Figures 2-1 and 2-2 in the non-guideline entry of section 2.1, Figure 4-1 in that of chapter 4, and Figure 9-1 in that of section 9.6.5. No guideline is stated."
+  - source: tab01.xhtml
+    title: Tables
+    entries:
+      - section: Tables
+        disposition: background
+        note: "The list of tables. Tables 3-1 to 3-5 and 5-1 are kept in the bodies of chapter 3, 5, 7 and 8 rules; Table 8-1 (the .NET serialization technologies) is part of the obsolete appendix B section B.8.10. No guideline is stated."
+  - source: pref01.xhtml
+    title: Foreword
+    entries:
+      - section: Foreword
+        disposition: background
+        note: "The foreword to the third edition: .NET's move from client-server applications to the cloud, and the guidelines this edition adds for it. No guideline is stated."
+  - source: pref02.xhtml
+    title: Foreword to the Second Edition
+    entries:
+      - section: Foreword to the Second Edition
+        disposition: background
+        note: "The foreword to the second edition: shared conventions make a framework, and an open-source project, easy to learn and to contribute to. No guideline is stated."
+  - source: pref03.xhtml
+    title: Foreword to the First Edition
+    entries:
+      - section: Foreword to the First Edition
+        disposition: background
+        note: "The foreword to the first edition: consistency as the key characteristic of a framework, and how the guidelines were agreed and kept as a living document. No guideline is stated."
+  - source: pref04.xhtml
+    title: Preface
+    entries:
+      - section: Preface
+        disposition: background
+        note: "The scope of the book: reusable libraries of every size, and only the design issues of their publicly accessible APIs (footnote 1: public types and their public, protected and explicitly implemented members), not implementation details; the annotations explain trade-offs and history. This scope is background for the profiles, where rules that matter only for a public API apply to the library profile alone."
+      - section: Guideline Presentation
+        disposition: rationale
+        note: "Defines the four strengths and the check and cross icons: a DO guideline should always be followed, a CONSIDER guideline generally followed but may be broken for a good reason, a DO NOT guideline almost never broken, and an AVOID guideline has known exceptions; a guideline may be followed by background, code samples and rationale. They become each rule's strength and text, and the text that follows a guideline becomes its body. The five sample guidelines repeat rules of the chapters."
+      - section: Language Choice and Code Examples
+        disposition: background
+        note: "The guidelines apply to every CLR language, but the code samples are written only in C#, as the language most readable to the broadest range of developers. No guideline is stated."
+      - section: About This Book
+        disposition: background
+        note: "A summary of each chapter and appendix (chapter 1 is the only chapter without guidelines, appendix B keeps obsolete guidance and appendix C is a sample API specification), and how to register the book with the publisher. No guideline is stated."
+  - source: pref05.xhtml
+    title: Acknowledgments
+    entries:
+      - section: Acknowledgments
+        disposition: background
+        note: "Thanks to the people who proposed and wrote the guidelines, the annotators, the reviewers and the editors. No technical content and no guideline."
+  - source: pref06.xhtml
+    title: About the Authors
+    entries:
+      - section: About the Authors
+        disposition: background
+        note: "Biographies of the three authors. No technical content and no guideline."
+  - source: pref07.xhtml
+    title: About the Annotators
+    entries:
+      - section: About the Annotators
+        disposition: background
+        note: "Biographies of the annotators, whose annotations are kept in the rule bodies as annotation blocks with the author's name. No guideline is stated."
+  - source: ch01.xhtml
+    title: "Chapter 1: Introduction"
+    entries:
+      - section: "1"
+        disposition: background
+        note: "The chapter introduction: guidelines give framework authors and their users a common language, and the history of APIs, frameworks and design conventions. The preface calls chapter 1 the only chapter without guidelines; it is background for the whole book."
+      - section: "1.1"
+        disposition: background
+        note: "Qualities of a Well-Designed Framework: frameworks are made of reusable APIs, which adds special considerations to the usual quality standards. Background for 1.1.1 to 1.1.7."
+      - section: "1.1.1"
+        disposition: background
+        note: "Well-Designed Frameworks Are Simple: cut a feature rather than ship a complex design, and the Sells annotation on client-first programming. Background for chapter 2, which covers the balance of power and simplicity."
+      - section: "1.1.2"
+        disposition: background
+        note: "Well-Designed Frameworks Are Expensive to Design: framework design is an explicit and distinct part of development, done by people with that responsibility, and the Toub and Barton annotations on API review. Background for the scenario-driven design and usability studies of section 2.2.1."
+      - section: "1.1.3"
+        disposition: background
+        note: "Well-Designed Frameworks Are Full of Trade-Offs: the practices are guidelines rather than rules because design manages trade-offs. Background for the strengths CONSIDER and AVOID and for the exceptions the rules state."
+      - section: "1.1.4"
+        disposition: background
+        note: "Well-Designed Frameworks Borrow from the Past: build on proven designs and innovate with caution (the Sells and Barton annotations). Background for the common design patterns of chapter 9."
+      - section: "1.1.5"
+        disposition: background
+        note: "Well-Designed Frameworks Are Designed to Evolve: weigh each trade-off against the ability to evolve the framework, and footnote 5 on backward compatibility as a basic of framework design. Background for appendix D."
+      - section: "1.1.6"
+        disposition: background
+        note: "Well-Designed Frameworks Are Integrated: frameworks must work with many tools, languages and application models. No guideline is stated."
+      - section: "1.1.7"
+        disposition: background
+        note: "Well-Designed Frameworks Are Consistent: consistency is the main theme of the book, and chapters 3 to 5 hold the core consistency guidelines. Background for the whole book."
+  - source: app02.xhtml
+    title: "Appendix B: Obsolete Guidance"
+    entries:
+      - section: "B"
+        disposition: background
+        note: "The appendix introduction: it keeps guidance from earlier editions that no longer applies to new frameworks or new framework features, numbered by the section it last had (3.8 becomes B.3.8), and each section opens with a \"Why this is Here\" marker. Guidance that was only modified is not in it. The entries below record which current rule, if any, supersedes each section."
+      - section: "B.3.8"
+        disposition: obsolete
+        note: "Superseded by FDG3087. Naming Resources (PascalCasing resource keys, descriptive identifiers, no language keywords, only alphanumeric characters and underscores, exception message resources named after the exception type) assumed public resources; the marker says resources are rarely public and the third edition says not to expose localizable resources directly."
+      - section: "B.4.1.1"
+        disposition: obsolete
+        note: "Superseded by FDG4005. Standard Subnamespace Names: rarely used types belong in subnamespaces, so they do not clutter the main namespaces. The marker says the guidance does not contradict section 4.1; it is no longer generally applicable."
+      - section: "B.4.1.1.1"
+        disposition: obsolete
+        note: "Superseded by FDG4004. The .Design subnamespace for design-time types; the marker says it was replaced with a single sentence, which is in the body of FDG4004 (types used by code generators or IDE designers belong in different, but related, namespaces)."
+      - section: "B.4.1.1.2"
+        disposition: obsolete
+        note: "No current rule replaces it. The .Permissions subnamespace held custom permission types; Code Access Security is deprecated."
+      - section: "B.4.1.1.3"
+        disposition: obsolete
+        note: "No current rule replaces it. The .Interop subnamespace for interop types and Primary Interop Assemblies, which the marker calls a rarity."
+      - section: "B.5.4.1"
+        disposition: obsolete
+        note: "Superseded by FDG5057. Custom event handler delegates (a void return, an object sender and an EventArgs e, at most two parameters) were needed before generics; new events use EventHandler<T>. The marker says these guidelines still hold in the rare case a custom handler is needed for consistency with an existing feature area."
+      - section: "B.7.4"
+        disposition: obsolete
+        note: "No current rule replaces it. Reporting security-sensitive information through ToString only after a permission demand, and keeping it in private exception state for trusted code, relied on Code Access Security and partial trust, which are deprecated."
+      - section: "B.8.10"
+        disposition: obsolete
+        note: "Superseded by FDG8086. The section introduction, Table 8-1 (Data Contract, XML and Runtime Serialization) and \"DO think about serialization when you design new types\"; the marker says a library should not tie itself to a serialization technology and should leave that choice to the application developer."
+      - section: "B.8.10.1"
+        disposition: obsolete
+        note: "Superseded by FDG8086. Choosing the serialization technologies a type supports: Data Contract for persistence and web services, XML for control over the XML, Runtime for .NET Remoting."
+      - section: "B.8.10.2"
+        disposition: obsolete
+        note: "Superseded by FDG8086 and FDG8087. Supporting Data Contract Serialization: public data members for partial trust, a getter and a setter on data members, serialization callbacks, KnownTypeAttribute and IExtensibleDataObject. Its guideline on backward and forward compatibility is kept, word for word, as FDG8087."
+      - section: "B.8.10.3"
+        disposition: obsolete
+        note: "Superseded by FDG8086. Supporting XML Serialization: avoid designing types for it unless the shape of the XML must be controlled, and IXmlSerializable for full control."
+      - section: "B.8.10.4"
+        disposition: obsolete
+        note: "Superseded by FDG8086, FDG8088, FDG8089 and FDG8090. Supporting Runtime Serialization for .NET Remoting, and the Runtime Serializable Pattern; its guidelines on the serialization constructor, explicit ISerializable members and the link demand are kept in section 8.10 as FDG8088 to FDG8090."
+      - section: "B.9.2"
+        disposition: obsolete
+        note: "Superseded by FDG9018 and FDG9019. The introduction to the Classic Async Pattern and the Event-Based Async Pattern; the marker says the Task-Based Async Pattern, with language support such as async and await, has replaced both."
+      - section: "B.9.2.1"
+        disposition: obsolete
+        note: "Superseded by FDG9018 and FDG9019. Choosing between the Classic and the Event-Based Async Pattern (Event-Based for components with visual designers and higher-level APIs, Classic for wait handles and low-level APIs, never both on one type); section 9.2.1 now chooses the Task-Based Async Pattern."
+      - section: "B.9.2.2"
+        disposition: obsolete
+        note: "Superseded by FDG9018 and FDG9019. The Classic Async Pattern: Begin and End methods, IAsyncResult, the async callback and the state object. Section 9.2.7 says it is not recommended for new APIs and existing APIs should be upgraded."
+      - section: "B.9.2.3"
+        disposition: obsolete
+        note: "Superseded by FDG9018 and FDG9019. A basic implementation example of the Classic Async Pattern; it states no guideline of its own."
+      - section: "B.9.2.4"
+        disposition: obsolete
+        note: "Superseded by FDG9018 and FDG9019. The introduction to the Event-Based Async Pattern. Section 9.2.8 says it is not recommended for new APIs and existing APIs should be upgraded."
+      - section: "B.9.2.4.1"
+        disposition: obsolete
+        note: "Superseded by FDG9018 and FDG9019. Defining Event-Based asynchronous methods: MethodAsync with an optional userState, InvalidOperationException for an overlapping call without userState, completion events raised on the proper thread and always raised, AsyncCompletedEventArgs for void methods."
+      - section: "B.9.2.5"
+        disposition: obsolete
+        note: "Superseded by FDG9027 and FDG9034. Out and ref parameters of an Event-Based async method became properties of its event arguments; a Task-based Async method takes no ref or out parameters."
+      - section: "B.9.2.6"
+        disposition: obsolete
+        note: "Superseded by FDG9022 and FDG9038. Cancellation through CancelAsync and the Cancelled property of the event arguments; a Task-based Async method accepts a CancellationToken and throws OperationCanceledException when canceled."
+      - section: "B.9.2.7"
+        disposition: obsolete
+        note: "Superseded by FDG9018 and FDG9019. Progress reporting through the ProgressChanged event of the Event-Based Async Pattern; the current edition has no rule on progress reporting."
+      - section: "B.9.2.8"
+        disposition: obsolete
+        note: "Superseded by FDG9018 and FDG9019. Incremental results through ProgressChanged events of the Event-Based Async Pattern; the current edition has no rule on incremental results."
+      - section: "B.9.4.2"
+        disposition: obsolete
+        note: "Superseded by FDG9073, FDG9074, FDG9075 and FDG9076. The previous Finalizable Types section: the marker says AVOID making types finalizable became DO NOT make public types finalizable (FDG9073) and the section was rewritten around internal finalizable types. FDG9074 to FDG9076 keep its guidelines on the Basic Dispose Pattern, finalizable objects in the finalizer code path and exceptions from the finalizer; its guidelines on value types, on when to make a type finalizable and on a protected Finalize method have no current rule."
+  - source: app03.xhtml
+    title: "Appendix C: Sample API Specification"
+    entries:
+      - section: "C"
+        disposition: background
+        note: "A sample API specification (Stopwatch): an introduction, scenarios with code samples, goals and non-goals, the API and its behavior, and questions and answers, with annotations on writing each part. It is the example FDG2004 refers to. fdg-review uses it as background when reviewing a library's public API, checking that the design specification has these parts. No guideline is stated."
+  - source: gloss01.xhtml
+    title: Glossary
+    entries:
+      - section: Glossary
+        disposition: background
+        note: "Definitions of the terms the rules use, such as abstract type, application model, assembly and attached dependency property. Background for reading the rules. No guideline is stated."
+  - source: app05.xhtml
+    title: Credits
+    entries:
+      - section: Credits
+        disposition: background
+        note: "Credits for two quotations in chapters 5 and 7 and for the icons of appendix D. No technical content and no guideline."

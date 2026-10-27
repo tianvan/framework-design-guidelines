@@ -13,6 +13,36 @@ public static class MappingValidator
     private const string TestProfileNote = "Test profile:";
     private const string NamingDiagnostic = "IDE1006";
 
+    /// <summary>A rule id cited in a note: FDG, a chapter number or an appendix letter, and three digits.</summary>
+    private static readonly Regex CitedRuleId = new(@"\bFDG[1-9A-Z][0-9]{3}\b", RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// Checks that every rule id cited in a <c>nonGuideline</c> or <c>otherContent</c> note of <c>meta.yaml</c> is the
+    /// id of one of <paramref name="chapters"/>' rules.
+    /// </summary>
+    public static IReadOnlyList<CheckError> ValidateNotes(MetaFile meta, IReadOnlyList<ChapterRules> chapters)
+    {
+        var ids = chapters.SelectMany(c => c.Rules).Select(r => r.Id).ToHashSet(StringComparer.Ordinal);
+        IEnumerable<(string Note, NonGuidelineEntry Entry)> notes = meta.Chapters
+            .SelectMany(c => c.NonGuideline.Select(e => ($"nonGuideline note of chapter {c.Token}", e)))
+            .Concat(meta.OtherContent.SelectMany(p => p.Entries.Select(e => ($"otherContent note of {p.Source}", e))));
+
+        var errors = new List<CheckError>();
+        foreach ((string note, NonGuidelineEntry entry) in notes)
+        {
+            foreach (string id in CitedRuleId.Matches(entry.Note).Select(m => m.Value).Distinct())
+            {
+                if (!ids.Contains(id))
+                {
+                    errors.Add(new CheckError(
+                        "meta.yaml", id, $"the {note}, section {entry.Section}, cites a rule that does not exist."));
+                }
+            }
+        }
+
+        return errors;
+    }
+
     public static IReadOnlyList<CheckError> Validate(
         IReadOnlyList<ChapterRules> chapters,
         IReadOnlyDictionary<string, IReadOnlyList<string>> profiles,

@@ -220,6 +220,80 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
         Assert.Empty(Check());
     }
 
+    private void SetNotes(string nonGuidelineNote, string otherEntries)
+    {
+        File.WriteAllText(
+            Path.Combine(_rulesDir, "meta.yaml"),
+            "repositoryUrl: https://example.test/repo\n" +
+            "chapters:\n" +
+            "  - token: \"9\"\n" +
+            "    file: sample.xhtml\n" +
+            "    rules: ch09-sample.yaml\n" +
+            "    title: Sample Chapter\n" +
+            "    nonGuideline:\n" +
+            $"      - {{ section: \"9.1\", disposition: background, note: \"{nonGuidelineNote}\" }}\n" +
+            "otherContent:\n" +
+            "  - source: app02.xhtml\n" +
+            "    title: Obsolete Guidance\n" +
+            "    entries:\n" +
+            otherEntries);
+    }
+
+    [Fact]
+    public void Unknown_rule_id_in_a_note_is_an_error()
+    {
+        SetNotes(
+            "Background for FDG9001 to FDG9999.",
+            "      - { section: \"B.3.8\", disposition: obsolete, note: \"Superseded by FDG9002 and FDGD001.\" }\n" +
+            "      - { section: \"B.4.1\", disposition: obsolete, note: \"FDG90011 and xFDG9998 are no ids.\" }\n");
+
+        Assert.Equal(
+            new[]
+            {
+                "meta.yaml:FDG9999: the nonGuideline note of chapter 9, section 9.1, cites a rule that does not exist.",
+                "meta.yaml:FDGD001: the otherContent note of app02.xhtml, section B.3.8, " +
+                "cites a rule that does not exist.",
+            },
+            Check());
+    }
+
+    [Fact]
+    public void Known_rule_ids_in_notes_pass_check()
+    {
+        SetNotes(
+            "Background for FDG9001 to FDG9004.",
+            "      - { section: \"B.3.8\", disposition: obsolete, note: \"Superseded by FDG9002.\" }\n" +
+            "      - { section: \"B.4.1\", disposition: obsolete, note: \"No current rule replaces it.\" }\n");
+
+        Assert.Empty(Check());
+    }
+
+    [Fact]
+    public void Notes_are_not_checked_when_a_rule_file_fails_to_load()
+    {
+        SetNotes(
+            "Background for FDG9001.",
+            "      - { section: \"B.3.8\", disposition: obsolete, note: \"Superseded by FDG9002.\" }\n");
+        EditRules(yaml => yaml.Replace("strength: CONSIDER", "strength: SHOULD"));
+
+        string error = Assert.Single(Check());
+        Assert.Contains("strength", error);
+    }
+
+    [Theory]
+    [InlineData("      - { section: \"B.3.8\", disposition: obsolete }\n", "needs a section and a note")]
+
+    [InlineData("      - { section: \"B.3.8\", disposition: gone, note: \"x\" }\n", "Invalid otherContent disposition")]
+    [InlineData("      []\n", "needs a source, a title and at least one entry")]
+    public void Other_content_entries_are_validated(string entries, string message)
+    {
+        SetNotes("Background.", entries);
+
+        string error = Assert.Single(Check());
+        Assert.StartsWith("meta.yaml:", error);
+        Assert.Contains(message, error);
+    }
+
     [Fact]
     public void Schema_rejects_unknown_strength()
     {
