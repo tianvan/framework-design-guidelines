@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.3.1 Changing the Name or Cas
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 The same as removing every type in the namespace (FDGD006). PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.6.12 Changing a struct to a 
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 A `ref struct` cannot be boxed, be a type argument, be a field of a non-`ref` type, or be used in `async` methods and iterators; every such use breaks. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

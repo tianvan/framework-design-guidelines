@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.21 Changing a virtual Mem
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Breaks like removing the override of an `abstract` member (FDGD033). PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

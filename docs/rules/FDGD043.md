@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.7 Changing the Type of a 
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Breaks like FDGD042 for the getter and FDGD039 and FDGD042 for the setter. Add a new property or method instead. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.3 Changing a Method Param
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Add an overload instead. Callers may recompile after a change to a less derived or implicitly convertible type, but not for `ref`, `out` or `in` parameters. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

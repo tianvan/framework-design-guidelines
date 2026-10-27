@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.10 Changing a virtual (or
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Breaks derived types that override the member. Instead, add a `public` method that calls the `protected virtual` one, as in the Template Method Pattern. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

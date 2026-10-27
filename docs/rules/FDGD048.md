@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.12 Changing to or from Pa
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 C# callers may omit the `in` modifier, so changing to or from `in` is fixed by a recompile for callers that omit it. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

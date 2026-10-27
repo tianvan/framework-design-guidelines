@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.7.1 Masking Base Members wit
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Exceptions: `static` Create methods that specialize their return type to avoid casting, and adding `new` to suppress the warning on a method that predates the base member. Otherwise choose a new name. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

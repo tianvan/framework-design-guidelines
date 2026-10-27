@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.9.1 Removing a Finalizer fro
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Permitted when the finalizer does not use the Basic Dispose Pattern (`Dispose(false)`) or otherwise signal derived types. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

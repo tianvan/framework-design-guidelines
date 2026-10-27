@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.8.2 Moving Members to a Base
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Breaks types that implemented the member explicitly. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

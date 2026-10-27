@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.6 Changing a Method Retur
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Add a new method group (not an overload) or a new type instead. Returning a more derived value without changing the declared type is FDGD061. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

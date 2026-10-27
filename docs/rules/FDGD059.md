@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.12.1 Changing Runtime Error 
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Example: throwing `ArgumentNullException` instead of `NullReferenceException`, or `ArgumentOutOfRangeException` instead of `IndexOutOfRangeException`. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.4 Reordering Method Param
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Callers that use named arguments still compile; positional callers do not. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

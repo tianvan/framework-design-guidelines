@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.19 Changing the Value of 
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Callers keep the old value until they recompile. Before the first release, use `static readonly` instead of `const` for a value that may change (FDG5066); after it, add a new field. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

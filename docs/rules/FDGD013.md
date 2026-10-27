@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.6.7 Removing readonly from a
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Existing binaries do not make the defensive copies that are now required, so mutations become visible to them until they recompile. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

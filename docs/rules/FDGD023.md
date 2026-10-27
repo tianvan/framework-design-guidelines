@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.7.4 Adding an override Membe
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Derived types that call the base member skip the new override until they recompile, so consider the object's state if the override is skipped. A multi-targeted package may need the override in every target framework. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

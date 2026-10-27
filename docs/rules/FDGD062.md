@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.12.4 Throwing a New Type of 
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Exceptions: a subtype of an exception type the method already throws (FDGD063), or an uncaught exception type that a critical bug fix needs. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

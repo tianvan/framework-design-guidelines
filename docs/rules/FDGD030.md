@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.9.2 Removing a Finalizer fro
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Check whether a disposable class between `System.Object` and the sealed type relied on running in the finalizer (`Dispose(false)`). PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.20 Changing an abstract M
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Every instantiable derived type already implements the member without a base call. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

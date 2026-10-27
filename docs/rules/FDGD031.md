@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.9.3 Removing a Non-override 
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Callers still compile only when a compatible overload with optional parameters already exists. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.18 Changing the Default V
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Callers keep the old default until they recompile, so the compiled binary and the source disagree. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

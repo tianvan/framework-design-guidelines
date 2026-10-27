@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.6.5 Changing the Namespace f
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 The same as renaming the type (FDGD010). A caller that already imports the new namespace may recompile, unless it used a namespace-qualified name. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

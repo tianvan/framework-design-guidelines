@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.5.1 Removing Types. Can caus
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 The `TypeLoadException` comes only when execution gets close to the type, so it can surface late. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

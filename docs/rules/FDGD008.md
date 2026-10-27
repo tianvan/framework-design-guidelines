@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.6.2 Unsealing a Sealed Type.
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Only metadata such as `Type.IsSealed` changes. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

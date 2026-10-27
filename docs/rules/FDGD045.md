@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.9 Changing Member Visibil
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Applies to nonvirtual members; a `virtual` member is FDGD046. It cannot be safely undone (FDGD044). PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.12.2 Changing Usage Error Ex
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

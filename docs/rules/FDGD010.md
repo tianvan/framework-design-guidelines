@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.6.4 Changing a Type Name. Ca
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 The same as removing the type (FDGD006). PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

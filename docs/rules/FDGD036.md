@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.10.2 Adding Alternative-Para
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Permitted if the existing member throws `ArgumentNullException` when the varied parameter is `null`. If it accepts `null`, permitted only when another part of the parameter list removes the ambiguity of a `null` literal. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

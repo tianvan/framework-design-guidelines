@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.6.9 Adding the Second Declar
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Example: implementing both `IEnumerable<string>` and `IEnumerable<int>` breaks generic type inference (`CS1061` on extension method calls). A third or later declaration is generally not further breaking. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

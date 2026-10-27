@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.15 Removing the readonly 
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Existing binaries see mutations until they recompile, like FDGD013. The book's heading shows the compilation icon, but the body describes no compile failure, only a change after a recompile; FDGD013 shows the recompile icon. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

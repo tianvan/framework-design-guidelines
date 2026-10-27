@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.6.10 Changing a class to a s
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Breaks callers that pass the type to a `class`-constrained type parameter or derive from it; at run time a `TypeLoadException` or `MissingMethodException`. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

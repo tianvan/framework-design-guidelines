@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.6.8 Adding a Base Interface 
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Breaks implementers that lack a valid public member for a member of the new base interface, including explicit implementations even when the base interface copies the existing one. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

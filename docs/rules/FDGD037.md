@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.1 Renaming a Method Param
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Breaks only callers that use named arguments, but the benefit of a rename is slight. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

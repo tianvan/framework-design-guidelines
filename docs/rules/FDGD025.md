@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.7.6 Adding a Member to an In
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Default interface methods could avoid the `TypeLoadException` in theory, but as of 2019 the .NET BCL team does not recommend them as a general pattern. See also FDG4025. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

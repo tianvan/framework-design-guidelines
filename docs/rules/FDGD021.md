@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.7.2 Adding abstract Members.
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Breaks every derived type that is not `abstract`. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.4.1 Moving a Type via [TypeF
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Permitted when there is a technical reason for the move. Forwarding into a library that was not already a dependency can cause missing dependency problems, and `AssemblyQualifiedName` changes for reflection. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

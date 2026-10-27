@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.13 Changing By-Reference 
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 The run-time signature does not change, but writing through a former `in` parameter or reading a former `out` parameter causes bugs that are hard to diagnose; C# callers fail to compile with the wrong modifier. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

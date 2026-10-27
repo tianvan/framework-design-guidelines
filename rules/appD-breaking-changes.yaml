@@ -13,7 +13,7 @@
       text: Reflection loads of your type will fail if they use the assembly-qualified name. If something has already caused your assembly to be loaded into the process, then other reflection loads might succeed, but would fail to match an `AssemblyQualifiedName` after type resolution.
     - kind: paragraph
       text: The .NET BCL team generally considers changing an assembly name to be an unacceptable breaking change. An assembly rename can be effectively accomplished by producing one final version of the existing assembly that uses `[TypeForwardedTo]` to resolve the runtime and compile-time failures and ambiguities, but you should strongly prefer to maintain the existing name.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -40,7 +40,7 @@
       text: In the .NET CLR, a namespace name is only used as a prefix to type names; namespaces aren’t runtime concepts. Adding a namespace that conflicts with an existing type (e.g., if a namespace named “System.Math” was created after the type `System.Math`) will result in a compile-time break for any libraries that can see both the type and the namespace, and that have a namespace-qualified reference to the type—with an error like `CS0434` (`The namespace 'NamespaceName1' in 'Assembly1' conflicts with the type 'TypeName1' in 'Assembly2'`).
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change. Following Framework Design Guidelines, namespaces should have a structured prefix like “[CompanyName].[ProductName].” Moreover, within a single product, the types and namespaces should be managed to avoid conflicts. Seek out a synonym for the existing type name to use as the new namespace name.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -67,7 +67,7 @@
       text: The .NET CLR considers the namespace to be part of the type name, and type names are case-sensitive. Changing the name of a namespace, including the casing of the name, is logically the same as deleting all of the types from that namespace and creating new, unrelated types in the new namespace. See section D.5.1 for the impact of removing a type.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -98,7 +98,7 @@
       text: Reflection-based code can be affected because the assembly-qualified name of the type changes. While lookup methods such as `Type.GetType(...)` will find the `[TypeForwardedTo]`, post-match analysis on values like the `AssemblyQualifiedName` property of the `Type` object will fail.
     - kind: paragraph
       text: The .NET BCL team considers moving a type in this way to be an acceptable breaking change, when there’s a technical reason why it’s required.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -127,7 +127,7 @@
       text: If your callers have both the existing assembly and the new assembly as references for their library or executable, then no compile-time break will occur and the recompiled output will be restored to a working condition.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -156,7 +156,7 @@
       text: As your type no longer exists, libraries and executables that reference your assembly will fail to compile if they used your type in any manner.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -183,7 +183,7 @@
       text: "Both the compilation break and the runtime break from sealing an unsealed type are dependent on someone having already inherited from the type you seal. Compilation will fail with error `CS0509` (`'class1' : cannot derive from sealed type 'class2'`), and any use of the type at runtime—including invoking static members—will result in a `System.TypeLoadException` with a message like “Could not load type … because the parent type is sealed.”"
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -210,7 +210,7 @@
       text: The only potentially breaking impact of unsealing a sealed type is in metadata such as `Type.IsSealed`. Reflection loads may misidentify your type or mishandle data based on that metadata.
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -241,7 +241,7 @@
       text: Reflection-loading your type will fail using the standard reflection loads, but reflection loads allow for a case-insensitive comparison, which will allow reflection to load your type. The case change you introduced will be reflected in `Type.Name` and other metadata with the type name in it, so reflection code may still react differently after your change.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -268,7 +268,7 @@
       text: The .NET CLR has no mechanism for a type rename, so changing the name is logically the same as creating a new type with similar members as the old type while removing the old type. For information on the impact of removing a type, see section D.5.1.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -299,7 +299,7 @@
       text: Reflection will fail to find the type with a namespace-qualified name. If the type is found by the `Type.Name` value alone, then it may still be treated differently due to having a different namespace-qualified name.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -328,7 +328,7 @@
       text: The only risk of this change is that callers may experience a significant reduction in their code execution time after recompiling, which could uncover a latent race condition.
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -355,7 +355,7 @@
       text: Like adding the `readonly` modifier, removing it only changes the behavior of the calling assembly after it is recompiled. If you remove the `readonly` modifier, then existing binaries with `readonly` fields of your type, or methods that accept your type as a `readonly ref` (`in`) parameter, will not be making the required copies of the `struct` value when invoking methods. Any mutation you perform in existing methods after removing the `readonly` modifier will be made visible to those callers until they recompile, which can lead to very difficult-to-diagnose bugs.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -384,7 +384,7 @@
       text: The same situations that result in a `TypeLoadException` from the runtime will cause compile-time breaks for the affected types.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -415,7 +415,7 @@
       text: This change should be visible on the type you’re modifying, because any members on the duplicate generic interface that use the generic type parameter will need to be explicitly implemented due to their conflicting signature.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change. Since generic type inference is already impaired when the same generic interface was specified the second time, it’s generally not further breaking for the third declaration or beyond.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -444,7 +444,7 @@
       text: Any caller that used your `class` as a generic type argument for a generic type parameter with the `class` restriction will experience a compile-time break, as will any callers that extended your type when it was a `class`. Otherwise, compilation will likely succeed and produce working output.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -475,7 +475,7 @@
       text: After successfully recompiling, callers may find it difficult to debug away any `NullReferenceException` throws that result from their code changing from operating on the (valid) `default` instance of your type as a `struct` to the (invalid) `null` value for your type as a `class`.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -506,7 +506,7 @@
       text: Reflection code that instantiates the `struct` will likely fail with an `InvalidProgramException`, due to boxing of the result. The `ByRe`f nature of the `struct` is visible to reflection, so reflection code may behave differently after your change.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -533,7 +533,7 @@
       text: There are no compile or runtime changes from changing a `ref struct` to a “regular” `struct`. However, undoing the change later would be a breaking change, as described in section D.6.12.
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable change, but would warn you that it cannot be safely undone.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -562,7 +562,7 @@
       text: If your return type is not compatible with the base member and the caller saved or operated on the member return value, the caller will experience a compile break from your change.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change, with the exception of `static` “Create” methods specializing their return type to avoid casting. If your method predated the base member and you are adding the `new` modifier to suppress the compiler warning, that is also acceptable. Otherwise, the .NET BCL team would recommend choosing a new name for your method.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -591,7 +591,7 @@
       text: Non-`abstract` derived types will fail to compile due to not providing an implementation for the new member.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -620,7 +620,7 @@
       text: "At compile-time, any derived type that has already declared a member with the same name and a compatible parameter list will receive a compiler warning (`CS0108`: `'member1' hides inherited member 'member2'. Use the new keyword if hiding was intended.`). This is a compile-time break for callers that build with the “treat warnings as errors” option."
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable breaking change, unless the new member would knowingly conflict with a derived type in a confusing way.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -647,7 +647,7 @@
       text: Due to the way the Roslyn compiler—as of 2019—emits base member invocations, a derived type that calls the member you have overridden will skip past your `override` until it is recompiled to see that you have overridden the member. If your library is distributed via a package management system, such as NuGet, and uses multiple target frameworks, you may need to provide the `override` for every framework you target, even if the implementation is just to call the base member.
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable change. Nevertheless, we would caution you to consider what state your object might be in if your `override` member is skipped.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -678,7 +678,7 @@
       text: Note that this same concern applies to a generic `struct` adding the first field based on a generic type parameter, unless the generic type parameter is constrained to be an unmanaged type.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -707,7 +707,7 @@
       text: The same types that will fail to initialize at runtime will experience a compile-time break due to not conforming to the interface.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change. Theoretically, the Default Interface Methods language and runtime feature allows new members to be declared on an interface without the risk of a `TypeLoadException`. As of 2019, the .NET BCL team does not have enough experience with this feature to recommend its use as a general pattern.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -734,7 +734,7 @@
       text: Moving a member to a base class is gracefully handled by the .NET CLR and is generally supported for both static and instance members in .NET languages.
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable change, but would warn you that it cannot be safely undone.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -761,7 +761,7 @@
       text: Unlike moving members to a base `class`, moving members to a base `interface` can result in both runtime and compile-time failures for types that explicitly implemented the interface member. At runtime, the type initialization will fail with a `MissingMethodException` due to having an implementation of a nonexistent interface method. At compile-time, the implementing type will fail with errors for explicitly implementing a member that does not exist on the interface as well as for not providing an implementation of an interface member.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -790,7 +790,7 @@
       text: Callers that have values statically typed as the receiving derived type will succeed after a recompile. In contrast, callers with only a base class reference—or an alternate derived type—will fail to compile due to the method not existing.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -817,7 +817,7 @@
       text: If an unsealed type has a finalizer implemented by calling `Dispose(false)`, any derived types may have been counting on the call to `Dispose(false)` for their own component of the finalization logic. Removing the finalizer from the base class will thus result in the derived type no longer running finalization logic.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change, unless the finalizer does not use the Basic Dispose Pattern or otherwise signal derived types.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -844,7 +844,7 @@
       text: 'Removing a finalizer from a sealed type does have indirectly observable effects: Instances of that type will be available to be cleaned up by faster sweeps of the garbage collector—ones that do not depend on the finalizer thread—even when not properly disposed of. There’s a risk that any disposable classes between `System.Object` and the sealed type may have had side effects from running in a finalizer (`Dispose(false)`); this risk can be assessed by the developer contemplating removing the finalizer.'
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -873,7 +873,7 @@
       text: Any callers will experience a compile-time failure due to accessing the missing member, except for methods where a compatible overload using optional parameters is already present.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -902,7 +902,7 @@
       text: The Roslyn C# compiler—as of 2019—encodes base member invocations to the level in the type hierarchy that last overrode it, so recompiling an assembly with a derived type that makes a base call to the member you deleted will now “remember” to skip your type. Adding the override back after you have removed it counts the same as adding an override fresh (see section D.7.4).
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable change, but would probably caution against it.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -933,7 +933,7 @@
       text: Compilation-time failures will occur for any type that doesn’t override the member you deleted, without invoking yours via a base invocation. Either the compiler will report that the derived type does not implement an abstract member, or it will indicate that it is performing a base invocation to a member that does not exist.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -964,7 +964,7 @@
       text: The Framework Design Guidelines encourage you to only serialize types purpose-built to be serialized.
     - kind: paragraph
       text: The .NET BCL team generally does not support serialization of BCL types. For the types where serialization is explicitly supported, the serialization breaks must be resolved along with structural changes to the type—which, in practice, means no structural changes happen to serializable types.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -993,7 +993,7 @@
       text: If your first overload is an alternative overload, then callers that pass `default` will fail at compile-time for having an ambiguous method invocation.
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable breaking change, unless `default` is a sensible value for your existing method and there is a reasonable expectation of callers specifying it at the call site.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1018,7 +1018,7 @@
   body:
     - kind: paragraph
       text: When two different overloads accept reference types, the `null` (or `default`) literal value is ambiguous across the two members. If the existing member throws an `ArgumentNullException` when the varied parameter is `null`, then the .NET BCL team considers it an acceptable breaking change to introduce a compile-time break for those callers that pass `null`. However, if the `null` value is accepted by the member, then overloading is only an acceptable change if some other portion of the parameter list forces uniqueness to remove the ambiguity of a `null` literal.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1045,7 +1045,7 @@
       text: Renaming a method parameter can cause a compile-time break in languages, such as C#, that permit calling methods with named arguments.
     - kind: paragraph
       text: Most callers don’t specify named parameter syntax for required parameters, so the risk of introducing a break is minimal; however, the benefit of renaming the parameter is slight. The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1074,7 +1074,7 @@
       text: Adding an optional parameter will not cause a compilation break, but adding a required parameter will. Removing an optional parameter will not cause a compilation break unless a caller specified it, but removing a required parameter will cause such a break unless a compatible overload with optional parameters is already available.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change, and would recommend adding overloads as the safer alternative to this type of change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1105,7 +1105,7 @@
       text: Reflection will be broken when finding a method by signature. Reflection invocation will generally succeed if you changed the parameter to a less derived type, but will fail and throw an `ArgumentException` if a user-defined implicit conversion operator is required to convert the provided value to the new parameter type.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change, and would recommend method-adding overloads as a safer alternative to this type of change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1136,7 +1136,7 @@
       text: Reflection will be broken, via an `ArgumentException`, if it’s being used to invoke the method after finding it by name, or will fail to find the method by signature.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1165,7 +1165,7 @@
       text: Any caller that used named parameter syntax for only one of the swapped parameters will encounter a compilation failure. Callers specifying all parameters with named syntax will encounter a recompilation break— in this case, a behavior fix. Callers using only positional argument calling will neither fail nor experience different behavior after recompilation.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1196,7 +1196,7 @@
       text: The .NET BCL team considers this an unacceptable breaking change, and would recommend adding a new method group (not overloading) or a new type to make this type of change.
     - kind: paragraph
       text: Note that this only applies to changing the return type in the method signature. Changing the method behavior to return a value of a type that is derived from the method return type is discussed in D.12.3.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1223,7 +1223,7 @@
       text: During compilation, property reads are translated to invocations of the property get-method, and property writes are translated to invocations of the property set-method. Changing the property type changes the return type of the get-method, and thus produces all of the breaks discussed in section D.11.6. Changing the type also changes the parameter type, and the return type, of the set-method for settable properties; thus, it produces all of the breaks discussed in sections D.11.3 and D.11.6.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change, and would recommend adding a new method or property if this functional change is required.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1252,7 +1252,7 @@
       text: At runtime, the .NET CLR will throw a `MemberAccessException` (`MethodAccessException` or `FieldAccessException`) when attempting to invoke the method from the calls that no longer meet the new visibility restrictions. Unlike member removal, this runtime break executes all code in the calling method up to the failed member invocation.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1279,7 +1279,7 @@
       text: No runtime or compile-time breaks happen when you increase the visibility of a nonvirtual method (see the next section for discussion of virtual methods). However, this change cannot safely be undone.
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1308,7 +1308,7 @@
       text: Similar to the runtime behavior, a compile-time break will be present for any derived type that overrode the member because the override re-asserts the visibility level.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change. If you were contemplating changing the method to `public`, you may instead want to add a `public` method on the original class that calls the `virtual` method, similar to the Template Method Pattern.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1337,7 +1337,7 @@
       text: Any caller that used a type-qualified static member invocation, or an instance-qualified instance member invocation, will get a compile-time break for using the wrong calling format for the member. Callers from derived types that use implicit member invocation will successfully recompile, and their libraries will return to a working state.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1366,7 +1366,7 @@
       text: If you change a parameter to be a reference parameter (C# `ref`) or an output parameter (C# `out`), then all of your callers will get a compile-time break for not calling with the correct modifiers; the same is true for the reverse direction. The C# language allows callers to omit the `in` modifier on call sites, so changing to or from a read-only reference parameter is fixed by a recompile for callers that omit the modifier. Callers that specify the modifier, including callers in any languages where it is required, will get a compile-time break.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1395,7 +1395,7 @@
       text: Whether changing the parameter by-reference style will generate a compile-time break depends on the language that the caller uses. C# uses three different modifiers at the call sites (`ref`, `out`, `in`, or implicit-`in`), and it is a compile failure to use the wrong one. F# uses the same modifier for all three styles, so a recompile for F# callers will likely succeed unless the previous declaration had the parameter as an output parameter—where the caller may not have initialized the value before calling your method.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1422,7 +1422,7 @@
       text: Just like adding the `readonly` modifier to a `struct` (section D.6.6), adding this modifier to a method only has an effect after your caller recompiles.
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1449,7 +1449,7 @@
       text: Just like removing the `readonly` modifier from a `struct` (section D.6.7), removing this modifier from a method only has an effect after your caller recompiles. When the caller is executing its existing assembly with your updated assembly, data mutation may be visible in ways that will no longer be reproduced after the assemblies recompile.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1478,7 +1478,7 @@
       text: When making parameters optional, be careful not to introduce ambiguity between member overloads when only some parameters are specified. The Framework Design Guidelines encourage you to have optional parameters on only one overload to avoid ambiguous member invocations.
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable change, provided the change does not require parameter reordering and does not introduce the possibility of an ambiguous member invocation.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1507,7 +1507,7 @@
       text: When you change a parameter from optional to required, you need to consider callers that did not explicitly provide an argument for the parameter, callers that called the method with some optional parameters by position, and callers that called the method with some optional parameters by name. In general, the only safe way to change a parameter from required to optional is to introduce a new, longer, member overload that first gives all of the previously optional parameters as optional—with the same default values—and then places any new optional parameters at the end of the parameter list. When you add that new overload, any callers that did not specify all of the optional parameters explicitly will fail to recompile because the target member is ambiguous, forcing you to change the previous member’s parameters from optional to required.
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable breaking change when done as part of “moving” default values to a new overload. Otherwise, it is an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1534,7 +1534,7 @@
       text: Optional parameters are a compile-time feature in which any caller that did not provide a value for a parameter gets the value from the target member’s metadata. Changing the default value has no effect on callers until they recompile, which can create confusion where the compiled binary and the developer’s understanding of the program from the source code do not match.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change due to the possibility of developer confusion.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1563,7 +1563,7 @@
       text: When reflection is used to access the constant field at runtime, the updated value is reflected immediately. Disagreement between reflection code and runtime code about the value of a constant field is another source of developer confusion.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change due to the possibility of developer confusion. If you have not yet released a library with the constant field, use `static readonly` instead of `const` for values you reserve the right to update in a future version. If you have already released the constant field, then we recommend introducing a new field, either `const` or `static readonly`, as appropriate.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1590,7 +1590,7 @@
       text: There is no runtime observable difference when you update a member from `abstract` to `virtual`. However, you should be aware that all instantiable derived types are already providing an implementation that does not invoke your member via a base member invocation.
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1617,7 +1617,7 @@
       text: Changing a member from `virtual` to `abstract` is breaking in the same ways that removing an immediate override to an `abstract` member is. See section D.9.5 for information on the full impact of this type of change.
     - kind: paragraph
       text: The .NET BCL team considers this an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1644,7 +1644,7 @@
       text: Generally speaking, changing a non-`virtual` member to a `virtual` member is a safe change. However, some compiler implementations use the MSIL non-`virtual call` instruction when the target member is known to be non-`virtual` and the target instance is known to be non-`null`. Callers that use these compilers, in these situations, will only call the base-most member, not the most derived `override` implementation.
     - kind: paragraph
       text: The .NET BCL team considers this an acceptable breaking change, but would encourage you to consider making the behavior virtual through the Template Method Pattern rather than altering the existing method.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1671,7 +1671,7 @@
       text: If your method throws a `NullReferenceException` when a parameter is passed as `null`, or an `IndexOutOfRangeException` when a parameter is passed as an out-of-bounds index, you can change it to throw the usage error equivalent exception (e.g., `ArgumentNullException` or `ArgumentOutOfRangeException`) instead. While some callers could, conceivably, depend on the `NullReferenceException` or `IndexOutOfRangeException`, the .NET BCL team believes that the information provided via the usage error exception about which argument value caused the method to fail is worth the risk.
     - kind: paragraph
       text: The .NET BCL team generally considers changing “failed inputs” to “a detailed usage error exception” to be an acceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1696,7 +1696,7 @@
   body:
     - kind: paragraph
       text: Even though the exceptions are part of a member’s “contract,” the .NET BCL team generally considers allowing previously disallowed inputs to function to be an acceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1727,7 +1727,7 @@
       text: If you were already returning a type derived from the declared return type and you change to returning some other compatible type, then you will break both type-testing callers and “hard-casting” callers. For example, if your method is declared to return `IEnumerable<int>`, but always returns `List<int>`, then callers might have depended on the return type. If so, they will get an `InvalidCastException` if you change the return type to be `HashSet<int>`, or a non-public type that implements `IEnumerable<int>`.
     - kind: paragraph
       text: The .NET BCL team is generally supportive of returning a “more derived” type than in a previous version, unless there’s a strong reason to believe type equality checks will be routinely used for that particular method. Returning a value that would break existing “hard-casting” callers is something the .NET BCL team generally considers an unacceptable breaking change.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1754,7 +1754,7 @@
       text: When you throw a new type of exception from your method, or when you allow a new type of exception to escape your method by changing the implementation, you will likely cause the exception to be thrown past any existing `catch` blocks that your caller has for handling errors in your method.
     - kind: paragraph
       text: 'The .NET BCL team generally considers this an unacceptable breaking change, outside of two specific situations: The exception is a subtype of an exception type that is already thrown by the method (section D.12.5) or using an “uncaught” exception type is necessary for fixing a critical bug.'
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1785,7 +1785,7 @@
       text: The second caveat is that callers using type-equality tests in exception filters, or within `catch` blocks, will see a runtime behavioral difference. Type-equality testing in exception handlers is much less common than type hierarchy tests (e.g., the `is` operator), but it’s still something to take into account.
     - kind: paragraph
       text: The .NET BCL team is generally supportive of throwing more specific exceptions.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment

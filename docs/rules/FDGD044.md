@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.8 Changing Member Visibil
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Unlike a removal, the run-time `MemberAccessException` comes only when the call executes. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

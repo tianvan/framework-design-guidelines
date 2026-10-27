@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.22 Changing a Non-virtual
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Some compilers emit a nonvirtual `call` when the target is known to be non-`null`, so those callers keep calling the base-most member. Consider the Template Method Pattern instead of making the existing method `virtual`. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

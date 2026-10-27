@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.6.13 Changing a ref struct t
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 It cannot be safely undone: changing back is FDGD018. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

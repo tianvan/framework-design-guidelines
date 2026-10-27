@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.8.1 Moving Members to a Base
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 It cannot be safely undone: moving the member back is FDGD028. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

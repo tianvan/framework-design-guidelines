@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.7.3 Adding Members to an Uns
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Not permitted when the new member would knowingly conflict with a derived type in a confusing way. A derived type with a member of the same name and a compatible parameter list gets `CS0108`, which breaks builds that treat warnings as errors. Adding `abstract` members is FDGD021. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

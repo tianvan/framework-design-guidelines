@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.7.5 Adding the First Referen
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Breaks callers that take a pointer with `fixed` or pass the type to an `unmanaged`-constrained type parameter, and every `struct` that contains it. It applies also to a generic `struct` whose first such field has a type-parameter type, unless that parameter is constrained to `unmanaged`. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

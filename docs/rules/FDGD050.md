@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.14 Adding the readonly Mo
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 It takes effect only after callers recompile, like FDGD012. The book's heading shows the compilation icon, but the body describes a recompile effect and no compile failure; FDGD012 shows the recompile icon. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

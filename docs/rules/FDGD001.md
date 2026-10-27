@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.1.1 Changing the Name of an 
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 An assembly rename can be done by shipping one final version of the old assembly that uses `[TypeForwardedTo]`, but keeping the existing name is strongly preferred. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

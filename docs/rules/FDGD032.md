@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.9.4 Removing an override of 
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Recompiled derived types skip the type in base calls; adding the override back counts as FDGD023. The .NET BCL team would probably caution against it. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

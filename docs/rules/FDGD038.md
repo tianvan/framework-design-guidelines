@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.2 Adding or Removing a Me
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Add an overload instead. An added optional parameter does not break compilation; a removed required parameter does, unless a compatible overload with optional parameters exists. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

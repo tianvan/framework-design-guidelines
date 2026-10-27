@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.6.6 Adding readonly on a str
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Callers benefit only after they recompile; the only risk is that faster code exposes a latent race condition. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

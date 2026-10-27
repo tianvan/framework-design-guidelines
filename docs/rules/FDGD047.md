@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.11 Adding or Removing the
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Callers in derived types that use implicit member invocation recompile and work again. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

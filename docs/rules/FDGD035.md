@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.10.1 Adding the First Overlo
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Reflection lookups such as `Type.GetMethod(string)` start throwing `AmbiguousMatchException`, and an alternative overload makes calls that pass `default` ambiguous. Not permitted when `default` is a sensible argument that callers can be expected to pass. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

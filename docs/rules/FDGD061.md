@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.12.3 Changing the Type of Va
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Returning a more derived type is generally permitted, unless callers can be expected to compare `value.GetType()`. Switching from one derived type to another (`List<int>` to `HashSet<int>` behind `IEnumerable<int>`) breaks hard-casting callers and is not permitted. Changing the declared return type is FDGD042. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

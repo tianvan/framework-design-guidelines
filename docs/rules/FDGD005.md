@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.4.2 Moving a Type Without [T
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 The same as removing the type (FDGD006); callers that reference both the old and the new assembly still compile. Moving with `[TypeForwardedTo]` is FDGD004. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

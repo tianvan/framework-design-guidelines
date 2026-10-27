@@ -15,8 +15,8 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 8 Usage Guidelines | 107 | 28 | 21 | 58 | 0 | 107 |
 | 9 Common Design Patterns | 175 | 15 | 50 | 110 | 0 | 175 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| D Breaking Changes | 63 | 0 | 0 | 63 | 0 | 0 |
-| Total | 830 | 177 | 142 | 511 | 0 | 767 |
+| D Breaking Changes | 63 | 0 | 0 | 63 | 0 | 63 |
+| Total | 830 | 177 | 142 | 511 | 0 | 830 |
 
 ## Non-guideline content
 

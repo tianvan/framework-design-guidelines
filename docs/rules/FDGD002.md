@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.2.1 Adding a Namespace That 
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Callers that use a namespace-qualified reference to the type get `CS0434`. Use a synonym of the existing type name for the new namespace. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

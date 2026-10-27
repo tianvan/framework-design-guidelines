@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.8.3 Moving Members to a Deri
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 The same as removing the member (FDGD031) for existing binaries. After a recompile, callers typed as the receiving derived type work again; callers that hold only a base class reference or another derived type fail to compile. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

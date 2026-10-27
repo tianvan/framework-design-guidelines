@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.6.11 Changing a struct to a 
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Breaks `struct` and `unmanaged` constraints and definite assignment, and turns the `default` instance into `null`. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

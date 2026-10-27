@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.12.5 Throwing a New Type of 
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Caveats: callers that also catch the derived type may run a different `catch` block, and type-equality tests in exception filters or `catch` blocks see a different type. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

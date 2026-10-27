@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.5 Reordering Method Param
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 The signature does not change, so existing binaries silently swap the meanings of the arguments; callers that name only one of the swapped parameters fail to compile. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

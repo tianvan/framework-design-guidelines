@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.16 Changing a Parameter f
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Permitted when the change needs no parameter reordering and makes no overload call ambiguous; keep optional parameters on one overload only (FDG5014). PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.6.1 Sealing an Unsealed Type
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Breaks only code that already derives from the type: `CS0509` at compile time, `TypeLoadException` at run time. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

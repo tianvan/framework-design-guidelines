@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.11.17 Changing a Parameter f
 - Check: judgment
 - Automatic fix: no
 - Severity: library suggestion, application none, test none
-- Status: draft
+- Status: verified
 
 Permitted only as part of moving the default values to a new, longer overload (FDG5016); otherwise not permitted. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 

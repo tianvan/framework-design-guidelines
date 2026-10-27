@@ -11,7 +11,7 @@ Framework Design Guidelines, 3rd edition, section D.9.5 Removing an override of 
 - Check: judgment
 - Automatic fix: no
 - Severity: library warning, application none, test none
-- Status: draft
+- Status: verified
 
 Applies to the base-most override of an `abstract` member; removing an override of an override is FDGD032. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 
