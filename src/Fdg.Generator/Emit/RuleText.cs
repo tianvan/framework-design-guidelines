@@ -5,10 +5,13 @@ namespace Fdg.Generator.Emit;
 /// <summary>Small text conventions shared by the emitters.</summary>
 internal static class RuleText
 {
-    /// <summary>The guideline as the book states it: strength followed by the sentence.</summary>
+    /// <summary>
+    /// The guideline as the book states it: strength followed by the sentence. An appendix D verdict is set off
+    /// from its heading text by a colon, since the two do not read as one sentence.
+    /// </summary>
     public static string Statement(Rule rule)
     {
-        return $"{rule.Strength.ToText()} {rule.Text}";
+        return $"{rule.Strength.ToText()}{(rule.Strength.IsVerdict() ? ": " : " ")}{rule.Text}";
     }
 
     /// <summary>The version tag of a rule that needs newer syntax, such as <c>[C# 9+]</c>; <c>null</c> when there is none.</summary>

@@ -229,6 +229,112 @@ public class BookParserTests
             considerMapping.Severity);
     }
 
+    private static BookChapter ParseAppendixD()
+    {
+        return BookParser.Parse(Fixture("appendix-d.xhtml"), "D", testProfileOn: false);
+    }
+
+    [Fact]
+    public void Appendix_d_headings_with_a_verdict_icon_become_rules()
+    {
+        BookChapter chapter = ParseAppendixD();
+
+        Assert.Equal(new[] { "FDGD001", "FDGD002", "FDGD003", "FDGD004" }, chapter.Rules.Select(r => r.Id));
+        Assert.Equal(4, chapter.IconCount);
+        Assert.Equal(
+            new[] { Strength.NotPermitted, Strength.Permitted, Strength.Contextual, Strength.NotPermitted },
+            chapter.Rules.Select(r => r.Strength));
+    }
+
+    [Fact]
+    public void Appendix_d_text_and_section_are_the_heading_without_its_icons()
+    {
+        BookChapter chapter = ParseAppendixD();
+
+        Assert.Equal("Changing the Name of a Thing", chapter.Rules[0].Text);
+        Assert.Equal("D.1.1 Changing the Name of a Thing", chapter.Rules[0].Section);
+        Assert.Equal("secD_1_1", chapter.Rules[0].Anchor);
+        Assert.Equal("Changing a `ref struct` to a (Non-`ref`) `struct`", chapter.Rules[1].Text);
+        Assert.Equal("D.1.2 Changing a ref struct to a (Non-ref) struct", chapter.Rules[1].Section);
+    }
+
+    [Fact]
+    public void Appendix_d_context_lists_the_kinds_of_break_in_legend_order()
+    {
+        BookChapter chapter = ParseAppendixD();
+
+        Assert.Equal("runtime, compilation, recompile and reflection breaks", chapter.Rules[0].Context);
+        Assert.Null(chapter.Rules[1].Context);
+        Assert.Equal("runtime break", chapter.Rules[2].Context);
+        Assert.Equal("compilation and recompile breaks", chapter.Rules[3].Context);
+    }
+
+    [Fact]
+    public void Appendix_d_body_is_the_prose_up_to_the_next_heading()
+    {
+        BookChapter chapter = ParseAppendixD();
+
+        Assert.Equal(
+            new[]
+            {
+                "Renaming breaks callers, for example with a `FileNotFoundException`.",
+                "The team considers this unacceptable.",
+            },
+            chapter.Rules[0].Body.Select(b => b.Text));
+        Assert.Equal(new[] { "Compilation fails." }, chapter.Rules[3].Body.Select(b => b.Text));
+    }
+
+    [Fact]
+    public void Appendix_d_rules_start_as_library_judgment_rules_with_verdict_based_severity()
+    {
+        BookChapter chapter = ParseAppendixD();
+
+        Assert.All(chapter.Rules, r => Assert.False(r.Mapping.Style));
+        Assert.Equal(
+            new ProfileSeverity(SeverityLevel.Warning, SeverityLevel.Warning, SeverityLevel.None),
+            chapter.Rules[0].Mapping.Severity);
+        Assert.Equal(
+            new ProfileSeverity(SeverityLevel.Suggestion, SeverityLevel.Suggestion, SeverityLevel.None),
+            chapter.Rules[1].Mapping.Severity);
+        Assert.Equal(
+            new ProfileSeverity(SeverityLevel.Suggestion, SeverityLevel.Suggestion, SeverityLevel.None),
+            chapter.Rules[2].Mapping.Severity);
+    }
+
+    [Fact]
+    public void Appendix_d_heading_without_a_verdict_icon_is_an_error()
+    {
+        string source = File.ReadAllText(Fixture("appendix-d.xhtml"));
+        string verdict =
+            "(<span class=\"middle\"><img src=\"Images/check.jpg\" alt=\"Images\" width=\"20\" height=\"26\"/></span>)";
+        Assert.Contains(verdict, source);
+        string directory = Directory.CreateTempSubdirectory("fdg-book-").FullName;
+        try
+        {
+            string path = Path.Combine(directory, "app04.xhtml");
+            File.WriteAllText(path, source.Replace(verdict, string.Empty));
+
+            BookFormatException exception = Assert.Throws<BookFormatException>(() => BookParser.Parse(path, "D"));
+
+            Assert.Contains("D.1.2", exception.Message);
+            Assert.Contains("verdict icon", exception.Message);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("PERMITTED", Strength.Permitted)]
+    [InlineData("NOT PERMITTED", Strength.NotPermitted)]
+    [InlineData("CONTEXTUAL", Strength.Contextual)]
+    public void Appendix_d_strengths_round_trip_as_text(string text, Strength strength)
+    {
+        Assert.Equal(strength, StrengthExtensions.Parse(text));
+        Assert.Equal(text, strength.ToText());
+    }
+
     [Fact]
     public void Appendix_a_rules_are_style_conventions()
     {

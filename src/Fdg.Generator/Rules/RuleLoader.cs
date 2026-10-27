@@ -46,9 +46,10 @@ public static class RuleLoader
     private static readonly Regex SplitStem = new("^[a-z0-9-]+$");
 
     /// <summary>
-    /// A references section: a section number, optionally after <c>=</c> to leave out its subsections.
+    /// A references section: a section number (a chapter number or an appendix letter, then dotted numbers),
+    /// optionally after <c>=</c> to leave out its subsections.
     /// </summary>
-    private static readonly Regex SplitSection = new(@"\A=?[0-9]+(\.[0-9]+)*\z");
+    private static readonly Regex SplitSection = new(@"\A=?([0-9]+|[A-Z])(\.[0-9]+)*\z");
 
     private static readonly IDeserializer MetaDeserializer = new DeserializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
@@ -131,7 +132,7 @@ public static class RuleLoader
         {
             throw new FormatException(
                 $"meta.yaml: reference section '{invalid}' of chapter {chapter} must be a section number " +
-                "such as 9.12, or one after '=' (=9.12) to leave out its subsections.");
+                "such as 9.12 or D.1, or one after '=' (=9.12) to leave out its subsections.");
         }
 
         return new ReferenceSplit(dto.File, dto.Sections.Select(s => s!).ToList());

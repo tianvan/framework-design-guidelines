@@ -16,7 +16,7 @@
       ],
       "properties": {
         "id": { "type": "string", "pattern": "^FDG[0-9A-Z][0-9]{3}$" },
-        "strength": { "enum": ["DO", "DO NOT", "AVOID", "CONSIDER"] },
+        "strength": { "enum": ["DO", "DO NOT", "AVOID", "CONSIDER", "PERMITTED", "NOT PERMITTED", "CONTEXTUAL"] },
         "text": { "type": "string", "minLength": 1 },
         "context": { "type": ["string", "null"] },
         "section": { "type": "string", "minLength": 1 },

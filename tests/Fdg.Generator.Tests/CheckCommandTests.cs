@@ -192,6 +192,9 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
     [InlineData("\"9.1=\"")]
     [InlineData("\"9..1\"")]
     [InlineData("\"9.1\\n\"")]
+    [InlineData("\"d.1\"")]
+    [InlineData("\"DD.1\"")]
+    [InlineData("\"D.\"")]
     public void Reference_section_must_be_a_section_number(string section)
     {
         SetChapterReferenceSections(section);
@@ -224,6 +227,17 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
 
         string error = Assert.Single(Check(), e => e.Contains("strength"));
         Assert.StartsWith($"{RulesFileName}:FDG9003: ", error);
+    }
+
+    [Theory]
+    [InlineData("PERMITTED")]
+    [InlineData("NOT PERMITTED")]
+    [InlineData("CONTEXTUAL")]
+    public void Schema_accepts_the_appendix_d_verdicts_as_strength(string verdict)
+    {
+        EditRules(yaml => yaml.Replace("strength: CONSIDER", $"strength: {verdict}"));
+
+        Assert.Empty(Check());
     }
 
     [Fact]

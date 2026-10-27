@@ -27,12 +27,15 @@ public sealed record RuleMapping(
     NamingTags? Naming = null)
 {
     /// <summary>
-    /// The skeleton the extractor writes: a draft judgment rule with strength-based severity. In a chapter that is
+    /// The skeleton the extractor writes: a draft judgment rule with strength-based severity (<c>suggestion</c> for
+    /// CONSIDER and appendix D's PERMITTED and CONTEXTUAL, <c>warning</c> otherwise). In a chapter that is
     /// off in the test profile, <c>severity.test</c> starts as <c>none</c>.
     /// </summary>
     public static RuleMapping CreateDefault(Strength strength, bool style, bool testProfileOn)
     {
-        SeverityLevel level = strength == Strength.Consider ? SeverityLevel.Suggestion : SeverityLevel.Warning;
+        SeverityLevel level = strength is Strength.Consider or Strength.Permitted or Strength.Contextual
+            ? SeverityLevel.Suggestion
+            : SeverityLevel.Warning;
         return new RuleMapping(
             RuleStatus.Draft,
             style,

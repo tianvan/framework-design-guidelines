@@ -339,7 +339,8 @@ public sealed class SkillLintTests
         return rule.Section.StartsWith("A.1.6 ", StringComparison.Ordinal) ? 1 : 2;
     }
 
-    private static string Statement(Rule rule) => $"{rule.Strength.ToText()} {rule.Text}";
+    private static string Statement(Rule rule) =>
+        $"{rule.Strength.ToText()}{(rule.Strength.IsVerdict() ? ": " : " ")}{rule.Text}";
 
     /// <summary>
     /// Mirrors <c>SkillReferenceEmitter.Line</c> (through <c>RuleText.Statement</c> and <c>RuleText.LanguageTag</c>,

@@ -6,6 +6,12 @@ public enum Strength
     DoNot,
     Avoid,
     Consider,
+
+    // Appendix D gives no guidelines but a verdict on each kind of change, per its own legend: changes the .NET BCL
+    // team would generally permit (check icon), would not permit (cross icon), and very contextual ones (question).
+    Permitted,
+    NotPermitted,
+    Contextual,
 }
 
 public static class StrengthExtensions
@@ -18,6 +24,9 @@ public static class StrengthExtensions
             Strength.DoNot => "DO NOT",
             Strength.Avoid => "AVOID",
             Strength.Consider => "CONSIDER",
+            Strength.Permitted => "PERMITTED",
+            Strength.NotPermitted => "NOT PERMITTED",
+            Strength.Contextual => "CONTEXTUAL",
             _ => throw new ArgumentOutOfRangeException(nameof(strength), strength, null),
         };
     }
@@ -38,6 +47,15 @@ public static class StrengthExtensions
             case "CONSIDER":
                 strength = Strength.Consider;
                 return true;
+            case "PERMITTED":
+                strength = Strength.Permitted;
+                return true;
+            case "NOT PERMITTED":
+                strength = Strength.NotPermitted;
+                return true;
+            case "CONTEXTUAL":
+                strength = Strength.Contextual;
+                return true;
             default:
                 strength = default;
                 return false;
@@ -48,13 +66,21 @@ public static class StrengthExtensions
     {
         if (!TryParse(text, out Strength strength))
         {
-            throw new FormatException($"Unknown strength '{text}'. Expected DO, DO NOT, AVOID, or CONSIDER.");
+            throw new FormatException(
+                $"Unknown strength '{text}'. Expected DO, DO NOT, AVOID, CONSIDER, " +
+                "PERMITTED, NOT PERMITTED, or CONTEXTUAL.");
         }
 
         return strength;
     }
 
-    /// <summary>Whether the book marks this strength with the check icon (otherwise the cross icon).</summary>
+    /// <summary>Whether this is one of appendix D's verdicts on a kind of change, not a guideline strength.</summary>
+    public static bool IsVerdict(this Strength strength)
+    {
+        return strength is Strength.Permitted or Strength.NotPermitted or Strength.Contextual;
+    }
+
+    /// <summary>Whether the book marks this guideline strength with the check icon (otherwise the cross).</summary>
     public static bool UsesCheckIcon(this Strength strength)
     {
         return strength is Strength.Do or Strength.Consider;
