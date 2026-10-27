@@ -3571,7 +3571,7 @@
   body:
   - kind: paragraph
     text: If a design requires virtual members, follow the template pattern and create a protected virtual member that the public member calls. This practice provides more controlled extensibility.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3596,7 +3596,7 @@
   body:
   - kind: paragraph
     text: In this pattern, all extensibility points are provided through protected virtual members that are called from nonvirtual members.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3621,7 +3621,7 @@
   body:
   - kind: code
     text: "public void SetBounds(...){\n  ...\n  SetBoundsCore (...);\n}\nprotected virtual void SetBoundsCore(...){ ... }"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3644,7 +3644,7 @@
   section: 9.9 Template Method
   anchor: sec9_9
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3673,7 +3673,7 @@
     text: By moving the common checks into the public member, a developer for the derived type only needs to focus on the logic for their specific implementation. This approach eliminates the entire class of bugs associated with argument validation being slightly different, or outright missing, in a specific derived type.
   - kind: code
     text: "public void SetBounds(int left, int right) {\n  if (left < MinLeft || left >= right) {\n    throw new ArgumentOutOfRangeException(nameof(left));\n  }\n  if (right > MaxRight) {\n    throw new ArgumentOutOfRangeException(nameof(right));\n  }\n  if (_disposed) {\n    throw new ObjectDisposedException(...);\n  }\n  SetBoundCore(left, right);\n}\n\nprotected virtual void SetBoundsCore(int left, int right){ ... }"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3698,7 +3698,7 @@
   body:
   - kind: paragraph
     text: Method parameters are favored over properties because they make the association between the operation and the timeout much more apparent. The property-based approach might be better if the type is designed to be a component used with visual designers.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3737,7 +3737,7 @@
     text: '- The parameter or property name can describe the unit of time used by the operation—for example, if a parameter can be called `milliseconds` without making an otherwise self-describing API cryptic.
 
       - The most commonly used value is small enough that users won’t have to use calculators to determine the value—for example, if the unit is milliseconds and the commonly used timeout is less than 1 second.'
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -3767,7 +3767,7 @@
     text: A timeout equal to `TimeSpan(0)` means that the operation should throw if it cannot complete immediately. If the timeout equals `TimeSpan.MaxValue`, the operation should wait forever without timing out. Operations are not required to support either of these values, but they should throw an `ArgumentOutOfRangeException` if an unsupported timeout value is specified.
   - kind: paragraph
     text: If a timeout expires and the `System.TimeoutException` is thrown, the server class should cancel the underlying operation.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3792,7 +3792,7 @@
   body:
   - kind: paragraph
     text: Expiration of a timeout means the operation could not complete successfully and thus should be treated and handled as any other runtime error (see Chapter 7).
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3828,7 +3828,7 @@
   - kind: annotation
     text: In my opinion, this one should really be a DO, not a CONSIDER. If you’re designing a new type to support XAML, it’s far more preferable to do it with a default constructor than with markup extensions or type converters.
     author: Chris Sells
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3861,7 +3861,7 @@
     text: "[MarkupExtensionReturnType(typeof(Person))] public class PersonExtension : MarkupExtension {\n public string Name { get; set; }\n public int Age { get; set; }\n public override object ProvideValue(IServiceProvider\nserviceProvider){\n     return new Person(Name, Age);\n    }\n}"
   - kind: paragraph
     text: Keep in mind that immutable types cannot be written using XAML writers.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3894,7 +3894,7 @@
     text: <Rectangle Fill="HorizontalGradient White Red" />
   - kind: paragraph
     text: Such converters define new “minilanguages,” which add complexity to the system.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3927,7 +3927,7 @@
     text: The attribute makes the following much more readable syntax possible.
   - kind: code
     text: "<Button>\n  <Image Source=\"foo.jpg\" />\n</Button>"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3958,7 +3958,7 @@
     text: "public partial class BulkQueue<T> {\n  // A simple, array-returning method\n  public T[] DequeueMultiple(int limit) { ... }\n\n  // An overload that lets the caller reuse an array\n  public int DequeueMultiple(T[] destination) {\n    if (destination == null) {\n      throw new ArgumentNullException(nameof(destination));\n    }\n    return DequeueMultiple(destination.AsSpan());\n  }\n\n  // An overload that lets the caller use part of an array\n  public int DequeueMultiple(\n    T[] destination, int offset, int count) {\n\n    if (destination == null) {\n      throw new ArgumentNullException(nameof(destination));\n    }\n    // Defer the offset/count validation to AsSpan because the\n    // parameter names match.\n    return DequeueMultiple(destination.AsSpan(offset, count));\n  }\n\n  // The Span-based overload.\n  // The signature is simpler than (T[],int,int),\n  // but with the same functionality.\n  // This method also allows the destination to be stackalloc or\n  // pointer-based data (if those options are open to the type T).\n  public int DequeueMultiple(Span<T> destination) {\n    int count = Count;\n    int length = destination.Length;\n    if (length < count) {\n      _pending.AsSpan(_offset, count).CopyTo(destination);\n      Count = 0;\n      return count;\n    }\n    _pending.AsSpan(_offset, length).CopyTo(destination);\n    Count -= destination.Length;\n    _offset += destination.Length;\n    return destination.Length;\n  }\n}"
   - kind: paragraph
     text: If you have an existing type that already has array- or string-accepting methods, it generally makes sense to provide the Span- or Memory-based alternative as an overload on the same type, particularly for instance methods. For static methods, it may be more appropriate to have the array- or string-accepting methods on a high-level type, and to create a new low-level type for working with Span or Memory (section 2.2.4).
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -3987,7 +3987,7 @@
     text: '`String` values logically represent an immutable `char[]`, and can be converted to `ReadOnlySpan<char>`, but not `Span<char>`.'
   - kind: code
     text: "public static long Sum(ReadOnlySpan<int> values) {\n    long sum = 0;\n    for (int i = 0; i < values.Length; i++) {\n        sum += values[i];\n    }\n    return sum;\n}\n\n// Good: An array overload, either an existing method\n// or one added concurrently\npublic static long Sum(int[] values) {\n    if (values == null) {\n        throw new ArgumentNullException(nameof(values));\n    }\n    return Sum(values.AsSpan());\n}\n\n// Bad: This method suggests it writes to the parameter, but it only\n// reads. Writable spans are freely convertible to ReadOnlySpan.\npublic static long Sum(Span<int> values) {\n    return Sum((ReadOnlySpan<int>)values);\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4033,7 +4033,7 @@
     text: The most common alternative to returning a Span is to accept a destination `Span<T>` as a parameter, and copy from your buffer to your caller’s.
   - kind: code
     text: "partial class SpanifiedQueue<T> {\n  // Bad: Returning a ReadOnlySpan over-exposes details\n  public ReadOnlySpan<T> DequeueMany(int count) {\n    ...\n    int start = _offset;\n    _offset += count;\n    return _buffer.AsSpan(start, count);\n  }\n\n  // Good: The data moves without exposing the implementation\n  public int DequeueMany(Span<T> destination) {\n    int count = Math.Min(destination.Length, Count);\n    _buffer.AsSpan(_offset, count).CopyTo(destination);\n    _offset += count;\n    return count;\n  }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4060,7 +4060,7 @@
     text: When you return a Span representing a buffer that your caller isn’t already responsible for, you need to provide *very* clear documentation for what you expect the caller to do with it. This documentation needs to state when the value must no longer be used and what, if any, follow-up action is required on the caller’s part.
   - kind: paragraph
     text: Since reading and understanding the documentation is required to properly use such a method, it is no longer part of a self-documenting framework.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4094,7 +4094,7 @@
     text: Usually you would expose these values as static properties. You may find virtual instance properties appropriate when each type in your hierarchy uses different values, but two instances of the same type don’t vary. This pattern is used for the `Preamble` property on `System.Text.Encoding`.
   - kind: code
     text: "public partial class Encoding {\n  public virtual byte[] GetPreamble() { ... }\n\n  // On any Encoding instance the sequence of bytes in the Preamble\n  // value is always the same.\n  public virtual ReadOnlySpan<byte> Preamble => GetPreamble();\n}\n\npublic sealed partial class SomeEncoding {\n  private static readonly byte[] s_preamble = { 0x05, 0xA0 };\n\n  // This encoding type optimizes the Preamble property to always\n  // use the same array.\n  public override ReadOnlySpan<byte> Preamble =>\n    _usePreamble ? s_preamble : default;\n\n  // GetPreamble() still needs to return a defensive copy.\n  public override byte[] GetPreamble() => Preamble.ToArray();\n}\n\npublic static partial class ZipHeaders\n{\n  public static ReadOnlySpan<byte> LocalFile { get; } =\n    new byte[] { 0x50, 0x4b, 0x03, 0x04 };\n  public static ReadOnlySpan<byte> DataDescriptor { get; } =\n    new byte[] { 0x50, 0x4b, 0x07, 0x08 };\n  ...\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4127,7 +4127,7 @@
     text: "public static Range TrimEnd(ReadOnlySpan<char> span) {\n  int index = span.Length - 1;\n  while (index >= 0 && char.IsWhiteSpace(span[index])) {\n    index--;\n  }\n\n  int start = 0;\n  while (start < end && char.IsWhiteSpace(span[start])) {\n    start++;\n  }\n  return new Range(start, end - start + 1);\n}\n\nSpan<char> span = ...;\nRange trimRange = Trim(span);\nSpan<char> writableTrimmed = span[trimRange];"
   - kind: paragraph
     text: You could solve the problem by providing an overload like `public static Span<char> Trim(Span<char> span)`, but then you should also create overloads for `ReadOnlyMemory<char>` and `Memory<char>`. By returning the `Range` you need to have only one method that works for all of these types, as well as any other types that have a `Range`-based indexer and can be converted to a `ReadOnlySpan<char>`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4153,7 +4153,7 @@
   section: 9.12 Operating on Buffers
   anchor: sec9_12
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4183,7 +4183,7 @@
     text: Asynchronous methods largely represent the idea of “doing work later.” Since the Span types can’t generally be stored as part of the state of pending work, the appropriate Memory type should be used instead.
   - kind: code
     text: "public partial class Stream {\n  public virtual int Read(Span<byte> buffer) { ... }\n\n  public virtual ValueTask<int> ReadAsync(\n    Memory<byte> buffer,\n    CancellationToken cancellationToken = default) { ... }\n\n  public virtual int Write(ReadOnlySpan<byte> buffer) { ... }\n\n  public virtual ValueTask<int> WriteAsync(\n    ReadOnlyMemory<byte> buffer,\n    CancellationToken cancellationToken = default) { ... }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4209,7 +4209,7 @@
   section: 9.12 Operating on Buffers
   anchor: sec9_12
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4238,7 +4238,7 @@
     text: The `JsonDocument` class has a `Parse` method that maintains a reference to the input, without making a copy of the data. This improves performance, but places a responsibility on the caller to prevent data mutation. Since the parameter is a Memory type, the caller can expect that the `JsonDocument` instance will continue using the same buffer that was provided to the `Parse` method.
   - kind: code
     text: "public partial class JsonDocument {\n  // The returned JsonDocument holds a reference to the input\n  // buffer and reads the JSON without making unnecessary copies\n  public static JsonDocument Parse(\n    ReadOnlyMemory<byte> utf8Json,\n    JsonDocumentOptions options = default) { ... }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4278,7 +4278,7 @@
     text: 'public static ReadOnlySpan<char> TrimEnd(ReadOnlySpan<char> span) {...}
 
       public static Span<char> TrimEnd(Span<char> span) { ... }'
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4318,7 +4318,7 @@
     text: 'public static Span<char> TrimEnd(Span<char> span) { ... }
 
       public static Memory<char> TrimEnd(Memory<char> memory) { ... }'
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4352,7 +4352,7 @@
     text: "// Previously:\npublic void AppendData(byte[] data, int offset, int count) {\n  if (data == null)\n    throw new ArgumentNullException(nameof(data));\n  // bounds argument validation here\n\n  // implementation\n}\n\n// With a ReadOnlySpan<byte> overload:\npublic void AppendData(byte[] data, int offset, int count) {\n  if (data == null)\n    throw new ArgumentNullException(nameof(data));\n  // bounds argument validation here so parameter names are correct\n\n  AppendData(data.AsSpan(offset, count));\n}\n\npublic void AppendData(ReadOnlySpan<byte> data) {\n  // implementation, from previous version\n}"
   - kind: paragraph
     text: For static methods, it can make sense to have the array- or string-accepting methods on a high-level type, and to create a new low-level type for working with Span or Memory (section 2.2.4).
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -4376,7 +4376,7 @@
   section: 9.12 Operating on Buffers
   anchor: sec9_12
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4403,7 +4403,7 @@
     text: Not all CLR languages can use Spans as easily as C# does, and not all C# users are familiar with Spans. If you have an array- (or string-) based approach, you make it easier for these callers to call your method.
   - kind: paragraph
     text: If you’re designing a low-level component that is only intended to be used by other Span- or Memory-based operations, then it’s OK to not provide the array or string alternative methods.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4434,7 +4434,7 @@
     text: "public static string ToBase64(byte[] source) { ... }\n\npublic static int ToBase64(\n ReadOnlySpan<byte> source, Span<char> destination);"
   - kind: paragraph
     text: If you’re designing a low-level component that is only intended to be used by other buffer-writing operations, then it’s OK to not provide the array or string alternative methods.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4463,7 +4463,7 @@
     text: Consider your array, or string, alternative method on its own when deciding whether you want to treat a null input and an empty input as the same thing. If you decide that null values are not appropriate, throw the normal `ArgumentNullException`.
   - kind: paragraph
     text: If your array, or string, alternative member accepts offset and count parameters, you should validate them manually so that the `ArgumentException` uses the parameter name that matches your method.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4486,7 +4486,7 @@
   section: 9.12 Operating on Buffers
   anchor: sec9_12
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4515,7 +4515,7 @@
     text: In the `RSA` class, the name of the input buffer to the `SignData` method is “data,” and the name of the input buffer to `SignHash` is “hash,” to reinforce the different treatment that the buffers get between those two methods. The `TrySignData` and `TrySignHash` methods continue to use the names “data” and “hash” instead of “source” to be consistent with the data-returning method variants, but both still use “destination” as the name for the output buffer because no domain-specific clarity is required.
   - kind: code
     text: "public partial class RSA {\n  public virtual byte[] SignData(\n    byte[] data,\n    HashAlgorithmName hashAlgorithm,\n    RSASignaturePadding padding) { ... }\n\n  public virtual bool TrySignData(\n    ReadOnlySpan<byte> data,\n    Span<byte> destination,\n    HashAlgorithmName hashAlgorithm,\n    RSASignaturePadding padding,\n    out int bytesWritten) { ... }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4538,7 +4538,7 @@
   section: 9.12.1 Data Transformation Operations
   anchor: sec9_12_1
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4556,7 +4556,7 @@
   analyzer:
     message: Make the input buffer '{0}' the first parameter of '{1}'
     category: Patterns
-  notes: The text has no body; the body of FDG9157 explains both. FDG9156 reports a parameter named source of an input buffer type (ReadOnlySpan<T>, ReadOnlyMemory<T>, ReadOnlySequence<T>, an array, ArraySegment<T> or string) of an externally visible method when a parameter before it is an output buffer named destination (an array can be either) or is neither another input buffer of those types nor an int that immediately follows an array (the array's offset), so that several source parameters may come first, as in the Xor example. A string or array named source is checked only when the method also has an output buffer (a Span<T> or Memory<T> parameter, or a non-params array or ArraySegment<T> parameter named destination or with byte or char elements), since without one it can be a name, a path or a collection; other arrays not named destination, such as an int[] or object[] output, are not seen, so a misplaced source beside them is missed; a ReadOnlySpan<T>, ReadOnlyMemory<T> or ReadOnlySequence<T> source is always checked. The this parameter of an extension method is not counted, as it stands for the instance of an instance method, which the body allows to provide the source. Input buffers with other names (left, nonce, plaintext), overrides and interface implementations are not checked, so coverage is partial. Span<T> and Memory<T> types need .NET Core 2.1 or later, or the System.Memory package on .NET Framework and .NET Standard 2.0 (see FDG9137). Reordering changes the public signature, so the fix is breaking; there is no code fix.
+  notes: The text has no body; the body of FDG9157 explains both. FDG9156 reports a parameter named source of an input buffer type (ReadOnlySpan<T>, ReadOnlyMemory<T>, ReadOnlySequence<T>, an array, ArraySegment<T> or string) of an externally visible method when a parameter before it is an output buffer named destination (an array can be either) or is neither another input buffer of those types nor an int that immediately follows an array (the array's offset), so that several source parameters may come first, as in the Xor example. A string or array named source is checked only when the method also has an output buffer (a Span<T> or Memory<T> parameter, or a non-params array or ArraySegment<T> parameter named destination or with byte or char elements), since without one it can be a name, a path or a collection; other arrays not named destination, such as an int[] or object[] output, are not seen, so a misplaced source beside them is missed; a byte or char array that is itself an input (a payload) also counts, so a string named source beside it can be reported though it is a name; a ReadOnlySpan<T>, ReadOnlyMemory<T> or ReadOnlySequence<T> source is always checked. The this parameter of an extension method is not counted, as it stands for the instance of an instance method, which the body allows to provide the source. Input buffers with other names (left, nonce, plaintext), overrides and interface implementations are not checked, so coverage is partial. Span<T> and Memory<T> types need .NET Core 2.1 or later, or the System.Memory package on .NET Framework and .NET Standard 2.0 (see FDG9137). Reordering changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9157
   strength: DO
   text: position the output buffer parameter (“destination”) as the first method parameter after the source parameter(s).
@@ -4572,7 +4572,7 @@
     text: When a buffer-writing method accepts an array and an offset, the offset parameter should immediately follow the array it is associated with. This is one of the only reasons for inserting a parameter between the `source` and `destination` parameters.
   - kind: code
     text: "public static int XorInto(\n  ReadOnlySpan<byte> source,\n  Span<byte> destination) { ... }\n\npublic static int XorInto(\n  byte[] source,\n  byte[] destination) { ... }\n\npublic static int XorInto(\n  byte[] source, int sourceIndex,\n  byte[] destination, int destinationIndex) { ... }"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4604,7 +4604,7 @@
     text: When your method is always going to fill the entire buffer, as occurs with `RandomNumberGenerator.Fill`, the caller already knows the number of elements written, so you don’t need to explicitly return it.
   - kind: code
     text: "partial class RandomNumberGenerator {\n  // No return value required; it always writes\n  // destination.Length bytes\n  public static void Fill(Span<byte> destination) { ... }\n}\n\npublic partial class Encoding {\n  // Returns the number of bytes written to destination\n  public virtual int GetBytes(\n    ReadOnlySpan<char> source,\n    Span<byte> destination) { ... }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4631,7 +4631,7 @@
     text: 'One simple example of this pattern is the `TryFormat` method on `System.Version`:'
   - kind: code
     text: "public bool TryFormat(\n  Span<char> destination, out int charsWritten) { ... }"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4663,7 +4663,7 @@
     text: For example, a CRC-64 operation will always write an 8-byte output (64 bits), so there should be a simple method for computing a CRC-64 value into a buffer.
   - kind: code
     text: "partial class Crc64 {\n  public const int ChecksumSize = 8;\n\n  public static int ComputeChecksum(\n    ReadOnlySpan<byte> source,\n    Span<byte> destination) {\n\n    if (destination.Length < ChecksumSize) {\n      throw new ArgumentException(..., nameof(destination));\n    }\n    ...\n    return ChecksumSize;\n  }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4690,7 +4690,7 @@
     text: The Try-Write Pattern is better than a simple buffer-writing method when the number of output elements varies greatly for two inputs of the same size. It is partially built on a caller “hoping” that the destination buffer is big enough, and when it isn’t, getting a bigger buffer and trying again.
   - kind: paragraph
     text: However, every time your caller grows the buffer, the caller pays the cost of copying all of the existing contents into the new buffer. The performance penalty is worse if method has to do a nontrivial amount of work before it can determine the destination is too small. If you expect a caller to have to get a bigger buffer several times before it can use your operation successfully, the Try-Write Pattern may be a performance trap. Later guidance in this section addresses avoiding, or reducing, the performance concerns in these situations.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4713,7 +4713,7 @@
   section: 9.12.3 Writing Values to Buffers with the Try-Write Pattern
   anchor: sec9_12_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4739,7 +4739,7 @@
   section: 9.12.3 Writing Values to Buffers with the Try-Write Pattern
   anchor: sec9_12_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4765,7 +4765,7 @@
   section: 9.12.3 Writing Values to Buffers with the Try-Write Pattern
   anchor: sec9_12_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4790,7 +4790,7 @@
   body:
   - kind: paragraph
     text: In the Try-Write Pattern, `true` means success and `false` means the destination is not big enough. This consistency allows callers to reliably interpret `false` as “try again with a bigger buffer.” For any other error condition (e.g., invalid inputs, invalid object state), the correct response is to throw an appropriate exception (see section 7.2).
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4821,7 +4821,7 @@
     text: While `BigInteger.GetByteCount` and `Encoding.GetByteCount` both produce exact answers, you can also—or instead—provide a faster method that returns the maximum possible value for the result size, like `Encoding.GetMaxByteCount`.
   - kind: code
     text: "public partial class Encoding {\n  public abstract int GetMaxByteCount(int charCount);\n  public abstract int GetMaxCharCount(int byteCount);\n\n  public virtual int GetByteCount(ReadOnlySpan<char> chars) {\n    ...\n  }\n\n  public virtual int GetCharCount(ReadOnlySpan<byte> bytes) {\n    ...\n  }\n}\n...\nint longestString = strings.Max(s => s.Length);\nbyte[] buf = new byte[encoding.GetMaxByteCount(longestString)];\nforeach (string s in strings) {\n  int written = encoding.GetBytes(s, buf);\n  SendMessage(buf.Slice(0, written));\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4850,7 +4850,7 @@
     text: For example, writing a row of Boolean values into a CSV file can preallocate a buffer based on knowing that the longest output from `bool.TryFormat` is from the string `"false"`. Pre-allocating buffers is more difficult for `TryFormat` methods on more complex types, unless those types expose their maximum format length via API.
   - kind: code
     text: "private void WriteRow(ReadOnlySpan<bool> row, ref char[] buf) {\n  int length = (bool.FalseString.Length + 1) * row.Length;\n  Array.Resize(ref buf, Math.Max(length, buf.Length));\n  int offset = 0;\n  foreach (bool b in row) {\n    while (!b.TryFormat(buf.AsSpan(offset), out int written)) {\n      Array.Resize(ref buf, buf.Length * 2);\n    }\n    offset += written;\n    buf[offset] = ',';\n  }\n  WriteLine(buf.AsSpan(0, offset));\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4887,7 +4887,7 @@
     text: "// If only TryWriteBytes is available\nif (!target.TryWriteBytes(destination, out int bytesWritten)) {\n  Debug.Fail(\"TryWriteBytes failed with a pre-allocated buffer\");\n  throw new InvalidOperationException();\n}\n\n// Using WriteBytes\nint bytesWritten = target.WriteBytes(destination);"
   - kind: paragraph
     text: The exception-throwing buffer-writing method should be written according to the guidance for predetermined-length writes in section 9.12.2.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4914,7 +4914,7 @@
     text: The Try-Write Pattern is useful both when the amount of data to be written isn’t known ahead of time and when called by an operation that has a variable amount of buffer remaining after successfully calling other Try-Write methods. Offering a Try-Write alternative for a fixed-write method may be valuable to callers, as it composes more fluidly with other Try-Write methods.
   - kind: code
     text: "public partial class EventInstance {\n  public Guid OperationId { get; private set; }\n  public Guid EventTypeId { get; private set; }\n  public DateTimeOffset Timestamp { get; private set; }\n  public bool TrySerialize(\n    Span<byte> destination,\n    out int bytesWritten) {\n\n    bytesWritten = 0;\n    if (!TryWriteGuid(OperationId, destination, out int written)) {\n      return false;\n    }\n    int totalWritten = written;\n    destination = destination.Slice(written);\n    if (!TryWriteGuid(EventTypeId, destination, out written)) {\n      return false;\n    }\n    totalWritten += written;\n    destination = destination.Slice(written);\n    if (!BinaryPrimitives.TryWriteUInt64LittleEndian(destination,\nTimestamp.ToFileTime())) {\n      return false;\n    }\n    bytesWritten = totalWritten + sizeof(ulong);\n    return true;\n  }\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4941,7 +4941,7 @@
     text: Any algorithm where the input to can be broken down into smaller pieces—such as reading from or writing to Base64, or expanding compressed data—is a good candidate for an `OperationStatus` method. Such a method allows the caller to process whatever amount of data fits in the current buffer and continue without needing to first obtain a bigger buffer.
   - kind: code
     text: "private int Expand(ReadOnlySpan<byte> source, Stream destination){\n  OperationStatus status = _expander.Expand(\n    source, _buf,\n    out int bytesConsumed, out int bytesWritten);\n\n  switch (status) {\n    case OperationStatus.Done:\n    case OperationStatus.DestinationTooSmall:\n    case OperationStatus.NeedMoreData:\n      destination.Write(_buf.AsSpan(0, bytesWritten));\n      return bytesConsumed;\n  }\n  throw new InvalidOperationException();\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -4964,7 +4964,7 @@
   section: 9.12.4 Partial Writes to Buffers and OperationStatus
   anchor: sec9_12_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -4990,7 +4990,7 @@
   section: 9.12.4 Partial Writes to Buffers and OperationStatus
   anchor: sec9_12_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -5020,7 +5020,7 @@
     text: 'Following the earlier guidance that the input buffer and output buffer should be the first and second parameters, respectively, an `OperationStatus` method should generally have a method signature like the following example to read a list of numbers:'
   - kind: code
     text: "public static OperationStatus ReadInt32List(\n  ReadOnlySpan<char> source,\n  Span<int> destination,\n  out int charsConsumed,\n  out int valuesWritten) { ... }"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -5050,7 +5050,7 @@
     text: 'For example, `ToBase64` needs to know whether the source buffer represents the final segment of the data so it can determine if it needs to treat an incomplete segment as `NeedsMoreData` or if it should write the padding characters. This would result in something like the following:'
   - kind: code
     text: "public static OperationStatus ToBase64(\n  ReadOnlySpan<byte> source,\n  Span<byte> destination,\n  out int bytesConsumed,\n  out int charsWritten,\n  bool isFinalBlock = true) {\n  ...\n  if (i < source.Length) {\n    if (j + 4 <= destination.Length) {\n      if (isFinalBlock) {\n        // write the padded final block\n        ...\n        return OperationStatus.Done;\n      }\n      return OperationStatus.NeedsMoreData;\n    }\n    return OperationStatus.DestinationTooSmall;\n  }\n  return OperationStatus.Done;\n}"
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -5090,7 +5090,7 @@
     text: "public static TryWriteNewlineHexadecimal(\n  ReadOnlySpan<byte> source,\n  Span<char> data,\n  int newlineAfter,\n  out int charsWritten) {\n\n  OperationStatus status = WriteNewlineHexadecimal(\n    source, data, newlineAfter, out _, out int written));\n\n  switch (status) {\n    case OperationStatus.Done:\n      charsWritten = written;\n      return true;\n    case OperationStatus.DestinationTooSmall:\n      charsWritten = 0;\n      return false;\n    default:\n      // Depending on the operation, there may not be an\n      // InvalidData or NeedMoreData response.\n      throw new AppropriateException();\n    }\n}"
   - kind: paragraph
     text: You shouldn’t have a Try-Write alternative method if your `OperationStatus` method is capable of producing large results, but you can’t provide an API to estimate the output length.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
