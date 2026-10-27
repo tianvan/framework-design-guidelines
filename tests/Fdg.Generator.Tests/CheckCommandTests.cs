@@ -282,9 +282,17 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
 
     [Theory]
     [InlineData("      - { section: \"B.3.8\", disposition: obsolete }\n", "needs a section and a note")]
-
     [InlineData("      - { section: \"B.3.8\", disposition: gone, note: \"x\" }\n", "Invalid otherContent disposition")]
     [InlineData("      []\n", "needs a source, a title and at least one entry")]
+    [InlineData(
+        "      - { section: \"B.3.8\", disposition: obsolete, note: \"x\" }\n" +
+        "  - source: app03.xhtml\n    entries:\n      - { section: \"C\", disposition: background, note: \"x\" }\n",
+        "needs a source, a title and at least one entry")]
+    [InlineData(
+        "      - { section: \"B.3.8\", disposition: obsolete, note: \"x\" }\n" +
+        "  - title: Sample API Specification\n    entries:\n" +
+        "      - { section: \"C\", disposition: background, note: \"x\" }\n",
+        "needs a source, a title and at least one entry")]
     public void Other_content_entries_are_validated(string entries, string message)
     {
         SetNotes("Background.", entries);
