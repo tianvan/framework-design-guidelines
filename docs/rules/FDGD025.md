@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Adding a Member to an Interface
 
-Framework Design Guidelines, 3rd edition, section D.7.6 Adding a Member to an Interface. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.7.6 Adding a Member to an Interface. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

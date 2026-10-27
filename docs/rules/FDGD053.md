@@ -4,7 +4,7 @@
 
 > CONTEXTUAL: Changing a Parameter from Optional to Required
 
-Framework Design Guidelines, 3rd edition, section D.11.17 Changing a Parameter from Optional to Required. Applies to: compilation and recompile breaks.
+Framework Design Guidelines, 3rd edition, section D.11.17 Changing a Parameter from Optional to Required. Can cause: compilation and recompile breaks.
 
 ## How it is checked
 

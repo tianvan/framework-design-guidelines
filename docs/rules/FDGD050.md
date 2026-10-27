@@ -4,7 +4,7 @@
 
 > PERMITTED: Adding the `readonly` Modifier to a `struct` Method
 
-Framework Design Guidelines, 3rd edition, section D.11.14 Adding the readonly Modifier to a struct Method. Applies to: compilation break.
+Framework Design Guidelines, 3rd edition, section D.11.14 Adding the readonly Modifier to a struct Method. Can cause: compilation break.
 
 ## How it is checked
 
@@ -13,7 +13,7 @@ Framework Design Guidelines, 3rd edition, section D.11.14 Adding the readonly Mo
 - Severity: library suggestion, application none, test none
 - Status: draft
 
-It takes effect only after callers recompile, like FDGD012. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+It takes effect only after callers recompile, like FDGD012. The book's heading shows the compilation icon, but the body describes a recompile effect and no compile failure; FDGD012 shows the recompile icon. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 
 ## From the book
 

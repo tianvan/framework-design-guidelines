@@ -4,7 +4,7 @@
 
 > PERMITTED: Moving a Type via [`TypeForwardedTo`]
 
-Framework Design Guidelines, 3rd edition, section D.4.1 Moving a Type via [TypeForwardedTo]. Applies to: reflection break.
+Framework Design Guidelines, 3rd edition, section D.4.1 Moving a Type via [TypeForwardedTo]. Can cause: reflection break.
 
 ## How it is checked
 

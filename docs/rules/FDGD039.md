@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing a Method Parameter Type
 
-Framework Design Guidelines, 3rd edition, section D.11.3 Changing a Method Parameter Type. Applies to: runtime, compilation and reflection breaks.
+Framework Design Guidelines, 3rd edition, section D.11.3 Changing a Method Parameter Type. Can cause: runtime, compilation and reflection breaks.
 
 ## How it is checked
 

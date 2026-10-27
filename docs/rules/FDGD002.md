@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Adding a Namespace That Conflicts with an Existing Type
 
-Framework Design Guidelines, 3rd edition, section D.2.1 Adding a Namespace That Conflicts with an Existing Type. Applies to: compilation break.
+Framework Design Guidelines, 3rd edition, section D.2.1 Adding a Namespace That Conflicts with an Existing Type. Can cause: compilation break.
 
 ## How it is checked
 

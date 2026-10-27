@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Moving Members to a Base Interface
 
-Framework Design Guidelines, 3rd edition, section D.8.2 Moving Members to a Base Interface. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.8.2 Moving Members to a Base Interface. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

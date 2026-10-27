@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Adding or Removing the `static` Modifier
 
-Framework Design Guidelines, 3rd edition, section D.11.11 Adding or Removing the static Modifier. Applies to: runtime, compilation and recompile breaks.
+Framework Design Guidelines, 3rd edition, section D.11.11 Adding or Removing the static Modifier. Can cause: runtime, compilation and recompile breaks.
 
 ## How it is checked
 

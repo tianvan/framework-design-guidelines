@@ -4,7 +4,7 @@
 
 > CONTEXTUAL: Adding Alternative-Parameter Overloads for a Reference Type Parameter
 
-Framework Design Guidelines, 3rd edition, section D.10.2 Adding Alternative-Parameter Overloads for a Reference Type Parameter. Applies to: compilation break.
+Framework Design Guidelines, 3rd edition, section D.10.2 Adding Alternative-Parameter Overloads for a Reference Type Parameter. Can cause: compilation break.
 
 ## How it is checked
 

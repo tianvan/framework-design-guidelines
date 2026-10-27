@@ -30,16 +30,20 @@ public sealed class SkillLintTests
 
     /// <summary>
     /// A rule line: <c>**FDG####** &lt;STRENGTH&gt; &lt;text&gt;</c>, optionally a list item, or the review output form
-    /// <c>— FDG#### &lt;STRENGTH&gt; &lt;text&gt;</c>.
+    /// <c>— FDG#### &lt;STRENGTH&gt; &lt;text&gt;</c>. An appendix D verdict is followed by a colon:
+    /// <c>— FDGD001 NOT PERMITTED: &lt;text&gt;</c>.
     /// </summary>
     private static readonly Regex RuleLine = new(
-        @"(?:\*\*(?<id>FDG[1-9A-Z]\d{3})\*\* |— (?<id>FDG[1-9A-Z]\d{3}) (?=(?:DO|AVOID|CONSIDER) ))(?<rest>.+)$");
+        @"(?:\*\*(?<id>FDG[1-9A-Z]\d{3})\*\* |— (?<id>FDG[1-9A-Z]\d{3}) " +
+        @"(?=(?:DO|AVOID|CONSIDER) |(?:PERMITTED|NOT PERMITTED|CONTEXTUAL): ))(?<rest>.+)$");
 
     /// <summary>
     /// Any line where a rule id is followed by a strength word, in any case and after any punctuation, such as
-    /// <c>`FDG3014` Do not</c> or <c>**FDG3014**: DO</c>. Such a line must be a <see cref="RuleLine"/>.
+    /// <c>`FDG3014` Do not</c>, <c>**FDG3014**: DO</c> or <c>FDGD001 not permitted</c>. Such a line must be a
+    /// <see cref="RuleLine"/>.
     /// </summary>
-    private static readonly Regex LooseRuleLine = new(@"(?<id>FDG[1-9A-Z]\d{3})\W{0,4}(?i:DO NOT|DO|AVOID|CONSIDER)\b");
+    private static readonly Regex LooseRuleLine = new(
+        @"(?<id>FDG[1-9A-Z]\d{3})\W{0,4}(?i:DO NOT|DO|AVOID|CONSIDER|NOT PERMITTED|PERMITTED|CONTEXTUAL)\b");
 
     /// <summary>A path into a skill's references, as a markdown link target or in code.</summary>
     private static readonly Regex ReferencePath =
@@ -186,7 +190,8 @@ public sealed class SkillLintTests
 
     /// <summary>
     /// The format of a rule line, the same as the generated references without their examples link:
-    /// <c>**&lt;id&gt;** &lt;STRENGTH&gt; &lt;text&gt;[ (context: &lt;context&gt;)][ [C# N+]][ (alt: &lt;alt&gt;)]</c>.
+    /// <c>**&lt;id&gt;** &lt;STRENGTH&gt; &lt;text&gt;[ (context: &lt;context&gt;)][ [C# N+]][ (alt: &lt;alt&gt;)]</c>,
+    /// with <c>(can cause: &lt;context&gt;)</c> instead of <c>(context: &lt;context&gt;)</c> for an appendix D verdict.
     /// The bracketed parts are required exactly when the rule has a context, a minimum language version or an
     /// alternative, so the AI always sees the version tag and the fallback. The review output form
     /// <c>— &lt;id&gt; &lt;STRENGTH&gt; &lt;text&gt;</c> carries only the statement.
@@ -225,6 +230,31 @@ public sealed class SkillLintTests
         }
 
         Assert.True(checkedLines > 0, "No rule lines were found.");
+    }
+
+    [Theory]
+    [InlineData("— FDGD001 NOT PERMITTED: Changing the Name of an Assembly")]
+    [InlineData("— FDGD002 PERMITTED: Adding a Type")]
+    [InlineData("— FDGD003 CONTEXTUAL: Removing a Field")]
+    public void Review_output_lines_with_an_appendix_d_verdict_are_rule_lines(string line)
+    {
+        Match match = RuleLine.Match(line);
+
+        Assert.True(match.Success);
+        Assert.Equal(line[2..9], match.Groups["id"].Value);
+        Assert.Equal(line[10..], match.Groups["rest"].Value);
+    }
+
+    [Theory]
+    [InlineData("`FDGD001` Not permitted: changing the name", "FDGD001")]
+    [InlineData("**FDGD002**: PERMITTED", "FDGD002")]
+    [InlineData("FDGD003 contextual", "FDGD003")]
+    public void Loose_rule_lines_include_the_appendix_d_verdicts(string line, string id)
+    {
+        Match match = LooseRuleLine.Match(line);
+
+        Assert.True(match.Success);
+        Assert.Equal(id, match.Groups["id"].Value);
     }
 
     [Fact]
@@ -351,7 +381,7 @@ public sealed class SkillLintTests
         string line = Statement(rule);
         if (rule.Context is not null)
         {
-            line += $" (context: {rule.Context})";
+            line += rule.Strength.IsVerdict() ? $" (can cause: {rule.Context})" : $" (context: {rule.Context})";
         }
 
         string? version = rule.Mapping.MinLanguage;

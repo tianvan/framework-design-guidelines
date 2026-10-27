@@ -4,7 +4,7 @@
 
 > CONTEXTUAL: Removing or Renaming Private Fields on Serializable Types
 
-Framework Design Guidelines, 3rd edition, section D.9.6 Removing or Renaming Private Fields on Serializable Types. Applies to: runtime break.
+Framework Design Guidelines, 3rd edition, section D.9.6 Removing or Renaming Private Fields on Serializable Types. Can cause: runtime break.
 
 ## How it is checked
 
@@ -13,7 +13,7 @@ Framework Design Guidelines, 3rd edition, section D.9.6 Removing or Renaming Pri
 - Severity: library suggestion, application none, test none
 - Status: draft
 
-Not permitted when a serializer that reads private state (such as `BinaryFormatter`) serializes the type: renaming or removing private fields breaks old payloads. Serialize only types built for serialization; the .NET BCL team makes no structural changes to its serializable types. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+When a serializer that reads private state (such as `BinaryFormatter`) serializes the type, renaming or removing private fields breaks old payloads, so make previous payloads compatible before such a change. Serialize only types built for serialization; the .NET BCL team makes no structural changes to its serializable types. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 
 ## From the book
 

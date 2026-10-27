@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing the Default Value for an Optional Parameter
 
-Framework Design Guidelines, 3rd edition, section D.11.18 Changing the Default Value for an Optional Parameter. Applies to: recompile break.
+Framework Design Guidelines, 3rd edition, section D.11.18 Changing the Default Value for an Optional Parameter. Can cause: recompile break.
 
 ## How it is checked
 

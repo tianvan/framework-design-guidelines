@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Adding or Removing a Method Parameter
 
-Framework Design Guidelines, 3rd edition, section D.11.2 Adding or Removing a Method Parameter. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.11.2 Adding or Removing a Method Parameter. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

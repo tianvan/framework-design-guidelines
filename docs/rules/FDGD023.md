@@ -4,7 +4,7 @@
 
 > PERMITTED: Adding an `override` Member to an Unsealed Type
 
-Framework Design Guidelines, 3rd edition, section D.7.4 Adding an override Member to an Unsealed Type. Applies to: recompile break.
+Framework Design Guidelines, 3rd edition, section D.7.4 Adding an override Member to an Unsealed Type. Can cause: recompile break.
 
 ## How it is checked
 

@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Adding a Base Interface to an Existing Interface
 
-Framework Design Guidelines, 3rd edition, section D.6.8 Adding a Base Interface to an Existing Interface. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.6.8 Adding a Base Interface to an Existing Interface. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Moving Members to a Derived Type
 
-Framework Design Guidelines, 3rd edition, section D.8.3 Moving Members to a Derived Type. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.8.3 Moving Members to a Derived Type. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 
@@ -13,7 +13,7 @@ Framework Design Guidelines, 3rd edition, section D.8.3 Moving Members to a Deri
 - Severity: library warning, application none, test none
 - Status: draft
 
-The same as removing the member (FDGD031) for callers that hold only a base class reference or another derived type. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+The same as removing the member (FDGD031) for existing binaries. After a recompile, callers typed as the receiving derived type work again; callers that hold only a base class reference or another derived type fail to compile. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 
 ## From the book
 

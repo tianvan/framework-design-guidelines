@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Removing `readonly` from a `struct`
 
-Framework Design Guidelines, 3rd edition, section D.6.7 Removing readonly from a struct. Applies to: runtime and recompile breaks.
+Framework Design Guidelines, 3rd edition, section D.6.7 Removing readonly from a struct. Can cause: runtime and recompile breaks.
 
 ## How it is checked
 
@@ -13,7 +13,7 @@ Framework Design Guidelines, 3rd edition, section D.6.7 Removing readonly from a
 - Severity: library warning, application none, test none
 - Status: draft
 
-Existing binaries stop making defensive copies of the value, so mutations become visible to them until they recompile. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+Existing binaries do not make the defensive copies that are now required, so mutations become visible to them until they recompile. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 
 ## From the book
 

@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Adding `abstract` Members
 
-Framework Design Guidelines, 3rd edition, section D.7.2 Adding abstract Members. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.7.2 Adding abstract Members. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

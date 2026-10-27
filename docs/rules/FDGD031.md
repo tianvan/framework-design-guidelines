@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Removing a Non-`override` Member
 
-Framework Design Guidelines, 3rd edition, section D.9.3 Removing a Non-override Member. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.9.3 Removing a Non-override Member. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

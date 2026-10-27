@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing a Type Name
 
-Framework Design Guidelines, 3rd edition, section D.6.4 Changing a Type Name. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.6.4 Changing a Type Name. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

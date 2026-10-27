@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing a `struct` to a `class`
 
-Framework Design Guidelines, 3rd edition, section D.6.11 Changing a struct to a class. Applies to: runtime, compilation and recompile breaks.
+Framework Design Guidelines, 3rd edition, section D.6.11 Changing a struct to a class. Can cause: runtime, compilation and recompile breaks.
 
 ## How it is checked
 

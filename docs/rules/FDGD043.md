@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing the Type of a Property
 
-Framework Design Guidelines, 3rd edition, section D.11.7 Changing the Type of a Property. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.11.7 Changing the Type of a Property. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 
@@ -13,7 +13,7 @@ Framework Design Guidelines, 3rd edition, section D.11.7 Changing the Type of a 
 - Severity: library warning, application none, test none
 - Status: draft
 
-Breaks like FDGD042 for the getter and FDGD039 for the setter. Add a new property or method instead. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+Breaks like FDGD042 for the getter and FDGD039 and FDGD042 for the setter. Add a new property or method instead. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 
 ## From the book
 

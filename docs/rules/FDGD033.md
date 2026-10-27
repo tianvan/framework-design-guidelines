@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Removing an `override` of an `abstract` Member
 
-Framework Design Guidelines, 3rd edition, section D.9.5 Removing an override of an abstract Member. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.9.5 Removing an override of an abstract Member. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing a `virtual` (or `abstract`) Member from `protected` to `public`
 
-Framework Design Guidelines, 3rd edition, section D.11.10 Changing a virtual (or abstract) Member from protected to public. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.11.10 Changing a virtual (or abstract) Member from protected to public. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

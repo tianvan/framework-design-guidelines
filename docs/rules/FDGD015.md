@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Adding the Second Declaration of a Generic Interface
 
-Framework Design Guidelines, 3rd edition, section D.6.9 Adding the Second Declaration of a Generic Interface. Applies to: compilation break.
+Framework Design Guidelines, 3rd edition, section D.6.9 Adding the Second Declaration of a Generic Interface. Can cause: compilation break.
 
 ## How it is checked
 

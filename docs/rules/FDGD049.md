@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing By-Reference Parameter Styles
 
-Framework Design Guidelines, 3rd edition, section D.11.13 Changing By-Reference Parameter Styles. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.11.13 Changing By-Reference Parameter Styles. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Masking Base Members with `new`
 
-Framework Design Guidelines, 3rd edition, section D.7.1 Masking Base Members with new. Applies to: compilation and recompile breaks.
+Framework Design Guidelines, 3rd edition, section D.7.1 Masking Base Members with new. Can cause: compilation and recompile breaks.
 
 ## How it is checked
 

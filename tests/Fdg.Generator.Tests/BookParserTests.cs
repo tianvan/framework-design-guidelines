@@ -325,6 +325,29 @@ public class BookParserTests
         }
     }
 
+    [Fact]
+    public void Appendix_d_heading_without_an_id_is_an_error()
+    {
+        string source = File.ReadAllText(Fixture("appendix-d.xhtml"));
+        string anchor = "<h4 class=\"h4\" id=\"secD_1_2\">";
+        Assert.Contains(anchor, source);
+        string directory = Directory.CreateTempSubdirectory("fdg-book-").FullName;
+        try
+        {
+            string path = Path.Combine(directory, "app04.xhtml");
+            File.WriteAllText(path, source.Replace(anchor, "<h4 class=\"h4\">"));
+
+            BookFormatException exception = Assert.Throws<BookFormatException>(() => BookParser.Parse(path, "D"));
+
+            Assert.Contains("FDGD002", exception.Message);
+            Assert.Contains("has no id or no text", exception.Message);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     [Theory]
     [InlineData("PERMITTED", Strength.Permitted)]
     [InlineData("NOT PERMITTED", Strength.NotPermitted)]

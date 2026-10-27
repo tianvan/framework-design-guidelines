@@ -4,7 +4,7 @@
 
 > PERMITTED: Adding the First Overload of a Member
 
-Framework Design Guidelines, 3rd edition, section D.10.1 Adding the First Overload of a Member. Applies to: compilation and reflection breaks.
+Framework Design Guidelines, 3rd edition, section D.10.1 Adding the First Overload of a Member. Can cause: compilation and reflection breaks.
 
 ## How it is checked
 

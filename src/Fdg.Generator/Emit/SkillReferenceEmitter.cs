@@ -190,7 +190,7 @@ public static class SkillReferenceEmitter
         var line = new StringBuilder($"- **{rule.Id}** {RuleText.Statement(rule)}");
         if (rule.Context is not null)
         {
-            line.Append($" (context: {rule.Context})");
+            line.Append(rule.Strength.IsVerdict() ? $" (can cause: {rule.Context})" : $" (context: {rule.Context})");
         }
 
         string? tag = RuleText.LanguageTag(rule);

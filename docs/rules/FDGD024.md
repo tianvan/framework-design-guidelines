@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Adding the First Reference Type Field to a `struct`
 
-Framework Design Guidelines, 3rd edition, section D.7.5 Adding the First Reference Type Field to a struct. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.7.5 Adding the First Reference Type Field to a struct. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

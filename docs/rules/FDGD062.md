@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Throwing a New Type of Error Exception
 
-Framework Design Guidelines, 3rd edition, section D.12.4 Throwing a New Type of Error Exception. Applies to: runtime break.
+Framework Design Guidelines, 3rd edition, section D.12.4 Throwing a New Type of Error Exception. Can cause: runtime break.
 
 ## How it is checked
 

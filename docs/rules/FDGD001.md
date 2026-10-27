@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing the Name of an Assembly
 
-Framework Design Guidelines, 3rd edition, section D.1.1 Changing the Name of an Assembly. Applies to: runtime, compilation, recompile and reflection breaks.
+Framework Design Guidelines, 3rd edition, section D.1.1 Changing the Name of an Assembly. Can cause: runtime, compilation, recompile and reflection breaks.
 
 ## How it is checked
 

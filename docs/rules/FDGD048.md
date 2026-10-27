@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing to or from Passing a Parameter by Reference
 
-Framework Design Guidelines, 3rd edition, section D.11.12 Changing to or from Passing a Parameter by Reference. Applies to: runtime, compilation and recompile breaks.
+Framework Design Guidelines, 3rd edition, section D.11.12 Changing to or from Passing a Parameter by Reference. Can cause: runtime, compilation and recompile breaks.
 
 ## How it is checked
 

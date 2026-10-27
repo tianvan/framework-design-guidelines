@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Removing the `readonly` Modifier from a `struct` Method
 
-Framework Design Guidelines, 3rd edition, section D.11.15 Removing the readonly Modifier from a struct Method. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.11.15 Removing the readonly Modifier from a struct Method. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 
@@ -13,7 +13,7 @@ Framework Design Guidelines, 3rd edition, section D.11.15 Removing the readonly 
 - Severity: library warning, application none, test none
 - Status: draft
 
-Existing binaries see mutations until they recompile, like FDGD013. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+Existing binaries see mutations until they recompile, like FDGD013. The book's heading shows the compilation icon, but the body describes no compile failure, only a change after a recompile; FDGD013 shows the recompile icon. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
 
 ## From the book
 

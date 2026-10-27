@@ -4,7 +4,7 @@
 
 > PERMITTED: Unsealing a Sealed Type
 
-Framework Design Guidelines, 3rd edition, section D.6.2 Unsealing a Sealed Type. Applies to: reflection break.
+Framework Design Guidelines, 3rd edition, section D.6.2 Unsealing a Sealed Type. Can cause: reflection break.
 
 ## How it is checked
 

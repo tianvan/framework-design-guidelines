@@ -4,7 +4,7 @@
 
 > PERMITTED: Adding `readonly` on a `struct`
 
-Framework Design Guidelines, 3rd edition, section D.6.6 Adding readonly on a struct. Applies to: recompile break.
+Framework Design Guidelines, 3rd edition, section D.6.6 Adding readonly on a struct. Can cause: recompile break.
 
 ## How it is checked
 

@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Renaming a Method Parameter
 
-Framework Design Guidelines, 3rd edition, section D.11.1 Renaming a Method Parameter. Applies to: compilation break.
+Framework Design Guidelines, 3rd edition, section D.11.1 Renaming a Method Parameter. Can cause: compilation break.
 
 ## How it is checked
 

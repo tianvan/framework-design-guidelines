@@ -4,7 +4,7 @@
 
 > PERMITTED: Removing an `override` of a `virtual` Member
 
-Framework Design Guidelines, 3rd edition, section D.9.4 Removing an override of a virtual Member. Applies to: recompile break.
+Framework Design Guidelines, 3rd edition, section D.9.4 Removing an override of a virtual Member. Can cause: recompile break.
 
 ## How it is checked
 

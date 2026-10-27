@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing the Namespace for a Type
 
-Framework Design Guidelines, 3rd edition, section D.6.5 Changing the Namespace for a Type. Applies to: runtime, compilation, recompile and reflection breaks.
+Framework Design Guidelines, 3rd edition, section D.6.5 Changing the Namespace for a Type. Can cause: runtime, compilation, recompile and reflection breaks.
 
 ## How it is checked
 

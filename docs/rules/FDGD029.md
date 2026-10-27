@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Removing a Finalizer from an Unsealed Type
 
-Framework Design Guidelines, 3rd edition, section D.9.1 Removing a Finalizer from an Unsealed Type. Applies to: runtime break.
+Framework Design Guidelines, 3rd edition, section D.9.1 Removing a Finalizer from an Unsealed Type. Can cause: runtime break.
 
 ## How it is checked
 

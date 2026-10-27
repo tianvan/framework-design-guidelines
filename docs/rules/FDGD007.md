@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Sealing an Unsealed Type
 
-Framework Design Guidelines, 3rd edition, section D.6.1 Sealing an Unsealed Type. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.6.1 Sealing an Unsealed Type. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

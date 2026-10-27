@@ -4,7 +4,7 @@
 
 > PERMITTED: Throwing a New Type of Exception, Derived from an Existing Thrown Type
 
-Framework Design Guidelines, 3rd edition, section D.12.5 Throwing a New Type of Exception, Derived from an Existing Thrown Type. Applies to: runtime break.
+Framework Design Guidelines, 3rd edition, section D.12.5 Throwing a New Type of Exception, Derived from an Existing Thrown Type. Can cause: runtime break.
 
 ## How it is checked
 

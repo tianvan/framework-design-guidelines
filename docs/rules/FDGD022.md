@@ -4,7 +4,7 @@
 
 > PERMITTED: Adding Members to an Unsealed Type
 
-Framework Design Guidelines, 3rd edition, section D.7.3 Adding Members to an Unsealed Type. Applies to: compilation break.
+Framework Design Guidelines, 3rd edition, section D.7.3 Adding Members to an Unsealed Type. Can cause: compilation break.
 
 ## How it is checked
 

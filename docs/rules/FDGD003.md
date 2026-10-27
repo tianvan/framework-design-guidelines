@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing the Name or Casing of a Namespace
 
-Framework Design Guidelines, 3rd edition, section D.3.1 Changing the Name or Casing of a Namespace. Applies to: compilation break.
+Framework Design Guidelines, 3rd edition, section D.3.1 Changing the Name or Casing of a Namespace. Can cause: compilation break.
 
 ## How it is checked
 

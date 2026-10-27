@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing a Method Return Type
 
-Framework Design Guidelines, 3rd edition, section D.11.6 Changing a Method Return Type. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.11.6 Changing a Method Return Type. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 

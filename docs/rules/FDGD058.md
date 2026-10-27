@@ -4,7 +4,7 @@
 
 > PERMITTED: Changing a Non-`virtual` Member to `virtual`
 
-Framework Design Guidelines, 3rd edition, section D.11.22 Changing a Non-virtual Member to virtual. Applies to: recompile break.
+Framework Design Guidelines, 3rd edition, section D.11.22 Changing a Non-virtual Member to virtual. Can cause: recompile break.
 
 ## How it is checked
 

@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing the Case of a Type Name
 
-Framework Design Guidelines, 3rd edition, section D.6.3 Changing the Case of a Type Name. Applies to: runtime, compilation, recompile and reflection breaks.
+Framework Design Guidelines, 3rd edition, section D.6.3 Changing the Case of a Type Name. Can cause: runtime, compilation, recompile and reflection breaks.
 
 ## How it is checked
 

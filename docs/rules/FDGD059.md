@@ -4,7 +4,7 @@
 
 > PERMITTED: Changing Runtime Error Exceptions to Usage Error Exceptions
 
-Framework Design Guidelines, 3rd edition, section D.12.1 Changing Runtime Error Exceptions to Usage Error Exceptions. Applies to: runtime break.
+Framework Design Guidelines, 3rd edition, section D.12.1 Changing Runtime Error Exceptions to Usage Error Exceptions. Can cause: runtime break.
 
 ## How it is checked
 

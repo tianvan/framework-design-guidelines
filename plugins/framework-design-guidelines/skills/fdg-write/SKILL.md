@@ -19,6 +19,8 @@ Inside that scope, apply these rules while you write or change C# code, not afte
 `dotnet format` and the end-of-turn check fix layout and check casing, modifiers and the other mechanical rules; the
 rules here are the ones only you can apply. Each rule is quoted from the book with its id. DO is a rule to always
 follow, CONSIDER one to generally follow, AVOID one to generally not follow, and DO NOT one to almost never break.
+PERMITTED, NOT PERMITTED and CONTEXTUAL are appendix D's verdicts on changing an already shipped public API, with the
+kinds of break (runtime, compilation, recompile, reflection) the change can cause.
 
 A public name cannot change later without breaking callers, so choose names carefully before you write the member.
 In `test` projects the Chapter 3 rules are off (test names such as `Method_WhenX_DoesY` are fine); Appendix A applies.

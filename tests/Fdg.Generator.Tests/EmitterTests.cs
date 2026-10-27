@@ -714,6 +714,39 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Appendix_d_verdict_context_is_the_breaks_it_can_cause()
+    {
+        GeneratorInput input = Edit(Input(), rule => rule.Id == "FDG9001"
+            ? rule with { Strength = Strength.NotPermitted, Context = "runtime break" }
+            : rule);
+
+        string page = RuleDocEmitter.Emit(input).Single(f => f.Path == "docs/rules/FDG9001.md").Content;
+        string reference = ReferenceMain(input);
+
+        Assert.Contains(" Can cause: runtime break.\n", page);
+        Assert.DoesNotContain("Applies to:", page);
+        Assert.Contains("- **FDG9001** NOT PERMITTED: ", reference);
+        Assert.Contains(" (can cause: runtime break)", reference);
+        Assert.DoesNotContain("(context: runtime break)", reference);
+    }
+
+    [Fact]
+    public void Guideline_context_is_where_the_rule_applies()
+    {
+        GeneratorInput input = Edit(Input(), rule => rule.Id == "FDG9001"
+            ? rule with { Context = "public types" }
+            : rule);
+
+        string page = RuleDocEmitter.Emit(input).Single(f => f.Path == "docs/rules/FDG9001.md").Content;
+        string reference = ReferenceMain(input);
+
+        Assert.Contains(" Applies to: public types.\n", page);
+        Assert.DoesNotContain("Can cause:", page);
+        Assert.Contains(" (context: public types)", reference);
+        Assert.DoesNotContain("(can cause:", reference);
+    }
+
+    [Fact]
     public void Coverage_counts_each_chapter_and_lists_non_guideline_content()
     {
         string coverage = CoverageEmitter.Emit(Input());

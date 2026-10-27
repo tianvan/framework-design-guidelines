@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Reordering Method Parameters of The Same Type
 
-Framework Design Guidelines, 3rd edition, section D.11.5 Reordering Method Parameters of The Same Type. Applies to: runtime, compilation and recompile breaks.
+Framework Design Guidelines, 3rd edition, section D.11.5 Reordering Method Parameters of The Same Type. Can cause: runtime, compilation and recompile breaks.
 
 ## How it is checked
 

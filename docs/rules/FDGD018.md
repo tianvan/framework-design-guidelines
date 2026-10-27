@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing a `struct` to a `ref struct`
 
-Framework Design Guidelines, 3rd edition, section D.6.12 Changing a struct to a ref struct. Applies to: runtime, compilation and reflection breaks.
+Framework Design Guidelines, 3rd edition, section D.6.12 Changing a struct to a ref struct. Can cause: runtime, compilation and reflection breaks.
 
 ## How it is checked
 

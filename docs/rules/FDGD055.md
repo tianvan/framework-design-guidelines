@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing the Value of a `const` Field
 
-Framework Design Guidelines, 3rd edition, section D.11.19 Changing the Value of a const Field. Applies to: recompile and reflection breaks.
+Framework Design Guidelines, 3rd edition, section D.11.19 Changing the Value of a const Field. Can cause: recompile and reflection breaks.
 
 ## How it is checked
 

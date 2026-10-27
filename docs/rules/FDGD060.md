@@ -4,7 +4,7 @@
 
 > PERMITTED: Changing Usage Error Exceptions to Functioning Behavior
 
-Framework Design Guidelines, 3rd edition, section D.12.2 Changing Usage Error Exceptions to Functioning Behavior. Applies to: runtime break.
+Framework Design Guidelines, 3rd edition, section D.12.2 Changing Usage Error Exceptions to Functioning Behavior. Can cause: runtime break.
 
 ## How it is checked
 

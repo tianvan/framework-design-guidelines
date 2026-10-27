@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Moving a Type Without **[`TypeForwardedTo`]**
 
-Framework Design Guidelines, 3rd edition, section D.4.2 Moving a Type Without [TypeForwardedTo]. Applies to: runtime, compilation and recompile breaks.
+Framework Design Guidelines, 3rd edition, section D.4.2 Moving a Type Without [TypeForwardedTo]. Can cause: runtime, compilation and recompile breaks.
 
 ## How it is checked
 

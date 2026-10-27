@@ -21,7 +21,7 @@ public static class RuleDocEmitter
         text.Append($"Framework Design Guidelines, 3rd edition, section {RuleText.EscapeMarkdown(rule.Section)}.");
         if (rule.Context is not null)
         {
-            text.Append($" Applies to: {rule.Context}.");
+            text.Append(rule.Strength.IsVerdict() ? $" Can cause: {rule.Context}." : $" Applies to: {rule.Context}.");
         }
 
         text.Append("\n\n");

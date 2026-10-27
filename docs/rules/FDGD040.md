@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Reordering Method Parameters of Differing Types
 
-Framework Design Guidelines, 3rd edition, section D.11.4 Reordering Method Parameters of Differing Types. Applies to: runtime, compilation and reflection breaks.
+Framework Design Guidelines, 3rd edition, section D.11.4 Reordering Method Parameters of Differing Types. Can cause: runtime, compilation and reflection breaks.
 
 ## How it is checked
 

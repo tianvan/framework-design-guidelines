@@ -4,7 +4,7 @@
 
 > CONTEXTUAL: Changing the Type of Values Returned from a Method
 
-Framework Design Guidelines, 3rd edition, section D.12.3 Changing the Type of Values Returned from a Method. Applies to: runtime break.
+Framework Design Guidelines, 3rd edition, section D.12.3 Changing the Type of Values Returned from a Method. Can cause: runtime break.
 
 ## How it is checked
 

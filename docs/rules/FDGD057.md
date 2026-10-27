@@ -4,7 +4,7 @@
 
 > NOT PERMITTED: Changing a `virtual` Member to `abstract`
 
-Framework Design Guidelines, 3rd edition, section D.11.21 Changing a virtual Member to abstract. Applies to: runtime and compilation breaks.
+Framework Design Guidelines, 3rd edition, section D.11.21 Changing a virtual Member to abstract. Can cause: runtime and compilation breaks.
 
 ## How it is checked
 
