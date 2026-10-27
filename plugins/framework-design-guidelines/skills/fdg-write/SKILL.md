@@ -30,7 +30,7 @@ A public name cannot change later without breaking callers, so choose names care
 |---|---|
 | Plan a new public API or feature area: its scenarios and code samples, its entry points, its layers, or its documentation | [references/ch02-fundamentals.md](references/ch02-fundamentals.md) |
 | Name an assembly, a namespace or a resource, add a new version of an existing API, name operator overload parameters, or name anything not covered by the top rules | [references/ch03-naming.md](references/ch03-naming.md) |
-| Design a type: choose between a class, struct, interface or abstract class; decide when to use a static class, an enum, a nested type or a strongly typed string | [references/ch04-types-4-1-to-4-4.md](references/ch04-types-4-1-to-4-4.md), [references/ch04-types-4-5-on.md](references/ch04-types-4-5-on.md) |
+| Design a type: choose between a class, struct, interface or abstract class, or organize types into namespaces; design a static class, an interface, a struct, an enum, a nested type or a strongly typed string; or set assembly metadata | [references/ch04-types-4-1-to-4-4.md](references/ch04-types-4-1-to-4-4.md), [references/ch04-types-4-5-on.md](references/ch04-types-4-5-on.md) |
 | Design members in general: member overloads, explicit interface implementations, or choose between a property and a method | [references/ch05-members-general.md](references/ch05-members-general.md) |
 | Design a property, an indexer, a property change event, a constructor or a static constructor | [references/ch05-members-properties-constructors.md](references/ch05-members-properties-constructors.md) |
 | Design an event, an event handler or a field | [references/ch05-members-events-fields.md](references/ch05-members-events-fields.md) |
@@ -39,7 +39,7 @@ A public name cannot change later without breaking callers, so choose names care
 | Design for extensibility: choose an extensibility mechanism (unsealed classes, protected members, events, callbacks, virtual members, abstractions, base classes) or decide when to seal | [references/ch06-extensibility.md](references/ch06-extensibility.md) |
 | Throw, choose, catch, wrap or design an exception, write an exception message, or use the Tester-Doer or Try patterns | [references/ch07-exceptions.md](references/ch07-exceptions.md) |
 | Use arrays, design a custom attribute, or choose, return or implement a collection in a public API | [references/ch08-usage-arrays-attributes-collections.md](references/ch08-usage-arrays-attributes-collections.md) |
-| Use `DateTime`, `ICloneable`, `IEquatable<T>`, `Nullable<T>`, `Uri` or `System.Xml` types; override `Equals`, `GetHashCode` or `ToString`; design a serializable type; or overload an equality operator | [references/ch08-usage-types.md](references/ch08-usage-types.md) |
+| Use `DateTime`, `DateTimeOffset`, `ICloneable`, `IComparable<T>`, `IEquatable<T>`, `Nullable<T>`, `Uri` or `System.Xml` types; override `Equals`, `GetHashCode` or `ToString`; design a serializable type; or overload an equality operator | [references/ch08-usage-types.md](references/ch08-usage-types.md) |
 | Design an aggregate component, a factored type, an asynchronous method (Task-Based Async Pattern, `IAsyncEnumerable<T>`), or a dependency property | [references/ch09-patterns-aggregate-async.md](references/ch09-patterns-aggregate-async.md) |
 | Implement the Dispose Pattern, a finalizer, a scoped operation or `IAsyncDisposable` | [references/ch09-patterns-dispose.md](references/ch09-patterns-dispose.md) |
 | Design a factory or support LINQ | [references/ch09-patterns-factories-linq.md](references/ch09-patterns-factories-linq.md) |
@@ -60,13 +60,15 @@ reference for its topic in the table above.
 
 In `test` projects only rules from Chapter 7 (exceptions), Chapter 8 (usage guidelines) and Appendix A (coding
 style) apply. The naming, type, member, extensibility and pattern rules are off there, so test names such as
-`Method_WhenX_DoesY` are fine.
+`Method_WhenX_DoesY` are fine. In `application` projects the rules about a library's public surface are off; the
+reference lines, and the top rules below, mark them "(library only)".
 
 Appendix A is the .NET BCL team's style; the book calls it a set of suggestions, not requirements. Follow it unless
 the repository's own `.editorconfig` says otherwise.
 
 - **FDG3014** DO NOT use abbreviations or contractions as part of identifier names.
 - **FDG3009** DO favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the *X*-axis).
+- **FDG3008** DO choose easily readable identifier names.
 - **FDG7001** DO NOT return error codes.
 - **FDG7042** DO throw `ArgumentException` or one of its subtypes if bad arguments are passed to a member. Prefer the most derived exception type, if applicable.
 - **FDG7041** DO throw an `InvalidOperationException` if the object is in an inappropriate state.
@@ -79,13 +81,13 @@ the repository's own `.editorconfig` says otherwise.
 - **FDG7012** DO NOT create new exception types to communicate usage errors. Throw one of the existing base library exceptions instead. See section 7.3 for detailed usage guidelines for the most common standard exception types.
 - **FDG4034** DO use an enum to strongly type parameters, properties, and return values that represent sets of values.
 - **FDG5100** DO use the least derived parameter type that provides the functionality required by the member.
-- **FDG8001** DO prefer using collections over arrays in public APIs. Section 8.3.3 provides details about how to choose between collections and arrays.
-- **FDG8013** DO NOT use weakly typed collections in public APIs.
+- **FDG8001** DO prefer using collections over arrays in public APIs. Section 8.3.3 provides details about how to choose between collections and arrays. (library only)
+- **FDG8013** DO NOT use weakly typed collections in public APIs. (library only)
 - **FDG9018** DO implement new asynchronous API using the Task-Based Async Pattern.
 - **FDG9044** DO throw execution error exceptions via the Task-like value returned from an Async method.
 - **FDG6011** DO NOT make members virtual unless you have a good reason to do so and you are aware of all the costs related to designing, testing, and maintaining virtual members.
-- **FDG6003** DO treat protected members in unsealed classes as public for the purpose of security, documentation, and compatibility analysis.
-- **FDG4025** DO NOT add members to an interface that has previously shipped.
+- **FDG6003** DO treat protected members in unsealed classes as public for the purpose of security, documentation, and compatibility analysis. (library only)
+- **FDG4025** DO NOT add members to an interface that has previously shipped. (library only)
 - **FDG5048** DO minimal work in the constructor.
 - **FDG5026** DO create get-only properties if the caller should not be able to change the value of the property.
 - **FDG5030** DO preserve the previous value if a property setter throws an exception.
@@ -93,13 +95,13 @@ the repository's own `.editorconfig` says otherwise.
 - **FDG4001** DO ensure that each type is a well-defined set of related members, not just a random collection of unrelated functionality.
 - **FDG4017** DO NOT treat static classes as a miscellaneous bucket.
 - **FDG4036** DO NOT use an enum for open sets (such as the operating system version, names of your friends, etc.).
-- **FDG4052** DO NOT use public nested types as a logical grouping construct; use namespaces for this purpose.
+- **FDG4052** DO NOT use public nested types as a logical grouping construct; use namespaces for this purpose. (library only)
 - **FDG4030** DO ensure that a state where all instance data is set to zero, false, or null (as appropriate) is valid.
 - **FDG5110** DO validate enum parameters.
 - **FDG5029** DO allow properties to be set in any order, even if this results in a temporary invalid state of the object.
 - **FDG5002** DO NOT arbitrarily vary parameter names in overloads. If a parameter in one overload represents the same input as a parameter in another overload, the parameters should have the same name.
 - **FDG5006** DO NOT have overloads with parameters at the same position and similar types, yet with different semantics.
-- **FDG5127** DO prefer descriptive types over tuples, `System.Tuple<T1, ...>`, and `System.ValueTuple<T1, ...>`; they improve discoverability and can better evolve over time.
+- **FDG5127** DO prefer descriptive types over tuples, `System.Tuple<T1, ...>`, and `System.ValueTuple<T1, ...>`; they improve discoverability and can better evolve over time. (library only)
 - **FDG5069** AVOID frivolously defining extension methods, especially on types outside your library or framework.
 - **FDG5090** DO NOT provide an implicit conversion operator if the conversion is potentially lossy.
 - **FDG6014** DO NOT provide abstractions unless they are tested by developing several concrete implementations and APIs consuming the abstractions.
@@ -107,11 +109,10 @@ the repository's own `.editorconfig` says otherwise.
 - **FDG8022** DO use `ReadOnlyCollection<T>`, a subclass of `ReadOnlyCollection<T>`, or in rare cases `IEnumerable<T>` for properties or return values representing read-only collections.
 - **FDG8027** DO NOT return snapshot collections from properties. Properties should return live collections.
 - **FDG8044** DO use `DateTimeOffset` whenever you are referring to an exact point in time. For example, use it to calculate “now,” transaction times, file change times, logging event times, and so on. If the time zone is not known, use it with UTC. These usages are much more common than the scenarios where `DateTime` is preferred, so this should be considered the default.
-- **FDG8064** DO override `GetHashCode` whenever you override `Equals`.
 - **FDG8072** DO ensure that if the `Object.Equals` method returns true for any two objects, `GetHashCode` returns the same value for these objects.
 - **FDG8084** DO ensure that `ToString` has no observable side effects.
-- **FDG8099** DO NOT overload one of the equality operators and not the other.
 - **FDG9026** DO NOT return Tasks for long-running synchronous methods.
+- **FDG9025** CONSIDER accepting a `CancellationToken` in long-running or blocking synchronous methods.
 - **FDG9070** DO throw an `ObjectDisposedException` from any member that cannot be used after the object has been disposed of.
 - **FDG9068** DO allow the `Dispose(bool)` method to be called more than once. The method might choose to do nothing after the first call.
 - **FDG9084** DO prefer constructors to factories, because they are generally more usable, consistent, and convenient than specialized construction mechanisms.

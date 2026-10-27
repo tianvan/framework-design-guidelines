@@ -6,112 +6,112 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## D.1.1 Changing the Name of an Assembly
 
-- **FDGD001** NOT PERMITTED: Changing the Name of an Assembly (can cause: runtime, compilation, recompile and reflection breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd001
+- **FDGD001** NOT PERMITTED: Changing the Name of an Assembly (library only) (can cause: runtime, compilation, recompile and reflection breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd001
 
 ## D.2.1 Adding a Namespace That Conflicts with an Existing Type
 
-- **FDGD002** NOT PERMITTED: Adding a Namespace That Conflicts with an Existing Type (can cause: compilation break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd002
+- **FDGD002** NOT PERMITTED: Adding a Namespace That Conflicts with an Existing Type (library only) (can cause: compilation break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd002
 
 ## D.3.1 Changing the Name or Casing of a Namespace
 
-- **FDGD003** NOT PERMITTED: Changing the Name or Casing of a Namespace (can cause: compilation break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd003
+- **FDGD003** NOT PERMITTED: Changing the Name or Casing of a Namespace (library only) (can cause: compilation break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd003
 
 ## D.4.1 Moving a Type via [TypeForwardedTo]
 
-- **FDGD004** PERMITTED: Moving a Type via [`TypeForwardedTo`] (can cause: reflection break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd004
+- **FDGD004** PERMITTED: Moving a Type via [`TypeForwardedTo`] (library only) (can cause: reflection break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd004
 
 ## D.4.2 Moving a Type Without [TypeForwardedTo]
 
-- **FDGD005** NOT PERMITTED: Moving a Type Without **[`TypeForwardedTo`]** (can cause: runtime, compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd005
+- **FDGD005** NOT PERMITTED: Moving a Type Without **[`TypeForwardedTo`]** (library only) (can cause: runtime, compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd005
 
 ## D.5.1 Removing Types
 
-- **FDGD006** NOT PERMITTED: Removing Types (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd006
+- **FDGD006** NOT PERMITTED: Removing Types (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd006
 
 ## D.6.1 Sealing an Unsealed Type
 
-- **FDGD007** NOT PERMITTED: Sealing an Unsealed Type (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd007
+- **FDGD007** NOT PERMITTED: Sealing an Unsealed Type (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd007
 
 ## D.6.2 Unsealing a Sealed Type
 
-- **FDGD008** PERMITTED: Unsealing a Sealed Type (can cause: reflection break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd008
+- **FDGD008** PERMITTED: Unsealing a Sealed Type (library only) (can cause: reflection break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd008
 
 ## D.6.3 Changing the Case of a Type Name
 
-- **FDGD009** NOT PERMITTED: Changing the Case of a Type Name (can cause: runtime, compilation, recompile and reflection breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd009
+- **FDGD009** NOT PERMITTED: Changing the Case of a Type Name (library only) (can cause: runtime, compilation, recompile and reflection breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd009
 
 ## D.6.4 Changing a Type Name
 
-- **FDGD010** NOT PERMITTED: Changing a Type Name (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd010
+- **FDGD010** NOT PERMITTED: Changing a Type Name (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd010
 
 ## D.6.5 Changing the Namespace for a Type
 
-- **FDGD011** NOT PERMITTED: Changing the Namespace for a Type (can cause: runtime, compilation, recompile and reflection breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd011
+- **FDGD011** NOT PERMITTED: Changing the Namespace for a Type (library only) (can cause: runtime, compilation, recompile and reflection breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd011
 
 ## D.6.6 Adding readonly on a struct
 
-- **FDGD012** PERMITTED: Adding `readonly` on a `struct` (can cause: recompile break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd012
+- **FDGD012** PERMITTED: Adding `readonly` on a `struct` (library only) (can cause: recompile break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd012
 
 ## D.6.7 Removing readonly from a struct
 
-- **FDGD013** NOT PERMITTED: Removing `readonly` from a `struct` (can cause: runtime and recompile breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd013
+- **FDGD013** NOT PERMITTED: Removing `readonly` from a `struct` (library only) (can cause: runtime and recompile breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd013
 
 ## D.6.8 Adding a Base Interface to an Existing Interface
 
-- **FDGD014** NOT PERMITTED: Adding a Base Interface to an Existing Interface (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd014
+- **FDGD014** NOT PERMITTED: Adding a Base Interface to an Existing Interface (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd014
 
 ## D.6.9 Adding the Second Declaration of a Generic Interface
 
-- **FDGD015** NOT PERMITTED: Adding the Second Declaration of a Generic Interface (can cause: compilation break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd015
+- **FDGD015** NOT PERMITTED: Adding the Second Declaration of a Generic Interface (library only) (can cause: compilation break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd015
 
 ## D.6.10 Changing a class to a struct
 
-- **FDGD016** NOT PERMITTED: Changing a `class` to a `struct` (can cause: runtime, compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd016
+- **FDGD016** NOT PERMITTED: Changing a `class` to a `struct` (library only) (can cause: runtime, compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd016
 
 ## D.6.11 Changing a struct to a class
 
-- **FDGD017** NOT PERMITTED: Changing a `struct` to a `class` (can cause: runtime, compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd017
+- **FDGD017** NOT PERMITTED: Changing a `struct` to a `class` (library only) (can cause: runtime, compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd017
 
 ## D.6.12 Changing a struct to a ref struct
 
-- **FDGD018** NOT PERMITTED: Changing a `struct` to a `ref struct` (can cause: runtime, compilation and reflection breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd018
+- **FDGD018** NOT PERMITTED: Changing a `struct` to a `ref struct` (library only) (can cause: runtime, compilation and reflection breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd018
 
 ## D.6.13 Changing a ref struct to a (Non-ref) struct
 
-- **FDGD019** PERMITTED: Changing a `ref struct` to a (Non-`ref`) `struct` — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd019
+- **FDGD019** PERMITTED: Changing a `ref struct` to a (Non-`ref`) `struct` (library only) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd019
 
 ## D.7.1 Masking Base Members with new
 
-- **FDGD020** NOT PERMITTED: Masking Base Members with `new` (can cause: compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd020
+- **FDGD020** NOT PERMITTED: Masking Base Members with `new` (library only) (can cause: compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd020
 
 ## D.7.2 Adding abstract Members
 
-- **FDGD021** NOT PERMITTED: Adding `abstract` Members (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd021
+- **FDGD021** NOT PERMITTED: Adding `abstract` Members (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd021
 
 ## D.7.3 Adding Members to an Unsealed Type
 
-- **FDGD022** PERMITTED: Adding Members to an Unsealed Type (can cause: compilation break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd022
+- **FDGD022** PERMITTED: Adding Members to an Unsealed Type (library only) (can cause: compilation break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd022
 
 ## D.7.4 Adding an override Member to an Unsealed Type
 
-- **FDGD023** PERMITTED: Adding an `override` Member to an Unsealed Type (can cause: recompile break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd023
+- **FDGD023** PERMITTED: Adding an `override` Member to an Unsealed Type (library only) (can cause: recompile break) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd023
 
 ## D.7.5 Adding the First Reference Type Field to a struct
 
-- **FDGD024** NOT PERMITTED: Adding the First Reference Type Field to a `struct` (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd024
+- **FDGD024** NOT PERMITTED: Adding the First Reference Type Field to a `struct` (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd024
 
 ## D.7.6 Adding a Member to an Interface
 
-- **FDGD025** NOT PERMITTED: Adding a Member to an Interface (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd025
+- **FDGD025** NOT PERMITTED: Adding a Member to an Interface (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd025
 
 ## D.8.1 Moving Members to a Base Class
 
-- **FDGD026** PERMITTED: Moving Members to a Base Class — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd026
+- **FDGD026** PERMITTED: Moving Members to a Base Class (library only) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd026
 
 ## D.8.2 Moving Members to a Base Interface
 
-- **FDGD027** NOT PERMITTED: Moving Members to a Base Interface (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd027
+- **FDGD027** NOT PERMITTED: Moving Members to a Base Interface (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd027
 
 ## D.8.3 Moving Members to a Derived Type
 
-- **FDGD028** NOT PERMITTED: Moving Members to a Derived Type (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd028
+- **FDGD028** NOT PERMITTED: Moving Members to a Derived Type (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-1-to-d-8.md#fdgd028

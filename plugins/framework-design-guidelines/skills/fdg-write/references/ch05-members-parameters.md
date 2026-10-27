@@ -34,5 +34,5 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 5.9 Using Tuples in Member Signatures
 
-- **FDG5127** DO prefer descriptive types over tuples, `System.Tuple<T1, ...>`, and `System.ValueTuple<T1, ...>`; they improve discoverability and can better evolve over time. — examples: examples/ch05-members-parameters.md#fdg5127
-- **FDG5133** CONSIDER adding an appropriate `Deconstruct` method to any type that was chosen as an alternative to a tuple. [C# 7+] (alt: Before C# 7.0 there is no deconstruction syntax; callers read the properties of the type.) — examples: examples/ch05-members-parameters.md#fdg5133
+- **FDG5127** DO prefer descriptive types over tuples, `System.Tuple<T1, ...>`, and `System.ValueTuple<T1, ...>`; they improve discoverability and can better evolve over time. (library only) — examples: examples/ch05-members-parameters.md#fdg5127
+- **FDG5133** CONSIDER adding an appropriate `Deconstruct` method to any type that was chosen as an alternative to a tuple. (library only) [C# 7+] (alt: Before C# 7.0 there is no deconstruction syntax; callers read the properties of the type.) — examples: examples/ch05-members-parameters.md#fdg5133

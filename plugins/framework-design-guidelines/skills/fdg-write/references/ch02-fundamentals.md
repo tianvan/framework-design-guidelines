@@ -8,17 +8,17 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 - **FDG2001** DO design frameworks that are both powerful and easy to use. — examples: examples/ch02-fundamentals.md#fdg2001
 - **FDG2002** DO understand and explicitly design for a broad range of developers with different programming styles, requirements, and skill levels. — examples: examples/ch02-fundamentals.md#fdg2002
-- **FDG2003** DO understand and design for the broad variety of programming languages. — examples: examples/ch02-fundamentals.md#fdg2003
+- **FDG2003** DO understand and design for the broad variety of programming languages. (library only) — examples: examples/ch02-fundamentals.md#fdg2003
 
 ## 2.2.1 The Principle of Scenario-Driven Design
 
-- **FDG2004** DO make sure that the API design specification is the central part of the design of any feature that includes a publicly accessible API. — examples: examples/ch02-fundamentals.md#fdg2004
+- **FDG2004** DO make sure that the API design specification is the central part of the design of any feature that includes a publicly accessible API. (library only) — examples: examples/ch02-fundamentals.md#fdg2004
 - **FDG2005** DO define top usage scenarios for each major feature area. — examples: examples/ch02-fundamentals.md#fdg2005
 - **FDG2006** DO ensure that the scenarios correspond to an appropriate abstraction level. They should roughly correspond to the end-user use cases. — examples: examples/ch02-fundamentals.md#fdg2006
 - **FDG2007** DO design APIs by first writing code samples for the main scenarios and then defining the object model to support the code samples. — examples: examples/ch02-fundamentals.md#fdg2007
-- **FDG2008** DO write main scenario code samples in at least two different language families (e.g., C# and F#). — examples: examples/ch02-fundamentals.md#fdg2008
-- **FDG2009** CONSIDER writing main scenario code samples using a dynamically typed language such as PowerShell or IronPython. — examples: examples/ch02-fundamentals.md#fdg2009
-- **FDG2010** DO NOT rely solely on standard design methodologies when designing the public API layer of a framework. — examples: examples/ch02-fundamentals.md#fdg2010
+- **FDG2008** DO write main scenario code samples in at least two different language families (e.g., C# and F#). (library only) — examples: examples/ch02-fundamentals.md#fdg2008
+- **FDG2009** CONSIDER writing main scenario code samples using a dynamically typed language such as PowerShell or IronPython. (library only) — examples: examples/ch02-fundamentals.md#fdg2009
+- **FDG2010** DO NOT rely solely on standard design methodologies when designing the public API layer of a framework. (library only) — examples: examples/ch02-fundamentals.md#fdg2010
 
 ## 2.2.1.1 Usability Studies
 
@@ -44,7 +44,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 - **FDG2022** DO make the discussion about identifier naming choices a significant part of specification reviews. — examples: examples/ch02-fundamentals.md#fdg2022
 - **FDG2023** DO NOT be afraid to use verbose identifier names when doing so makes the API self-documenting. — examples: examples/ch02-fundamentals.md#fdg2023
-- **FDG2024** CONSIDER involving technical writers early in the design process. They can be a great resource for spotting designs with bad name choices and designs that would be difficult to explain to users.
+- **FDG2024** CONSIDER involving technical writers early in the design process. They can be a great resource for spotting designs with bad name choices and designs that would be difficult to explain to users. (library only)
 - **FDG2025** CONSIDER reserving the best type names for the most commonly used types. — examples: examples/ch02-fundamentals.md#fdg2025
 
 ## 2.2.3.2 Exceptions

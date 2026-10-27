@@ -17,6 +17,9 @@ public static class SkillReferenceEmitter
     /// <summary>Marks a <c>references</c> section that matches only itself, without its subsections.</summary>
     public const string ExactMarker = "=";
 
+    /// <summary>Follows the rule text of a rule that <see cref="IsLibraryOnly"/>.</summary>
+    public const string LibraryOnlyMarker = "(library only)";
+
     private const string ReferencesDirectory = "plugins/framework-design-guidelines/skills/fdg-write/references/";
 
     public static IReadOnlyList<GeneratedFile> Emit(GeneratorInput input)
@@ -161,6 +164,13 @@ public static class SkillReferenceEmitter
             || (rule.Strength == Strength.Consider && kind is CheckKind.Sdk or CheckKind.Fdg);
     }
 
+    /// <summary>
+    /// Whether the rule is about a library's public surface: on in the <c>library</c> profile and off in
+    /// <c>application</c>. Its reference line carries <see cref="LibraryOnlyMarker"/>.
+    /// </summary>
+    public static bool IsLibraryOnly(Rule rule) =>
+        rule.Mapping.Severity.Library != SeverityLevel.None && rule.Mapping.Severity.Application == SeverityLevel.None;
+
     private static string Index(RuleFile file, ReferencePart part)
     {
         var text = new StringBuilder();
@@ -188,6 +198,11 @@ public static class SkillReferenceEmitter
     private static string Line(Rule rule, string stem)
     {
         var line = new StringBuilder($"- **{rule.Id}** {RuleText.Statement(rule)}");
+        if (IsLibraryOnly(rule))
+        {
+            line.Append(' ').Append(LibraryOnlyMarker);
+        }
+
         if (rule.Context is not null)
         {
             line.Append(rule.Strength.IsVerdict() ? $" (can cause: {rule.Context})" : $" (context: {rule.Context})");

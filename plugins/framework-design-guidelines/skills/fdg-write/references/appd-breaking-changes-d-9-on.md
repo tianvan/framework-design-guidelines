@@ -6,140 +6,140 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## D.9.1 Removing a Finalizer from an Unsealed Type
 
-- **FDGD029** NOT PERMITTED: Removing a Finalizer from an Unsealed Type (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd029
+- **FDGD029** NOT PERMITTED: Removing a Finalizer from an Unsealed Type (library only) (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd029
 
 ## D.9.2 Removing a Finalizer from a Sealed Type
 
-- **FDGD030** PERMITTED: Removing a Finalizer from a Sealed Type — examples: examples/appd-breaking-changes-d-9-on.md#fdgd030
+- **FDGD030** PERMITTED: Removing a Finalizer from a Sealed Type (library only) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd030
 
 ## D.9.3 Removing a Non-override Member
 
-- **FDGD031** NOT PERMITTED: Removing a Non-`override` Member (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd031
+- **FDGD031** NOT PERMITTED: Removing a Non-`override` Member (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd031
 
 ## D.9.4 Removing an override of a virtual Member
 
-- **FDGD032** PERMITTED: Removing an `override` of a `virtual` Member (can cause: recompile break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd032
+- **FDGD032** PERMITTED: Removing an `override` of a `virtual` Member (library only) (can cause: recompile break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd032
 
 ## D.9.5 Removing an override of an abstract Member
 
-- **FDGD033** NOT PERMITTED: Removing an `override` of an `abstract` Member (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd033
+- **FDGD033** NOT PERMITTED: Removing an `override` of an `abstract` Member (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd033
 
 ## D.9.6 Removing or Renaming Private Fields on Serializable Types
 
-- **FDGD034** CONTEXTUAL: Removing or Renaming Private Fields on Serializable Types (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd034
+- **FDGD034** CONTEXTUAL: Removing or Renaming Private Fields on Serializable Types (library only) (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd034
 
 ## D.10.1 Adding the First Overload of a Member
 
-- **FDGD035** PERMITTED: Adding the First Overload of a Member (can cause: compilation and reflection breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd035
+- **FDGD035** PERMITTED: Adding the First Overload of a Member (library only) (can cause: compilation and reflection breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd035
 
 ## D.10.2 Adding Alternative-Parameter Overloads for a Reference Type Parameter
 
-- **FDGD036** CONTEXTUAL: Adding Alternative-Parameter Overloads for a Reference Type Parameter (can cause: compilation break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd036
+- **FDGD036** CONTEXTUAL: Adding Alternative-Parameter Overloads for a Reference Type Parameter (library only) (can cause: compilation break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd036
 
 ## D.11.1 Renaming a Method Parameter
 
-- **FDGD037** NOT PERMITTED: Renaming a Method Parameter (can cause: compilation break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd037
+- **FDGD037** NOT PERMITTED: Renaming a Method Parameter (library only) (can cause: compilation break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd037
 
 ## D.11.2 Adding or Removing a Method Parameter
 
-- **FDGD038** NOT PERMITTED: Adding or Removing a Method Parameter (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd038
+- **FDGD038** NOT PERMITTED: Adding or Removing a Method Parameter (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd038
 
 ## D.11.3 Changing a Method Parameter Type
 
-- **FDGD039** NOT PERMITTED: Changing a Method Parameter Type (can cause: runtime, compilation and reflection breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd039
+- **FDGD039** NOT PERMITTED: Changing a Method Parameter Type (library only) (can cause: runtime, compilation and reflection breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd039
 
 ## D.11.4 Reordering Method Parameters of Differing Types
 
-- **FDGD040** NOT PERMITTED: Reordering Method Parameters of Differing Types (can cause: runtime, compilation and reflection breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd040
+- **FDGD040** NOT PERMITTED: Reordering Method Parameters of Differing Types (library only) (can cause: runtime, compilation and reflection breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd040
 
 ## D.11.5 Reordering Method Parameters of The Same Type
 
-- **FDGD041** NOT PERMITTED: Reordering Method Parameters of The Same Type (can cause: runtime, compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd041
+- **FDGD041** NOT PERMITTED: Reordering Method Parameters of The Same Type (library only) (can cause: runtime, compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd041
 
 ## D.11.6 Changing a Method Return Type
 
-- **FDGD042** NOT PERMITTED: Changing a Method Return Type (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd042
+- **FDGD042** NOT PERMITTED: Changing a Method Return Type (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd042
 
 ## D.11.7 Changing the Type of a Property
 
-- **FDGD043** NOT PERMITTED: Changing the Type of a Property (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd043
+- **FDGD043** NOT PERMITTED: Changing the Type of a Property (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd043
 
 ## D.11.8 Changing Member Visibility from public to Any Other Visibility
 
-- **FDGD044** NOT PERMITTED: Changing Member Visibility from `public` to Any Other Visibility (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd044
+- **FDGD044** NOT PERMITTED: Changing Member Visibility from `public` to Any Other Visibility (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd044
 
 ## D.11.9 Changing Member Visibility from protected to public
 
-- **FDGD045** PERMITTED: Changing Member Visibility from `protected` to `public` — examples: examples/appd-breaking-changes-d-9-on.md#fdgd045
+- **FDGD045** PERMITTED: Changing Member Visibility from `protected` to `public` (library only) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd045
 
 ## D.11.10 Changing a virtual (or abstract) Member from protected to public
 
-- **FDGD046** NOT PERMITTED: Changing a `virtual` (or `abstract`) Member from `protected` to `public` (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd046
+- **FDGD046** NOT PERMITTED: Changing a `virtual` (or `abstract`) Member from `protected` to `public` (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd046
 
 ## D.11.11 Adding or Removing the static Modifier
 
-- **FDGD047** NOT PERMITTED: Adding or Removing the `static` Modifier (can cause: runtime, compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd047
+- **FDGD047** NOT PERMITTED: Adding or Removing the `static` Modifier (library only) (can cause: runtime, compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd047
 
 ## D.11.12 Changing to or from Passing a Parameter by Reference
 
-- **FDGD048** NOT PERMITTED: Changing to or from Passing a Parameter by Reference (can cause: runtime, compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd048
+- **FDGD048** NOT PERMITTED: Changing to or from Passing a Parameter by Reference (library only) (can cause: runtime, compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd048
 
 ## D.11.13 Changing By-Reference Parameter Styles
 
-- **FDGD049** NOT PERMITTED: Changing By-Reference Parameter Styles (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd049
+- **FDGD049** NOT PERMITTED: Changing By-Reference Parameter Styles (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd049
 
 ## D.11.14 Adding the readonly Modifier to a struct Method
 
-- **FDGD050** PERMITTED: Adding the `readonly` Modifier to a `struct` Method (can cause: compilation break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd050
+- **FDGD050** PERMITTED: Adding the `readonly` Modifier to a `struct` Method (library only) (can cause: compilation break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd050
 
 ## D.11.15 Removing the readonly Modifier from a struct Method
 
-- **FDGD051** NOT PERMITTED: Removing the `readonly` Modifier from a `struct` Method (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd051
+- **FDGD051** NOT PERMITTED: Removing the `readonly` Modifier from a `struct` Method (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd051
 
 ## D.11.16 Changing a Parameter from Required to Optional
 
-- **FDGD052** PERMITTED: Changing a Parameter from Required to Optional — examples: examples/appd-breaking-changes-d-9-on.md#fdgd052
+- **FDGD052** PERMITTED: Changing a Parameter from Required to Optional (library only) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd052
 
 ## D.11.17 Changing a Parameter from Optional to Required
 
-- **FDGD053** CONTEXTUAL: Changing a Parameter from Optional to Required (can cause: compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd053
+- **FDGD053** CONTEXTUAL: Changing a Parameter from Optional to Required (library only) (can cause: compilation and recompile breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd053
 
 ## D.11.18 Changing the Default Value for an Optional Parameter
 
-- **FDGD054** NOT PERMITTED: Changing the Default Value for an Optional Parameter (can cause: recompile break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd054
+- **FDGD054** NOT PERMITTED: Changing the Default Value for an Optional Parameter (library only) (can cause: recompile break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd054
 
 ## D.11.19 Changing the Value of a const Field
 
-- **FDGD055** NOT PERMITTED: Changing the Value of a `const` Field (can cause: recompile and reflection breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd055
+- **FDGD055** NOT PERMITTED: Changing the Value of a `const` Field (library only) (can cause: recompile and reflection breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd055
 
 ## D.11.20 Changing an abstract Member to virtual
 
-- **FDGD056** PERMITTED: Changing an `abstract` Member to `virtual` — examples: examples/appd-breaking-changes-d-9-on.md#fdgd056
+- **FDGD056** PERMITTED: Changing an `abstract` Member to `virtual` (library only) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd056
 
 ## D.11.21 Changing a virtual Member to abstract
 
-- **FDGD057** NOT PERMITTED: Changing a `virtual` Member to `abstract` (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd057
+- **FDGD057** NOT PERMITTED: Changing a `virtual` Member to `abstract` (library only) (can cause: runtime and compilation breaks) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd057
 
 ## D.11.22 Changing a Non-virtual Member to virtual
 
-- **FDGD058** PERMITTED: Changing a Non-`virtual` Member to `virtual` (can cause: recompile break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd058
+- **FDGD058** PERMITTED: Changing a Non-`virtual` Member to `virtual` (library only) (can cause: recompile break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd058
 
 ## D.12.1 Changing Runtime Error Exceptions to Usage Error Exceptions
 
-- **FDGD059** PERMITTED: Changing Runtime Error Exceptions to Usage Error Exceptions (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd059
+- **FDGD059** PERMITTED: Changing Runtime Error Exceptions to Usage Error Exceptions (library only) (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd059
 
 ## D.12.2 Changing Usage Error Exceptions to Functioning Behavior
 
-- **FDGD060** PERMITTED: Changing Usage Error Exceptions to Functioning Behavior (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd060
+- **FDGD060** PERMITTED: Changing Usage Error Exceptions to Functioning Behavior (library only) (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd060
 
 ## D.12.3 Changing the Type of Values Returned from a Method
 
-- **FDGD061** CONTEXTUAL: Changing the Type of Values Returned from a Method (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd061
+- **FDGD061** CONTEXTUAL: Changing the Type of Values Returned from a Method (library only) (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd061
 
 ## D.12.4 Throwing a New Type of Error Exception
 
-- **FDGD062** NOT PERMITTED: Throwing a New Type of Error Exception (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd062
+- **FDGD062** NOT PERMITTED: Throwing a New Type of Error Exception (library only) (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd062
 
 ## D.12.5 Throwing a New Type of Exception, Derived from an Existing Thrown Type
 
-- **FDGD063** PERMITTED: Throwing a New Type of Exception, Derived from an Existing Thrown Type (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd063
+- **FDGD063** PERMITTED: Throwing a New Type of Exception, Derived from an Existing Thrown Type (library only) (can cause: runtime break) — examples: examples/appd-breaking-changes-d-9-on.md#fdgd063

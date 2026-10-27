@@ -13,10 +13,10 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG9142** CONSIDER returning `System.Range` representing the bounds of a Span parameter, rather than a slice of the parameter. — examples: examples/ch09-patterns-buffers.md#fdg9142
 - **FDG9145** DO use `ReadOnlyMemory<T>` in place of `ReadOnlySpan<T>` for parameters when the purpose of the constructor or method is to store a reference to the buffer.
 - **FDG9146** DO use `Memory<T>` in place of `Span<T>` for parameters when the purpose of the constructor or method is to save a reference to the buffer. — examples: examples/ch09-patterns-buffers.md#fdg9146
-- **FDG9149** CONSIDER adding Span- or Memory-based alternatives to methods that accept arrays or strings. — examples: examples/ch09-patterns-buffers.md#fdg9149
-- **FDG9150** CONSIDER providing array-accepting alternatives for methods that accept Span or Memory values.
-- **FDG9151** CONSIDER providing `System.String`-accepting alternatives for methods that accept `ReadOnlySpan<char>` or `ReadOnlyMemory<char>`. — examples: examples/ch09-patterns-buffers.md#fdg9151
-- **FDG9152** CONSIDER providing an array-returning alternative to buffer-writing methods. — examples: examples/ch09-patterns-buffers.md#fdg9152
+- **FDG9149** CONSIDER adding Span- or Memory-based alternatives to methods that accept arrays or strings. (library only) — examples: examples/ch09-patterns-buffers.md#fdg9149
+- **FDG9150** CONSIDER providing array-accepting alternatives for methods that accept Span or Memory values. (library only)
+- **FDG9151** CONSIDER providing `System.String`-accepting alternatives for methods that accept `ReadOnlySpan<char>` or `ReadOnlyMemory<char>`. (library only) — examples: examples/ch09-patterns-buffers.md#fdg9151
+- **FDG9152** CONSIDER providing an array-returning alternative to buffer-writing methods. (library only) — examples: examples/ch09-patterns-buffers.md#fdg9152
 - **FDG9153** DO perform normal parameter validation in array or string alternatives to Span or Memory methods. — examples: examples/ch09-patterns-buffers.md#fdg9153
 - **FDG9154** DO prefer the name “source” for the input buffer parameter of methods that accept an output buffer and a single input buffer.
 - **FDG9155** DO prefer the name “destination” for the output buffer parameter of methods that write to a single buffer. — examples: examples/ch09-patterns-buffers.md#fdg9155

@@ -6,7 +6,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 9.4 Dispose Pattern
 
-- **FDG9063** CONSIDER implementing the Basic Dispose Pattern on classes that themselves don’t hold unmanaged resources or disposable objects, but are likely to have subtypes that do. — examples: examples/ch09-patterns-dispose.md#fdg9063
+- **FDG9063** CONSIDER implementing the Basic Dispose Pattern on classes that themselves don’t hold unmanaged resources or disposable objects, but are likely to have subtypes that do. (library only) — examples: examples/ch09-patterns-dispose.md#fdg9063
 
 ## 9.4.1 Basic Dispose Pattern
 
@@ -18,7 +18,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 ## 9.4.2 Finalizable Types
 
 - **FDG9075** DO NOT access any finalizable objects in the finalizer code path, because there is significant risk that they will have already been finalized. — examples: examples/ch09-patterns-dispose.md#fdg9075
-- **FDG9077** DO NOT remove a finalizer from an unsealed public type once it has one. — examples: examples/ch09-patterns-dispose.md#fdg9077
+- **FDG9077** DO NOT remove a finalizer from an unsealed public type once it has one. (library only) — examples: examples/ch09-patterns-dispose.md#fdg9077
 
 ## 9.4.3 Scoped Operations
 

@@ -190,10 +190,12 @@ public sealed class SkillLintTests
 
     /// <summary>
     /// The format of a rule line, the same as the generated references without their examples link:
-    /// <c>**&lt;id&gt;** &lt;STRENGTH&gt; &lt;text&gt;[ (context: &lt;context&gt;)][ [C# N+]][ (alt: &lt;alt&gt;)]</c>,
+    /// <c>**&lt;id&gt;** &lt;STRENGTH&gt; &lt;text&gt;[ (library only)][ (context: &lt;context&gt;)][ [C# N+]]</c>
+    /// <c>[ (alt: &lt;alt&gt;)]</c>,
     /// with <c>(can cause: &lt;context&gt;)</c> instead of <c>(context: &lt;context&gt;)</c> for an appendix D verdict.
-    /// The bracketed parts are required exactly when the rule has a context, a minimum language version or an
-    /// alternative, so the AI always sees the version tag and the fallback. The review output form
+    /// The bracketed parts are required exactly when the rule is on in <c>library</c> and off in <c>application</c>,
+    /// has a context, a minimum language version or an alternative, so the AI always sees the profile, the version
+    /// tag and the fallback. The review output form
     /// <c>— &lt;id&gt; &lt;STRENGTH&gt; &lt;text&gt;</c> carries only the statement.
     /// </summary>
     [Fact]
@@ -280,8 +282,8 @@ public sealed class SkillLintTests
     }
 
     /// <summary>
-    /// fdg-write's top rules are at most 60 rules, ordered by importance, not by chapter: each appears once and is a
-    /// rule the references list (a judgment rule, or a CONSIDER rule analyzers only suggest).
+    /// fdg-write's top rules are at most 60 rules, distinct and listed: each appears once and is a rule the references
+    /// list (a judgment rule, or a CONSIDER rule analyzers only suggest). Their order (by importance) is not checked.
     /// </summary>
     [Fact]
     public void Fdg_write_top_rules_are_distinct_listed_rules()
@@ -302,17 +304,39 @@ public sealed class SkillLintTests
         }
     }
 
-    /// <summary>fdg-write's routing table names every reference file, so every chapter can be reached.</summary>
+    /// <summary>
+    /// fdg-write's routing table names every reference file in one of its rows, so every chapter can be reached by
+    /// topic.
+    /// </summary>
     [Fact]
     public void Fdg_write_routes_to_every_reference_file()
     {
-        string body = Read(SkillPath("fdg-write")).Body;
+        string[] rows = Read(SkillPath("fdg-write")).Lines.Where(l => l.StartsWith('|')).ToArray();
 
         string[] files = TopLevelReferenceFiles();
         Assert.NotEmpty(files);
         foreach (string file in files)
         {
-            Assert.True(body.Contains(file, StringComparison.Ordinal), $"fdg-write/SKILL.md does not name {file}.");
+            Assert.True(
+                rows.Any(r => r.Contains("references/" + file, StringComparison.Ordinal)),
+                $"No row of fdg-write's routing table names {file}.");
+        }
+    }
+
+    /// <summary>
+    /// The reviewer agent names every reference file, so a delegated review can read the rules of any topic.
+    /// </summary>
+    [Fact]
+    public void Reviewer_agent_routes_to_every_reference_file()
+    {
+        string body = Read(AgentPath).Body;
+
+        string[] files = TopLevelReferenceFiles();
+        Assert.NotEmpty(files);
+        foreach (string file in files)
+        {
+            string path = "references/" + file;
+            Assert.True(body.Contains(path, StringComparison.Ordinal), $"agents/fdg-reviewer.md does not name {path}.");
         }
     }
 
@@ -398,6 +422,12 @@ public sealed class SkillLintTests
     private static string QuotedLine(Rule rule)
     {
         string line = Statement(rule);
+        ProfileSeverity severity = rule.Mapping.Severity;
+        if (severity.Library != SeverityLevel.None && severity.Application == SeverityLevel.None)
+        {
+            line += " (library only)";
+        }
+
         if (rule.Context is not null)
         {
             line += rule.Strength.IsVerdict() ? $" (can cause: {rule.Context})" : $" (context: {rule.Context})";

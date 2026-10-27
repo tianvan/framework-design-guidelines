@@ -11,11 +11,11 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG9165** DO throw an exception, instead of returning `false`, for any error other than the destination being too small in a Try-Write method. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9165
 - **FDG9166** DO provide a way of determining a sufficient output length if your Try-Write method can produce large results. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9166
 - **FDG9167** CONSIDER providing an API to compute a sufficient output buffer size for Try-Write methods, even when the output size is small. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9167
-- **FDG9168** CONSIDER providing an exception-throwing alternative for each member using the Try-Write Pattern. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9168
-- **FDG9169** CONSIDER also using the Try-Write Pattern for methods that write fixed or predetermined amounts of data to a buffer. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9169
+- **FDG9168** CONSIDER providing an exception-throwing alternative for each member using the Try-Write Pattern. (library only) — examples: examples/ch09-patterns-buffers-try-write.md#fdg9168
+- **FDG9169** CONSIDER also using the Try-Write Pattern for methods that write fixed or predetermined amounts of data to a buffer. (library only) — examples: examples/ch09-patterns-buffers-try-write.md#fdg9169
 
 ## 9.12.4 Partial Writes to Buffers and OperationStatus
 
 - **FDG9170** CONSIDER using the `OperationStatus` method pattern for buffer- writing methods that can produce partial results. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9170
 - **FDG9172** CONSIDER naming the `out` parameter that reports the number of values successfully processed by an `OperationStatus` method “bytesConsumed,” “charsConsumed,” or “valuesConsumed” (as appropriate to the data type).
-- **FDG9175** CONSIDER providing a Try-Write alternative to an `OperationStatus` method. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9175
+- **FDG9175** CONSIDER providing a Try-Write alternative to an `OperationStatus` method. (library only) — examples: examples/ch09-patterns-buffers-try-write.md#fdg9175

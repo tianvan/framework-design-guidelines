@@ -31,7 +31,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 9.2.2 Task-Based Async Pattern
 
-- **FDG9021** CONSIDER adding synchronous variants of Async methods. — examples: examples/ch09-patterns-aggregate-async.md#fdg9021
+- **FDG9021** CONSIDER adding synchronous variants of Async methods. (library only) — examples: examples/ch09-patterns-aggregate-async.md#fdg9021
 - **FDG9024** CONSIDER keeping the `CancellationToken` as the last parameter, for better alignment with a synchronous version of the method. — examples: examples/ch09-patterns-aggregate-async.md#fdg9024
 - **FDG9025** CONSIDER accepting a `CancellationToken` in long-running or blocking synchronous methods. — examples: examples/ch09-patterns-aggregate-async.md#fdg9025
 - **FDG9026** DO NOT return Tasks for long-running synchronous methods. — examples: examples/ch09-patterns-aggregate-async.md#fdg9026

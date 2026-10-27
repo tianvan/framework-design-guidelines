@@ -36,7 +36,7 @@ If you cannot find them, say so and stop. Never review from memory: every findin
    and the others by topic:
    - public API scenarios, entry points, layers, documentation: `references/ch02-fundamentals.md`;
    - classes, structs, interfaces, abstract classes, namespaces: `references/ch04-types-4-1-to-4-4.md`;
-   - static classes, enums, nested types, strongly typed strings, assembly metadata:
+   - static classes, interface and struct design, enums, nested types, strongly typed strings, assembly metadata:
      `references/ch04-types-4-5-on.md`;
    - overloads, explicit interface members, property or method: `references/ch05-members-general.md`;
    - properties, indexers, constructors: `references/ch05-members-properties-constructors.md`;
@@ -46,7 +46,8 @@ If you cannot find them, say so and stop. Never review from memory: every findin
    - virtual, protected or sealed members, callbacks, abstractions: `references/ch06-extensibility.md`;
    - exceptions and Try methods: `references/ch07-exceptions.md`;
    - arrays, attributes, collections: `references/ch08-usage-arrays-attributes-collections.md`;
-   - dates, `Nullable<T>`, `Uri`, XML, `Equals`, `GetHashCode`, `ToString`, `==`: `references/ch08-usage-types.md`;
+   - `DateTime`, `DateTimeOffset`, `IComparable<T>`, `Nullable<T>`, `Uri`, XML, `Equals`, `GetHashCode`,
+     `ToString`, `==`: `references/ch08-usage-types.md`;
    - async methods, aggregate components, dependency properties: `references/ch09-patterns-aggregate-async.md`;
    - `IDisposable`, `IAsyncDisposable`, finalizers: `references/ch09-patterns-dispose.md`;
    - factories and LINQ: `references/ch09-patterns-factories-linq.md`;
@@ -56,8 +57,10 @@ If you cannot find them, say so and stop. Never review from memory: every findin
    - Try-Write and `OperationStatus`: `references/ch09-patterns-buffers-try-write.md`.
 
    In `test` projects read only the Chapter 7, Chapter 8 and Appendix A references; the other chapters are off
-   there. The references list, by section, the rules tools do not enforce. When a rule's wording is not enough,
-   follow the `examples:` link at the end of its line (relative to the references directory).
+   there. In `application` projects skip the rules marked "(library only)": they are about a library's public
+   surface and are off there. The references list, by section, the rules tools do not enforce. When a rule's
+   wording is not enough, follow the `examples:` link at the end of its line (relative to the references
+   directory).
 4. Check every declaration in scope against those rules. Report a finding only when a specific rule clearly applies
    to a specific line. Do not invent advice the rules do not support, and do not report what analyzers and
    `dotnet format` already fix or report (layout, modifiers, and the casing of an identifier's first letter). A rule
@@ -65,12 +68,14 @@ If you cannot find them, say so and stop. Never review from memory: every findin
    expectation.
 5. For files in `library` projects, compare the public and protected surface with the baseline the task names, or
    else `git merge-base HEAD <default branch>` (the output of
-   `git symbolic-ref --short refs/remotes/origin/HEAD` such as `origin/main`, or `main` when that fails). Run
+   `git symbolic-ref --short refs/remotes/origin/HEAD` such as `origin/main`, or `main` when that fails). If the
+   merge-base cannot be computed either, say so, ask for a baseline in your result, and skip this step. Run
    `git diff <baseline> -- <file>` and check each changed public or protected declaration against Appendix D,
    `references/appd-breaking-changes-d-1-to-d-8.md` and `references/appd-breaking-changes-d-9-on.md`. A NOT PERMITTED
    match is a finding. For a CONTEXTUAL match, read the book's reasoning for that entry behind its `examples:` link,
    and report it only when the conditions it gives hold for this change; say which. A PERMITTED match needs no
-   finding. Private and internal members are out of scope here.
+   finding. Private and internal members are out of scope here, except private fields of serializable types
+   (FDGD034).
 6. When the task says the review covers a library's public API and a design specification was given, check that the
    specification has the parts the book's sample specification (Appendix C) has, citing the rule that asks for each:
    - an introduction with an overview of the feature, ahead of the scenarios (FDG2005);

@@ -746,6 +746,48 @@ public sealed class EmitterTests : IDisposable
         Assert.DoesNotContain("(can cause:", reference);
     }
 
+    /// <summary>
+    /// A rule that is on for <c>library</c> and off for <c>application</c> is about a library's public surface; its
+    /// reference line says so right after the rule text, so the AI skips it in application code.
+    /// </summary>
+    [Fact]
+    public void Library_only_rule_is_marked_after_its_text()
+    {
+        GeneratorInput input = Edit(Input(), rule => rule.Id == "FDG9001"
+            ? Map(rule with { Context = "public types" }, m => m with
+            {
+                Severity = new ProfileSeverity(SeverityLevel.Warning, SeverityLevel.None, SeverityLevel.None),
+            })
+            : rule);
+
+        string line = Lines(ReferenceMain(input)).Single(l => l.StartsWith("- **FDG9001** ", StringComparison.Ordinal));
+
+        Assert.StartsWith(
+            "- **FDG9001** DO prefer records for immutable data carriers. (library only) " +
+            "(context: public types) [C# 9+]",
+            line);
+    }
+
+    [Fact]
+    public void Rule_on_in_application_is_not_marked_library_only()
+    {
+        string reference = ReferenceMain(Input());
+
+        Assert.Contains("- **FDG9001** DO prefer records for immutable data carriers. [C# 9+]", reference);
+        Assert.DoesNotContain("(library only)", reference);
+    }
+
+    [Fact]
+    public void Rule_off_in_every_profile_is_not_marked_library_only()
+    {
+        GeneratorInput input = Edit(Input(), OnRule("FDG9001", m => m with
+        {
+            Severity = new ProfileSeverity(SeverityLevel.None, SeverityLevel.None, SeverityLevel.None),
+        }));
+
+        Assert.DoesNotContain("(library only)", ReferenceMain(input));
+    }
+
     [Fact]
     public void Coverage_counts_each_chapter_and_lists_non_guideline_content()
     {

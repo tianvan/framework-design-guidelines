@@ -60,7 +60,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 8.10 Serialization
 
-- **FDG8086** AVOID using serialization attributes or interfaces on public types in a general-purpose library, except for types that need to support serialization across AppDomains—such as Exception types. — examples: examples/ch08-usage-types.md#fdg8086
+- **FDG8086** AVOID using serialization attributes or interfaces on public types in a general-purpose library, except for types that need to support serialization across AppDomains—such as Exception types. (library only) — examples: examples/ch08-usage-types.md#fdg8086
 - **FDG8087** DO consider backward and forward compatibility when creating or changing serializable types. — examples: examples/ch08-usage-types.md#fdg8087
 - **FDG8090** DO apply a link demand to `ISerializable.GetObjectData` implementation. This ensures that only fully trusted assemblies and the Runtime Serializer have access to the member. — examples: examples/ch08-usage-types.md#fdg8090
 

@@ -12,13 +12,13 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 9.8.1 Contravariance
 
-- **FDG9113** DO NOT change generic type parameters from contravariant to invariant in newer versions of your library. — examples: examples/ch09-patterns-optional-variance.md#fdg9113
-- **FDG9114** CONSIDER making a sub-interface of a new generic interface if removing members would allow a generic type parameter to be contravariant and the remaining members provide a coherent interface. — examples: examples/ch09-patterns-optional-variance.md#fdg9114
+- **FDG9113** DO NOT change generic type parameters from contravariant to invariant in newer versions of your library. (library only) — examples: examples/ch09-patterns-optional-variance.md#fdg9113
+- **FDG9114** CONSIDER making a sub-interface of a new generic interface if removing members would allow a generic type parameter to be contravariant and the remaining members provide a coherent interface. (library only) — examples: examples/ch09-patterns-optional-variance.md#fdg9114
 
 ## 9.8.2 Covariance
 
-- **FDG9118** DO NOT change generic type parameters from covariant to invariant in newer versions of your library. — examples: examples/ch09-patterns-optional-variance.md#fdg9118
-- **FDG9119** CONSIDER making a sub-interface of a new generic interface if removing members would allow a generic type parameter to be covariant and the remaining members provide a coherent interface. — examples: examples/ch09-patterns-optional-variance.md#fdg9119
+- **FDG9118** DO NOT change generic type parameters from covariant to invariant in newer versions of your library. (library only) — examples: examples/ch09-patterns-optional-variance.md#fdg9118
+- **FDG9119** CONSIDER making a sub-interface of a new generic interface if removing members would allow a generic type parameter to be covariant and the remaining members provide a coherent interface. (library only) — examples: examples/ch09-patterns-optional-variance.md#fdg9119
 
 ## 9.8.3 Simulated Covariance Pattern
 

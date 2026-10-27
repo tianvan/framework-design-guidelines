@@ -16,7 +16,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG4021** CONSIDER defining an interface if you need to support its functionality on types that already inherit from some other type.
 - **FDG4023** DO provide at least one type that is an implementation of an interface. — examples: examples/ch04-types-4-5-on.md#fdg4023
 - **FDG4024** DO provide at least one API that consumes each interface you define (a method taking the interface as a parameter or a property typed as the interface). — examples: examples/ch04-types-4-5-on.md#fdg4024
-- **FDG4025** DO NOT add members to an interface that has previously shipped. — examples: examples/ch04-types-4-5-on.md#fdg4025
+- **FDG4025** DO NOT add members to an interface that has previously shipped. (library only) — examples: examples/ch04-types-4-5-on.md#fdg4025
 
 ## 4.7 Struct Design
 
@@ -40,20 +40,20 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 4.8.2 Adding Values to Enums
 
-- **FDG4050** CONSIDER adding values to enums, despite a small compatibility risk. — examples: examples/ch04-types-4-5-on.md#fdg4050
+- **FDG4050** CONSIDER adding values to enums, despite a small compatibility risk. (library only) — examples: examples/ch04-types-4-5-on.md#fdg4050
 
 ## 4.9 Nested Types
 
 - **FDG4051** DO use nested types when the relationship between the nested type and its outer type is such that member-accessibility semantics are desirable. — examples: examples/ch04-types-4-5-on.md#fdg4051
-- **FDG4052** DO NOT use public nested types as a logical grouping construct; use namespaces for this purpose.
+- **FDG4052** DO NOT use public nested types as a logical grouping construct; use namespaces for this purpose. (library only)
 - **FDG4054** DO NOT use nested types if the type is likely to be referenced outside of the containing type. — examples: examples/ch04-types-4-5-on.md#fdg4054
 - **FDG4055** DO NOT use nested types if they need to be instantiated by client code. — examples: examples/ch04-types-4-5-on.md#fdg4055
 
 ## 4.10 Types and Assembly Metadata
 
-- **FDG4060** CONSIDER applying `ComVisible(false)` to your assembly. COM-callable APIs need to be designed explicitly. As a rule of thumb, .NET assemblies should not be visible to COM. If you do design the APIs to be COM-callable, you can apply `ComVisible(true)` either to the individual APIs or to the whole assembly.
-- **FDG4061** CONSIDER applying `AssemblyFileVersionAttribute` and `Assembly-CopyrightAttribute` to provide additional information about the assembly.
-- **FDG4062** CONSIDER using the format `<V>.<S>.<B>.<R>` for the assembly file version, where `V` is the major version number, `S` is the servicing number, `B` is the build number, and `R` is the build revision number. — examples: examples/ch04-types-4-5-on.md#fdg4062
+- **FDG4060** CONSIDER applying `ComVisible(false)` to your assembly. COM-callable APIs need to be designed explicitly. As a rule of thumb, .NET assemblies should not be visible to COM. If you do design the APIs to be COM-callable, you can apply `ComVisible(true)` either to the individual APIs or to the whole assembly. (library only)
+- **FDG4061** CONSIDER applying `AssemblyFileVersionAttribute` and `Assembly-CopyrightAttribute` to provide additional information about the assembly. (library only)
+- **FDG4062** CONSIDER using the format `<V>.<S>.<B>.<R>` for the assembly file version, where `V` is the major version number, `S` is the servicing number, `B` is the build number, and `R` is the build revision number. (library only) — examples: examples/ch04-types-4-5-on.md#fdg4062
 
 ## 4.11 Strongly Typed Strings
 

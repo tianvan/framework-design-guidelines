@@ -11,7 +11,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG7003** CONSIDER terminating the process by calling `System.Environment.FailFast` instead of throwing an exception if your code encounters a situation where immediate process termination is necessary. — examples: examples/ch07-exceptions.md#fdg7003
 - **FDG7004** DO NOT use exceptions for the normal flow of control, if possible. Prefer Tester–Doer or the Try pattern to throwing exceptions in common cases. — examples: examples/ch07-exceptions.md#fdg7004
 - **FDG7005** CONSIDER the performance implications of throwing exceptions. Throw rates greater than 100 per second are likely to noticeably impact the performance of most applications. See section 7.5 for details.
-- **FDG7006** DO document all exceptions thrown by publicly callable members because of a violation of the member contract (rather than a system failure) and treat them as part of your contract. — examples: examples/ch07-exceptions.md#fdg7006
+- **FDG7006** DO document all exceptions thrown by publicly callable members because of a violation of the member contract (rather than a system failure) and treat them as part of your contract. (library only) — examples: examples/ch07-exceptions.md#fdg7006
 - **FDG7009** CONSIDER using exception builder methods. — examples: examples/ch07-exceptions.md#fdg7009
 
 ## 7.2 Choosing the Right Type of Exception to Throw
@@ -27,7 +27,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 - **FDG7020** DO ensure that exception messages are grammatically correct. — examples: examples/ch07-exceptions.md#fdg7020
 - **FDG7023** DO NOT disclose security-sensitive information in exception messages.
-- **FDG7024** CONSIDER localizing the exception messages thrown by your components if you expect your components to be used by developers speaking different languages. — examples: examples/ch07-exceptions.md#fdg7024
+- **FDG7024** CONSIDER localizing the exception messages thrown by your components if you expect your components to be used by developers speaking different languages. (library only) — examples: examples/ch07-exceptions.md#fdg7024
 
 ## 7.2.2 Exception Handling
 

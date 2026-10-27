@@ -11,9 +11,9 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG5006** DO NOT have overloads with parameters at the same position and similar types, yet with different semantics. — examples: examples/ch05-members-general.md#fdg5006
 - **FDG5007** DO allow `null` to be passed for optional arguments. — examples: examples/ch05-members-general.md#fdg5007
 - **FDG5009** CONSIDER using default parameters on the longest overload of a method. — examples: examples/ch05-members-general.md#fdg5009
-- **FDG5012** DO NOT change the default value for a parameter once it has been publicly released. — examples: examples/ch05-members-general.md#fdg5012
+- **FDG5012** DO NOT change the default value for a parameter once it has been publicly released. (library only) — examples: examples/ch05-members-general.md#fdg5012
 - **FDG5014** AVOID having two overloads of the same method that both use default parameters.
-- **FDG5016** DO move all default parameters to the new, longer overload when adding optional parameters to an existing method. — examples: examples/ch05-members-general.md#fdg5016
+- **FDG5016** DO move all default parameters to the new, longer overload when adding optional parameters to an existing method. (library only) — examples: examples/ch05-members-general.md#fdg5016
 
 ## 5.1.2 Implementing Interface Members Explicitly
 

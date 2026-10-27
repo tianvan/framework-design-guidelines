@@ -21,11 +21,11 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 3.2.4 Naming New Versions of Existing APIs
 
-- **FDG3019** DO use a name similar to the old API when creating new versions of an existing API. — examples: examples/ch03-naming.md#fdg3019
-- **FDG3020** DO prefer adding a suffix rather than a prefix to indicate a new version of an existing API. — examples: examples/ch03-naming.md#fdg3020
-- **FDG3021** CONSIDER using a brand-new, but meaningful, identifier, instead of adding a suffix or a prefix.
-- **FDG3022** DO use a numeric suffix to indicate a new version of an existing API, particularly if the existing name of the API is the only name that makes sense (e.g., if it is an industry standard) and if adding any meaningful suffix (or changing the name) is not an appropriate option. — examples: examples/ch03-naming.md#fdg3022
-- **FDG3024** DO use the “64” suffix when introducing versions of APIs that operate on a 64-bit integer (a long integer) instead of a 32-bit integer. You only need to take this approach when the existing 32-bit API exists; don’t do it for brand-new APIs with only a 64-bit version. — examples: examples/ch03-naming.md#fdg3024
+- **FDG3019** DO use a name similar to the old API when creating new versions of an existing API. (library only) — examples: examples/ch03-naming.md#fdg3019
+- **FDG3020** DO prefer adding a suffix rather than a prefix to indicate a new version of an existing API. (library only) — examples: examples/ch03-naming.md#fdg3020
+- **FDG3021** CONSIDER using a brand-new, but meaningful, identifier, instead of adding a suffix or a prefix. (library only)
+- **FDG3022** DO use a numeric suffix to indicate a new version of an existing API, particularly if the existing name of the API is the only name that makes sense (e.g., if it is an industry standard) and if adding any meaningful suffix (or changing the name) is not an appropriate option. (library only) — examples: examples/ch03-naming.md#fdg3022
+- **FDG3024** DO use the “64” suffix when introducing versions of APIs that operate on a 64-bit integer (a long integer) instead of a 32-bit integer. You only need to take this approach when the existing 32-bit API exists; don’t do it for brand-new APIs with only a 64-bit version. (library only) — examples: examples/ch03-naming.md#fdg3024
 
 ## 3.3 Names of Assemblies, DLLs, and Packages
 

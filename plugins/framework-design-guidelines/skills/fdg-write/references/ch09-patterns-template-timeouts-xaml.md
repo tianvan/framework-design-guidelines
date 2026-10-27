@@ -6,9 +6,9 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 9.9 Template Method
 
-- **FDG9124** AVOID making public members virtual. — examples: examples/ch09-patterns-template-timeouts-xaml.md#fdg9124
-- **FDG9125** CONSIDER using the Template Method Pattern to provide more controlled extensibility. — examples: examples/ch09-patterns-template-timeouts-xaml.md#fdg9125
-- **FDG9126** CONSIDER naming protected virtual members that provide extensibility points for nonvirtual members by suffixing the nonvirtual member name with “Core.” — examples: examples/ch09-patterns-template-timeouts-xaml.md#fdg9126
+- **FDG9124** AVOID making public members virtual. (library only) — examples: examples/ch09-patterns-template-timeouts-xaml.md#fdg9124
+- **FDG9125** CONSIDER using the Template Method Pattern to provide more controlled extensibility. (library only) — examples: examples/ch09-patterns-template-timeouts-xaml.md#fdg9125
+- **FDG9126** CONSIDER naming protected virtual members that provide extensibility points for nonvirtual members by suffixing the nonvirtual member name with “Core.” (library only) — examples: examples/ch09-patterns-template-timeouts-xaml.md#fdg9126
 - **FDG9127** DO perform argument and state validation in the nonvirtual member of the Template Method Pattern before calling the virtual member.
 - **FDG9128** DO only perform argument and state validation unique to the derived type in the virtual member of the Template Method Pattern. That is, do not repeat validation from the nonvirtual member. — examples: examples/ch09-patterns-template-timeouts-xaml.md#fdg9128
 

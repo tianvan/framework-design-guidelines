@@ -33,7 +33,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG5047** CONSIDER adding a property for each parameter in a constructor. — examples: examples/ch05-members-properties-constructors.md#fdg5047
 - **FDG5048** DO minimal work in the constructor. — examples: examples/ch05-members-properties-constructors.md#fdg5048
 - **FDG5049** DO throw exceptions from instance constructors, if appropriate. — examples: examples/ch05-members-properties-constructors.md#fdg5049
-- **FDG5050** DO explicitly declare the public default constructor in classes, if such a constructor is required. — examples: examples/ch05-members-properties-constructors.md#fdg5050
+- **FDG5050** DO explicitly declare the public default constructor in classes, if such a constructor is required. (library only) — examples: examples/ch05-members-properties-constructors.md#fdg5050
 - **FDG5051** AVOID explicitly defining default constructors on structs. — examples: examples/ch05-members-properties-constructors.md#fdg5051
 
 ## 5.3.1 Type Constructor Guidelines

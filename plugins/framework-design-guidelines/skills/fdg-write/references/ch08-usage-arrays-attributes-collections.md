@@ -6,7 +6,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 8.1 Arrays
 
-- **FDG8001** DO prefer using collections over arrays in public APIs. Section 8.3.3 provides details about how to choose between collections and arrays. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8001
+- **FDG8001** DO prefer using collections over arrays in public APIs. Section 8.3.3 provides details about how to choose between collections and arrays. (library only) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8001
 - **FDG8004** CONSIDER using jagged arrays instead of multidimensional arrays. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8004
 
 ## 8.2 Attributes
@@ -15,7 +15,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 8.3 Collections
 
-- **FDG8013** DO NOT use weakly typed collections in public APIs. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8013
+- **FDG8013** DO NOT use weakly typed collections in public APIs. (library only) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8013
 
 ## 8.3.1 Collection Parameters
 
