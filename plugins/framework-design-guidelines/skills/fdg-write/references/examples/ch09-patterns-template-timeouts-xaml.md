@@ -57,33 +57,6 @@ DO prefer method parameters as the mechanism for users to provide timeout time.
 
 Method parameters are favored over properties because they make the association between the operation and the timeout much more apparent. The property-based approach might be better if the type is designed to be a component used with visual designers.
 
-## FDG9130
-
-DO prefer using `TimeSpan` to represent timeout time.
-
-Historically, timeouts have been represented by integers. Integer timeouts can be hard to use for the following reasons:
-
-- It is not obvious what the unit of the timeout is.
-- It is difficult to translate units of time into the commonly used millisecond. (How many milliseconds are in 15 minutes?)
-
-Often, a better approach is to use `TimeSpan` as the timeout type. `TimeSpan` solves the preceding problems.
-
-```csharp
-class Server {
-  void PerformOperation(TimeSpan timeout){
-  ...
-  }
-}
-
-var server = new Server();
-server.PerformOperation(TimeSpan.FromMinutes(15));
-```
-
-Integer timeouts are acceptable if:
-
-- The parameter or property name can describe the unit of time used by the operation—for example, if a parameter can be called `milliseconds` without making an otherwise self-describing API cryptic.
-- The most commonly used value is small enough that users won’t have to use calculators to determine the value—for example, if the unit is milliseconds and the commonly used timeout is less than 1 second.
-
 ## FDG9131
 
 DO throw `System.TimeoutException` when a timeout elapses.

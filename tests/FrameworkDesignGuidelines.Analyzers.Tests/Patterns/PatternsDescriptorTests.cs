@@ -13,7 +13,8 @@ public sealed class PatternsDescriptorTests
         "FDG9020", "FDG9022", "FDG9023", "FDG9027", "FDG9028", "FDG9029", "FDG9033", "FDG9036", "FDG9037", "FDG9038",
         "FDG9043", "FDG9045", "FDG9047", "FDG9048", "FDG9049", "FDG9052", "FDG9053", "FDG9054", "FDG9055", "FDG9056",
         "FDG9057", "FDG9067", "FDG9073", "FDG9074", "FDG9081", "FDG9082", "FDG9100", "FDG9103", "FDG9106", "FDG9111",
-        "FDG9112", "FDG9115", "FDG9116", "FDG9117",
+        "FDG9112", "FDG9115", "FDG9116", "FDG9117", "FDG9130", "FDG9138", "FDG9142", "FDG9143", "FDG9144", "FDG9147",
+        "FDG9148", "FDG9156", "FDG9157", "FDG9159", "FDG9162", "FDG9163", "FDG9171", "FDG9172", "FDG9173", "FDG9174",
     ];
 
     private static readonly ImmutableArray<DiagnosticAnalyzer> _analyzers =
@@ -25,6 +26,9 @@ public sealed class PatternsDescriptorTests
         new DisposePatternAnalyzer(),
         new QueryPatternAnalyzer(),
         new VarianceAnalyzer(),
+        new TimeoutAnalyzer(),
+        new SpanParameterAnalyzer(),
+        new BufferSignatureAnalyzer(),
     ];
 
     [Fact]
@@ -38,6 +42,7 @@ public sealed class PatternsDescriptorTests
         const string Source =
             """
             using System;
+            using System.Buffers;
             using System.Collections.Generic;
             using System.Runtime.CompilerServices;
             using System.Threading;
@@ -208,6 +213,82 @@ public sealed class PatternsDescriptorTests
             internal interface IArrays<out T>
             {
                 T[] ToArray();
+            }
+
+            public static class Buffers
+            {
+                public static void Open(int timeout) { }
+
+                public static int Size(Span<int> values) => values.Length;
+
+                public static ReadOnlySpan<char> Rest(ReadOnlySpan<char> span) => span.Slice(1);
+
+                internal static Task SendAsync(ReadOnlySpan<byte> data) => Task.CompletedTask;
+
+                internal static Task ReceiveAsync(Span<byte> data) => Task.CompletedTask;
+
+                public static int Sum(ReadOnlySpan<int> values) => 0;
+
+                public static void Sum(Span<int> values) => values[0] = 0;
+
+                public static void Process(Span<char> span) => span[0] = 'a';
+
+                public static void Process(Memory<char> memory) { }
+
+                public static int Encode(Span<byte> destination, ReadOnlySpan<byte> source)
+                {
+                    destination[0] = 0;
+                    return 0;
+                }
+
+                public static bool TryFormat(Span<char> destination, out int written)
+                {
+                    destination[0] = 'a';
+                    written = 1;
+                    return true;
+                }
+
+                public static bool WriteBytes(Span<byte> destination, out int bytesWritten)
+                {
+                    destination[0] = 0;
+                    bytesWritten = 1;
+                    return true;
+                }
+
+                public static bool TryFill(Span<byte> destination)
+                {
+                    destination[0] = 0;
+                    return true;
+                }
+
+                public static OperationStatus Decode(
+                    ReadOnlySpan<byte> source,
+                    Span<byte> destination,
+                    out int bytesWritten)
+                {
+                    destination[0] = 0;
+                    bytesWritten = 1;
+                    return OperationStatus.Done;
+                }
+
+                public static OperationStatus Inflate(
+                    ReadOnlySpan<byte> source,
+                    Span<byte> destination,
+                    out int consumed,
+                    out int bytesWritten,
+                    bool last = true)
+                {
+                    destination[0] = 0;
+                    consumed = 0;
+                    bytesWritten = 1;
+                    return OperationStatus.Done;
+                }
+
+                public static OperationStatus Flush(Span<byte> destination)
+                {
+                    destination[0] = 0;
+                    return OperationStatus.Done;
+                }
             }
 
             namespace System.Windows

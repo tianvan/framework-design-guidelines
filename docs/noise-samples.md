@@ -793,3 +793,41 @@ diagnostics and the new analyzers are counted. Every report was checked.
   implemented interfaces too and keeps reporting an OrderBy that returns IEnumerable<T>, and the variance rules
   skip an interface with a class, struct or enum in a nested interface (CS8427). Measured again for FDG9067,
   FDG9103, FDG9112 and FDG9116: still 0 reports for each.
+
+## Chapter 9 (9.9 to 9.12) mappings and analyzers
+
+Package 0.1.0 with the mappings of sections 9.9 to 9.12 and three analyzers (16 diagnostics), enabled by the
+profile globalconfigs (library for the open-source samples, application for the internal ones). The mapped SDK
+diagnostic and the new analyzers are counted. There was no report to check.
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| CA1844 | FDG9149 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports); library only. |
+| FDG9130 | FDG9130 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9138 | FDG9138 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9142 | FDG9142 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9143 | FDG9143 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9144 | FDG9144 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9147 | FDG9147 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9148 | FDG9148 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9156 | FDG9156 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9157 | FDG9157 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9159 | FDG9159 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9162 | FDG9162 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9163 | FDG9163 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9171 | FDG9171 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9172 | FDG9172 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9173 | FDG9173 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+| FDG9174 | FDG9174 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed (0 reports). |
+
+### Notes
+
+- **CA1844.** FDG9149 is library only, so only the open-source samples are measured for it. None of them
+  declares a class derived from Stream that overrides the array-based ReadAsync or WriteAsync.
+- **New analyzers.** The 16 diagnostics of TimeoutAnalyzer, SpanParameterAnalyzer and BufferSignatureAnalyzer
+  have 0 reports, so they pass gate 2 (Ruling 21). The open-source samples declare no public parameter or
+  property of an integer type named as a timeout, their public span parameters are ReadOnlySpan<T> (one sample,
+  in synchronous methods and a params parameter), and no sample declares a method that returns
+  OperationStatus or a Try-Write method with a parameter named destination. The samples exercise these rules
+  little, so the 0 reports say more about the absence of the shapes than about precision; the precision rests
+  on the unit tests, which include the compliant examples of the book.

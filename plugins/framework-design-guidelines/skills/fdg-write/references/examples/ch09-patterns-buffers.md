@@ -58,39 +58,6 @@ public partial class BulkQueue<T> {
 
 If you have an existing type that already has array- or string-accepting methods, it generally makes sense to provide the Span- or Memory-based alternative as an overload on the same type, particularly for instance methods. For static methods, it may be more appropriate to have the array- or string-accepting methods on a high-level type, and to create a new low-level type for working with Span or Memory (section 2.2.4).
 
-## FDG9138
-
-DO use `ReadOnlySpan<T>` instead of `Span<T>` where possible.
-
-The `System.ReadOnlySpan<T>` type does not support value mutation. When a method accepts a `ReadOnlySpan<T>` instead of a `Span<T>`, it provides a signal to the caller that the called method will not be replacing the contents of the span. Accepting a `ReadOnlySpan<T>` when possible also allows more callers to the method, because all `Span<T>` values can be freely converted to `ReadOnlySpan<T>`, but `ReadOnlySpan<T>` values cannot be converted back to `Span<T>`.
-
-`String` values logically represent an immutable `char[]`, and can be converted to `ReadOnlySpan<char>`, but not `Span<char>`.
-
-```csharp
-public static long Sum(ReadOnlySpan<int> values) {
-    long sum = 0;
-    for (int i = 0; i < values.Length; i++) {
-        sum += values[i];
-    }
-    return sum;
-}
-
-// Good: An array overload, either an existing method
-// or one added concurrently
-public static long Sum(int[] values) {
-    if (values == null) {
-        throw new ArgumentNullException(nameof(values));
-    }
-    return Sum(values.AsSpan());
-}
-
-// Bad: This method suggests it writes to the parameter, but it only
-// reads. Writable spans are freely convertible to ReadOnlySpan.
-public static long Sum(Span<int> values) {
-    return Sum((ReadOnlySpan<int>)values);
-}
-```
-
 ## FDG9139
 
 AVOID returning a `Span<T>` or `ReadOnlySpan<T>` unless the lifetime of the returned Span is very clear.
@@ -248,28 +215,6 @@ Span<char> writableTrimmed = span[trimRange];
 
 You could solve the problem by providing an overload like `public static Span<char> Trim(Span<char> span)`, but then you should also create overloads for `ReadOnlyMemory<char>` and `Memory<char>`. By returning the `Range` you need to have only one method that works for all of these types, as well as any other types that have a `Range`-based indexer and can be converted to a `ReadOnlySpan<char>`.
 
-## FDG9144
-
-DO use `Memory<T>` in place of `Span<T>` in asynchronous methods.
-
-Asynchronous methods largely represent the idea of “doing work later.” Since the Span types can’t generally be stored as part of the state of pending work, the appropriate Memory type should be used instead.
-
-```csharp
-public partial class Stream {
-  public virtual int Read(Span<byte> buffer) { ... }
-
-  public virtual ValueTask<int> ReadAsync(
-    Memory<byte> buffer,
-    CancellationToken cancellationToken = default) { ... }
-
-  public virtual int Write(ReadOnlySpan<byte> buffer) { ... }
-
-  public virtual ValueTask<int> WriteAsync(
-    ReadOnlyMemory<byte> buffer,
-    CancellationToken cancellationToken = default) { ... }
-}
-```
-
 ## FDG9146
 
 DO use `Memory<T>` in place of `Span<T>` for parameters when the purpose of the constructor or method is to save a reference to the buffer.
@@ -286,46 +231,6 @@ public partial class JsonDocument {
     ReadOnlyMemory<byte> utf8Json,
     JsonDocumentOptions options = default) { ... }
 }
-```
-
-## FDG9147
-
-AVOID overloading a method across `Span<T>` and `ReadOnlySpan<T>`, or `Memory<T>` and `ReadOnlyMemory<T>`.
-
-If one method operates on a buffer in a read-only manner and another operates on it in a read-write manner, those methods should have different names to facilitate caller understanding on why the two methods behave differently.
-
-```csharp
-public static int Sum(ReadOnlySpan<int> values) { ... }
-
-// Why does this one need a writable Span?
-// It must do something different, so it needs a different name.
-public static void Sum(Span<int> values) { … }
-```
-
-One exception to this guidance is when returning a slice of the input data, where the method returns the input data type, such as a `TrimEnd` method. As noted in earlier guidance, this overload set can be reduced to a single method if the method returns the slice indices instead of the sliced buffer.
-
-```csharp
-public static ReadOnlySpan<char> TrimEnd(ReadOnlySpan<char> span) {...}
-public static Span<char> TrimEnd(Span<char> span) { ... }
-```
-
-## FDG9148
-
-AVOID overloading a method across `Span<T>` and `Memory<T>`, or `ReadOnlySpan<T>` and `ReadOnlyMemory<T>`.
-
-If one overload stores a reference to a buffer and the other operates on it without storing a reference, the methods should have different names.
-
-```csharp
-public static void ProcessText(Span<char> span) { ... }
-// What's the difference?
-public static void ProcessText(Memory<char> memory) { ... }
-```
-
-One exception to this guidance is when returning a slice of the input data, where the method returns the input data type, such as a `TrimEnd` method. As noted in earlier guidance, this overload set can be reduced to a single method if the method returns the slice indices instead of the sliced buffer.
-
-```csharp
-public static Span<char> TrimEnd(Span<char> span) { ... }
-public static Memory<char> TrimEnd(Memory<char> memory) { ... }
 ```
 
 ## FDG9149
@@ -419,76 +324,6 @@ public partial class RSA {
     RSASignaturePadding padding,
     out int bytesWritten) { ... }
 }
-```
-
-## FDG9157
-
-DO position the output buffer parameter (“destination”) as the first method parameter after the source parameter(s).
-
-Some methods—instance methods, in particular—may provide the source from ambient state; therefore, no formal source parameter is required. When a formal source parameter is required, it should be the first parameter, followed by the destination parameter, and then any other parameters.
-
-```csharp
-public partial class IncrementalHash {
-  // No source parameter is required,
-  // because the values were built by other instance methods.
-  public bool TryGetHashAndReset(
-    Span<byte> destination,
-    out int bytesWritten) { ... }
-}
-
-public partial class ByteOperations {
-  // One source, one destination
-  // (destination is read-write in this example).
-  public static int XorInto(
-    ReadOnlySpan<byte> source,
-    Span<byte> destination) { ... }
-
-  // Two source parameters, one destination.
-  // The source parameters come first.
-  public static int Xor(
-    ReadOnlySpan<byte> left,
-    ReadOnlySpan<byte> right,
-    Span<byte> destination) { ... }
-
-  // One source, one destination, one other parameter.
-  public static int CombineInto(
-    ReadOnlySpan<byte> source,
-    Span<byte> destination,
-    BitOperation operation) { ... }
-
-  // Two sources, one destination, one other parameter.
-  public static int Combine(
-    ReadOnlySpan<byte> left,
-    ReadOnlySpan<byte> right,
-    Span<byte> destination,
-    BitOperation operation) { ... }
-}
-
-public partial class AesGcm {
-  // Two (or three) inputs, two outputs.
-  public void Encrypt(
-    ReadOnlySpan<byte> nonce,
-    ReadOnlySpan<byte> plaintext,
-    Span<byte> ciphertext,
-    Span<byte> tag,
-    ReadOnlySpan<byte> associatedData = default) { ... }
-}
-```
-
-When a buffer-writing method accepts an array and an offset, the offset parameter should immediately follow the array it is associated with. This is one of the only reasons for inserting a parameter between the `source` and `destination` parameters.
-
-```csharp
-public static int XorInto(
-  ReadOnlySpan<byte> source,
-  Span<byte> destination) { ... }
-
-public static int XorInto(
-  byte[] source,
-  byte[] destination) { ... }
-
-public static int XorInto(
-  byte[] source, int sourceIndex,
-  byte[] destination, int destinationIndex) { ... }
 ```
 
 ## FDG9158

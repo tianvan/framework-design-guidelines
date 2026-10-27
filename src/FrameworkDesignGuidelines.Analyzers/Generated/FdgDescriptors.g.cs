@@ -1114,6 +1114,150 @@ internal static class FdgDescriptors
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9117.md");
 
+    public static readonly DiagnosticDescriptor FDG9130 = new DiagnosticDescriptor(
+        id: "FDG9130",
+        title: "DO prefer using `TimeSpan` to represent timeout time.",
+        messageFormat: "Represent the timeout '{0}' of '{1}' with TimeSpan rather than '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9130.md");
+
+    public static readonly DiagnosticDescriptor FDG9138 = new DiagnosticDescriptor(
+        id: "FDG9138",
+        title: "DO use `ReadOnlySpan<T>` instead of `Span<T>` where possible.",
+        messageFormat: "Declare the parameter '{0}' of '{1}' as ReadOnlySpan<{2}>; the method only reads it",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9138.md");
+
+    public static readonly DiagnosticDescriptor FDG9142 = new DiagnosticDescriptor(
+        id: "FDG9142",
+        title: "CONSIDER returning `System.Range` representing the bounds of a Span parameter, rather than a slice of the parameter.",
+        messageFormat: "Consider returning a Range for the bounds of the parameter '{0}' of '{1}' rather than a slice of it",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9142.md");
+
+    public static readonly DiagnosticDescriptor FDG9143 = new DiagnosticDescriptor(
+        id: "FDG9143",
+        title: "DO use `ReadOnlyMemory<T>` in place of `ReadOnlySpan<T>` in asynchronous methods.",
+        messageFormat: "Use ReadOnlyMemory<{0}> instead of ReadOnlySpan<{0}> for the parameter '{1}' of the asynchronous method '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9143.md");
+
+    public static readonly DiagnosticDescriptor FDG9144 = new DiagnosticDescriptor(
+        id: "FDG9144",
+        title: "DO use `Memory<T>` in place of `Span<T>` in asynchronous methods.",
+        messageFormat: "Use Memory<{0}> instead of Span<{0}> for the parameter '{1}' of the asynchronous method '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9144.md");
+
+    public static readonly DiagnosticDescriptor FDG9147 = new DiagnosticDescriptor(
+        id: "FDG9147",
+        title: "AVOID overloading a method across `Span<T>` and `ReadOnlySpan<T>`, or `Memory<T>` and `ReadOnlyMemory<T>`.",
+        messageFormat: "Give '{0}', which takes '{1}', a different name from its overload that takes '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9147.md");
+
+    public static readonly DiagnosticDescriptor FDG9148 = new DiagnosticDescriptor(
+        id: "FDG9148",
+        title: "AVOID overloading a method across `Span<T>` and `Memory<T>`, or `ReadOnlySpan<T>` and `ReadOnlyMemory<T>`.",
+        messageFormat: "Give '{0}', which takes '{1}', a different name from its overload that takes '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9148.md");
+
+    public static readonly DiagnosticDescriptor FDG9156 = new DiagnosticDescriptor(
+        id: "FDG9156",
+        title: "DO position the input buffer parameter (“source”) as the first method parameter, when there is an explicit input buffer parameter.",
+        messageFormat: "Make the input buffer '{0}' the first parameter of '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9156.md");
+
+    public static readonly DiagnosticDescriptor FDG9157 = new DiagnosticDescriptor(
+        id: "FDG9157",
+        title: "DO position the output buffer parameter (“destination”) as the first method parameter after the source parameter(s).",
+        messageFormat: "Move the output buffer '{0}' of '{1}' after the source parameter '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9157.md");
+
+    public static readonly DiagnosticDescriptor FDG9159 = new DiagnosticDescriptor(
+        id: "FDG9159",
+        title: "CONSIDER naming an `out` parameter that reports the number of values written by a buffer-writing method “bytesWritten,” “charsWritten,” or “valuesWritten” (as appropriate to the data type).",
+        messageFormat: "Name the out parameter '{0}' of '{1}' '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9159.md");
+
+    public static readonly DiagnosticDescriptor FDG9162 = new DiagnosticDescriptor(
+        id: "FDG9162",
+        title: "DO use the prefix “Try” and a Boolean return type for methods implementing the Try-Write Pattern.",
+        messageFormat: "Give the Try-Write method '{0}' the prefix Try and a Boolean return type",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9162.md");
+
+    public static readonly DiagnosticDescriptor FDG9163 = new DiagnosticDescriptor(
+        id: "FDG9163",
+        title: "DO report the number of values written by a Try-Write method via an `out` parameter.",
+        messageFormat: "Report the number of values written by the Try-Write method '{0}' through an out parameter",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9163.md");
+
+    public static readonly DiagnosticDescriptor FDG9171 = new DiagnosticDescriptor(
+        id: "FDG9171",
+        title: "DO report the number of input values successfully processed by an `OperationStatus` method via an `out` parameter.",
+        messageFormat: "Report the number of input values processed by '{0}' through an out parameter",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9171.md");
+
+    public static readonly DiagnosticDescriptor FDG9172 = new DiagnosticDescriptor(
+        id: "FDG9172",
+        title: "CONSIDER naming the `out` parameter that reports the number of values successfully processed by an `OperationStatus` method “bytesConsumed,” “charsConsumed,” or “valuesConsumed” (as appropriate to the data type).",
+        messageFormat: "Name the out parameter '{0}' of '{1}' '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9172.md");
+
+    public static readonly DiagnosticDescriptor FDG9173 = new DiagnosticDescriptor(
+        id: "FDG9173",
+        title: "DO report the number of output values successfully written by an `OperationStatus` method via an `out` parameter, declared after the out parameter that reports the number of input values that were successfully processed.",
+        messageFormat: "Report the number of values written by '{0}' through an out parameter declared after the one for the input",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9173.md");
+
+    public static readonly DiagnosticDescriptor FDG9174 = new DiagnosticDescriptor(
+        id: "FDG9174",
+        title: "DO include a Boolean parameter named “isFinalBlock,” if an `OperationStatus` method needs to treat the last input block in a special way. The parameter should be optional and have a default value of true.",
+        messageFormat: "Name the Boolean parameter '{0}' of '{1}' isFinalBlock, optional with a default value of true",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9174.md");
+
     public static readonly DiagnosticDescriptor FDGA003 = new DiagnosticDescriptor(
         id: "FDGA003",
         title: "DO place the closing brace on its own line, except the end of a `do`..`while` statement.",

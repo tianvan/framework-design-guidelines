@@ -13,9 +13,9 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 6 Designing for Extensibility | 22 | 0 | 2 | 20 | 0 | 22 |
 | 7 Exceptions | 70 | 20 | 10 | 40 | 0 | 70 |
 | 8 Usage Guidelines | 107 | 28 | 21 | 58 | 0 | 107 |
-| 9 Common Design Patterns | 175 | 14 | 34 | 127 | 0 | 123 |
+| 9 Common Design Patterns | 175 | 15 | 50 | 110 | 0 | 123 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 767 | 176 | 126 | 465 | 0 | 715 |
+| Total | 767 | 177 | 142 | 448 | 0 | 715 |
 
 ## Non-guideline content
 
@@ -185,6 +185,15 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 - **9.8.1** (background): The statement that contravariance is indicated with the in keyword in C# and the In modifier in VB.NET, with the invariant and contravariant delegate example, is background for FDG9111 to FDG9114.
 - **9.8.2** (background): The statement that covariance is indicated with the out keyword in C# and the Out modifier in VB.NET, with the invariant and covariant delegate example, is background for FDG9115 to FDG9119.
 - **9.8.3** (rationale): The description of the Simulated Covariance Pattern (a root interface without members that use T in contravariant positions, implemented explicitly by the generic type, with the Foo<T> and CountedReference<T> examples) is rationale for FDG9120 to FDG9123.
+- **9.9** (rationale): The description of the Template Method Pattern (an algorithm outlined in nonvirtual, usually public, members that call protected virtual members, with the SetBounds example), its goal of controlling extensibility (one virtual overload keeps the overloads consistent; a public virtual member gives up control over what happens when it is called) and the convention that the protected virtual members take the name of the nonvirtual member with the suffix Core are rationale for FDG9124 to FDG9128; FDG6013 reports public virtual members.
+- **9.10** (background): The introduction (a timeout returns an operation before its completion when the time allocated to it elapses; the user specifies it as a method parameter or as a property, with an example of each) is background for FDG9129 to FDG9132.
+- **9.11** (background): The introduction (XAML is an XML format used by WPF and other technologies to represent object graphs; the guidelines make types creatable by XAML readers) is background for FDG9133 to FDG9136.
+- **9.12** (rationale): The introduction (operations such as encoding, cryptography, serialization and escaping take an array and return a new array; the costs of copying part of an array or a string and of returning a precisely sized array; Span<T>, ReadOnlySpan<T>, Memory<T> and ReadOnlyMemory<T> as slices of arrays, stackalloc data, pointers and strings; the FromHexadecimal overload set) and the Barton annotation are rationale for FDG9137 to FDG9155; FDG9137 states the package requirement of the types.
+- **9.12.1** (rationale): The introduction (transformation operations take input as a parameter or from the instance and write output values; destination arrays avoid allocations at the cost of a complex signature; a Span slice keeps the signature simple; the three patterns of the following sections), the Kotas annotation, the double-and-retry caller and the OperationStatus loop are rationale for FDG9156 to FDG9159.
+- **9.12.2** (background): The introduction (the simplest buffer-writing method fits a fixed number of elements, as for a hash or a checksum, or one easily estimated from the input, as for Base64 text) and the Crc64 and TextTransforms examples are background for FDG9160.
+- **9.12.3** (rationale): The definition of the Try-Write Pattern (the prefix Try, a Boolean return that is false only when the destination is too small, an optional input buffer, an output buffer and an out parameter with the number of elements written), the IPAddress and BrotliEncoder examples and the grow-and-retry callers are rationale for FDG9161 to FDG9169; FDG9162 and FDG9163 check the shape of the pattern.
+- **9.12.4** (rationale): The description of OperationStatus methods (like Try-Write methods, but with partial input, partial output and a non-throwing report of invalid input), the OperationStatus values, the ToHexadecimal and FromHexadecimal examples and the meaning of NeedsMoreData and InvalidData for the consumed count are rationale for FDG9170 to FDG9175; FDG9171 to FDG9174 check the shape of the signature.
+- **9.13** (background): The closing of the chapter and of the book (creating a great framework is demanding but fulfilling; the authors would like to hear about it) contains no guideline and is background only.
 
 ### Appendix A: C# Coding Style Conventions
 

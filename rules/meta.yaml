@@ -483,6 +483,33 @@ chapters:
       - section: "9.8.3"
         disposition: rationale
         note: "The description of the Simulated Covariance Pattern (a root interface without members that use T in contravariant positions, implemented explicitly by the generic type, with the Foo<T> and CountedReference<T> examples) is rationale for FDG9120 to FDG9123."
+      - section: "9.9"
+        disposition: rationale
+        note: "The description of the Template Method Pattern (an algorithm outlined in nonvirtual, usually public, members that call protected virtual members, with the SetBounds example), its goal of controlling extensibility (one virtual overload keeps the overloads consistent; a public virtual member gives up control over what happens when it is called) and the convention that the protected virtual members take the name of the nonvirtual member with the suffix Core are rationale for FDG9124 to FDG9128; FDG6013 reports public virtual members."
+      - section: "9.10"
+        disposition: background
+        note: "The introduction (a timeout returns an operation before its completion when the time allocated to it elapses; the user specifies it as a method parameter or as a property, with an example of each) is background for FDG9129 to FDG9132."
+      - section: "9.11"
+        disposition: background
+        note: "The introduction (XAML is an XML format used by WPF and other technologies to represent object graphs; the guidelines make types creatable by XAML readers) is background for FDG9133 to FDG9136."
+      - section: "9.12"
+        disposition: rationale
+        note: "The introduction (operations such as encoding, cryptography, serialization and escaping take an array and return a new array; the costs of copying part of an array or a string and of returning a precisely sized array; Span<T>, ReadOnlySpan<T>, Memory<T> and ReadOnlyMemory<T> as slices of arrays, stackalloc data, pointers and strings; the FromHexadecimal overload set) and the Barton annotation are rationale for FDG9137 to FDG9155; FDG9137 states the package requirement of the types."
+      - section: "9.12.1"
+        disposition: rationale
+        note: "The introduction (transformation operations take input as a parameter or from the instance and write output values; destination arrays avoid allocations at the cost of a complex signature; a Span slice keeps the signature simple; the three patterns of the following sections), the Kotas annotation, the double-and-retry caller and the OperationStatus loop are rationale for FDG9156 to FDG9159."
+      - section: "9.12.2"
+        disposition: background
+        note: "The introduction (the simplest buffer-writing method fits a fixed number of elements, as for a hash or a checksum, or one easily estimated from the input, as for Base64 text) and the Crc64 and TextTransforms examples are background for FDG9160."
+      - section: "9.12.3"
+        disposition: rationale
+        note: "The definition of the Try-Write Pattern (the prefix Try, a Boolean return that is false only when the destination is too small, an optional input buffer, an output buffer and an out parameter with the number of elements written), the IPAddress and BrotliEncoder examples and the grow-and-retry callers are rationale for FDG9161 to FDG9169; FDG9162 and FDG9163 check the shape of the pattern."
+      - section: "9.12.4"
+        disposition: rationale
+        note: "The description of OperationStatus methods (like Try-Write methods, but with partial input, partial output and a non-throwing report of invalid input), the OperationStatus values, the ToHexadecimal and FromHexadecimal examples and the meaning of NeedsMoreData and InvalidData for the consumed count are rationale for FDG9170 to FDG9175; FDG9171 to FDG9174 check the shape of the signature."
+      - section: "9.13"
+        disposition: background
+        note: "The closing of the chapter and of the book (creating a great framework is demanding but fulfilling; the authors would like to hear about it) contains no guideline and is background only."
     references:
       - { file: ch09-patterns-aggregate-async, sections: ["9.1", "9.2", "9.3"] }
       - { file: ch09-patterns-dispose, sections: ["9.4"] }

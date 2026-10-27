@@ -3580,13 +3580,13 @@
   autofix: 'no'
   severity:
     library: warning
-    application: warning
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: as for FDG6013, the body moves the extensibility for subclasses outside the library into protected virtual members that a public member calls. Not mapped to an analyzer of its own: FDG6013 reports a virtual or abstract method, property, indexer or event declared public in an externally visible class, the case this rule avoids, and a rule maps only its own FDG diagnostic.'
 - id: FDG9125
   strength: CONSIDER
   text: using the Template Method Pattern to provide more controlled extensibility.
@@ -3605,13 +3605,13 @@
   autofix: 'no'
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the controlled extensibility is for subclasses outside the library (FDG9124). Not machine-checkable: whether an extensibility point should be a protected virtual member called from a nonvirtual one is a design choice. FDG6013 reports public virtual members. CA2214 (calls to virtual members from a constructor) is FDG5052''s and is not about this pattern.'
 - id: FDG9126
   strength: CONSIDER
   text: naming protected virtual members that provide extensibility points for nonvirtual members by suffixing the nonvirtual member name with “Core.”
@@ -3630,13 +3630,13 @@
   autofix: 'no'
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the protected virtual members are extensibility points for subclasses outside the library (FDG9124). Not an analyzer candidate: which nonvirtual member a protected virtual member is the extensibility point of is design, and the book''s own conventions name other protected virtual members that nonvirtual members call differently: Dispose(bool) of the Dispose Pattern (FDG9064) and the On<EventName> methods that raise events (FDG5059).'
 - id: FDG9127
   strength: DO
   text: perform argument and state validation in the nonvirtual member of the Template Method Pattern before calling the virtual member.
@@ -3659,7 +3659,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'The text has no body; the body of FDG9128 gives the reason for both. Not library only: that reason, bugs from argument validation that differs or is missing in a derived type, holds for class hierarchies in any code. Not machine-checkable: which checks are common to all implementations is what the arguments and states mean, and the validation can be in a called helper.'
 - id: FDG9128
   strength: DO
   text: only perform argument and state validation unique to the derived type in the virtual member of the Template Method Pattern. That is, do not repeat validation from the nonvirtual member.
@@ -3688,7 +3688,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not library only: see FDG9127. Not machine-checkable: whether a check in an override repeats one of the nonvirtual member, or restricts the arguments further as the body allows, depends on what the checks mean.'
 - id: FDG9129
   strength: DO
   text: prefer method parameters as the mechanism for users to provide timeout time.
@@ -3713,7 +3713,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: the body allows a timeout property for a type designed as a component used with visual designers, which is intent. FDG9130 reports integer timeout parameters and properties. CA2016 (forwarding a CancellationToken) is not mapped: the section is about timeout values, not cancellation tokens.'
 - id: FDG9130
   strength: DO
   text: prefer using `TimeSpan` to represent timeout time.
@@ -3740,10 +3740,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9130
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -3751,8 +3752,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Represent the timeout '{0}' of '{1}' with TimeSpan rather than '{2}'
+    category: Patterns
+  notes: FDG9130 reports an externally visible parameter (of a method, constructor, indexer or delegate) or property whose type is an integer type (sbyte, byte, short, ushort, int, uint, long or ulong) and whose name ends with the word Timeout (timeout, ReadTimeout), unless a word of the name is a unit of time (Milliseconds, Millisecond, Ms, Msec, Microseconds, Microsecond, Seconds, Second, Secs, Sec, Minutes, Minute, Mins, Hours, Hour, Days, Day, Ticks or Tick, as in millisecondsTimeout or TimeoutMs), the first case in which the body accepts integer timeouts. The second condition of the body, a commonly used value small enough to need no calculator, is not checked, so a timeout whose name gives its unit is never reported. Timeouts whose name does not end with Timeout, fields, and the parameters and properties of overrides and interface implementations, whose names and types come from another member, are not reported, so coverage is partial. Changing the type changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9131
   strength: DO
   text: throw `System.TimeoutException` when a timeout elapses.
@@ -3779,7 +3782,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: when a timeout elapses is runtime behavior. The body''s ArgumentOutOfRangeException for an unsupported timeout value and the cancellation of the underlying operation are not checked either.'
 - id: FDG9132
   strength: DO NOT
   text: return error codes to indicate timeout expiration.
@@ -3804,7 +3807,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether a return value reports that a timeout expired is what it means. FDG7001 is the general rule against error codes.'
 - id: FDG9133
   strength: CONSIDER
   text: providing the default constructor if you want a type to work with XAML.
@@ -3840,7 +3843,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether a type is meant to work with XAML is intent, and a markup extension (FDG9134) is the other way the body names. The Sells annotation would make the rule a DO; the mapping follows the text''s CONSIDER.'
 - id: FDG9134
   strength: DO
   text: provide markup extension if you want an immutable type to work with XAML readers.
@@ -3873,7 +3876,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether an immutable type is meant to be read by XAML readers is intent.'
 - id: FDG9135
   strength: AVOID
   text: defining new type converters unless the conversion is natural and intuitive. In general, limit type converter usage to the ones already provided by .NET.
@@ -3906,7 +3909,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: a class derived from TypeConverter can be found, but the text allows a new converter when the conversion is natural and intuitive, which is judgment.'
 - id: FDG9136
   strength: CONSIDER
   text: applying the `ContentPropertyAttribute` to enable convenient XAML syntax for the most commonly used property.
@@ -3939,7 +3942,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: which property is the most commonly used one is design.'
 - id: FDG9137
   strength: CONSIDER
   text: using Spans as a representation of buffers.
@@ -3970,7 +3973,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: which parameters are buffers is what they mean; a string or array parameter can also be a name, a path or a list. CA1832, CA1833, CA1845 and CA1846 are not mapped: they ask callers to use AsSpan, AsMemory or a span-based overload instead of a range indexer, Substring or string.Concat, which is usage at the call site, not the design of a buffer parameter that the body describes. Span<T>, ReadOnlySpan<T>, Memory<T> and ReadOnlyMemory<T> need .NET Core 2.1 or later, or the System.Memory package on .NET Framework and .NET Standard 2.0. No C# version beyond what the types need is required: a probe with SDK 10.0.402 compiled Span<T> and ReadOnlySpan<T> parameters and locals under LangVersion 7.0, so minLanguage is null for the rules of section 9.12.'
 - id: FDG9138
   strength: DO
   text: use `ReadOnlySpan<T>` instead of `Span<T>` where possible.
@@ -3987,10 +3990,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9138
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -3998,8 +4002,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Declare the parameter '{0}' of '{1}' as ReadOnlySpan<{2}>; the method only reads it
+    category: Patterns
+  notes: 'FDG9138 reports a Span<T> parameter passed by value to an externally visible method or constructor with a body when the body only reads it: every use is its Length or IsEmpty, an element read through the indexer, a conversion to ReadOnlySpan<T> (passing it to a ReadOnlySpan<T> parameter included), CopyTo, TryCopyTo, ToArray or ToString called on it, a read-only MemoryExtensions method called on it (Contains, IndexOf, LastIndexOf, IndexOfAny, LastIndexOfAny, SequenceEqual, SequenceCompareTo, StartsWith, EndsWith or BinarySearch), or a foreach without ref; a parameter that is not used at all is reported too. Any other use counts as a possible write and the parameter is not reported: assigning or incrementing an element or assigning the parameter, passing it as Span<T>, passing an element by reference or binding it to a ref local, Slice, a range, and a member access on an element when T is not a reference type. So coverage is partial. Virtual, abstract and extern methods, overrides and interface implementations are not reported, since their parameter types are a contract for other implementations. The book''s Sum(Span<int> values) is reported. Span<T> and Memory<T> types need .NET Core 2.1 or later, or the System.Memory package on .NET Framework and .NET Standard 2.0 (see FDG9137). Changing the parameter type changes the public signature, so the fix is breaking; there is no code fix.'
 - id: FDG9139
   strength: AVOID
   text: returning a `Span<T>` or `ReadOnlySpan<T>` unless the lifetime of the returned Span is very clear.
@@ -4042,7 +4048,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not an analyzer candidate: a returned slice of a field can be found, but the text allows a Span that came from a constructor parameter, fixed data (FDG9141) and, with very clear ownership documentation (FDG9140), a Span that did not come from the caller, so whether the lifetime is very clear is judgment. The C# compiler rejects returning a stackalloc Span from the method that allocates it (CS8352 in a probe with SDK 10.0.402), the flow analysis the annotation mentions.'
 - id: FDG9140
   strength: DO
   text: provide very clear documentation for the ownership rules on a Span that you return that did not come from the caller.
@@ -4069,7 +4075,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether documentation states the ownership rules very clearly is judgment.'
 - id: FDG9141
   strength: CONSIDER
   text: returning a `ReadOnlySpan<T>` from a get-only property or parameter-less method to represent fixed data, when `T` is an immutable type.
@@ -4103,7 +4109,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether data is fixed and T immutable is what they mean. The annotation describes a compiler optimization for a ReadOnlySpan<byte>, ReadOnlySpan<sbyte> or ReadOnlySpan<bool> member that returns a new array of constants; no diagnostic is about it. Span<T> and Memory<T> types need .NET Core 2.1 or later, or the System.Memory package on .NET Framework and .NET Standard 2.0 (see FDG9137).'
 - id: FDG9142
   strength: CONSIDER
   text: returning `System.Range` representing the bounds of a Span parameter, rather than a slice of the parameter.
@@ -4124,10 +4130,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9142
+    coverage: partial
+  autofix: breaking
   severity:
     library: suggestion
     application: suggestion
@@ -4135,8 +4142,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Consider returning a Range for the bounds of the parameter '{0}' of '{1}' rather than a slice of it
+    category: Patterns
+  notes: FDG9142 reports an externally visible method that returns ReadOnlySpan<T> or Span<T> and has a parameter of the same type when every return statement returns that parameter, sliced with Slice or a range indexer or whole, and at least one of them slices it, as the Trim example of the body does; the TrimEnd examples of FDG9139 and FDG9147, which the text uses to state other rules, are reported too. A slice made another way (a conditional, a new span over the parameter, a call that returns part of it), Memory parameters, overrides and interface implementations are not reported, so coverage is partial. System.Range needs .NET Core 3.0 or later (.NET Standard 2.1) and is not in the System.Memory package, so nothing is reported when the compilation has no System.Range type; callers index with a Range from C# 8.0 and use Range.GetOffsetAndLength before it. Changing the return type changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9143
   strength: DO
   text: use `ReadOnlyMemory<T>` in place of `ReadOnlySpan<T>` in asynchronous methods.
@@ -4147,10 +4156,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9143
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4158,8 +4168,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Use ReadOnlyMemory<{0}> instead of ReadOnlySpan<{0}> for the parameter '{1}' of the asynchronous method '{2}'
+    category: Patterns
+  notes: The text has no body; the body of FDG9144 gives the reason for both. FDG9143 reports a ReadOnlySpan<T> parameter of a method, of any accessibility, that returns a task-like type (as for FDG9020) or IAsyncEnumerable<T>. An async method cannot declare such a parameter (CS4012 in a probe with SDK 10.0.402), so the reports are on methods that return a task without the async keyword. Overrides and interface implementations are not reported, since their parameter types come from another member, and local functions, lambdas and delegate types are not checked, so coverage is partial. Span<T> and Memory<T> types need .NET Core 2.1 or later, or the System.Memory package on .NET Framework and .NET Standard 2.0 (see FDG9137). Changing the parameter type changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9144
   strength: DO
   text: use `Memory<T>` in place of `Span<T>` in asynchronous methods.
@@ -4174,10 +4186,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9144
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4185,8 +4198,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Use Memory<{0}> instead of Span<{0}> for the parameter '{1}' of the asynchronous method '{2}'
+    category: Patterns
+  notes: FDG9144 reports a Span<T> parameter of a method, of any accessibility, that returns a task-like type (as for FDG9020) or IAsyncEnumerable<T>. An async method cannot declare such a parameter (CS4012 in a probe with SDK 10.0.402), so the reports are on methods that return a task without the async keyword. Overrides and interface implementations are not reported, since their parameter types come from another member, and local functions, lambdas and delegate types are not checked, so coverage is partial. Span<T> and Memory<T> types need .NET Core 2.1 or later, or the System.Memory package on .NET Framework and .NET Standard 2.0 (see FDG9137). Changing the parameter type changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9145
   strength: DO
   text: use `ReadOnlyMemory<T>` in place of `ReadOnlySpan<T>` for parameters when the purpose of the constructor or method is to store a reference to the buffer.
@@ -4209,7 +4224,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'The text has no body; the body of FDG9146 gives the reason for both. Not machine-checkable: whether the purpose of a member is to store a reference to the buffer is intent. A ReadOnlySpan<T> can be stored only in a ref struct (a class field of a span type is CS8345 in a probe with SDK 10.0.402), whose constructor may keep it, as FDG9139 allows. Span<T> and Memory<T> types need .NET Core 2.1 or later, or the System.Memory package on .NET Framework and .NET Standard 2.0 (see FDG9137).'
 - id: FDG9146
   strength: DO
   text: use `Memory<T>` in place of `Span<T>` for parameters when the purpose of the constructor or method is to save a reference to the buffer.
@@ -4238,7 +4253,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether the purpose of a member is to save a reference to the buffer is intent. A Span<T> can be stored only in a ref struct (a class field of a span type is CS8345 in a probe with SDK 10.0.402), whose constructor may keep it, as FDG9139 allows. Span<T> and Memory<T> types need .NET Core 2.1 or later, or the System.Memory package on .NET Framework and .NET Standard 2.0 (see FDG9137).'
 - id: FDG9147
   strength: AVOID
   text: overloading a method across `Span<T>` and `ReadOnlySpan<T>`, or `Memory<T>` and `ReadOnlyMemory<T>`.
@@ -4266,10 +4281,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9147
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4277,8 +4293,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Give '{0}', which takes '{1}', a different name from its overload that takes '{2}'
+    category: Patterns
+  notes: 'FDG9147 reports an externally visible method that has an externally visible overload in the same type with the same number of parameters, the same ref kinds and the same parameter types, except that at one or more positions it takes Span<T> where the overload takes ReadOnlySpan<T>, or Memory<T> where the overload takes ReadOnlyMemory<T>, with the same T (type parameters of generic methods are compared by position). The report is on the read-write method, the one the body asks why it needs a writable buffer. The exception of the body is not reported: each method returns the type of its own differing parameter, as TrimEnd does when it returns a slice of its input. Overloads inherited from a base type, overrides, interface implementations and overloads that also differ in other parameters are not compared, so coverage is partial. Renaming changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG9148
   strength: AVOID
   text: overloading a method across `Span<T>` and `Memory<T>`, or `ReadOnlySpan<T>` and `ReadOnlyMemory<T>`.
@@ -4303,10 +4321,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9148
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4314,8 +4333,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Give '{0}', which takes '{1}', a different name from its overload that takes '{2}'
+    category: Patterns
+  notes: 'FDG9148 reports an externally visible method that has an externally visible overload in the same type with the same number of parameters, the same ref kinds and the same parameter types, except that at one or more positions it takes Memory<T> where the overload takes Span<T>, or ReadOnlyMemory<T> where the overload takes ReadOnlySpan<T>, with the same T (type parameters of generic methods are compared by position). The report is on the Memory method, the one that can store a reference to the buffer. The exception of the body is not reported: each method returns the type of its own differing parameter, as TrimEnd does when it returns a slice of its input. Overloads inherited from a base type, overrides, interface implementations and overloads that also differ in other parameters are not compared, so coverage is partial. Renaming changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG9149
   strength: CONSIDER
   text: adding Span- or Memory-based alternatives to methods that accept arrays or strings.
@@ -4334,19 +4355,20 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
+    kind: sdk
+    diagnostics:
+    - CA1844
+    coverage: partial
   autofix: 'no'
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the reason given is a greater number of callers, and an application changes its own callers (as for FDG9021). CA1844 reports a class derived from Stream that overrides the array-based ReadAsync or WriteAsync without overriding the Memory-based one (probe with SDK 10.0.402: reported when targeting net10.0, not net472, whose Stream has no Memory-based overloads; a Stream that overrides only Read and Write is not reported). That is one case of a missing Memory-based alternative; other methods that accept arrays or strings are not seen, and whether a string or array parameter is a buffer is what it means, so coverage is partial. CA1844 has no code fix; adding an override or an overload changes no existing signature. Span<T> and Memory<T> types need .NET Core 2.1 or later, or the System.Memory package on .NET Framework and .NET Standard 2.0 (see FDG9137).'
 - id: FDG9150
   strength: CONSIDER
   text: providing array-accepting alternatives for methods that accept Span or Memory values.
@@ -4363,13 +4385,13 @@
   autofix: 'no'
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'The text has no body; the body of FDG9151 gives the reason for both. Library only: the reason given is callers in other CLR languages and C# users who are not familiar with Spans, outside the library. Not an analyzer candidate: the body allows leaving out the alternatives for a low-level component meant only for Span- or Memory-based operations, which is intent.'
 - id: FDG9151
   strength: CONSIDER
   text: providing `System.String`-accepting alternatives for methods that accept `ReadOnlySpan<char>` or `ReadOnlyMemory<char>`.
@@ -4390,13 +4412,13 @@
   autofix: 'no'
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the reason given is callers in other CLR languages and C# users who are not familiar with Spans, outside the library. Not an analyzer candidate: the body allows leaving out the alternatives for a low-level component meant only for Span- or Memory-based operations, which is intent.'
 - id: FDG9152
   strength: CONSIDER
   text: providing an array-returning alternative to buffer-writing methods.
@@ -4421,13 +4443,13 @@
   autofix: 'no'
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the reason given is callers who would rather not manage buffers (novice developers, short-lived applications, one-time operations, prototypes). Not an analyzer candidate: the body allows leaving it out for a low-level component used only by other buffer-writing operations, which is intent.'
 - id: FDG9153
   strength: DO
   text: perform normal parameter validation in array or string alternatives to Span or Memory methods.
@@ -4456,7 +4478,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether null and empty mean the same for an alternative is the designer''s choice, which the body leaves open. CA1062 (FDG5108) is not mapped: in a probe with SDK 10.0.402 it did not report array alternatives that forward without a null check through values.AsSpan() or new ReadOnlySpan<int>(values, 1, 2), and it does not check offsets and counts. CA2265 (comparing a Span to null or default) is about Span values, not about the array or string alternative.'
 - id: FDG9154
   strength: DO
   text: prefer the name “source” for the input buffer parameter of methods that accept an output buffer and a single input buffer.
@@ -4479,7 +4501,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'The text has no body; the body of FDG9155 explains both. Not machine-checkable: the body keeps the existing name of the source parameter of a buffer-writing variant and allows a name that clarifies the role (data and hash in RSA), so which name is best is judgment. FDG9156 checks the position of a parameter named source.'
 - id: FDG9155
   strength: DO
   text: prefer the name “destination” for the output buffer parameter of methods that write to a single buffer.
@@ -4508,7 +4530,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: the body allows a name that clarifies the role of the parameter when destination would be confusing, which is judgment. FDG9157 checks the position of a parameter named destination.'
 - id: FDG9156
   strength: DO
   text: position the input buffer parameter (“source”) as the first method parameter, when there is an explicit input buffer parameter.
@@ -4519,10 +4541,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9156
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4530,8 +4553,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Make the input buffer '{0}' the first parameter of '{1}'
+    category: Patterns
+  notes: The text has no body; the body of FDG9157 explains both. FDG9156 reports a parameter named source of an input buffer type (ReadOnlySpan<T>, ReadOnlyMemory<T>, ReadOnlySequence<T>, an array, ArraySegment<T> or string) of an externally visible method when a parameter before it is an output buffer named destination (an array can be either) or is neither another input buffer of those types nor an int that immediately follows an array (the array's offset), so that several source parameters may come first, as in the Xor example. The this parameter of an extension method is not counted, as it stands for the instance of an instance method, which the body allows to provide the source. Input buffers with other names (left, nonce, plaintext), overrides and interface implementations are not checked, so coverage is partial. Reordering changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9157
   strength: DO
   text: position the output buffer parameter (“destination”) as the first method parameter after the source parameter(s).
@@ -4550,10 +4575,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9157
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4561,8 +4587,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Move the output buffer '{0}' of '{1}' after the source parameter '{2}'
+    category: Patterns
+  notes: 'FDG9157 reports a parameter named destination of an output buffer type (Span<T>, Memory<T>, an array or ArraySegment<T>) of an externally visible method when a parameter named source comes after it. Other parameters before destination are not reported: the source can be an input value of any type (the TryWriteGuid call of the FDG9169 example passes a Guid before the destination), which symbols cannot tell from the other parameters. The body''s request that an offset immediately follow its array is not checked, nor are outputs with other names (ciphertext, tag), overrides and interface implementations, so coverage is partial. Reordering changes the public signature, so the fix is breaking; there is no code fix.'
 - id: FDG9158
   strength: DO
   text: let the caller know the number of elements written into each destination buffer.
@@ -4591,7 +4619,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not an analyzer candidate: a buffer-writing method that returns void and has no out parameter can be found, but the body exempts a method that always fills the entire buffer (RandomNumberGenerator.Fill), which the signature does not show. FDG9163 and FDG9173 report Try-Write and OperationStatus methods without the out parameter.'
 - id: FDG9159
   strength: CONSIDER
   text: naming an `out` parameter that reports the number of values written by a buffer-writing method “bytesWritten,” “charsWritten,” or “valuesWritten” (as appropriate to the data type).
@@ -4606,10 +4634,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9159
+    coverage: partial
+  autofix: breaking
   severity:
     library: suggestion
     application: suggestion
@@ -4617,8 +4646,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Name the out parameter '{0}' of '{1}' '{2}'
+    category: Patterns
+  notes: 'FDG9159 reports the out parameter that reports the number of values written by an externally visible buffer-writing method when its name is not the one for the element type of the destination: bytesWritten for byte and sbyte, charsWritten for char, valuesWritten for any other type. The parameter is found in two shapes: the only out parameter of an integer type of a Try-Write method (named Try followed by an uppercase letter, returning bool, with a parameter named destination of type Span<T>, Memory<T>, an array or ArraySegment<T>), and the written one of exactly two such out parameters of a method that returns OperationStatus and has an output buffer (found as for FDG9173): the second, or the first when it ends with Written and the second with Consumed. A byte output buffer counted by charsWritten is not reported: the ToBase64 example of FDG9174 writes Base64 text to a Span<byte> and names the parameter so. Other buffer-writing methods, overrides and interface implementations are not checked, so coverage is partial. Renaming a public parameter breaks callers that pass it as a named argument, so the fix is breaking; there is no code fix.'
 - id: FDG9160
   strength: DO
   text: provide a simple buffer-writing method for operations that write a small, effectively fixed, number of elements to the destination buffer.
@@ -4647,7 +4678,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether the number of elements an operation writes is small and effectively fixed is what the operation does.'
 - id: FDG9161
   strength: DO
   text: use the Try-Write Pattern for buffer-writing methods that write variable amounts of data when the amount of data is small, or the operation cannot meaningfully produce partial results.
@@ -4674,7 +4705,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether the amount of data is variable and small, or whether the operation can meaningfully produce partial results, is what the operation does. FDG9162 and FDG9163 check the shape of Try-Write methods.'
 - id: FDG9162
   strength: DO
   text: use the prefix “Try” and a Boolean return type for methods implementing the Try-Write Pattern.
@@ -4685,10 +4716,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9162
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4696,8 +4728,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Give the Try-Write method '{0}' the prefix Try and a Boolean return type
+    category: Patterns
+  notes: The text has no body; the body of FDG9165 and the introduction of section 9.12.3 describe the pattern. FDG9162 reports an externally visible method with a parameter named destination of type Span<T>, Memory<T>, an array or ArraySegment<T> and an out parameter of an integer type whose name ends with Written, the shape of the Try-Write Pattern, when it returns bool but its name does not start with Try followed by an uppercase letter, or when its name starts so but it does not return bool. A method that returns OperationStatus has the same parameters in the pattern of section 9.12.4 and is not reported. Try-Write methods with other parameter names, overrides and interface implementations are not seen, so coverage is partial. Renaming or changing the return type changes the public API, so the fix is breaking; there is no code fix.
 - id: FDG9163
   strength: DO
   text: report the number of values written by a Try-Write method via an `out` parameter.
@@ -4708,10 +4742,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9163
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4719,8 +4754,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Report the number of values written by the Try-Write method '{0}' through an out parameter
+    category: Patterns
+  notes: The text has no body; the introduction of section 9.12.3 describes the pattern. FDG9163 reports an externally visible method named Try followed by an uppercase letter that returns bool and has a parameter named destination of type Span<T>, Memory<T>, an array or ArraySegment<T>, when it has no out parameter of an integer type. That includes Try-Write methods that write a fixed number of values, such as the shape of BinaryPrimitives.TryWriteUInt64LittleEndian, which the example of FDG9169 calls; the text asks every Try-Write method for the out parameter. Methods with another name for the output buffer, overrides and interface implementations are not checked, so coverage is partial. CA1021 (FDG5113) does not report the out parameter of a Try method that returns bool (probe with SDK 10.0.402). Adding a parameter changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9164
   strength: DO
   text: return `false` from a Try-Write method if, and only if, the destination is too small.
@@ -4743,7 +4780,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'The text has no body; the body of FDG9165 explains both. Not machine-checkable: when a method returns false is runtime behavior.'
 - id: FDG9165
   strength: DO
   text: throw an exception, instead of returning `false`, for any error other than the destination being too small in a Try-Write method.
@@ -4768,7 +4805,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not an analyzer candidate: a return of false after a check can be found, but whether the condition means that the destination is too small is what it means.'
 - id: FDG9166
   strength: DO
   text: provide a way of determining a sufficient output length if your Try-Write method can produce large results.
@@ -4799,7 +4836,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether a Try-Write method can produce large results, and whether a member predicts its output size (GetByteCount, GetMaxByteCount), is what the members mean.'
 - id: FDG9167
   strength: CONSIDER
   text: providing an API to compute a sufficient output buffer size for Try-Write methods, even when the output size is small.
@@ -4828,7 +4865,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether a member computes a sufficient output size for a Try-Write method is what it means.'
 - id: FDG9168
   strength: CONSIDER
   text: providing an exception-throwing alternative for each member using the Try-Write Pattern.
@@ -4859,13 +4896,13 @@
   autofix: 'no'
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the reason given is simpler code for callers that use pre-sized buffers, and an application changes its own callers (as for FDG9021). Not machine-checkable: whether a method is the exception-throwing alternative of a Try-Write method (WriteBytes for TryWriteBytes) is what it does.'
 - id: FDG9169
   strength: CONSIDER
   text: also using the Try-Write Pattern for methods that write fixed or predetermined amounts of data to a buffer.
@@ -4886,13 +4923,13 @@
   autofix: 'no'
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the reason given is callers that compose Try-Write methods, and an application changes its own callers (as for FDG9021). Not machine-checkable: whether a method writes a fixed or predetermined amount of data is what it does.'
 - id: FDG9170
   strength: CONSIDER
   text: using the `OperationStatus` method pattern for buffer- writing methods that can produce partial results.
@@ -4919,7 +4956,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Not machine-checkable: whether an operation can produce partial results is what it does. FDG9171 to FDG9174 check the shape of OperationStatus methods. System.Buffers.OperationStatus is in .NET Core 2.1 or later and in the System.Memory package (see FDG9137).'
 - id: FDG9171
   strength: DO
   text: report the number of input values successfully processed by an `OperationStatus` method via an `out` parameter.
@@ -4930,10 +4967,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9171
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4941,8 +4979,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Report the number of input values processed by '{0}' through an out parameter
+    category: Patterns
+  notes: The text has no body; the body of FDG9173 gives the expected signature. FDG9171 reports an externally visible method that returns System.Buffers.OperationStatus and has an input buffer (a parameter named source, or else the first one of type ReadOnlySpan<T>, ReadOnlyMemory<T>, ReadOnlySequence<T> or string) when it has no out parameter of an integer type, or only one, whose name ends with Written. A single out parameter with another name is taken to report the input and is not reported. Methods whose input is the state of the instance, overrides and interface implementations are not checked, so coverage is partial. CA1021 (FDG5113) reports the out parameters of an OperationStatus method (probe with SDK 10.0.402), a pattern that requires them. Adding a parameter changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9172
   strength: CONSIDER
   text: naming the `out` parameter that reports the number of values successfully processed by an `OperationStatus` method “bytesConsumed,” “charsConsumed,” or “valuesConsumed” (as appropriate to the data type).
@@ -4953,10 +4993,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9172
+    coverage: partial
+  autofix: breaking
   severity:
     library: suggestion
     application: suggestion
@@ -4964,8 +5005,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Name the out parameter '{0}' of '{1}' '{2}'
+    category: Patterns
+  notes: 'The text has no body; the body of FDG9173 gives the expected signature. FDG9172 reports the out parameter that reports the number of input values processed by an externally visible method that returns OperationStatus when its name is not the one for the element type of the input buffer (found as for FDG9171; a string has char elements): bytesConsumed for byte and sbyte, charsConsumed for char, valuesConsumed for any other type. The parameter is the first of exactly two out parameters of an integer type, or the second when the first ends with Written and the second with Consumed (the order FDG9173 reports). Methods with one or more than two such out parameters, methods without an input buffer, overrides and interface implementations are not checked, so coverage is partial. Renaming a public parameter breaks callers that pass it as a named argument, so the fix is breaking; there is no code fix.'
 - id: FDG9173
   strength: DO
   text: report the number of output values successfully written by an `OperationStatus` method via an `out` parameter, declared after the out parameter that reports the number of input values that were successfully processed.
@@ -4980,10 +5023,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9173
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -4991,8 +5035,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Report the number of values written by '{0}' through an out parameter declared after the one for the input
+    category: Patterns
+  notes: FDG9173 reports an externally visible method that returns OperationStatus and has an output buffer (a parameter named destination, or else the first one of type Span<T> or Memory<T>) when it has no out parameter of an integer type, when it has an input buffer (found as for FDG9171) and its only such out parameter ends with Consumed, or when an out parameter whose name ends with Written comes before one whose name ends with Consumed. Out parameters with other names cannot be told apart and are not reported, nor are methods that write to the state of the instance, overrides and interface implementations, so coverage is partial. Adding or moving a parameter changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9174
   strength: DO
   text: include a Boolean parameter named “isFinalBlock,” if an `OperationStatus` method needs to treat the last input block in a special way. The parameter should be optional and have a default value of true.
@@ -5007,10 +5053,11 @@
   status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: 'no'
+    kind: fdg
+    diagnostics:
+    - FDG9174
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -5018,8 +5065,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: null
+  analyzer:
+    message: Name the Boolean parameter '{0}' of '{1}' isFinalBlock, optional with a default value of true
+    category: Patterns
+  notes: FDG9174 reports a bool parameter of an externally visible method that returns OperationStatus when it is named isFinalBlock but is not optional with the default value true, or when a word of its name is Final or Last (ignoring case) and it is not named isFinalBlock, a parameter that marks the last input block under another name. Whether the method needs to treat the last block in a special way is not checked, so a method that needs the parameter and lacks it, or flags with other names, are not seen; overrides and interface implementations are not checked either, so coverage is partial. Renaming a parameter or changing its default value changes the public signature, so the fix is breaking; there is no code fix.
 - id: FDG9175
   strength: CONSIDER
   text: providing a Try-Write alternative to an `OperationStatus` method.
@@ -5050,10 +5099,10 @@
   autofix: 'no'
   severity:
     library: suggestion
-    application: suggestion
+    application: none
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: 'Library only: the reason given is callers in higher-level Try-Write methods that want a simpler signature, and an application changes its own callers (as for FDG9021). Not machine-checkable: whether a Try-Write method is the alternative of an OperationStatus method is what they do, and the body leaves it out for large results without an API to estimate the output length (FDG9166).'

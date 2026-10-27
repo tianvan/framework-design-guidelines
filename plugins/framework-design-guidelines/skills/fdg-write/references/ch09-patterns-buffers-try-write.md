@@ -7,8 +7,6 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 ## 9.12.3 Writing Values to Buffers with the Try-Write Pattern
 
 - **FDG9161** DO use the Try-Write Pattern for buffer-writing methods that write variable amounts of data when the amount of data is small, or the operation cannot meaningfully produce partial results. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9161
-- **FDG9162** DO use the prefix “Try” and a Boolean return type for methods implementing the Try-Write Pattern.
-- **FDG9163** DO report the number of values written by a Try-Write method via an `out` parameter.
 - **FDG9164** DO return `false` from a Try-Write method if, and only if, the destination is too small.
 - **FDG9165** DO throw an exception, instead of returning `false`, for any error other than the destination being too small in a Try-Write method. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9165
 - **FDG9166** DO provide a way of determining a sufficient output length if your Try-Write method can produce large results. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9166
@@ -19,8 +17,5 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 ## 9.12.4 Partial Writes to Buffers and OperationStatus
 
 - **FDG9170** CONSIDER using the `OperationStatus` method pattern for buffer- writing methods that can produce partial results. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9170
-- **FDG9171** DO report the number of input values successfully processed by an `OperationStatus` method via an `out` parameter.
 - **FDG9172** CONSIDER naming the `out` parameter that reports the number of values successfully processed by an `OperationStatus` method “bytesConsumed,” “charsConsumed,” or “valuesConsumed” (as appropriate to the data type).
-- **FDG9173** DO report the number of output values successfully written by an `OperationStatus` method via an `out` parameter, declared after the out parameter that reports the number of input values that were successfully processed. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9173
-- **FDG9174** DO include a Boolean parameter named “isFinalBlock,” if an `OperationStatus` method needs to treat the last input block in a special way. The parameter should be optional and have a default value of true. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9174
 - **FDG9175** CONSIDER providing a Try-Write alternative to an `OperationStatus` method. — examples: examples/ch09-patterns-buffers-try-write.md#fdg9175

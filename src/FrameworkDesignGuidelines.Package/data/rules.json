@@ -9616,7 +9616,7 @@
       "autofix": "no",
       "severity": {
         "library": "warning",
-        "application": "warning",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9630,7 +9630,7 @@
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9644,7 +9644,7 @@
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9696,8 +9696,10 @@
       "strength": "DO",
       "text": "prefer using `TimeSpan` to represent timeout time.",
       "section": "9.10 Timeouts",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9130"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -9808,8 +9810,10 @@
       "strength": "DO",
       "text": "use `ReadOnlySpan<T>` instead of `Span<T>` where possible.",
       "section": "9.12 Operating on Buffers",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9138"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -9864,8 +9868,10 @@
       "strength": "CONSIDER",
       "text": "returning `System.Range` representing the bounds of a Span parameter, rather than a slice of the parameter.",
       "section": "9.12 Operating on Buffers",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9142"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "suggestion",
         "application": "suggestion",
@@ -9878,8 +9884,10 @@
       "strength": "DO",
       "text": "use `ReadOnlyMemory<T>` in place of `ReadOnlySpan<T>` in asynchronous methods.",
       "section": "9.12 Operating on Buffers",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9143"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -9892,8 +9900,10 @@
       "strength": "DO",
       "text": "use `Memory<T>` in place of `Span<T>` in asynchronous methods.",
       "section": "9.12 Operating on Buffers",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9144"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -9934,8 +9944,10 @@
       "strength": "AVOID",
       "text": "overloading a method across `Span<T>` and `ReadOnlySpan<T>`, or `Memory<T>` and `ReadOnlyMemory<T>`.",
       "section": "9.12 Operating on Buffers",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9147"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -9948,8 +9960,10 @@
       "strength": "AVOID",
       "text": "overloading a method across `Span<T>` and `Memory<T>`, or `ReadOnlySpan<T>` and `ReadOnlyMemory<T>`.",
       "section": "9.12 Operating on Buffers",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9148"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -9962,11 +9976,13 @@
       "strength": "CONSIDER",
       "text": "adding Span- or Memory-based alternatives to methods that accept arrays or strings.",
       "section": "9.12 Operating on Buffers",
-      "diagnostics": [],
+      "diagnostics": [
+        "CA1844"
+      ],
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9980,7 +9996,7 @@
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -9994,7 +10010,7 @@
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -10008,7 +10024,7 @@
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -10060,8 +10076,10 @@
       "strength": "DO",
       "text": "position the input buffer parameter (“source”) as the first method parameter, when there is an explicit input buffer parameter.",
       "section": "9.12.1 Data Transformation Operations",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9156"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -10074,8 +10092,10 @@
       "strength": "DO",
       "text": "position the output buffer parameter (“destination”) as the first method parameter after the source parameter(s).",
       "section": "9.12.1 Data Transformation Operations",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9157"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -10102,8 +10122,10 @@
       "strength": "CONSIDER",
       "text": "naming an `out` parameter that reports the number of values written by a buffer-writing method “bytesWritten,” “charsWritten,” or “valuesWritten” (as appropriate to the data type).",
       "section": "9.12.1 Data Transformation Operations",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9159"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "suggestion",
         "application": "suggestion",
@@ -10144,8 +10166,10 @@
       "strength": "DO",
       "text": "use the prefix “Try” and a Boolean return type for methods implementing the Try-Write Pattern.",
       "section": "9.12.3 Writing Values to Buffers with the Try-Write Pattern",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9162"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -10158,8 +10182,10 @@
       "strength": "DO",
       "text": "report the number of values written by a Try-Write method via an `out` parameter.",
       "section": "9.12.3 Writing Values to Buffers with the Try-Write Pattern",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9163"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -10232,7 +10258,7 @@
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -10246,7 +10272,7 @@
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -10270,8 +10296,10 @@
       "strength": "DO",
       "text": "report the number of input values successfully processed by an `OperationStatus` method via an `out` parameter.",
       "section": "9.12.4 Partial Writes to Buffers and OperationStatus",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9171"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -10284,8 +10312,10 @@
       "strength": "CONSIDER",
       "text": "naming the `out` parameter that reports the number of values successfully processed by an `OperationStatus` method “bytesConsumed,” “charsConsumed,” or “valuesConsumed” (as appropriate to the data type).",
       "section": "9.12.4 Partial Writes to Buffers and OperationStatus",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9172"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "suggestion",
         "application": "suggestion",
@@ -10298,8 +10328,10 @@
       "strength": "DO",
       "text": "report the number of output values successfully written by an `OperationStatus` method via an `out` parameter, declared after the out parameter that reports the number of input values that were successfully processed.",
       "section": "9.12.4 Partial Writes to Buffers and OperationStatus",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9173"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -10312,8 +10344,10 @@
       "strength": "DO",
       "text": "include a Boolean parameter named “isFinalBlock,” if an `OperationStatus` method needs to treat the last input block in a special way. The parameter should be optional and have a default value of true.",
       "section": "9.12.4 Partial Writes to Buffers and OperationStatus",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG9174"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -10330,7 +10364,7 @@
       "autofix": "no",
       "severity": {
         "library": "suggestion",
-        "application": "suggestion",
+        "application": "none",
         "test": "none"
       },
       "naming": null
@@ -11534,6 +11568,7 @@
     "CA1815",
     "CA1816",
     "CA1819",
+    "CA1844",
     "CA1849",
     "CA2007",
     "CA2012",
@@ -11673,6 +11708,22 @@
     "FDG9115",
     "FDG9116",
     "FDG9117",
+    "FDG9130",
+    "FDG9138",
+    "FDG9142",
+    "FDG9143",
+    "FDG9144",
+    "FDG9147",
+    "FDG9148",
+    "FDG9156",
+    "FDG9157",
+    "FDG9159",
+    "FDG9162",
+    "FDG9163",
+    "FDG9171",
+    "FDG9172",
+    "FDG9173",
+    "FDG9174",
     "FDGA003",
     "FDGA004",
     "FDGA023",
@@ -11794,6 +11845,22 @@
     "FDG9115",
     "FDG9116",
     "FDG9117",
+    "FDG9130",
+    "FDG9138",
+    "FDG9142",
+    "FDG9143",
+    "FDG9144",
+    "FDG9147",
+    "FDG9148",
+    "FDG9156",
+    "FDG9157",
+    "FDG9159",
+    "FDG9162",
+    "FDG9163",
+    "FDG9171",
+    "FDG9172",
+    "FDG9173",
+    "FDG9174",
     "IDE0130",
     "IDE1006"
   ]

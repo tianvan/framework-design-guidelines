@@ -96,6 +96,19 @@ internal static class AnalyzerVerifier<TAnalyzer>
         return VerifyAsync(source, referenceAssemblies, languageVersion, [], extraSources);
     }
 
+    /// <summary>
+    /// Verifies one reference assembly set and language version only, with <paramref name="expected"/> on top of the
+    /// marked diagnostics.
+    /// </summary>
+    public static Task VerifyWithAsync(
+        string source,
+        ReferenceAssemblies referenceAssemblies,
+        LanguageVersion languageVersion,
+        params DiagnosticResult[] expected)
+    {
+        return VerifyAsync(source, referenceAssemblies, languageVersion, expected, []);
+    }
+
     private static Task VerifyAsync(
         string source,
         ReferenceAssemblies referenceAssemblies,

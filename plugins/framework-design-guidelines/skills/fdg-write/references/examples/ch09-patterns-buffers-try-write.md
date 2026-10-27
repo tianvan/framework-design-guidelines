@@ -182,49 +182,6 @@ private int Expand(ReadOnlySpan<byte> source, Stream destination){
 }
 ```
 
-## FDG9173
-
-DO report the number of output values successfully written by an `OperationStatus` method via an `out` parameter, declared after the out parameter that reports the number of input values that were successfully processed.
-
-Following the earlier guidance that the input buffer and output buffer should be the first and second parameters, respectively, an `OperationStatus` method should generally have a method signature like the following example to read a list of numbers:
-
-```csharp
-public static OperationStatus ReadInt32List(
-  ReadOnlySpan<char> source,
-  Span<int> destination,
-  out int charsConsumed,
-  out int valuesWritten) { ... }
-```
-
-## FDG9174
-
-DO include a Boolean parameter named “isFinalBlock,” if an `OperationStatus` method needs to treat the last input block in a special way. The parameter should be optional and have a default value of true.
-
-For example, `ToBase64` needs to know whether the source buffer represents the final segment of the data so it can determine if it needs to treat an incomplete segment as `NeedsMoreData` or if it should write the padding characters. This would result in something like the following:
-
-```csharp
-public static OperationStatus ToBase64(
-  ReadOnlySpan<byte> source,
-  Span<byte> destination,
-  out int bytesConsumed,
-  out int charsWritten,
-  bool isFinalBlock = true) {
-  ...
-  if (i < source.Length) {
-    if (j + 4 <= destination.Length) {
-      if (isFinalBlock) {
-        // write the padded final block
-        ...
-        return OperationStatus.Done;
-      }
-      return OperationStatus.NeedsMoreData;
-    }
-    return OperationStatus.DestinationTooSmall;
-  }
-  return OperationStatus.Done;
-}
-```
-
 ## FDG9175
 
 CONSIDER providing a Try-Write alternative to an `OperationStatus` method.
