@@ -221,13 +221,61 @@ public sealed class BufferSignatureTests
                     Span<byte> {|FDG9157:destination|},
                     ReadOnlySpan<byte> {|FDG9156:source|}) => 0;
 
-                public static int Write(int count, string {|FDG9156:source|}) => 0;
+                public static int Write(int count, string source) => 0;
+
+                public static int Pack(int count, ReadOnlySpan<byte> {|FDG9156:source|}) => 0;
 
                 public static int Copy(byte[] {|FDG9157:destination|}, int offset, byte[] {|FDG9156:source|}) => 0;
 
                 internal static int Hidden(Span<byte> destination, ReadOnlySpan<byte> source) => 0;
             }
             """);
+    }
+
+    [Fact]
+    public Task Sources_that_are_not_buffers_are_not_reported()
+    {
+        return BufferReferences.VerifyAsync<BufferSignatureAnalyzer>(
+            """
+            public enum TraceEventType
+            {
+                Error,
+                Information,
+            }
+
+            public static class Diagnostics
+            {
+                public static void Trace(TraceEventType eventType, string source, string message) { }
+
+                public static void Log(int level, string source) { }
+
+                public static void CopyFile(bool overwrite, string source, string destination) { }
+
+                public static void Shuffle<T>(System.Random random, T[] source) { }
+
+                public static int Fill(int count, string {|FDG9156:source|}, char[] buffer) => 0;
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Overloads_are_reported_once_against_the_first_match()
+    {
+        return BufferReferences.VerifyAsync<BufferSignatureAnalyzer>(
+            """
+            using System;
+
+            public static class Api
+            {
+                public static void {|#0:F|}(Span<int> left, Span<byte> right) { }
+
+                public static void F(ReadOnlySpan<int> left, Span<byte> right) { }
+
+                public static void F(Span<int> left, ReadOnlySpan<byte> right) { }
+            }
+            """,
+            new DiagnosticResult(FdgDescriptors.FDG9147).WithLocation(0)
+                .WithArguments("Api.F", "Span<int>", "ReadOnlySpan<int>"));
     }
 
     [Fact]
@@ -308,7 +356,7 @@ public sealed class BufferSignatureTests
     }
 
     [Fact]
-    public Task Book_operation_status_methods_are_not_reported()
+    public Task Book_operation_status_methods_are_not_reported_except_the_ToBase64_count()
     {
         return BufferReferences.VerifyAsync<BufferSignatureAnalyzer>(
             """
@@ -332,7 +380,7 @@ public sealed class BufferSignatureTests
                     ReadOnlySpan<byte> source,
                     Span<byte> destination,
                     out int bytesConsumed,
-                    out int charsWritten,
+                    out int {|#0:charsWritten|},
                     bool isFinalBlock = true)
                 {
                     bytesConsumed = 0;
@@ -346,7 +394,9 @@ public sealed class BufferSignatureTests
                     return OperationStatus.Done;
                 }
             }
-            """);
+            """,
+            new DiagnosticResult(FdgDescriptors.FDG9159).WithLocation(0)
+                .WithArguments("charsWritten", "Lists.ToBase64", "bytesWritten"));
     }
 
     [Fact]
@@ -411,6 +461,17 @@ public sealed class BufferSignatureTests
                 {
                     valuesConsumed = 0;
                     valuesWritten = 0;
+                    return OperationStatus.Done;
+                }
+
+                public static OperationStatus FromUtf8(
+                    ReadOnlySpan<byte> source,
+                    Span<char> destination,
+                    out int {|FDG9172:charsConsumed|},
+                    out int charsWritten)
+                {
+                    charsConsumed = 0;
+                    charsWritten = 0;
                     return OperationStatus.Done;
                 }
 

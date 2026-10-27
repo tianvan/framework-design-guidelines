@@ -11,10 +11,11 @@ namespace FrameworkDesignGuidelines.Analyzers.Patterns;
 /// FDG9138 and FDG9142 (section 9.12), what a method does with a span parameter. FDG9138 reports a
 /// <c>Span&lt;T&gt;</c> parameter passed by value to an externally visible method or constructor with a body that
 /// only reads it (see <see cref="IsRead"/>); virtual, abstract and extern methods, overrides and interface
-/// implementations keep their parameter types as a contract. FDG9142 reports an externally visible method that
-/// returns <c>ReadOnlySpan&lt;T&gt;</c> or <c>Span&lt;T&gt;</c> when every return statement returns the same
-/// parameter of that type, whole or sliced with Slice or a range indexer, and at least one slices it; nothing is
-/// reported when the compilation has no <c>System.Range</c> to return instead.
+/// implementations keep their parameter types as a contract, and a method whose body only throws (a stub that keeps
+/// the signature of the implementation on other targets) is not reported. FDG9142 reports an externally visible
+/// method that returns <c>ReadOnlySpan&lt;T&gt;</c> or <c>Span&lt;T&gt;</c> when every return statement returns the
+/// same parameter of that type, whole or sliced with Slice or a range indexer, and at least one slices it; nothing
+/// is reported when the compilation has no <c>System.Range</c> to return instead.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class SpanParameterAnalyzer : DiagnosticAnalyzer
@@ -72,7 +73,7 @@ public sealed class SpanParameterAnalyzer : DiagnosticAnalyzer
         string owner = UsageSymbols.Display(method.ContainingType) + "."
             + (method.MethodKind == MethodKind.Constructor ? method.ContainingType.Name : method.Name);
         IOperation[] operations = context.OperationBlocks.SelectMany(block => block.DescendantsAndSelf()).ToArray();
-        if (!method.IsVirtual && !method.IsAbstract && !method.IsExtern)
+        if (!method.IsVirtual && !method.IsAbstract && !method.IsExtern && !IsThrowOnly(context.OperationBlocks))
         {
             AnalyzeReadOnly(context, method, operations, owner, types);
         }
@@ -115,7 +116,7 @@ public sealed class SpanParameterAnalyzer : DiagnosticAnalyzer
     /// <summary>
     /// True when a use of a span parameter only reads it: its Length or IsEmpty, an element read through the
     /// indexer, a conversion to <c>ReadOnlySpan&lt;T&gt;</c>, CopyTo, TryCopyTo, ToArray or ToString called on it, a
-    /// read-only MemoryExtensions method called on it, or a foreach without ref. Anything else may write.
+    /// read-only MemoryExtensions method called on it, a foreach without ref, or nameof. Anything else may write.
     /// </summary>
     private static bool IsRead(IOperation reference, bool returnsByRef, BufferTypes types)
     {
@@ -141,6 +142,8 @@ public sealed class SpanParameterAnalyzer : DiagnosticAnalyzer
                 return SymbolEqualityComparer.Default.Equals(
                         invocation.TargetMethod.ContainingType, types.MemoryExtensions)
                     && _readExtensions.Contains(invocation.TargetMethod.Name);
+            case INameOfOperation:
+                return true;
             case IForEachLoopOperation loop when loop.Collection == reference:
                 return !loop.Locals.Any(local => local.RefKind == RefKind.Ref);
             default:
@@ -166,6 +169,8 @@ public sealed class SpanParameterAnalyzer : DiagnosticAnalyzer
                 return false;
             case IReturnOperation:
                 return !returnsByRef;
+            case ITupleOperation tuple:
+                return !IsDeconstructionTarget(tuple);
             case IMemberReferenceOperation member when member.Instance == element:
                 return element.Type is { IsReferenceType: true };
             case IInvocationOperation invocation when invocation.Instance == element:
@@ -173,6 +178,55 @@ public sealed class SpanParameterAnalyzer : DiagnosticAnalyzer
             default:
                 return true;
         }
+    }
+
+    /// <summary>True when the tuple is the target of a deconstruction assignment, directly or nested.</summary>
+    private static bool IsDeconstructionTarget(ITupleOperation tuple)
+    {
+        IOperation current = tuple;
+        while (current.Parent is ITupleOperation outer)
+        {
+            current = outer;
+        }
+
+        return current.Parent is IDeconstructionAssignmentOperation assignment && assignment.Target == current;
+    }
+
+    /// <summary>
+    /// True when the body is only a throw: an expression body <c>=&gt; throw ...</c>, or a block whose only statement
+    /// is a throw.
+    /// </summary>
+    private static bool IsThrowOnly(ImmutableArray<IOperation> blocks)
+    {
+        IBlockOperation[] bodies = blocks
+            .Select(block => block switch
+            {
+                IMethodBodyOperation method => method.BlockBody ?? method.ExpressionBody,
+                IConstructorBodyOperation constructor => constructor.BlockBody ?? constructor.ExpressionBody,
+                IBlockOperation body => body,
+                _ => null,
+            })
+            .OfType<IBlockOperation>()
+            .ToArray();
+        return bodies.Length == 1
+            && bodies[0].Operations.Length == 1
+            && bodies[0].Operations[0] switch
+            {
+                IThrowOperation => true,
+                IExpressionStatementOperation { Operation: IThrowOperation } => true,
+                IReturnOperation { ReturnedValue: { } value } => Unwrap(value) is IThrowOperation,
+                _ => false,
+            };
+    }
+
+    private static IOperation Unwrap(IOperation operation)
+    {
+        while (operation is IConversionOperation conversion)
+        {
+            operation = conversion.Operand;
+        }
+
+        return operation;
     }
 
     private static void AnalyzeSlices(

@@ -831,3 +831,9 @@ diagnostic and the new analyzers are counted. There was no report to check.
   OperationStatus or a Try-Write method with a parameter named destination. The samples exercise these rules
   little, so the 0 reports say more about the absence of the shapes than about precision; the precision rests
   on the unit tests, which include the compliant examples of the book.
+- **Rerun after the cross-check and review.** FDG9130 accepts nanosecond and Millis unit words and reports a
+  positional record property once, FDG9138 counts a deconstruction target as a write and skips throw-only
+  bodies, FDG9156 checks a string or array source only when the method has an output buffer, and FDG9159 and
+  FDG9172 no longer exempt a byte buffer counted by chars (Ruling 37). Measured again for FDG9130, FDG9138,
+  FDG9156, FDG9159 and FDG9172 with the same samples and profiles: still 0 reports for each, so the table does
+  not change.

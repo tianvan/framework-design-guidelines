@@ -152,6 +152,17 @@ public sealed class SpanParameterTests
                     }
                 }
 
+                public static void TupleSwap(Span<int> values)
+                {
+                    (values[0], values[1]) = (values[1], values[0]);
+                }
+
+                public static void Nested(Span<int> values)
+                {
+                    int other;
+                    (other, (values[0], values[1])) = (1, (2, 3));
+                }
+
                 public static void Reassign(Span<int> values)
                 {
                     values = default;
@@ -197,6 +208,35 @@ public sealed class SpanParameterTests
                 internal static int Hidden(Span<int> values) => values.Length;
 
                 public static int Read(ReadOnlySpan<int> values) => values.Length;
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Throw_only_bodies_are_not_reported()
+    {
+        return BufferReferences.VerifyAsync<SpanParameterAnalyzer>(
+            """
+            using System;
+
+            public static class Stubs
+            {
+                public static int Read(Span<byte> buffer) => throw new PlatformNotSupportedException();
+
+                public static void Write(Span<byte> buffer)
+                {
+                    throw new PlatformNotSupportedException();
+                }
+
+                public static int Peek(Span<byte> {|FDG9138:buffer|})
+                {
+                    if (buffer.IsEmpty)
+                    {
+                        throw new ArgumentException("Empty.", nameof(buffer));
+                    }
+
+                    return buffer[0];
+                }
             }
             """);
     }

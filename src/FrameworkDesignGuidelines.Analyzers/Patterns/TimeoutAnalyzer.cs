@@ -9,16 +9,22 @@ namespace FrameworkDesignGuidelines.Analyzers.Patterns;
 /// <summary>
 /// FDG9130 (section 9.10), timeouts as TimeSpan. It reports an externally visible parameter (of a method,
 /// constructor, indexer or delegate) or property of an integer type whose name ends with the word Timeout, unless a
-/// word of the name is a unit of time (<c>millisecondsTimeout</c>, <c>TimeoutMs</c>). Fields are not checked, and
-/// overrides and interface implementations take their names and types from another member.
+/// word of the name is a unit of time (<c>millisecondsTimeout</c>, <c>msTimeout</c>); names such as
+/// <c>timeoutMs</c> do not end with Timeout and are never reported. Fields are not checked, overrides and interface
+/// implementations take their names and types from another member, and the positional property of a record is
+/// reported through its primary constructor parameter, at the same location.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class TimeoutAnalyzer : DiagnosticAnalyzer
 {
     private static readonly ImmutableHashSet<string> _units = ImmutableHashSet.Create(
         StringComparer.OrdinalIgnoreCase,
+        "Nanoseconds",
+        "Nanosecond",
+        "Ns",
         "Milliseconds",
         "Millisecond",
+        "Millis",
         "Ms",
         "Msec",
         "Microseconds",
@@ -54,7 +60,8 @@ public sealed class TimeoutAnalyzer : DiagnosticAnalyzer
         var property = (IPropertySymbol)context.Symbol;
         if (property.IsImplicitlyDeclared
             || !NamingSymbols.IsExternallyVisible(property)
-            || NamingSymbols.IsInherited(property))
+            || NamingSymbols.IsInherited(property)
+            || NamingSymbols.IsPositionalProperty(property))
         {
             return;
         }

@@ -31,6 +31,12 @@ public sealed class TimeoutTests
 
                 public void Poll(int timeoutMs) { }
 
+                public void Spin(long nanosecondsTimeout) { }
+
+                public void Ping(int msTimeout) { }
+
+                public void Idle(int secondsTimeout) { }
+
                 public void Retry(int timeoutInSeconds) { }
 
                 public void Send(int timeouts) { }
@@ -81,6 +87,15 @@ public sealed class TimeoutTests
             {
                 public override void Close(int timeout) { }
             }
+            """);
+    }
+
+    [Fact]
+    public Task Positional_record_parameters_are_reported_once()
+    {
+        return Verifier.VerifyLatestAsync(
+            """
+            public record Settings(int {|FDG9130:Timeout|});
             """);
     }
 

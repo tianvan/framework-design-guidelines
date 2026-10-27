@@ -233,7 +233,8 @@ public sealed class BufferSignatureAnalyzer : DiagnosticAnalyzer
     /// <summary>
     /// FDG9156: a parameter named source of an input buffer type after a parameter that is an output buffer named
     /// destination, or neither another input buffer nor an int that follows an array; the this parameter of an
-    /// extension method is not counted. FDG9157: a parameter named destination of an output buffer type before a
+    /// extension method is not counted. A string or array named source is checked only when the method also has an
+    /// output buffer. FDG9157: a parameter named destination of an output buffer type before a
     /// parameter named source.
     /// </summary>
     private static void AnalyzePositions(
@@ -256,6 +257,13 @@ public sealed class BufferSignatureAnalyzer : DiagnosticAnalyzer
         }
 
         IParameterSymbol source = parameters[sourceIndex];
+
+        // Without an output buffer, a string or array named source can be a name, a path or a collection.
+        bool isBuffer = buffers.IsReadOnlySpan(source.Type)
+            || buffers.IsReadOnlyMemory(source.Type)
+            || UsageSymbols.Is(source.Type, buffers.ReadOnlySequence)
+            || parameters.Any(parameter => !SymbolEqualityComparer.Default.Equals(parameter, source)
+                && buffers.IsOutput(parameter.Type));
         int start = method.IsExtensionMethod ? 1 : 0;
         bool misplaced = false;
         for (int i = start; i < sourceIndex; i++)
@@ -272,7 +280,10 @@ public sealed class BufferSignatureAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        if (misplaced && buffers.IsInput(source.Type) && NamingSymbols.SourceLocation(source) is { } location)
+        if (misplaced
+            && isBuffer
+            && buffers.IsInput(source.Type)
+            && NamingSymbols.SourceLocation(source) is { } location)
         {
             context.ReportDiagnostic(Diagnostic.Create(FdgDescriptors.FDG9156, location, source.Name, name));
         }
@@ -394,14 +405,12 @@ public sealed class BufferSignatureAnalyzer : DiagnosticAnalyzer
 
     /// <summary>
     /// Reports FDG9159 (for <paramref name="suffix"/> Written) or FDG9172 (for Consumed) when the out parameter is
-    /// not named <paramref name="expected"/>. A byte buffer may also count chars, as the book's ToBase64 does when it
-    /// writes UTF-8 text.
+    /// not named <paramref name="expected"/>.
     /// </summary>
     private static void ReportName(
         SymbolAnalysisContext context, IParameterSymbol parameter, string name, string expected, string suffix)
     {
-        bool isText = expected == "bytes" + suffix && parameter.Name == "chars" + suffix;
-        if (parameter.Name == expected || isText || NamingSymbols.SourceLocation(parameter) is not { } location)
+        if (parameter.Name == expected || NamingSymbols.SourceLocation(parameter) is not { } location)
         {
             return;
         }
