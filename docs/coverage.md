@@ -15,7 +15,8 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | 8 Usage Guidelines | 107 | 28 | 21 | 58 | 0 | 107 |
 | 9 Common Design Patterns | 175 | 15 | 50 | 110 | 0 | 175 |
 | A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
-| Total | 767 | 177 | 142 | 448 | 0 | 767 |
+| D Breaking Changes | 63 | 0 | 0 | 63 | 0 | 0 |
+| Total | 830 | 177 | 142 | 511 | 0 | 767 |
 
 ## Non-guideline content
 
@@ -198,3 +199,9 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 ### Appendix A: C# Coding Style Conventions
 
 - **A** (rationale): The appendix introduction says that, unlike the framework design guidelines, these coding style conventions "are not required and should be treated as a set of suggestions", because they have no direct effect on most users of a framework. This is why every appendix A rule has style: true, is enabled by the profiles, and can be overridden.
+
+### Appendix D: Breaking Changes
+
+- **D** (rationale): The appendix introduction says its content is "informative, not prescriptive": each kind of change gets the .NET BCL team's verdict (the check, cross and question icons, which become the strengths PERMITTED, NOT PERMITTED and CONTEXTUAL), and a library with a small audience may accept more breaking changes. It defines the four kinds of break (runtime, compilation, recompile, reflection) whose icons become each rule's context, and says the appendix covers public types and their public or protected members. This is why every appendix D rule is a judgment rule for the library profile only (application and test none).
+- **D.10** (background): The section introduction (simplification overloads add or drop parameters, alternative overloads change the type at a position; which breaks are possible depends on the kind) is background for FDGD035 and FDGD036.
+- **D.13** (background): A Final Note: the appendix is not exhaustive, and its general heuristic (changing an existing member probably breaks someone; adding new things probably does not) is background for FDGD001 to FDGD063.

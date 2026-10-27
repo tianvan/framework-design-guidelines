@@ -840,3 +840,9 @@ diagnostic and the new analyzers are counted. There was no report to check.
 - **Second rerun for FDG9156.** Beside a string or array source, only a Span<T> or Memory<T> parameter, or a
   non-params array or ArraySegment<T> named destination or with byte or char elements, counts as an output buffer
   (Ruling 40). Measured again with the same samples and profiles: still 0 reports, so the table does not change.
+
+## Appendix D mappings
+
+Appendix D (Breaking Changes, FDGD001 to FDGD063) maps no SDK diagnostic and adds no analyzer: all 63 rules are
+judgment rules about changes to a shipped public API, which only a comparison with a baseline can show. The
+PublicApiAnalyzers RS diagnostics are not mapped (design §8a). No new diagnostics, so nothing was measured.

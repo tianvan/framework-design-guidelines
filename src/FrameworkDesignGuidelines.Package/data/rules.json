@@ -11502,6 +11502,888 @@
         "test": "warning"
       },
       "naming": null
+    },
+    {
+      "id": "FDGD001",
+      "strength": "NOT PERMITTED",
+      "text": "Changing the Name of an Assembly",
+      "section": "D.1.1 Changing the Name of an Assembly",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD002",
+      "strength": "NOT PERMITTED",
+      "text": "Adding a Namespace That Conflicts with an Existing Type",
+      "section": "D.2.1 Adding a Namespace That Conflicts with an Existing Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD003",
+      "strength": "NOT PERMITTED",
+      "text": "Changing the Name or Casing of a Namespace",
+      "section": "D.3.1 Changing the Name or Casing of a Namespace",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD004",
+      "strength": "PERMITTED",
+      "text": "Moving a Type via [`TypeForwardedTo`]",
+      "section": "D.4.1 Moving a Type via [TypeForwardedTo]",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD005",
+      "strength": "NOT PERMITTED",
+      "text": "Moving a Type Without **[`TypeForwardedTo`]**",
+      "section": "D.4.2 Moving a Type Without [TypeForwardedTo]",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD006",
+      "strength": "NOT PERMITTED",
+      "text": "Removing Types",
+      "section": "D.5.1 Removing Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD007",
+      "strength": "NOT PERMITTED",
+      "text": "Sealing an Unsealed Type",
+      "section": "D.6.1 Sealing an Unsealed Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD008",
+      "strength": "PERMITTED",
+      "text": "Unsealing a Sealed Type",
+      "section": "D.6.2 Unsealing a Sealed Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD009",
+      "strength": "NOT PERMITTED",
+      "text": "Changing the Case of a Type Name",
+      "section": "D.6.3 Changing the Case of a Type Name",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD010",
+      "strength": "NOT PERMITTED",
+      "text": "Changing a Type Name",
+      "section": "D.6.4 Changing a Type Name",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD011",
+      "strength": "NOT PERMITTED",
+      "text": "Changing the Namespace for a Type",
+      "section": "D.6.5 Changing the Namespace for a Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD012",
+      "strength": "PERMITTED",
+      "text": "Adding `readonly` on a `struct`",
+      "section": "D.6.6 Adding readonly on a struct",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD013",
+      "strength": "NOT PERMITTED",
+      "text": "Removing `readonly` from a `struct`",
+      "section": "D.6.7 Removing readonly from a struct",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD014",
+      "strength": "NOT PERMITTED",
+      "text": "Adding a Base Interface to an Existing Interface",
+      "section": "D.6.8 Adding a Base Interface to an Existing Interface",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD015",
+      "strength": "NOT PERMITTED",
+      "text": "Adding the Second Declaration of a Generic Interface",
+      "section": "D.6.9 Adding the Second Declaration of a Generic Interface",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD016",
+      "strength": "NOT PERMITTED",
+      "text": "Changing a `class` to a `struct`",
+      "section": "D.6.10 Changing a class to a struct",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD017",
+      "strength": "NOT PERMITTED",
+      "text": "Changing a `struct` to a `class`",
+      "section": "D.6.11 Changing a struct to a class",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD018",
+      "strength": "NOT PERMITTED",
+      "text": "Changing a `struct` to a `ref struct`",
+      "section": "D.6.12 Changing a struct to a ref struct",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD019",
+      "strength": "PERMITTED",
+      "text": "Changing a `ref struct` to a (Non-`ref`) `struct`",
+      "section": "D.6.13 Changing a ref struct to a (Non-ref) struct",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD020",
+      "strength": "NOT PERMITTED",
+      "text": "Masking Base Members with `new`",
+      "section": "D.7.1 Masking Base Members with new",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD021",
+      "strength": "NOT PERMITTED",
+      "text": "Adding `abstract` Members",
+      "section": "D.7.2 Adding abstract Members",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD022",
+      "strength": "PERMITTED",
+      "text": "Adding Members to an Unsealed Type",
+      "section": "D.7.3 Adding Members to an Unsealed Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD023",
+      "strength": "PERMITTED",
+      "text": "Adding an `override` Member to an Unsealed Type",
+      "section": "D.7.4 Adding an override Member to an Unsealed Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD024",
+      "strength": "NOT PERMITTED",
+      "text": "Adding the First Reference Type Field to a `struct`",
+      "section": "D.7.5 Adding the First Reference Type Field to a struct",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD025",
+      "strength": "NOT PERMITTED",
+      "text": "Adding a Member to an Interface",
+      "section": "D.7.6 Adding a Member to an Interface",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD026",
+      "strength": "PERMITTED",
+      "text": "Moving Members to a Base Class",
+      "section": "D.8.1 Moving Members to a Base Class",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD027",
+      "strength": "NOT PERMITTED",
+      "text": "Moving Members to a Base Interface",
+      "section": "D.8.2 Moving Members to a Base Interface",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD028",
+      "strength": "NOT PERMITTED",
+      "text": "Moving Members to a Derived Type",
+      "section": "D.8.3 Moving Members to a Derived Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD029",
+      "strength": "NOT PERMITTED",
+      "text": "Removing a Finalizer from an Unsealed Type",
+      "section": "D.9.1 Removing a Finalizer from an Unsealed Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD030",
+      "strength": "PERMITTED",
+      "text": "Removing a Finalizer from a Sealed Type",
+      "section": "D.9.2 Removing a Finalizer from a Sealed Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD031",
+      "strength": "NOT PERMITTED",
+      "text": "Removing a Non-`override` Member",
+      "section": "D.9.3 Removing a Non-override Member",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD032",
+      "strength": "PERMITTED",
+      "text": "Removing an `override` of a `virtual` Member",
+      "section": "D.9.4 Removing an override of a virtual Member",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD033",
+      "strength": "NOT PERMITTED",
+      "text": "Removing an `override` of an `abstract` Member",
+      "section": "D.9.5 Removing an override of an abstract Member",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD034",
+      "strength": "CONTEXTUAL",
+      "text": "Removing or Renaming Private Fields on Serializable Types",
+      "section": "D.9.6 Removing or Renaming Private Fields on Serializable Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD035",
+      "strength": "PERMITTED",
+      "text": "Adding the First Overload of a Member",
+      "section": "D.10.1 Adding the First Overload of a Member",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD036",
+      "strength": "CONTEXTUAL",
+      "text": "Adding Alternative-Parameter Overloads for a Reference Type Parameter",
+      "section": "D.10.2 Adding Alternative-Parameter Overloads for a Reference Type Parameter",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD037",
+      "strength": "NOT PERMITTED",
+      "text": "Renaming a Method Parameter",
+      "section": "D.11.1 Renaming a Method Parameter",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD038",
+      "strength": "NOT PERMITTED",
+      "text": "Adding or Removing a Method Parameter",
+      "section": "D.11.2 Adding or Removing a Method Parameter",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD039",
+      "strength": "NOT PERMITTED",
+      "text": "Changing a Method Parameter Type",
+      "section": "D.11.3 Changing a Method Parameter Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD040",
+      "strength": "NOT PERMITTED",
+      "text": "Reordering Method Parameters of Differing Types",
+      "section": "D.11.4 Reordering Method Parameters of Differing Types",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD041",
+      "strength": "NOT PERMITTED",
+      "text": "Reordering Method Parameters of The Same Type",
+      "section": "D.11.5 Reordering Method Parameters of The Same Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD042",
+      "strength": "NOT PERMITTED",
+      "text": "Changing a Method Return Type",
+      "section": "D.11.6 Changing a Method Return Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD043",
+      "strength": "NOT PERMITTED",
+      "text": "Changing the Type of a Property",
+      "section": "D.11.7 Changing the Type of a Property",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD044",
+      "strength": "NOT PERMITTED",
+      "text": "Changing Member Visibility from `public` to Any Other Visibility",
+      "section": "D.11.8 Changing Member Visibility from public to Any Other Visibility",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD045",
+      "strength": "PERMITTED",
+      "text": "Changing Member Visibility from `protected` to `public`",
+      "section": "D.11.9 Changing Member Visibility from protected to public",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD046",
+      "strength": "NOT PERMITTED",
+      "text": "Changing a `virtual` (or `abstract`) Member from `protected` to `public`",
+      "section": "D.11.10 Changing a virtual (or abstract) Member from protected to public",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD047",
+      "strength": "NOT PERMITTED",
+      "text": "Adding or Removing the `static` Modifier",
+      "section": "D.11.11 Adding or Removing the static Modifier",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD048",
+      "strength": "NOT PERMITTED",
+      "text": "Changing to or from Passing a Parameter by Reference",
+      "section": "D.11.12 Changing to or from Passing a Parameter by Reference",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD049",
+      "strength": "NOT PERMITTED",
+      "text": "Changing By-Reference Parameter Styles",
+      "section": "D.11.13 Changing By-Reference Parameter Styles",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD050",
+      "strength": "PERMITTED",
+      "text": "Adding the `readonly` Modifier to a `struct` Method",
+      "section": "D.11.14 Adding the readonly Modifier to a struct Method",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD051",
+      "strength": "NOT PERMITTED",
+      "text": "Removing the `readonly` Modifier from a `struct` Method",
+      "section": "D.11.15 Removing the readonly Modifier from a struct Method",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD052",
+      "strength": "PERMITTED",
+      "text": "Changing a Parameter from Required to Optional",
+      "section": "D.11.16 Changing a Parameter from Required to Optional",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD053",
+      "strength": "CONTEXTUAL",
+      "text": "Changing a Parameter from Optional to Required",
+      "section": "D.11.17 Changing a Parameter from Optional to Required",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD054",
+      "strength": "NOT PERMITTED",
+      "text": "Changing the Default Value for an Optional Parameter",
+      "section": "D.11.18 Changing the Default Value for an Optional Parameter",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD055",
+      "strength": "NOT PERMITTED",
+      "text": "Changing the Value of a `const` Field",
+      "section": "D.11.19 Changing the Value of a const Field",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD056",
+      "strength": "PERMITTED",
+      "text": "Changing an `abstract` Member to `virtual`",
+      "section": "D.11.20 Changing an abstract Member to virtual",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD057",
+      "strength": "NOT PERMITTED",
+      "text": "Changing a `virtual` Member to `abstract`",
+      "section": "D.11.21 Changing a virtual Member to abstract",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD058",
+      "strength": "PERMITTED",
+      "text": "Changing a Non-`virtual` Member to `virtual`",
+      "section": "D.11.22 Changing a Non-virtual Member to virtual",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD059",
+      "strength": "PERMITTED",
+      "text": "Changing Runtime Error Exceptions to Usage Error Exceptions",
+      "section": "D.12.1 Changing Runtime Error Exceptions to Usage Error Exceptions",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD060",
+      "strength": "PERMITTED",
+      "text": "Changing Usage Error Exceptions to Functioning Behavior",
+      "section": "D.12.2 Changing Usage Error Exceptions to Functioning Behavior",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD061",
+      "strength": "CONTEXTUAL",
+      "text": "Changing the Type of Values Returned from a Method",
+      "section": "D.12.3 Changing the Type of Values Returned from a Method",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD062",
+      "strength": "NOT PERMITTED",
+      "text": "Throwing a New Type of Error Exception",
+      "section": "D.12.4 Throwing a New Type of Error Exception",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "warning",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
+    },
+    {
+      "id": "FDGD063",
+      "strength": "PERMITTED",
+      "text": "Throwing a New Type of Exception, Derived from an Existing Thrown Type",
+      "section": "D.12.5 Throwing a New Type of Exception, Derived from an Existing Thrown Type",
+      "diagnostics": [],
+      "autofix": "no",
+      "severity": {
+        "library": "suggestion",
+        "application": "none",
+        "test": "none"
+      },
+      "naming": null
     }
   ],
   "registeredDiagnostics": [

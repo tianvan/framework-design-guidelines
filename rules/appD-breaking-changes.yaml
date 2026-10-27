@@ -1,0 +1,1803 @@
+- id: FDGD001
+  strength: NOT PERMITTED
+  text: Changing the Name of an Assembly
+  context: runtime, compilation, recompile and reflection breaks
+  section: D.1.1 Changing the Name of an Assembly
+  anchor: secD_1_1
+  body:
+    - kind: paragraph
+      text: Changing the name of an assembly, while keeping the filename unchanged, will result in type load failures for any process that needs a type from your assembly. This failure can manifest in nonintuitive exceptions at runtime, such as a `FileNotFoundException`. If you change the assembly name and the filename, then you’ve created an entirely new assembly with a duplicate type hierarchy, and the runtime will continue to use the previous assembly unless some mechanism deleted the older file.
+    - kind: paragraph
+      text: The compile-time behavior for a user of your library after such a change depends on multiple factors, such as whether you maintained the filename, the mechanism by which the caller gets your updates, and the mechanism by which the final application gets your updates. It can range from a failure to compile due to an unresolvable reference, to producing the same nonfunctioning library, to producing a working output.
+    - kind: paragraph
+      text: Reflection loads of your type will fail if they use the assembly-qualified name. If something has already caused your assembly to be loaded into the process, then other reflection loads might succeed, but would fail to match an `AssemblyQualifiedName` after type resolution.
+    - kind: paragraph
+      text: The .NET BCL team generally considers changing an assembly name to be an unacceptable breaking change. An assembly rename can be effectively accomplished by producing one final version of the existing assembly that uses `[TypeForwardedTo]` to resolve the runtime and compile-time failures and ambiguities, but you should strongly prefer to maintain the existing name.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: An assembly rename can be done by shipping one final version of the old assembly that uses `[TypeForwardedTo]`, but keeping the existing name is strongly preferred. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD002
+  strength: NOT PERMITTED
+  text: Adding a Namespace That Conflicts with an Existing Type
+  context: compilation break
+  section: D.2.1 Adding a Namespace That Conflicts with an Existing Type
+  anchor: secD_2_1
+  body:
+    - kind: paragraph
+      text: In the .NET CLR, a namespace name is only used as a prefix to type names; namespaces aren’t runtime concepts. Adding a namespace that conflicts with an existing type (e.g., if a namespace named “System.Math” was created after the type `System.Math`) will result in a compile-time break for any libraries that can see both the type and the namespace, and that have a namespace-qualified reference to the type—with an error like `CS0434` (`The namespace 'NamespaceName1' in 'Assembly1' conflicts with the type 'TypeName1' in 'Assembly2'`).
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change. Following Framework Design Guidelines, namespaces should have a structured prefix like “[CompanyName].[ProductName].” Moreover, within a single product, the types and namespaces should be managed to avoid conflicts. Seek out a synonym for the existing type name to use as the new namespace name.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Callers that use a namespace-qualified reference to the type get `CS0434`. Use a synonym of the existing type name for the new namespace. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD003
+  strength: NOT PERMITTED
+  text: Changing the Name or Casing of a Namespace
+  context: compilation break
+  section: D.3.1 Changing the Name or Casing of a Namespace
+  anchor: secD_3_1
+  body:
+    - kind: paragraph
+      text: The .NET CLR considers the namespace to be part of the type name, and type names are case-sensitive. Changing the name of a namespace, including the casing of the name, is logically the same as deleting all of the types from that namespace and creating new, unrelated types in the new namespace. See section D.5.1 for the impact of removing a type.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: The same as removing every type in the namespace (FDGD006). PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD004
+  strength: PERMITTED
+  text: Moving a Type via [`TypeForwardedTo`]
+  context: reflection break
+  section: D.4.1 Moving a Type via [TypeForwardedTo]
+  anchor: secD_4_1
+  body:
+    - kind: paragraph
+      text: 'There are two flavors of forwarding a type: into an existing dependency and into a new dependency. Generally speaking, moving a type into an existing dependency does not create any problems, as all applications that use the origin library must already have the destination library.'
+    - kind: paragraph
+      text: Moving a type into a new library, or into an existing library that was not previously a dependency, can cause missing dependency problems depending on the update mechanisms involved. Package dependencies from systems like NuGet, as well as new versions of published shared runtimes, will usually handle the dependency adequately. Like all new dependencies, this type of change can cause the total copy size of a stand-alone application to increase.
+    - kind: paragraph
+      text: Reflection-based code can be affected because the assembly-qualified name of the type changes. While lookup methods such as `Type.GetType(...)` will find the `[TypeForwardedTo]`, post-match analysis on values like the `AssemblyQualifiedName` property of the `Type` object will fail.
+    - kind: paragraph
+      text: The .NET BCL team considers moving a type in this way to be an acceptable breaking change, when there’s a technical reason why it’s required.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Permitted when there is a technical reason for the move. Forwarding into a library that was not already a dependency can cause missing dependency problems, and `AssemblyQualifiedName` changes for reflection. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD005
+  strength: NOT PERMITTED
+  text: Moving a Type Without **[`TypeForwardedTo`]**
+  context: runtime, compilation and recompile breaks
+  section: D.4.2 Moving a Type Without [TypeForwardedTo]
+  anchor: secD_4_2
+  body:
+    - kind: paragraph
+      text: Because the assembly name is part of the type identity to the .NET CLR, moving a type without using `[TypeForwardedTo]` is logically the same as deleting the existing type and creating a new type with an identical namespace-qualified name in the new assembly. See section D.5.1 for information on the impact of removing types.
+    - kind: paragraph
+      text: If your callers have both the existing assembly and the new assembly as references for their library or executable, then no compile-time break will occur and the recompiled output will be restored to a working condition.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: The same as removing the type (FDGD006); callers that reference both the old and the new assembly still compile. Moving with `[TypeForwardedTo]` is FDGD004. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD006
+  strength: NOT PERMITTED
+  text: Removing Types
+  context: runtime and compilation breaks
+  section: D.5.1 Removing Types
+  anchor: secD_5_1
+  body:
+    - kind: paragraph
+      text: It should come as no surprise that removing a type is a runtime breaking change. The .NET CLR loads types on an as-needed basis, so an application can sometimes run to completion with no errors, depending on the data-driven execution flow. When the executing code gets “close enough” to needing the type you’ve deleted, then the CLR will attempt to resolve the type, fail, and throw a `TypeLoadException`. The exact definition of “close enough” is complex, but it typically means at the beginning of a method that invokes a static member from your type, has a local variable of your type, instantiates your type, or loads another type that has your type as a field, base class, or implemented interface. JIT inlining look-ahead and other preload runtime features can move “close enough” to an earlier point in program execution.
+    - kind: paragraph
+      text: As your type no longer exists, libraries and executables that reference your assembly will fail to compile if they used your type in any manner.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: The `TypeLoadException` comes only when execution gets close to the type, so it can surface late. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD007
+  strength: NOT PERMITTED
+  text: Sealing an Unsealed Type
+  context: runtime and compilation breaks
+  section: D.6.1 Sealing an Unsealed Type
+  anchor: secD_6_1
+  body:
+    - kind: paragraph
+      text: "Both the compilation break and the runtime break from sealing an unsealed type are dependent on someone having already inherited from the type you seal. Compilation will fail with error `CS0509` (`'class1' : cannot derive from sealed type 'class2'`), and any use of the type at runtime—including invoking static members—will result in a `System.TypeLoadException` with a message like “Could not load type … because the parent type is sealed.”"
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Breaks only code that already derives from the type: `CS0509` at compile time, `TypeLoadException` at run time. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.'
+- id: FDGD008
+  strength: PERMITTED
+  text: Unsealing a Sealed Type
+  context: reflection break
+  section: D.6.2 Unsealing a Sealed Type
+  anchor: secD_6_2
+  body:
+    - kind: paragraph
+      text: The only potentially breaking impact of unsealing a sealed type is in metadata such as `Type.IsSealed`. Reflection loads may misidentify your type or mishandle data based on that metadata.
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Only metadata such as `Type.IsSealed` changes. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD009
+  strength: NOT PERMITTED
+  text: Changing the Case of a Type Name
+  context: runtime, compilation, recompile and reflection breaks
+  section: D.6.3 Changing the Case of a Type Name
+  anchor: secD_6_3
+  body:
+    - kind: paragraph
+      text: The .NET CLR considers type names to be case-sensitive. Changing the casing of a type is therefore logically the same as removing the existing type and creating a new one with a similar-looking name. For information on the impact of removing a type, see section D.5.1.
+    - kind: paragraph
+      text: The compile-time behavior of your change depends on the language that the caller uses. Some languages, such as VB.NET, are case-insensitive, so recompiling will succeed and the output assembly will function. Case-sensitive languages, such as C#, will fail to compile.
+    - kind: paragraph
+      text: Reflection-loading your type will fail using the standard reflection loads, but reflection loads allow for a case-insensitive comparison, which will allow reflection to load your type. The case change you introduced will be reflected in `Type.Name` and other metadata with the type name in it, so reflection code may still react differently after your change.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: The same as removing the type (FDGD006). Callers in case-insensitive languages such as VB.NET still compile; C# callers do not. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD010
+  strength: NOT PERMITTED
+  text: Changing a Type Name
+  context: runtime and compilation breaks
+  section: D.6.4 Changing a Type Name
+  anchor: secD_6_4
+  body:
+    - kind: paragraph
+      text: The .NET CLR has no mechanism for a type rename, so changing the name is logically the same as creating a new type with similar members as the old type while removing the old type. For information on the impact of removing a type, see section D.5.1.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: The same as removing the type (FDGD006). PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD011
+  strength: NOT PERMITTED
+  text: Changing the Namespace for a Type
+  context: runtime, compilation, recompile and reflection breaks
+  section: D.6.5 Changing the Namespace for a Type
+  anchor: secD_6_5
+  body:
+    - kind: paragraph
+      text: Because the .NET CLR considers the namespace to be part of the name of a type, changing the namespace has the same effect as changing the name of the type. See section D.6.4 for information on the impact of changing a type name.
+    - kind: paragraph
+      text: Changing the namespace without changing the name of the type can result in a successful recompile of the assembly if the caller already has a `usingimport` statement for the destination namespace, unless the caller used a namespace-qualified type reference.
+    - kind: paragraph
+      text: Reflection will fail to find the type with a namespace-qualified name. If the type is found by the `Type.Name` value alone, then it may still be treated differently due to having a different namespace-qualified name.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: The same as renaming the type (FDGD010). A caller that already imports the new namespace may recompile, unless it used a namespace-qualified name. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD012
+  strength: PERMITTED
+  text: Adding `readonly` on a `struct`
+  context: recompile break
+  section: D.6.6 Adding readonly on a struct
+  anchor: secD_6_6
+  body:
+    - kind: paragraph
+      text: Adding the `readonly` modifier to a `struct` will instruct the compiler that no “defensive” copies are required when invoking members on a `readonly` field or a `struct` passed to a method as a `readonly ref` (`in`) parameter. Your callers only get the benefit after recompiling.
+    - kind: paragraph
+      text: The only risk of this change is that callers may experience a significant reduction in their code execution time after recompiling, which could uncover a latent race condition.
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Callers benefit only after they recompile; the only risk is that faster code exposes a latent race condition. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD013
+  strength: NOT PERMITTED
+  text: Removing `readonly` from a `struct`
+  context: runtime and recompile breaks
+  section: D.6.7 Removing readonly from a struct
+  anchor: secD_6_7
+  body:
+    - kind: paragraph
+      text: Like adding the `readonly` modifier, removing it only changes the behavior of the calling assembly after it is recompiled. If you remove the `readonly` modifier, then existing binaries with `readonly` fields of your type, or methods that accept your type as a `readonly ref` (`in`) parameter, will not be making the required copies of the `struct` value when invoking methods. Any mutation you perform in existing methods after removing the `readonly` modifier will be made visible to those callers until they recompile, which can lead to very difficult-to-diagnose bugs.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Existing binaries stop making defensive copies of the value, so mutations become visible to them until they recompile. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD014
+  strength: NOT PERMITTED
+  text: Adding a Base Interface to an Existing Interface
+  context: runtime and compilation breaks
+  section: D.6.8 Adding a Base Interface to an Existing Interface
+  anchor: secD_6_8
+  body:
+    - kind: paragraph
+      text: Adding a base interface will work when all classes implementing the existing interface would conform to the sub-interface via “duck typing.” If the type does not have a valid public member for one of the members on the base interface, that type will fail to initialize, with a `TypeLoadException` reporting that the missing member does not have an implementation. The `TypeLoadException` can still occur if you create the base interface as an exact copy of the existing interface whenever the implementing classes use explicit interface implementation.
+    - kind: paragraph
+      text: The same situations that result in a `TypeLoadException` from the runtime will cause compile-time breaks for the affected types.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Breaks implementers that lack a valid public member for a member of the new base interface, including explicit implementations even when the base interface copies the existing one. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD015
+  strength: NOT PERMITTED
+  text: Adding the Second Declaration of a Generic Interface
+  context: compilation break
+  section: D.6.9 Adding the Second Declaration of a Generic Interface
+  anchor: secD_6_9
+  body:
+    - kind: paragraph
+      text: When a type implements the same generic interface with different generic type arguments—such as `IEnumerable<string>` and `IEnumerable <int>`—the type is always ambiguous for generic method type inference based on that interface. Because generic inference is a compile-time language feature, this change does not have any runtime impact.
+    - kind: paragraph
+      text: "Users of your type may fail to compile with a variety of errors, depending on the specific call pattern. If they called a generic extension method, then the error may be `CS1061` (`error: 'Type' does not contain a definition for 'Method' and no accessible extension method …`). They will have to either use the specified generic invocation syntax (e.g., `val.Count<string>()`) or cast the expression (e.g., `((IEnumerable<string>)val).Count()`) to replace their previously functioning code."
+    - kind: paragraph
+      text: This change should be visible on the type you’re modifying, because any members on the duplicate generic interface that use the generic type parameter will need to be explicitly implemented due to their conflicting signature.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change. Since generic type inference is already impaired when the same generic interface was specified the second time, it’s generally not further breaking for the third declaration or beyond.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Example: implementing both `IEnumerable<string>` and `IEnumerable<int>` breaks generic type inference (`CS1061` on extension method calls). A third or later declaration is generally not further breaking. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.'
+- id: FDGD016
+  strength: NOT PERMITTED
+  text: Changing a `class` to a `struct`
+  context: runtime, compilation and recompile breaks
+  section: D.6.10 Changing a class to a struct
+  anchor: secD_6_10
+  body:
+    - kind: paragraph
+      text: Depending on how your type is used, the runtime failures from changing a `class` to a `struct` can vary. The most common failure is one in which the .NET CLR throws a `TypeLoadException` with a message like “Could not load type … due to value type mismatch.” Other failures can include a `MissingMethodException` if your type previously had a zero-argument constructor.
+    - kind: paragraph
+      text: Any caller that used your `class` as a generic type argument for a generic type parameter with the `class` restriction will experience a compile-time break, as will any callers that extended your type when it was a `class`. Otherwise, compilation will likely succeed and produce working output.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Breaks callers that pass the type to a `class`-constrained type parameter or derive from it; at run time a `TypeLoadException` or `MissingMethodException`. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD017
+  strength: NOT PERMITTED
+  text: Changing a `struct` to a `class`
+  context: runtime, compilation and recompile breaks
+  section: D.6.11 Changing a struct to a class
+  anchor: secD_6_11
+  body:
+    - kind: paragraph
+      text: Changing a `struct` to a `class` will generally result in the CLR throwing a `TypeLoadException` with a message like “Could not load type … due to value type mismatch.”
+    - kind: paragraph
+      text: Any caller that used your `struct` as a generic type argument for a generic type parameter with the `struct` restriction will experience a compile-time break. Likewise, any caller that used your `struct` directly, or indirectly as a field of another `struct`, as a generic type argument for a generic type parameter with the `unmanaged` restriction will encounter a compile-time break. Additionally, callers that initialized your `struct` through definite assignment will be broken at compile-time because reference types do not support definite assignment.
+    - kind: paragraph
+      text: After successfully recompiling, callers may find it difficult to debug away any `NullReferenceException` throws that result from their code changing from operating on the (valid) `default` instance of your type as a `struct` to the (invalid) `null` value for your type as a `class`.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Breaks `struct` and `unmanaged` constraints and definite assignment, and turns the `default` instance into `null`. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD018
+  strength: NOT PERMITTED
+  text: Changing a `struct` to a `ref struct`
+  context: runtime, compilation and reflection breaks
+  section: D.6.12 Changing a struct to a ref struct
+  anchor: secD_6_12
+  body:
+    - kind: paragraph
+      text: 'In .NET, `ref struct` types are very restricted: They cannot be used as generic type arguments, they cannot be used as the field of a type other than another `ref struct`, and they cannot be boxed. If your callers ever boxed the `struct` that you converted to a `ref struct`, then the CLR will throw an `InvalidProgramException`. If they used it as a generic type argument to a generic method, then the CLR will throw a `BadImageFormatException`. If they used it in an `async` method, in an iterator (`yield return`) method, as the type of a field of a `class` or (non-`ref`) `struct`, or as a generic type argument, then the CLR will throw a `TypeLoadException` stating that “A ByRef-like type cannot be used as the type for an instance field in a non-ByRef-like type.”'
+    - kind: paragraph
+      text: All of the scenarios that fail at runtime will result in a compile-time break for your callers.
+    - kind: paragraph
+      text: Reflection code that instantiates the `struct` will likely fail with an `InvalidProgramException`, due to boxing of the result. The `ByRe`f nature of the `struct` is visible to reflection, so reflection code may behave differently after your change.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: A `ref struct` cannot be boxed, be a type argument, be a field of a non-`ref` type, or be used in `async` methods and iterators; every such use breaks. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD019
+  strength: PERMITTED
+  text: Changing a `ref struct` to a (Non-`ref`) `struct`
+  context: null
+  section: D.6.13 Changing a ref struct to a (Non-ref) struct
+  anchor: secD_6_13
+  body:
+    - kind: paragraph
+      text: There are no compile or runtime changes from changing a `ref struct` to a “regular” `struct`. However, undoing the change later would be a breaking change, as described in section D.6.12.
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable change, but would warn you that it cannot be safely undone.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'It cannot be safely undone: changing back is FDGD018. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.'
+- id: FDGD020
+  strength: NOT PERMITTED
+  text: Masking Base Members with `new`
+  context: compilation and recompile breaks
+  section: D.7.1 Masking Base Members with new
+  anchor: secD_7_1
+  body:
+    - kind: paragraph
+      text: Existing binaries are unaffected when you use the `new` modifier to declare a member with the same name and parameter list as a member from a base class. If your new method has a compatible return type to the base member, then callers will successfully recompile. However, after recompiling, they will be calling your new method instead of the method from the base class—provided they have a static type reference to your type or a more derived type.
+    - kind: paragraph
+      text: If your return type is not compatible with the base member and the caller saved or operated on the member return value, the caller will experience a compile break from your change.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change, with the exception of `static` “Create” methods specializing their return type to avoid casting. If your method predated the base member and you are adding the `new` modifier to suppress the compiler warning, that is also acceptable. Otherwise, the .NET BCL team would recommend choosing a new name for your method.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Exceptions: `static` Create methods that specialize their return type to avoid casting, and adding `new` to suppress the warning on a method that predates the base member. Otherwise choose a new name. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.'
+- id: FDGD021
+  strength: NOT PERMITTED
+  text: Adding `abstract` Members
+  context: runtime and compilation breaks
+  section: D.7.2 Adding abstract Members
+  anchor: secD_7_2
+  body:
+    - kind: paragraph
+      text: If you add a new `abstract` member to a type, then any derived types that were not already declared as `abstract` will fail to initialize; a `TypeLoadException` will display a message indicating that the new member “does not have an implementation.”
+    - kind: paragraph
+      text: Non-`abstract` derived types will fail to compile due to not providing an implementation for the new member.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Breaks every derived type that is not `abstract`. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD022
+  strength: PERMITTED
+  text: Adding Members to an Unsealed Type
+  context: compilation break
+  section: D.7.3 Adding Members to an Unsealed Type
+  anchor: secD_7_3
+  body:
+    - kind: paragraph
+      text: Aside from adding new `abstract` members (section D.7.2), adding new members on an unsealed type—or a sealed type—has no runtime impact, even if a derived type already declared a member with the same name and a compatible parameter list.
+    - kind: paragraph
+      text: "At compile-time, any derived type that has already declared a member with the same name and a compatible parameter list will receive a compiler warning (`CS0108`: `'member1' hides inherited member 'member2'. Use the new keyword if hiding was intended.`). This is a compile-time break for callers that build with the “treat warnings as errors” option."
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable breaking change, unless the new member would knowingly conflict with a derived type in a confusing way.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Not permitted when the new member would knowingly conflict with a derived type in a confusing way. A derived type with a member of the same name and a compatible parameter list gets `CS0108`, which breaks builds that treat warnings as errors. Adding `abstract` members is FDGD021. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD023
+  strength: PERMITTED
+  text: Adding an `override` Member to an Unsealed Type
+  context: recompile break
+  section: D.7.4 Adding an override Member to an Unsealed Type
+  anchor: secD_7_4
+  body:
+    - kind: paragraph
+      text: Due to the way the Roslyn compiler—as of 2019—emits base member invocations, a derived type that calls the member you have overridden will skip past your `override` until it is recompiled to see that you have overridden the member. If your library is distributed via a package management system, such as NuGet, and uses multiple target frameworks, you may need to provide the `override` for every framework you target, even if the implementation is just to call the base member.
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable change. Nevertheless, we would caution you to consider what state your object might be in if your `override` member is skipped.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Derived types that call the base member skip the new override until they recompile, so consider the object's state if the override is skipped. A multi-targeted package may need the override in every target framework. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD024
+  strength: NOT PERMITTED
+  text: Adding the First Reference Type Field to a `struct`
+  context: runtime and compilation breaks
+  section: D.7.5 Adding the First Reference Type Field to a struct
+  anchor: secD_7_5
+  body:
+    - kind: paragraph
+      text: Adding a reference type field to a `struct` that previously lacked any direct or indirect reference type fields can cause some low-level operations to throw exceptions when they previously worked, because the reference type fields make the type unsafe for operations that treat the instance as raw bytes.
+    - kind: paragraph
+      text: Any callers that obtained a pointer to an instance of your `struct` with the fixed statement, or used your type as the generic type argument to a generic type parameter with the `unmanaged` constraint, will experience a compile-time break. The same compile-time breaks will arise with any `struct` that has your `struct`, directly or indirectly, as a field.
+    - kind: paragraph
+      text: Note that this same concern applies to a generic `struct` adding the first field based on a generic type parameter, unless the generic type parameter is constrained to be an unmanaged type.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Breaks callers that take a pointer with `fixed` or pass the type to an `unmanaged`-constrained type parameter, and every `struct` that contains it. It applies also to a generic `struct` whose first such field has a type-parameter type, unless that parameter is constrained to `unmanaged`. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD025
+  strength: NOT PERMITTED
+  text: Adding a Member to an Interface
+  context: runtime and compilation breaks
+  section: D.7.6 Adding a Member to an Interface
+  anchor: secD_7_6
+  body:
+    - kind: paragraph
+      text: If you add a new member to an interface, then any implementing types that do not already have a public compatible member will fail to initialize. The `TypeLoadException` will display a message indicating that the new member “does not have an implementation.”
+    - kind: paragraph
+      text: The same types that will fail to initialize at runtime will experience a compile-time break due to not conforming to the interface.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change. Theoretically, the Default Interface Methods language and runtime feature allows new members to be declared on an interface without the risk of a `TypeLoadException`. As of 2019, the .NET BCL team does not have enough experience with this feature to recommend its use as a general pattern.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Default interface methods could avoid the `TypeLoadException` in theory, but as of 2019 the .NET BCL team does not recommend them as a general pattern. See also FDG4025. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD026
+  strength: PERMITTED
+  text: Moving Members to a Base Class
+  context: null
+  section: D.8.1 Moving Members to a Base Class
+  anchor: secD_8_1
+  body:
+    - kind: paragraph
+      text: Moving a member to a base class is gracefully handled by the .NET CLR and is generally supported for both static and instance members in .NET languages.
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable change, but would warn you that it cannot be safely undone.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'It cannot be safely undone: moving the member back is FDGD028. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.'
+- id: FDGD027
+  strength: NOT PERMITTED
+  text: Moving Members to a Base Interface
+  context: runtime and compilation breaks
+  section: D.8.2 Moving Members to a Base Interface
+  anchor: secD_8_2
+  body:
+    - kind: paragraph
+      text: Unlike moving members to a base `class`, moving members to a base `interface` can result in both runtime and compile-time failures for types that explicitly implemented the interface member. At runtime, the type initialization will fail with a `MissingMethodException` due to having an implementation of a nonexistent interface method. At compile-time, the implementing type will fail with errors for explicitly implementing a member that does not exist on the interface as well as for not providing an implementation of an interface member.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Breaks types that implemented the member explicitly. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD028
+  strength: NOT PERMITTED
+  text: Moving Members to a Derived Type
+  context: runtime and compilation breaks
+  section: D.8.3 Moving Members to a Derived Type
+  anchor: secD_8_3
+  body:
+    - kind: paragraph
+      text: Unlike moving members to a base class, the .NET CLR does not gracefully handle the case of moving members to a derived type. For both runtime and compile-time consideration, moving a member to a derived type is logically the same as deleting the existing member and adding a new one on the derived type. See section D.9.3 for information on the impact of removing a member.
+    - kind: paragraph
+      text: Callers that have values statically typed as the receiving derived type will succeed after a recompile. In contrast, callers with only a base class reference—or an alternate derived type—will fail to compile due to the method not existing.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: The same as removing the member (FDGD031) for callers that hold only a base class reference or another derived type. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD029
+  strength: NOT PERMITTED
+  text: Removing a Finalizer from an Unsealed Type
+  context: runtime break
+  section: D.9.1 Removing a Finalizer from an Unsealed Type
+  anchor: secD_9_1
+  body:
+    - kind: paragraph
+      text: If an unsealed type has a finalizer implemented by calling `Dispose(false)`, any derived types may have been counting on the call to `Dispose(false)` for their own component of the finalization logic. Removing the finalizer from the base class will thus result in the derived type no longer running finalization logic.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change, unless the finalizer does not use the Basic Dispose Pattern or otherwise signal derived types.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Permitted when the finalizer does not use the Basic Dispose Pattern (`Dispose(false)`) or otherwise signal derived types. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD030
+  strength: PERMITTED
+  text: Removing a Finalizer from a Sealed Type
+  context: null
+  section: D.9.2 Removing a Finalizer from a Sealed Type
+  anchor: secD_9_2
+  body:
+    - kind: paragraph
+      text: 'Removing a finalizer from a sealed type does have indirectly observable effects: Instances of that type will be available to be cleaned up by faster sweeps of the garbage collector—ones that do not depend on the finalizer thread—even when not properly disposed of. There’s a risk that any disposable classes between `System.Object` and the sealed type may have had side effects from running in a finalizer (`Dispose(false)`); this risk can be assessed by the developer contemplating removing the finalizer.'
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Check whether a disposable class between `System.Object` and the sealed type relied on running in the finalizer (`Dispose(false)`). PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD031
+  strength: NOT PERMITTED
+  text: Removing a Non-`override` Member
+  context: runtime and compilation breaks
+  section: D.9.3 Removing a Non-override Member
+  anchor: secD_9_3
+  body:
+    - kind: paragraph
+      text: If you completely remove a member, then any existing callers will receive a `MissingMemberException` from the CLR when the executing code gets “close enough”—typically when entering the calling method for the first time—to the member invocation. Removing a property or method will result in a `MissingMethodException`, and removing a field will result in a `MissingFieldException`.
+    - kind: paragraph
+      text: Any callers will experience a compile-time failure due to accessing the missing member, except for methods where a compatible overload using optional parameters is already present.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Callers still compile only when a compatible overload with optional parameters already exists. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD032
+  strength: PERMITTED
+  text: Removing an `override` of a `virtual` Member
+  context: recompile break
+  section: D.9.4 Removing an override of a virtual Member
+  anchor: secD_9_4
+  body:
+    - kind: paragraph
+      text: There is no runtime observable difference between replacing an `override` member with only a call to the base member and deleting it entirely.
+    - kind: paragraph
+      text: The Roslyn C# compiler—as of 2019—encodes base member invocations to the level in the type hierarchy that last overrode it, so recompiling an assembly with a derived type that makes a base call to the member you deleted will now “remember” to skip your type. Adding the override back after you have removed it counts the same as adding an override fresh (see section D.7.4).
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable change, but would probably caution against it.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Recompiled derived types skip the type in base calls; adding the override back counts as FDGD023. The .NET BCL team would probably caution against it. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD033
+  strength: NOT PERMITTED
+  text: Removing an `override` of an `abstract` Member
+  context: runtime and compilation breaks
+  section: D.9.5 Removing an override of an abstract Member
+  anchor: secD_9_5
+  body:
+    - kind: paragraph
+      text: This item refers to removing the base-most override of an abstract member. If you are removing the override of an override, that counts as removing the override of a virtual member (see section D.9.4).
+    - kind: paragraph
+      text: The runtime behavior of this change depends on the overall class structure. If the member you removed was the only implementation for the member, then derived types will fail to initialize, and a `TypeLoadException` will indicate that the member does not have an implementation. If a derived type further overrode your method, but called yours via a base invocation, then the CLR will throw a `BadImageFormatException` when execution gets “close enough” to the override method. Finally, if a derived type overrode the method and didn’t call yours via a base invocation, everything works for that type.
+    - kind: paragraph
+      text: Compilation-time failures will occur for any type that doesn’t override the member you deleted, without invoking yours via a base invocation. Either the compiler will report that the derived type does not implement an abstract member, or it will indicate that it is performing a base invocation to a member that does not exist.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Applies to the base-most override of an `abstract` member; removing an override of an override is FDGD032. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD034
+  strength: CONTEXTUAL
+  text: Removing or Renaming Private Fields on Serializable Types
+  context: runtime break
+  section: D.9.6 Removing or Renaming Private Fields on Serializable Types
+  anchor: secD_9_6
+  body:
+    - kind: paragraph
+      text: Some serializers in .NET, such as the legacy `BinaryFormatter`, use reflection techniques to serialize both private and public data about a type. Renaming fields, including private fields, with this type of serializer will result in your older payloads not properly deserializing.
+    - kind: paragraph
+      text: When making serializable types, be aware of what data gets serialized. If private data is serialized, you should understand how to make previous payloads compatible before adding, removing, renaming, or changing the semantic meaning of any private state.
+    - kind: paragraph
+      text: The Framework Design Guidelines encourage you to only serialize types purpose-built to be serialized.
+    - kind: paragraph
+      text: The .NET BCL team generally does not support serialization of BCL types. For the types where serialization is explicitly supported, the serialization breaks must be resolved along with structural changes to the type—which, in practice, means no structural changes happen to serializable types.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not permitted when a serializer that reads private state (such as `BinaryFormatter`) serializes the type: renaming or removing private fields breaks old payloads. Serialize only types built for serialization; the .NET BCL team makes no structural changes to its serializable types. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.'
+- id: FDGD035
+  strength: PERMITTED
+  text: Adding the First Overload of a Member
+  context: compilation and reflection breaks
+  section: D.10.1 Adding the First Overload of a Member
+  anchor: secD_10_1
+  body:
+    - kind: paragraph
+      text: Reflection has accelerators, such as `Type.GetMethod(string)`, that only succeed when overloading is not being used for a member. When you add the first overload (that is, the second member with the same name), these reflection methods will start to throw an `AmbiguousMatchException`.
+    - kind: paragraph
+      text: If your first overload is an alternative overload, then callers that pass `default` will fail at compile-time for having an ambiguous method invocation.
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable breaking change, unless `default` is a sensible value for your existing method and there is a reasonable expectation of callers specifying it at the call site.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Reflection lookups such as `Type.GetMethod(string)` start throwing `AmbiguousMatchException`, and an alternative overload makes calls that pass `default` ambiguous. Not permitted when `default` is a sensible argument that callers can be expected to pass. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD036
+  strength: CONTEXTUAL
+  text: Adding Alternative-Parameter Overloads for a Reference Type Parameter
+  context: compilation break
+  section: D.10.2 Adding Alternative-Parameter Overloads for a Reference Type Parameter
+  anchor: secD_10_2
+  body:
+    - kind: paragraph
+      text: When two different overloads accept reference types, the `null` (or `default`) literal value is ambiguous across the two members. If the existing member throws an `ArgumentNullException` when the varied parameter is `null`, then the .NET BCL team considers it an acceptable breaking change to introduce a compile-time break for those callers that pass `null`. However, if the `null` value is accepted by the member, then overloading is only an acceptable change if some other portion of the parameter list forces uniqueness to remove the ambiguity of a `null` literal.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Permitted if the existing member throws `ArgumentNullException` when the varied parameter is `null`. If it accepts `null`, permitted only when another part of the parameter list removes the ambiguity of a `null` literal. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD037
+  strength: NOT PERMITTED
+  text: Renaming a Method Parameter
+  context: compilation break
+  section: D.11.1 Renaming a Method Parameter
+  anchor: secD_11_1
+  body:
+    - kind: paragraph
+      text: Renaming a method parameter can cause a compile-time break in languages, such as C#, that permit calling methods with named arguments.
+    - kind: paragraph
+      text: Most callers don’t specify named parameter syntax for required parameters, so the risk of introducing a break is minimal; however, the benefit of renaming the parameter is slight. The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Breaks only callers that use named arguments, but the benefit of a rename is slight. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD038
+  strength: NOT PERMITTED
+  text: Adding or Removing a Method Parameter
+  context: runtime and compilation breaks
+  section: D.11.2 Adding or Removing a Method Parameter
+  anchor: secD_11_2
+  body:
+    - kind: paragraph
+      text: Methods in the .NET CLR are identified by their signature, which is composed of the name, return type, and ordered list of parameters. Removing a parameter, adding a required parameter, or adding an optional parameter all count as changing the signature and, therefore, are logically the same as deleting the original method. See section D.9.3 for information on the runtime impact of removing a member.
+    - kind: paragraph
+      text: Adding an optional parameter will not cause a compilation break, but adding a required parameter will. Removing an optional parameter will not cause a compilation break unless a caller specified it, but removing a required parameter will cause such a break unless a compatible overload with optional parameters is already available.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change, and would recommend adding overloads as the safer alternative to this type of change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Add an overload instead. An added optional parameter does not break compilation; a removed required parameter does, unless a compatible overload with optional parameters exists. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD039
+  strength: NOT PERMITTED
+  text: Changing a Method Parameter Type
+  context: runtime, compilation and reflection breaks
+  section: D.11.3 Changing a Method Parameter Type
+  anchor: secD_11_3
+  body:
+    - kind: paragraph
+      text: Methods in the .NET CLR are identified by their signature, which is composed of the name, return type, and ordered list of parameters. Changing a parameter type is logically the same as deleting the original method. See section D.9.3 for information on the runtime impact of removing a member.
+    - kind: paragraph
+      text: Recompilation will fail if the parameter uses the `ref`, `out`, or `in` calling convention, unless there is an overload with optional parameters that is compatible. For simple parameters, recompilation will generally succeed if you changed to a less derived type, or a type that is implicitly convertible from the previous type.
+    - kind: paragraph
+      text: Reflection will be broken when finding a method by signature. Reflection invocation will generally succeed if you changed the parameter to a less derived type, but will fail and throw an `ArgumentException` if a user-defined implicit conversion operator is required to convert the provided value to the new parameter type.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change, and would recommend method-adding overloads as a safer alternative to this type of change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Add an overload instead. Callers may recompile after a change to a less derived or implicitly convertible type, but not for `ref`, `out` or `in` parameters. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD040
+  strength: NOT PERMITTED
+  text: Reordering Method Parameters of Differing Types
+  context: runtime, compilation and reflection breaks
+  section: D.11.4 Reordering Method Parameters of Differing Types
+  anchor: secD_11_4
+  body:
+    - kind: paragraph
+      text: At runtime, reordering method parameters is just a special case of changing a method parameter type. See section D.11.3 for more information.
+    - kind: paragraph
+      text: Callers using the named parameter syntax will not be broken during compilation, but callers using positional syntax will.
+    - kind: paragraph
+      text: Reflection will be broken, via an `ArgumentException`, if it’s being used to invoke the method after finding it by name, or will fail to find the method by signature.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Callers that use named arguments still compile; positional callers do not. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD041
+  strength: NOT PERMITTED
+  text: Reordering Method Parameters of The Same Type
+  context: runtime, compilation and recompile breaks
+  section: D.11.5 Reordering Method Parameters of The Same Type
+  anchor: secD_11_5
+  body:
+    - kind: paragraph
+      text: Swapping the position of two parameters with the same type and same calling type produces an identical signature as far as the runtime is concerned; thus, the CLR will not throw a `MissingMethodException`. Since parameters are passed by position, not by name, the runtime breaking behavior will be the same as if you swapped the meaning of the parameters without changing their names.
+    - kind: paragraph
+      text: Any caller that used named parameter syntax for only one of the swapped parameters will encounter a compilation failure. Callers specifying all parameters with named syntax will encounter a recompilation break— in this case, a behavior fix. Callers using only positional argument calling will neither fail nor experience different behavior after recompilation.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: The signature does not change, so existing binaries silently swap the meanings of the arguments; callers that name only one of the swapped parameters fail to compile. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD042
+  strength: NOT PERMITTED
+  text: Changing a Method Return Type
+  context: runtime and compilation breaks
+  section: D.11.6 Changing a Method Return Type
+  anchor: secD_11_6
+  body:
+    - kind: paragraph
+      text: Methods in the .NET CLR are identified by their signature, which is composed of the name, return type, and ordered list of parameters. Changing the return type is logically the same as deleting the original method. See section D.9.3 for information on the runtime impact of removing a member.
+    - kind: paragraph
+      text: Recompilation will typically succeed if you change the return type to a more derived type. In contrast, it is likely to fail when if you change the return type to a less derived type or an unrelated type.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change, and would recommend adding a new method group (not overloading) or a new type to make this type of change.
+    - kind: paragraph
+      text: Note that this only applies to changing the return type in the method signature. Changing the method behavior to return a value of a type that is derived from the method return type is discussed in D.12.3.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Add a new method group (not an overload) or a new type instead. Returning a more derived value without changing the declared type is FDGD061. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD043
+  strength: NOT PERMITTED
+  text: Changing the Type of a Property
+  context: runtime and compilation breaks
+  section: D.11.7 Changing the Type of a Property
+  anchor: secD_11_7
+  body:
+    - kind: paragraph
+      text: During compilation, property reads are translated to invocations of the property get-method, and property writes are translated to invocations of the property set-method. Changing the property type changes the return type of the get-method, and thus produces all of the breaks discussed in section D.11.6. Changing the type also changes the parameter type, and the return type, of the set-method for settable properties; thus, it produces all of the breaks discussed in sections D.11.3 and D.11.6.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change, and would recommend adding a new method or property if this functional change is required.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Breaks like FDGD042 for the getter and FDGD039 for the setter. Add a new property or method instead. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD044
+  strength: NOT PERMITTED
+  text: Changing Member Visibility from `public` to Any Other Visibility
+  context: runtime and compilation breaks
+  section: D.11.8 Changing Member Visibility from public to Any Other Visibility
+  anchor: secD_11_8
+  body:
+    - kind: paragraph
+      text: Reducing member visibility will cause compile-time breaks for any callers that do not meet the new visibility restrictions.
+    - kind: paragraph
+      text: At runtime, the .NET CLR will throw a `MemberAccessException` (`MethodAccessException` or `FieldAccessException`) when attempting to invoke the method from the calls that no longer meet the new visibility restrictions. Unlike member removal, this runtime break executes all code in the calling method up to the failed member invocation.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Unlike a removal, the run-time `MemberAccessException` comes only when the call executes. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD045
+  strength: PERMITTED
+  text: Changing Member Visibility from `protected` to `public`
+  context: null
+  section: D.11.9 Changing Member Visibility from protected to public
+  anchor: secD_11_9
+  body:
+    - kind: paragraph
+      text: No runtime or compile-time breaks happen when you increase the visibility of a nonvirtual method (see the next section for discussion of virtual methods). However, this change cannot safely be undone.
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Applies to nonvirtual members; a `virtual` member is FDGD046. It cannot be safely undone (FDGD044). PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD046
+  strength: NOT PERMITTED
+  text: Changing a `virtual` (or `abstract`) Member from `protected` to `public`
+  context: runtime and compilation breaks
+  section: D.11.10 Changing a virtual (or abstract) Member from protected to public
+  anchor: secD_11_10
+  body:
+    - kind: paragraph
+      text: Whether you will cause a runtime break from changing a `protected virtual` member to a `public virtual` member depends on whether any derived types have overridden the method. If the method had no overrides, then there’s no runtime impact. However, any types that did override the method will fail to initialize with a `TypeLoadException` indicating that the override cannot reduce the method access.
+    - kind: paragraph
+      text: Similar to the runtime behavior, a compile-time break will be present for any derived type that overrode the member because the override re-asserts the visibility level.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change. If you were contemplating changing the method to `public`, you may instead want to add a `public` method on the original class that calls the `virtual` method, similar to the Template Method Pattern.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Breaks derived types that override the member. Instead, add a `public` method that calls the `protected virtual` one, as in the Template Method Pattern. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD047
+  strength: NOT PERMITTED
+  text: Adding or Removing the `static` Modifier
+  context: runtime, compilation and recompile breaks
+  section: D.11.11 Adding or Removing the static Modifier
+  anchor: secD_11_11
+  body:
+    - kind: paragraph
+      text: In addition to the name, return type, and ordered list of parameters, the .NET CLR considers whether a member is an instance member or a static member to be part of the signature. Adding or removing the `static` modifier on a member is logically the same as removing the previous member. See section D.9.3 for information on the runtime impact of removing a member.
+    - kind: paragraph
+      text: Any caller that used a type-qualified static member invocation, or an instance-qualified instance member invocation, will get a compile-time break for using the wrong calling format for the member. Callers from derived types that use implicit member invocation will successfully recompile, and their libraries will return to a working state.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Callers in derived types that use implicit member invocation recompile and work again. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD048
+  strength: NOT PERMITTED
+  text: Changing to or from Passing a Parameter by Reference
+  context: runtime, compilation and recompile breaks
+  section: D.11.12 Changing to or from Passing a Parameter by Reference
+  anchor: secD_11_12
+  body:
+    - kind: paragraph
+      text: 'In the .NET CLR, parameters passed by reference (C# `ref`, `in`, `out`; VB.NET `ByRef`; F# `byref`, `inref`, `outref`) are considered to be a different type than the type under normal parameter passing. Therefore, the .NET CLR considers changing to, or from, passing by reference to be the same as changing the type of a parameter: The previous member was removed. See section D.9.3 for information on the runtime impact of removing a member.'
+    - kind: paragraph
+      text: If you change a parameter to be a reference parameter (C# `ref`) or an output parameter (C# `out`), then all of your callers will get a compile-time break for not calling with the correct modifiers; the same is true for the reverse direction. The C# language allows callers to omit the `in` modifier on call sites, so changing to or from a read-only reference parameter is fixed by a recompile for callers that omit the modifier. Callers that specify the modifier, including callers in any languages where it is required, will get a compile-time break.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: C# callers may omit the `in` modifier, so changing to or from `in` is fixed by a recompile for callers that omit it. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD049
+  strength: NOT PERMITTED
+  text: Changing By-Reference Parameter Styles
+  context: runtime and compilation breaks
+  section: D.11.13 Changing By-Reference Parameter Styles
+  anchor: secD_11_13
+  body:
+    - kind: paragraph
+      text: Whether a parameter is fully by-reference (C# `ref`), an output parameter (C# `out`), or a read-only reference (C# `in`) is not part of the signature for method calling purposes. Thus, changing a parameter’s by-reference style in one of your members will not result in a `MissingMemberException` in the same way that changing it to or from a value parameter would. However, writing through to a parameter previously declared as a read-only reference, or depending on the value of a parameter previously declared as an output parameter, is likely to cause very difficult-to-diagnose bugs.
+    - kind: paragraph
+      text: Whether changing the parameter by-reference style will generate a compile-time break depends on the language that the caller uses. C# uses three different modifiers at the call sites (`ref`, `out`, `in`, or implicit-`in`), and it is a compile failure to use the wrong one. F# uses the same modifier for all three styles, so a recompile for F# callers will likely succeed unless the previous declaration had the parameter as an output parameter—where the caller may not have initialized the value before calling your method.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: The run-time signature does not change, but writing through a former `in` parameter or reading a former `out` parameter causes bugs that are hard to diagnose; C# callers fail to compile with the wrong modifier. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD050
+  strength: PERMITTED
+  text: Adding the `readonly` Modifier to a `struct` Method
+  context: compilation break
+  section: D.11.14 Adding the readonly Modifier to a struct Method
+  anchor: secD_11_14
+  body:
+    - kind: paragraph
+      text: Just like adding the `readonly` modifier to a `struct` (section D.6.6), adding this modifier to a method only has an effect after your caller recompiles.
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: It takes effect only after callers recompile, like FDGD012. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD051
+  strength: NOT PERMITTED
+  text: Removing the `readonly` Modifier from a `struct` Method
+  context: runtime and compilation breaks
+  section: D.11.15 Removing the readonly Modifier from a struct Method
+  anchor: secD_11_15
+  body:
+    - kind: paragraph
+      text: Just like removing the `readonly` modifier from a `struct` (section D.6.7), removing this modifier from a method only has an effect after your caller recompiles. When the caller is executing its existing assembly with your updated assembly, data mutation may be visible in ways that will no longer be reproduced after the assemblies recompile.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Existing binaries see mutations until they recompile, like FDGD013. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD052
+  strength: PERMITTED
+  text: Changing a Parameter from Required to Optional
+  context: null
+  section: D.11.16 Changing a Parameter from Required to Optional
+  anchor: secD_11_16
+  body:
+    - kind: paragraph
+      text: Optional parameters, also known as default parameters or default arguments, are a compile-time feature, not a runtime feature. Therefore, there is no runtime impact when you change a parameter from required to optional.
+    - kind: paragraph
+      text: When making parameters optional, be careful not to introduce ambiguity between member overloads when only some parameters are specified. The Framework Design Guidelines encourage you to have optional parameters on only one overload to avoid ambiguous member invocations.
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable change, provided the change does not require parameter reordering and does not introduce the possibility of an ambiguous member invocation.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Permitted when the change needs no parameter reordering and makes no overload call ambiguous; keep optional parameters on one overload only (FDG5014). PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD053
+  strength: CONTEXTUAL
+  text: Changing a Parameter from Optional to Required
+  context: compilation and recompile breaks
+  section: D.11.17 Changing a Parameter from Optional to Required
+  anchor: secD_11_17
+  body:
+    - kind: paragraph
+      text: Optional parameters, also known as default parameters or default arguments, are a compile-time feature, not a runtime feature. Therefore, there is no runtime impact when you change a parameter from optional to required.
+    - kind: paragraph
+      text: When you change a parameter from optional to required, you need to consider callers that did not explicitly provide an argument for the parameter, callers that called the method with some optional parameters by position, and callers that called the method with some optional parameters by name. In general, the only safe way to change a parameter from required to optional is to introduce a new, longer, member overload that first gives all of the previously optional parameters as optional—with the same default values—and then places any new optional parameters at the end of the parameter list. When you add that new overload, any callers that did not specify all of the optional parameters explicitly will fail to recompile because the target member is ambiguous, forcing you to change the previous member’s parameters from optional to required.
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable breaking change when done as part of “moving” default values to a new overload. Otherwise, it is an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Permitted only as part of moving the default values to a new, longer overload (FDG5016); otherwise not permitted. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD054
+  strength: NOT PERMITTED
+  text: Changing the Default Value for an Optional Parameter
+  context: recompile break
+  section: D.11.18 Changing the Default Value for an Optional Parameter
+  anchor: secD_11_18
+  body:
+    - kind: paragraph
+      text: Optional parameters are a compile-time feature in which any caller that did not provide a value for a parameter gets the value from the target member’s metadata. Changing the default value has no effect on callers until they recompile, which can create confusion where the compiled binary and the developer’s understanding of the program from the source code do not match.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change due to the possibility of developer confusion.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Callers keep the old default until they recompile, so the compiled binary and the source disagree. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD055
+  strength: NOT PERMITTED
+  text: Changing the Value of a `const` Field
+  context: recompile and reflection breaks
+  section: D.11.19 Changing the Value of a const Field
+  anchor: secD_11_19
+  body:
+    - kind: paragraph
+      text: Constant field values are expected to be constant for all time. When callers use your constant field in their code, the compiler copies the value, not the symbolic reference, into the caller code. Callers are therefore unaware that your constant field has a new value until recompilation, which can create confusion when the compiled binary and the developer’s understanding of the program from source code do not match.
+    - kind: paragraph
+      text: When reflection is used to access the constant field at runtime, the updated value is reflected immediately. Disagreement between reflection code and runtime code about the value of a constant field is another source of developer confusion.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change due to the possibility of developer confusion. If you have not yet released a library with the constant field, use `static readonly` instead of `const` for values you reserve the right to update in a future version. If you have already released the constant field, then we recommend introducing a new field, either `const` or `static readonly`, as appropriate.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Callers keep the old value until they recompile. Before the first release, use `static readonly` instead of `const` for a value that may change (FDG5066); after it, add a new field. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD056
+  strength: PERMITTED
+  text: Changing an `abstract` Member to `virtual`
+  context: null
+  section: D.11.20 Changing an abstract Member to virtual
+  anchor: secD_11_20
+  body:
+    - kind: paragraph
+      text: There is no runtime observable difference when you update a member from `abstract` to `virtual`. However, you should be aware that all instantiable derived types are already providing an implementation that does not invoke your member via a base member invocation.
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Every instantiable derived type already implements the member without a base call. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD057
+  strength: NOT PERMITTED
+  text: Changing a `virtual` Member to `abstract`
+  context: runtime and compilation breaks
+  section: D.11.21 Changing a virtual Member to abstract
+  anchor: secD_11_21
+  body:
+    - kind: paragraph
+      text: Changing a member from `virtual` to `abstract` is breaking in the same ways that removing an immediate override to an `abstract` member is. See section D.9.5 for information on the full impact of this type of change.
+    - kind: paragraph
+      text: The .NET BCL team considers this an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Breaks like removing the override of an `abstract` member (FDGD033). PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD058
+  strength: PERMITTED
+  text: Changing a Non-`virtual` Member to `virtual`
+  context: recompile break
+  section: D.11.22 Changing a Non-virtual Member to virtual
+  anchor: secD_11_22
+  body:
+    - kind: paragraph
+      text: Generally speaking, changing a non-`virtual` member to a `virtual` member is a safe change. However, some compiler implementations use the MSIL non-`virtual call` instruction when the target member is known to be non-`virtual` and the target instance is known to be non-`null`. Callers that use these compilers, in these situations, will only call the base-most member, not the most derived `override` implementation.
+    - kind: paragraph
+      text: The .NET BCL team considers this an acceptable breaking change, but would encourage you to consider making the behavior virtual through the Template Method Pattern rather than altering the existing method.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Some compilers emit a nonvirtual `call` when the target is known to be non-`null`, so those callers keep calling the base-most member. Consider the Template Method Pattern instead of making the existing method `virtual`. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD059
+  strength: PERMITTED
+  text: Changing Runtime Error Exceptions to Usage Error Exceptions
+  context: runtime break
+  section: D.12.1 Changing Runtime Error Exceptions to Usage Error Exceptions
+  anchor: secD_12_1
+  body:
+    - kind: paragraph
+      text: If your method throws a `NullReferenceException` when a parameter is passed as `null`, or an `IndexOutOfRangeException` when a parameter is passed as an out-of-bounds index, you can change it to throw the usage error equivalent exception (e.g., `ArgumentNullException` or `ArgumentOutOfRangeException`) instead. While some callers could, conceivably, depend on the `NullReferenceException` or `IndexOutOfRangeException`, the .NET BCL team believes that the information provided via the usage error exception about which argument value caused the method to fail is worth the risk.
+    - kind: paragraph
+      text: The .NET BCL team generally considers changing “failed inputs” to “a detailed usage error exception” to be an acceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Example: throwing `ArgumentNullException` instead of `NullReferenceException`, or `ArgumentOutOfRangeException` instead of `IndexOutOfRangeException`. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.'
+- id: FDGD060
+  strength: PERMITTED
+  text: Changing Usage Error Exceptions to Functioning Behavior
+  context: runtime break
+  section: D.12.2 Changing Usage Error Exceptions to Functioning Behavior
+  anchor: secD_12_2
+  body:
+    - kind: paragraph
+      text: Even though the exceptions are part of a member’s “contract,” the .NET BCL team generally considers allowing previously disallowed inputs to function to be an acceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD061
+  strength: CONTEXTUAL
+  text: Changing the Type of Values Returned from a Method
+  context: runtime break
+  section: D.12.3 Changing the Type of Values Returned from a Method
+  anchor: secD_12_3
+  body:
+    - kind: paragraph
+      text: Changing the declared return type of a method is discussed in section D.11.6. The present section addresses changing the implementation of the method to return a value of a different type than the method did in a previous version of your library.
+    - kind: paragraph
+      text: Changing the returned value to be a more derived type than in the previous version of the library is generally a safe change. Callers that interact with the return value only via the type that the method is declared to return would be broken only if the new type implements virtual methods in an incompatible manner. Callers that are “hard-casting” the return value to a more specific type also won’t be broken by your change, since the new return value can be safely cast to the intermediate type. The only sort of caller pattern that is broken is when callers do an equality comparison on `value.GetType()`—which might not be apparent to callers that use the type of the returned value as a key in a dictionary.
+    - kind: paragraph
+      text: If you were already returning a type derived from the declared return type and you change to returning some other compatible type, then you will break both type-testing callers and “hard-casting” callers. For example, if your method is declared to return `IEnumerable<int>`, but always returns `List<int>`, then callers might have depended on the return type. If so, they will get an `InvalidCastException` if you change the return type to be `HashSet<int>`, or a non-public type that implements `IEnumerable<int>`.
+    - kind: paragraph
+      text: The .NET BCL team is generally supportive of returning a “more derived” type than in a previous version, unless there’s a strong reason to believe type equality checks will be routinely used for that particular method. Returning a value that would break existing “hard-casting” callers is something the .NET BCL team generally considers an unacceptable breaking change.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: Returning a more derived type is generally permitted, unless callers can be expected to compare `value.GetType()`. Switching from one derived type to another (`List<int>` to `HashSet<int>` behind `IEnumerable<int>`) breaks hard-casting callers and is not permitted. Changing the declared return type is FDGD042. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.
+- id: FDGD062
+  strength: NOT PERMITTED
+  text: Throwing a New Type of Error Exception
+  context: runtime break
+  section: D.12.4 Throwing a New Type of Error Exception
+  anchor: secD_12_4
+  body:
+    - kind: paragraph
+      text: When you throw a new type of exception from your method, or when you allow a new type of exception to escape your method by changing the implementation, you will likely cause the exception to be thrown past any existing `catch` blocks that your caller has for handling errors in your method.
+    - kind: paragraph
+      text: 'The .NET BCL team generally considers this an unacceptable breaking change, outside of two specific situations: The exception is a subtype of an exception type that is already thrown by the method (section D.12.5) or using an “uncaught” exception type is necessary for fixing a critical bug.'
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Exceptions: a subtype of an exception type the method already throws (FDGD063), or an uncaught exception type that a critical bug fix needs. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.'
+- id: FDGD063
+  strength: PERMITTED
+  text: Throwing a New Type of Exception, Derived from an Existing Thrown Type
+  context: runtime break
+  section: D.12.5 Throwing a New Type of Exception, Derived from an Existing Thrown Type
+  anchor: secD_12_5
+  body:
+    - kind: paragraph
+      text: When you throw a new type of exception that derives from an exception type already thrown by your method (e.g., throwing `FileNotFoundException` from a method that already throws `IOException`), you generally won’t bypass existing `catch` blocks, or otherwise change the exception handling from your callers—with a few caveats.
+    - kind: paragraph
+      text: First, callers that have a `catch` block for the more derived type in addition to the existing type might—depending on nesting and ordering— have a different `catch` block trigger for the same kind of problem. While most callers would consider that a “good” breaking change, it’s something to take into account.
+    - kind: paragraph
+      text: The second caveat is that callers using type-equality tests in exception filters, or within `catch` blocks, will see a runtime behavioral difference. Type-equality testing in exception handlers is much less common than type hierarchy tests (e.g., the `is` operator), but it’s still something to take into account.
+    - kind: paragraph
+      text: The .NET BCL team is generally supportive of throwing more specific exceptions.
+  status: draft
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Caveats: callers that also catch the derived type may run a different `catch` block, and type-equality tests in exception filters or `catch` blocks see a different type. PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.'

@@ -215,3 +215,31 @@ exceptions, breaking rules and rules with new analyzers. Tick an entry when it h
   fdg FDG9173, partial; breaking. Chosen because the out parameters are told apart only by the suffixes Written and Consumed, a single out parameter is taken to be the written count unless it ends with Consumed, and FDG9171 reports the missing consumed count of the same methods.
 - [ ] FDG9174 DO include a Boolean parameter named “isFinalBlock,” if an `OperationStatus` method needs to treat the last input block in a special way. The parameter should be optional and have a default value of true.
   fdg FDG9174, partial; breaking. Chosen because whether a method needs to treat the last block in a special way is not checked, so only a parameter named isFinalBlock without the default true, or a bool named with Final or Last, is reported, and the book's ToBase64 example is not reported for FDG9174. That example does get FDG9159 on charsWritten (expected bytesWritten for its Span<byte> destination), which the notes of FDG9159 take as a book error (Ruling 37).
+
+## Appendix D: Breaking Changes
+
+Every appendix D rule is judgment, library only (application and test none), autofix no, and its notes end with the
+PublicApiAnalyzers sentence. Strength is the heading's verdict icon; context is its break icons.
+
+- [ ] FDGD001 NOT PERMITTED: Changing the Name of an Assembly
+  judgment; library warning. Chosen because its heading uses the legend's small cross icon (cross1) and all four break icons, and the notes keep the book's way out (a final version that type-forwards).
+- [ ] FDGD004 PERMITTED: Moving a Type via [`TypeForwardedTo`]
+  judgment; library suggestion. Chosen for its condition: permitted only when there is a technical reason for the move.
+- [ ] FDGD019 PERMITTED: Changing a `ref struct` to a (Non-`ref`) `struct`
+  judgment; library suggestion; context null. Chosen because the heading has no break icon and its title holds parentheses that must survive the icon stripping.
+- [ ] FDGD020 NOT PERMITTED: Masking Base Members with `new`
+  judgment; library warning. Chosen for its two exceptions (static Create methods that specialize the return type; new added to a method that predates the base member).
+- [ ] FDGD022 PERMITTED: Adding Members to an Unsealed Type
+  judgment; library suggestion. Chosen for its exception (not when the new member knowingly conflicts with a derived type) and the CS0108 warnings-as-errors break.
+- [ ] FDGD034 CONTEXTUAL: Removing or Renaming Private Fields on Serializable Types
+  judgment; library suggestion. Chosen as a contextual verdict: the notes state when it is not permitted (a serializer that reads private state).
+- [ ] FDGD036 CONTEXTUAL: Adding Alternative-Parameter Overloads for a Reference Type Parameter
+  judgment; library suggestion. Chosen because the verdict depends on whether the existing member rejects null; its body is one paragraph.
+- [ ] FDGD053 CONTEXTUAL: Changing a Parameter from Optional to Required
+  judgment; library suggestion. Chosen for the hand-off to FDG5016 (move the default values to the new, longer overload).
+- [ ] FDGD055 NOT PERMITTED: Changing the Value of a `const` Field
+  judgment; library warning. Chosen for the cross-reference to FDG5066 and the before-release advice (static readonly instead of const).
+- [ ] FDGD060 PERMITTED: Changing Usage Error Exceptions to Functioning Behavior
+  judgment; library suggestion. Chosen because the book gives no condition, so its notes are only the fixed PublicApiAnalyzers sentence.
+- [ ] FDGD061 CONTEXTUAL: Changing the Type of Values Returned from a Method
+  judgment; library suggestion. Chosen because the notes split the verdict: a more derived value is permitted, a switch that breaks hard-casting callers is not.

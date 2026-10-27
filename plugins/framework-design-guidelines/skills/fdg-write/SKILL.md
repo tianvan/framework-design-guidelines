@@ -101,6 +101,8 @@ Other references:
 - [references/ch09-patterns-template-timeouts-xaml.md](references/ch09-patterns-template-timeouts-xaml.md): apply the Template Method Pattern, design timeouts and XAML readable types
 - [references/ch09-patterns-buffers.md](references/ch09-patterns-buffers.md): design operations on buffers, data transformations and fixed-size writes
 - [references/ch09-patterns-buffers-try-write.md](references/ch09-patterns-buffers-try-write.md): write values to buffers with the Try-Write Pattern and report partial writes with OperationStatus
+- [references/appd-breaking-changes-d-1-to-d-8.md](references/appd-breaking-changes-d-1-to-d-8.md): change a shipped library's assemblies, namespaces and types, or add or move members, without breaking its callers
+- [references/appd-breaking-changes-d-9-on.md](references/appd-breaking-changes-d-9-on.md): remove or overload members, change member signatures, modifiers, defaults and constants, or change thrown exceptions and returned values in a shipped library
 
 Each reference lists, by section, every rule of its chapter that tools do not enforce. When a rule's wording is not
 enough, follow the `examples:` link at the end of its line to the book's explanation and code.
