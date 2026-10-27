@@ -249,11 +249,26 @@ public sealed class BufferSignatureTests
 
                 public static void Log(int level, string source) { }
 
+                public static void TraceArgs(
+                    TraceEventType eventType,
+                    string source,
+                    string format,
+                    params object[] args) { }
+
+                public static void Report(int level, string source, string[] tags) { }
+
+                public static string Format(
+                    System.IFormatProvider provider,
+                    string source,
+                    params object[] args) => source;
+
                 public static void CopyFile(bool overwrite, string source, string destination) { }
 
                 public static void Shuffle<T>(System.Random random, T[] source) { }
 
                 public static int Fill(int count, string {|FDG9156:source|}, char[] buffer) => 0;
+
+                public static void Store(int count, string {|FDG9156:source|}, object[] destination) { }
             }
             """);
     }

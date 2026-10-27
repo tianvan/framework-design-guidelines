@@ -234,8 +234,8 @@ public sealed class BufferSignatureAnalyzer : DiagnosticAnalyzer
     /// FDG9156: a parameter named source of an input buffer type after a parameter that is an output buffer named
     /// destination, or neither another input buffer nor an int that follows an array; the this parameter of an
     /// extension method is not counted. A string or array named source is checked only when the method also has an
-    /// output buffer. FDG9157: a parameter named destination of an output buffer type before a
-    /// parameter named source.
+    /// output buffer (see <see cref="IsOutputBuffer"/>). FDG9157: a parameter named destination of an output
+    /// buffer type before a parameter named source.
     /// </summary>
     private static void AnalyzePositions(
         SymbolAnalysisContext context, IMethodSymbol method, string name, BufferTypes buffers)
@@ -263,7 +263,7 @@ public sealed class BufferSignatureAnalyzer : DiagnosticAnalyzer
             || buffers.IsReadOnlyMemory(source.Type)
             || UsageSymbols.Is(source.Type, buffers.ReadOnlySequence)
             || parameters.Any(parameter => !SymbolEqualityComparer.Default.Equals(parameter, source)
-                && buffers.IsOutput(parameter.Type));
+                && IsOutputBuffer(parameter, buffers));
         int start = method.IsExtensionMethod ? 1 : 0;
         bool misplaced = false;
         for (int i = start; i < sourceIndex; i++)
@@ -287,6 +287,30 @@ public sealed class BufferSignatureAnalyzer : DiagnosticAnalyzer
         {
             context.ReportDiagnostic(Diagnostic.Create(FdgDescriptors.FDG9156, location, source.Name, name));
         }
+    }
+
+    /// <summary>
+    /// Whether a parameter is an output buffer beside a string or array source: a Span&lt;T&gt; or Memory&lt;T&gt;,
+    /// or an array or ArraySegment&lt;T&gt; that is not a params array and is named destination or has byte or
+    /// char elements. Other arrays, such as string[] tags, are collections more often than buffers.
+    /// </summary>
+    private static bool IsOutputBuffer(IParameterSymbol parameter, BufferTypes buffers)
+    {
+        if (buffers.IsSpan(parameter.Type) || buffers.IsMemory(parameter.Type))
+        {
+            return true;
+        }
+
+        ITypeSymbol? element = parameter.Type switch
+        {
+            IArrayTypeSymbol array => array.ElementType,
+            INamedTypeSymbol named when UsageSymbols.Is(named, buffers.ArraySegment) => named.TypeArguments[0],
+            _ => null,
+        };
+        return element is not null
+            && !parameter.IsParams
+            && (parameter.Name == "destination"
+                || element.SpecialType is SpecialType.System_Byte or SpecialType.System_Char);
     }
 
     /// <summary>

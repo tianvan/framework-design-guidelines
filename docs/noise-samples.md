@@ -837,3 +837,6 @@ diagnostic and the new analyzers are counted. There was no report to check.
   FDG9172 no longer exempt a byte buffer counted by chars (Ruling 37). Measured again for FDG9130, FDG9138,
   FDG9156, FDG9159 and FDG9172 with the same samples and profiles: still 0 reports for each, so the table does
   not change.
+- **Second rerun for FDG9156.** Beside a string or array source, only a Span<T> or Memory<T> parameter, or a
+  non-params array or ArraySegment<T> named destination or with byte or char elements, counts as an output buffer
+  (Ruling 40). Measured again with the same samples and profiles: still 0 reports, so the table does not change.
