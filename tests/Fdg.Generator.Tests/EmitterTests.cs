@@ -633,7 +633,7 @@ public sealed class EmitterTests : IDisposable
     [InlineData("~~~\nif (a < b) _c();\n~~~\n<d", "~~~\nif (a < b) _c();\n~~~\n&lt;d")]
     public void Escape_literals_keeps_code_escapes_autolinks_and_line_breaks(string markdown, string expected)
     {
-        Assert.Equal(expected, RuleDocEmitter.EscapeLiterals(markdown));
+        Assert.Equal(expected, RuleText.EscapeLiterals(markdown));
     }
 
     [Theory]
@@ -641,9 +641,9 @@ public sealed class EmitterTests : IDisposable
     [InlineData("~~~\n<a>\n~~~\n<b> <http://x/_y> List<T>_")]
     public void Escape_literals_is_idempotent(string markdown)
     {
-        string once = RuleDocEmitter.EscapeLiterals(markdown);
+        string once = RuleText.EscapeLiterals(markdown);
 
-        Assert.Equal(once, RuleDocEmitter.EscapeLiterals(once));
+        Assert.Equal(once, RuleText.EscapeLiterals(once));
     }
 
     [Fact]
