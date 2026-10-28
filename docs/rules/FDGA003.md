@@ -10,15 +10,15 @@ This is a coding style convention. The book treats the appendix A conventions as
 
 ## How it is checked
 
-- Check: fdg (full coverage)
+- Check: fdg (partial coverage)
 - Diagnostics: FDGA003, IDE0055
 - Automatic fix: yes
 - Severity: library warning, application warning, test warning
-- Status: verified
+- Status: draft
 
 Message: Place the closing brace on its own line
 
-IDE0055 moves else, catch, and finally, and statements that follow an opening brace, to their own lines. FDGA003 reports the remaining closing braces that share a line, except the end of a do-while statement, single-line accessor lists such as '{ get; set; }' (FDGA008), initializers, and lambda bodies.
+IDE0055 moves else, catch, and finally, and statements that follow an opening brace, to their own lines. FDGA003 reports the remaining closing braces that share a line, except the end of a do-while statement, single-line accessor lists such as '{ get; set; }' (FDGA008), initializers, and lambda bodies. Type bodies such as 'class Empty { }', anonymous methods, and a do body on one line ('do { M(); } while (c);') are not reported either.
 
 ## Options
 

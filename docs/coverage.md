@@ -7,16 +7,16 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | Chapter | Rules | sdk | fdg | judgment | none | verified |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 2 Framework Design Fundamentals | 32 | 0 | 0 | 32 | 0 | 32 |
-| 3 Naming Guidelines | 87 | 34 | 8 | 45 | 0 | 87 |
-| 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 70 |
+| 3 Naming Guidelines | 87 | 33 | 8 | 46 | 0 | 59 |
+| 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 68 |
 | 5 Member Design | 133 | 20 | 39 | 74 | 0 | 133 |
 | 6 Designing for Extensibility | 22 | 0 | 2 | 20 | 0 | 22 |
 | 7 Exceptions | 70 | 20 | 10 | 40 | 0 | 70 |
 | 8 Usage Guidelines | 107 | 28 | 21 | 58 | 0 | 107 |
 | 9 Common Design Patterns | 175 | 15 | 50 | 110 | 0 | 175 |
-| A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
+| A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 65 |
 | D Breaking Changes | 63 | 0 | 0 | 63 | 0 | 63 |
-| Total | 830 | 177 | 142 | 511 | 0 | 830 |
+| Total | 830 | 176 | 142 | 512 | 0 | 794 |
 
 ## Non-guideline content
 
@@ -43,9 +43,37 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 
 ### Chapter 3: Naming Guidelines
 
-- **3.1.1** (background): Brad Abrams' annotation on the history of Table 3-1 (the dropped convention for instance field names) is background; it is kept in the body of FDG3002.
-- **3.4** (background): The narrative that introduces the namespace categories (application model, core, technology groups) is background for the rules of 3.4.1; the category definitions themselves are not guidelines.
-- **3.6.4** (background): The opening text scopes the field guidelines to static public and protected fields (internal and private fields are not covered, and public or protected instance fields are disallowed by the member design guidelines in chapter 5). It is background for the field rules that follow.
+- **3** (background): The chapter introduction (consistent naming makes a framework usable; most naming guidelines are conventions without a technical rationale) and the Cwalina annotation (the BCL team invests a great deal of time in naming) are background for the whole chapter. Its scope statement (the guidance applies only to publicly exposed APIs: public or protected types and members, and the parameters of public or protected members) is why the chapter 3 analyzers and the CA1707 and CA1708 mappings check only the public API.
+- **3.1** (background): The introduction (the CLR supports case-insensitive languages, so case alone must not distinguish names, but casing makes names readable) is background for FDG3001 to FDG3007.
+- **3.1.1** (rationale): The definitions of PascalCasing and camelCasing with their examples (PropertyDescriptor, HtmlTag, IOStream; propertyDescriptor, ioStream, htmlTag) and the Abrams annotation on the origin of the terms (SCREAMING_CAPS did not survive) are rationale for FDG3001 and FDG3002. Table 3-1 and the Abrams annotation on its history are kept in the body of FDG3002.
+- **3.1.2** (rationale): The introduction (avoid acronyms unless widely understood, such as HTML, XML and IO), the Cwalina annotation (acronyms differ from abbreviations, which are never used), the casing of longer and two-letter acronyms and the StartIO and ProcessHtmlTag examples are rationale for FDG3003 to FDG3005; the acronyms named here are the ones FDG3003 and FDG3004 check.
+- **3.1.3** (background): The one-sentence introduction (most compound terms count as one word for casing) is background for FDG3006; Table 3-2 and the text after it are kept in the body of FDG3006.
+- **3.1.4** (rationale): The introduction (languages on the CLR need not be case sensitive, so externally accessible APIs cannot rely on case alone), the Vick annotation (Visual Basic and COM needed case insensitivity) and the Richter annotation (the CLR itself is case sensitive; compilers and reflection resolve case) are rationale for FDG3007.
+- **3.2** (background): The one-sentence introduction (word choice, abbreviations and acronyms, language-specific names) is background for FDG3008 to FDG3024.
+- **3.2.1** (rationale): The introduction (names must make sense on first reading; clarity matters more than brevity; names follow scenarios and concepts rather than technologies) is rationale for FDG3008 to FDG3013.
+- **3.2.2** (rationale): The introduction (do not use abbreviations or acronyms that are not generally understood) is rationale for FDG3014 and FDG3015.
+- **3.2.3** (rationale): The introduction (languages have aliases for primitive types, such as int for System.Int32, which identifiers avoid for cross-language use) and the Richter annotation (he never uses the aliases; NullReferenceException and Visual Basic's Nothing) are rationale for FDG3016 to FDG3018.
+- **3.2.4** (background): The introduction (a new type or member sometimes has to supersede an existing one and needs a new name) is background for FDG3019 to FDG3024.
+- **3.3** (rationale): The introduction (an assembly usually maps to one DLL and a package has the same name, so only DLL naming is described), the separation of namespaces from DLL and assembly names (the MyCompany.MyTechnology example), and the Richter (multifile assemblies; the CLR does not relate namespaces to file names) and Abrams (developer view versus deployment view) annotations are rationale for FDG3025 and FDG3026.
+- **3.4** (rationale): The introduction, the namespace template <Company>.(<Product>|<Technology>)[.<Feature>][.<Subnamespace>] and its examples (Microsoft.VisualStudio, Fabrikam.Math, Litware.Security) are rationale for FDG3027 to FDG3032. The closing sentence (the next section covers special subnamespaces) is kept in the body of FDG3032.
+- **3.4.1** (rationale): The introduction (namespaces resolve type name ambiguities, which is no excuse for known ambiguities between types commonly used together) is rationale for FDG3033 to FDG3037; the list of namespace categories is kept in the body of FDG3033.
+- **3.4.1.1** (background): The definition of application model namespaces (used together, rarely with other application models: System.Windows*, System.Web.UI*) is background for FDG3034 and FDG3037; their notes repeat it.
+- **3.4.1.2** (background): The definition of infrastructure namespaces (rarely imported in common applications, such as System.Windows.Forms.Design, *.Design and *.Permissions) states no guideline: avoiding conflicts with their types is not critical. FDG3035 excludes them from the core namespaces.
+- **3.4.1.3** (background): The definition of core namespaces (all System namespaces except application model and infrastructure namespaces, such as System.IO, System.Xml, System.Net and System itself) is background for FDG3035; its notes repeat it.
+- **3.4.1.4** (background): The definition of technology namespace groups (namespaces with the same first two parts, for example Microsoft.Build.Tasks and Microsoft.Build.Utilities) is background for FDG3036 and FDG3037; their notes repeat it.
+- **3.5** (rationale): The narrative on noun names for classes and structs and adjective names for capability interfaces, on giving the most recognizable names to the most used types (Printer rather than PrintQueue) and on naming for scenarios rather than the inheritance hierarchy (Stream, StreamReader, TextReader, StringReader, FileStream), with the Cwalina annotation, is rationale for FDG3038 to FDG3043.
+- **3.5.1** (background): The introduction (generics introduced type parameters as a new kind of identifier) is background for FDG3044 to FDG3047.
+- **3.5.2** (background): The one-sentence introduction (follow these guidelines when deriving from or implementing .NET types) is background for FDG3048 to FDG3059. The rows of Table 3-5 are the rules FDG3049 to FDG3059, each with its base type as context; the text after the table is kept in the body of FDG3048.
+- **3.5.3** (background): The introduction (enum names follow the type naming rules, with additional guidelines) is background for FDG3060 to FDG3064.
+- **3.6** (background): The one-sentence introduction (types are made of methods, properties, events, constructors and fields) is background for FDG3065 to FDG3079.
+- **3.6.1** (rationale): The introduction (methods take actions, so their names are verbs, unlike property and type names) and the Clarke annotation (name methods for the task they enable; the XPathDocument usability study) are rationale for FDG3065.
+- **3.6.2** (rationale): The introduction (properties refer to data, so their names are nouns or adjectives, always PascalCased) is rationale for FDG3066 to FDG3070.
+- **3.6.3** (rationale): The introduction (events refer to an action, so they are named with verbs whose tense tells when the event is raised) is rationale for FDG3071 to FDG3076.
+- **3.6.4** (background): The opening text limits the field guidelines to public and protected static fields (no guideline covers internal or private fields, and chapter 5's member design guidelines disallow public or protected instance fields). It is background for the field rules that follow.
+- **3.7** (rationale): The introduction (parameter names are shown in documentation, in designers and in IntelliSense) is rationale for FDG3080 to FDG3082.
+- **3.7.1** (background): The one-sentence introduction (naming parameters of operator overloads) is background for FDG3083 to FDG3086.
+- **3.8** (obsolete): The introduction says the guidance of earlier editions is obsolete and archived in Appendix B (B.3.8, recorded under otherContent); FDG3087 is the current rule.
+- **Summary** (background): The chapter summary states no guideline.
 
 ### Chapter 4: Type Design Guidelines
 
@@ -198,7 +226,11 @@ Book text that is not a guideline, and where it went: kept as the rationale of a
 
 ### Appendix A: C# Coding Style Conventions
 
-- **A** (rationale): The appendix introduction says that, unlike the framework design guidelines, these coding style conventions "are not required and should be treated as a set of suggestions", because they have no direct effect on most users of a framework. This is why every appendix A rule has style: true, is enabled by the profiles, and can be overridden.
+- **A** (rationale): The appendix introduction says that these coding style conventions, unlike the rest of the book's guidelines, are optional suggestions rather than requirements, because they hardly affect the users of a framework directly. This is why every appendix A rule has style: true, is enabled by the profiles, and can be overridden. The three principles (clarity wins over brevity, the form that reduces noise in a future diff is preferred, few rules with few exceptions) are rationale for FDGA004, FDGA006, FDGA038, FDGA039 and FDGA042; the Barton annotation and the note that the numbered chapters' code uses a compact paper-friendly style instead of these conventions are background.
+- **A.1.1** (background): The section introduction (the .NET BCL team braces in Allman style and requires braces in general, even where the language makes them optional, with the exceptions in the guidance) is background for FDGA001 to FDGA007.
+- **A.1.5** (rationale): The section introduction gives the BCL team's canonical modifier order, from the visibility modifiers through static, extern, the member slot modifiers, readonly, unsafe and volatile to async, which FDGA028 to FDGA037 express in detail and csharp_preferred_modifier_order follows. The list puts volatile after unsafe, but FDGA034 puts it immediately after static; the configuration follows FDGA034.
+- **A.2** (background): The section introduction (the Framework Design Guidelines govern identifier names, with additional conventions and exceptions for internal and private identifiers) is background for FDGA051 to FDGA058.
+- **A.3** (rationale): The section introduction (comments describe intent, algorithmic overview and logical flow; there is no minimum comment requirement, but most nontrivial routines should have comments that reflect the programmer's intent) is rationale for FDGA059 to FDGA063.
 
 ### Appendix D: Breaking Changes
 

@@ -510,7 +510,7 @@
       "diagnostics": [
         "FDG3003"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -526,7 +526,7 @@
       "diagnostics": [
         "FDG3004"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -581,7 +581,7 @@
       "diagnostics": [
         "CA1708"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -655,7 +655,7 @@
       "diagnostics": [
         "CA1716"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -671,7 +671,7 @@
       "diagnostics": [
         "FDG3013"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -715,7 +715,7 @@
       "diagnostics": [
         "CA1720"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "suggestion",
         "application": "suggestion",
@@ -728,13 +728,11 @@
       "strength": "DO",
       "text": "use a generic CLR type name, rather than a language-specific name, in the rare cases when an identifier has no semantic meaning beyond its type.",
       "section": "3.2.3 Avoiding Language-Specific Names",
-      "diagnostics": [
-        "CA1720"
-      ],
+      "diagnostics": [],
       "autofix": "no",
       "severity": {
-        "library": "suggestion",
-        "application": "suggestion",
+        "library": "warning",
+        "application": "warning",
         "test": "none"
       },
       "naming": null
@@ -747,7 +745,7 @@
       "diagnostics": [
         "CA1720"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "suggestion",
         "application": "suggestion",
@@ -956,10 +954,10 @@
       "diagnostics": [
         "CA1724"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
-        "library": "warning",
-        "application": "warning",
+        "library": "suggestion",
+        "application": "suggestion",
         "test": "none"
       },
       "naming": null
@@ -972,7 +970,7 @@
       "diagnostics": [
         "FDG3033"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1100,7 +1098,7 @@
       "diagnostics": [
         "CA1715"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1237,7 +1235,7 @@
       "diagnostics": [
         "FDG3051"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1439,7 +1437,7 @@
       "diagnostics": [
         "CA1712"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1483,7 +1481,7 @@
       "diagnostics": [
         "CA1721"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1499,7 +1497,7 @@
       "diagnostics": [
         "FDG3068"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1571,7 +1569,7 @@
       "diagnostics": [
         "CA1713"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1603,7 +1601,7 @@
       "diagnostics": [
         "FDG3075"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1804,7 +1802,7 @@
       "diagnostics": [
         "FDG3087"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "none",
@@ -1890,7 +1888,7 @@
       "diagnostics": [
         "CA1050"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -2345,7 +2343,7 @@
       "diagnostics": [
         "CA1700"
       ],
-      "autofix": "no",
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -11104,7 +11102,8 @@
       "text": "use the `nameof(...)` syntax, instead of a literal string, when referring to the name of a type, member, or parameter.",
       "section": "A.1.6 Other",
       "diagnostics": [
-        "CA1507"
+        "CA1507",
+        "IDE0280"
       ],
       "autofix": "yes",
       "severity": {
@@ -12621,6 +12620,7 @@
     "IDE0130",
     "IDE0250",
     "IDE0251",
+    "IDE0280",
     "IDE1006",
     "IDE2003"
   ],
@@ -12636,6 +12636,7 @@
     "CA1028",
     "CA1033",
     "CA1043",
+    "CA1050",
     "CA1051",
     "CA1052",
     "CA1054",
@@ -12645,9 +12646,18 @@
     "CA1063",
     "CA1065",
     "CA1068",
+    "CA1700",
     "CA1707",
+    "CA1708",
     "CA1710",
     "CA1711",
+    "CA1712",
+    "CA1713",
+    "CA1715",
+    "CA1716",
+    "CA1720",
+    "CA1721",
+    "CA1724",
     "CA1725",
     "CA1813",
     "CA1814",
@@ -12655,6 +12665,14 @@
     "CA2201",
     "CA2217",
     "CA2227",
+    "FDG3003",
+    "FDG3004",
+    "FDG3013",
+    "FDG3033",
+    "FDG3051",
+    "FDG3068",
+    "FDG3075",
+    "FDG3087",
     "FDG4013",
     "FDG5003",
     "FDG5004",

@@ -99,14 +99,14 @@
         System.IO
         System.Threading.IOCompletionCallback
         public void StartIO(Stream ioStream)
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG3003
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -117,7 +117,7 @@
   analyzer:
     message: 'Capitalize both characters of the two-character acronym ''{1}'' in ''{0}'''
     category: Naming
-  notes: "FDG3003 and FDG3004 report, in the names that externally visible declarations choose (namespaces, types, members, parameters and type parameters; not overrides or interface implementations), a word that is one of the acronyms chapter 3 itself names and that is cased otherwise than the book shows: IO and UI in capitals; Html, Xml, Rgb and Argb with only the first letter capitalized. The first word of a parameter name is left to FDG3005, and the I prefix of an interface and the T prefix of a type parameter are not part of the first word. Other acronyms are not checked, because the book gives no longer list."
+  notes: "FDG3003 and FDG3004 report, in the names that externally visible declarations choose (namespaces, types, members, parameters and type parameters; not overrides or interface implementations), a word that is one of the acronyms chapter 3 itself names and that is cased otherwise than the book shows: IO and UI in capitals; Html, Xml, Rgb and Argb with only the first letter capitalized. The first word of a parameter name is left to FDG3005, and the I prefix of an interface and the T prefix of a type parameter are not part of the first word. Other acronyms are not checked, because the book gives no longer list. Renaming a public name changes the public API, so the fix is breaking; FDG3003 has no code fix."
 - id: FDG3004
   strength: DO
   text: capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier.
@@ -130,14 +130,14 @@
         System.Xml
         System.Xml.XmlNode
         public void ProcessHtmlTag(string htmlTag)
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG3004
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -148,7 +148,7 @@
   analyzer:
     message: 'Capitalize only the first character of the acronym ''{1}'' in ''{0}'''
     category: Naming
-  notes: "Checked by the FDG3003 analyzer; see FDG3003 for the acronyms and the names it checks."
+  notes: Checked by the FDG3003 analyzer; see FDG3003 for the acronyms and the names it checks. Renaming a public name changes the public API, so the fix is breaking; FDG3004 has no code fix.
 - id: FDG3005
   strength: DO NOT
   text: capitalize any of the characters of any acronyms, whatever their length, at the beginning of a camel-cased identifier.
@@ -200,7 +200,7 @@
     - kind: annotation
       text: No matter how hard we try to follow all of these guidelines, sometimes we make mistakes. For example, `System.Text.UTF8Encoding` should really have been `System.Text.Utf8Encoding`. Now when we introduce new UTF8-related functionality, what do we do? Do we continue to use “UTF8” for consistency, or do we use “Utf8” for adherence to the guidelines? In general, we choose to not repeat the mistakes of the past, and newer types have used “Utf8”—for example, `System.Buffers.Text.Utf8Formatter`.
       author: Stephen Toub
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
@@ -216,7 +216,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: "IDE1006 reports camel-cased names that start with an uppercase acronym, such as 'IOStream', through the naming rules configured by FDGA056 and FDGA057. FDG3003 and FDG3004 check acronyms after the first word."
+  notes: IDE1006 reports camel-cased names that start with an uppercase acronym, such as 'IOStream', through the naming rules configured by FDGA055 (private and internal fields), FDGA056 (locals) and FDGA057 (parameters). FDG3003 and FDG3004 check acronyms after the first word.
   naming:
     symbols:
       - parameter
@@ -310,14 +310,14 @@
   section: 3.1.4 Case Sensitivity
   anchor: sec3_1_4
   body: []
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1708
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -327,7 +327,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'CA1708 is limited to the public API because chapter 3 governs public names; without the limit it reports private fields that differ by case from their public properties (docs/noise-samples.md).'
+  notes: CA1708 is limited to the public API because chapter 3 governs public names; without the limit it reports private fields that differ by case from their public properties (docs/noise-samples.md). Renaming a public member or type changes the public API, so the fix is breaking; CA1708 has no code fix.
 - id: FDG3008
   strength: DO
   text: choose easily readable identifier names.
@@ -448,14 +448,14 @@
     - kind: annotation
       text: When I was porting my *Applied Microsoft .NET Framework Programming* book from C# to Visual Basic, I ran into this situation a lot. For example, the class library has `Delegate`, `Module`, and `Assembly` classes, and Visual Basic uses these same terms for keywords. This problem is exacerbated by the fact that VB is a case-insensitive language. Visual Basic, like C#, has a way to escape the keywords to disambiguate the situation to the compiler (using square brackets), but I was surprised that the VB team selected keywords that conflict with so many class library names.
       author: Jeffrey Richter
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1716
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -464,7 +464,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1716 checks namespaces, types, and virtual or interface members against C#, Visual Basic, and C++/CLI keywords.
+  notes: CA1716 checks namespaces, types, virtual or interface members and the parameters of virtual or interface members against C#, Visual Basic, and C++/CLI keywords; non-virtual members are not checked (probe with SDK 10.0.402). Renaming a public namespace, type, member or parameter changes the public API, so the fix is breaking; CA1716 has no code fix.
 - id: FDG3013
   strength: DO
   text: use only ASCII characters in identifier names.
@@ -489,14 +489,14 @@
         | `Naïve` | `Naive` |
         | `Résumé` | `Resume` |
         | `Röntgen` | `Roentgen` |
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG3013
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -507,7 +507,7 @@
   analyzer:
     message: 'Use only ASCII characters in the name ''{0}'''
     category: Naming
-  notes: "FDG3013 reports a non-ASCII character in a name that an externally visible declaration chooses (see FDG3003 for which names). Locals and non-public members are not checked, as chapter 3 governs public names."
+  notes: FDG3013 reports a non-ASCII character in a name that an externally visible declaration chooses (see FDG3003 for which names). Locals and non-public members are not checked, as chapter 3 governs public names. Renaming a public name changes the public API, so the fix is breaking; FDG3013 has no code fix.
 - id: FDG3014
   strength: DO NOT
   text: use abbreviations or contractions as part of identifier names.
@@ -572,14 +572,14 @@
   body:
     - kind: paragraph
       text: For example, `GetLength` is a better name than `GetInt`.
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1720
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: suggestion
     application: suggestion
@@ -588,7 +588,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1720 reports language-specific type names in member names, such as 'GetInt'. It is a suggestion because it also reports ordinary words such as 'Long' and 'Short'.
+  notes: CA1720 reports a member or parameter whose whole name is a type name, language-specific or CLR, such as a property Long or Int32 or a parameter double (probe with SDK 10.0.402); a name that only contains one, such as GetInt, is not reported. It is a suggestion because it also reports ordinary words such as Long and Short. Renaming a public member or parameter changes the public API, so the fix is breaking; CA1720 has no code fix.
 - id: FDG3017
   strength: DO
   text: use a generic CLR type name, rather than a language-specific name, in the rare cases when an identifier has no semantic meaning beyond its type.
@@ -618,23 +618,22 @@
         | `char` | `Char` | `wchar_t` | `Char` |
         | `string` | `String` | `String` | `String` |
         | `object` | `Object` | `Object` | `Object` |
-  status: verified
+  status: draft
   style: false
   check:
-    kind: sdk
-    diagnostics:
-      - CA1720
-    coverage: partial
+    kind: judgment
+    diagnostics: []
+    coverage: none
   autofix: no
   severity:
-    library: suggestion
-    application: suggestion
+    library: warning
+    application: warning
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1720 also reports common English words such as Long and Short, so it is a suggestion rather than a warning.
+  notes: "Not mapped to CA1720: in a probe with SDK 10.0.402 it reported only members and parameters whose whole name is a type name, CLR names such as Int32 included, and not names such as ToLong that contain a language-specific name."
 - id: FDG3018
   strength: DO
   text: use a common name, such as *value* or *item*, rather than repeating the type name, in the rare cases when an identifier has no semantic meaning and the type of the parameter is not important.
@@ -649,14 +648,14 @@
         void Write(double value);
         void Write(float value);
         void Write(short value);
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1720
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: suggestion
     application: suggestion
@@ -665,7 +664,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1720 reports parameter names that are built-in or CLR type names, such as 'double' or 'int32'; it does not see names of other types, such as 'stream'.
+  notes: CA1720 reports parameter names that are built-in or CLR type names, such as 'double' or 'int32'; it does not see names of other types, such as 'stream'. Renaming a public parameter changes the public API (Appendix D.11.1), so the fix is breaking; CA1720 has no code fix.
 - id: FDG3019
   strength: DO
   text: use a name similar to the old API when creating new versions of an existing API.
@@ -813,7 +812,7 @@
         public class CarNew     { ... } // the wrong way
         public class Car2       { ... } // an acceptable way
         public class Automobile { ... } // a better way
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
@@ -829,7 +828,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1711 reports the Ex and New suffixes when a member or type without the suffix exists. Unlike the other versioning guidelines it applies to applications too, as a naming rule (CA1711 is shared with FDG3052, FDG3055, FDG3062, and FDG3063). Removing the suffix renames a public member or type, which changes the public API, so the fix is breaking; CA1711 has no code fix.
+  notes: CA1711 reports a type name that ends with Ex or New, a member name that ends with Ex, and a member name that ends with New when the type also has a member with the name without the suffix (probe with SDK 10.0.402); similar suffixes are not detected. Unlike the other versioning guidelines it applies to applications too, as a naming rule (CA1711 is shared with FDG3052, FDG3055, FDG3062, and FDG3063). Removing the suffix renames a public member or type, which changes the public API, so the fix is breaking; CA1711 has no code fix.
 - id: FDG3024
   strength: DO
   text: use the “64” suffix when introducing versions of APIs that operate on a 64-bit integer (a long integer) instead of a 32-bit integer. You only need to take this approach when the existing 32-bit API exists; don’t do it for brand-new APIs with only a 64-bit version.
@@ -1072,23 +1071,23 @@
       text: For example, do not use `Debug` as a namespace name and then also provide a class named `Debug` in the same namespace. Several compilers require such types to be fully qualified.
     - kind: paragraph
       text: These guidelines cover general namespace naming guidelines, but the next section provides specific guidelines for certain special subnamespaces.
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1724
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
-    library: warning
-    application: warning
+    library: suggestion
+    application: suggestion
     test: none
   config: []
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1724 reports type names that match a namespace name, including framework namespaces such as System.Data (see FDG3035).
+  notes: "CA1724 reports a type whose name matches a namespace, including namespaces of referenced assemblies that the type is not in, such as a type Data and System.Data (probe with SDK 10.0.402); the rule text covers only a type in that namespace, so those reports are not violations. Noise: lowered to suggestion (2 false positives of 3 reports). Renaming a public type changes the public API, so the fix is breaking; CA1724 has no code fix."
 - id: FDG3033
   strength: DO NOT
   text: introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`.
@@ -1106,14 +1105,14 @@
         - Infrastructure namespaces
         - Core namespaces
         - Technology namespace groups
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG3033
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1124,7 +1123,7 @@
   analyzer:
     message: 'Qualify the overly general type name ''{0}'''
     category: Naming
-  notes: "FDG3033 reports an externally visible type (any kind, any arity) named exactly Element, Node, Log or Message, the names the rule text lists. Other overly general names are not detected."
+  notes: FDG3033 reports an externally visible type (any kind, any arity) named exactly Element, Node, Log or Message, the names the rule text lists. Other overly general names are not detected. Renaming a public type changes the public API, so the fix is breaking; FDG3033 has no code fix.
 - id: FDG3034
   strength: DO NOT
   text: give the same name to multiple types across namespaces within a single application model.
@@ -1161,7 +1160,7 @@
       text: For example, never use `Stream` as a type name. It would conflict with `System.IO.Stream`, a very commonly used type.
     - kind: paragraph
       text: By the same token, do not add a type named `EventLog` to the `System.Diagnostics.Events` namespace, because the `System.Diagnostics` namespace already contains a type named `EventLog`.
-  status: verified
+  status: draft
   style: false
   check:
     kind: judgment
@@ -1176,7 +1175,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: Core namespaces are all System namespaces except application model namespaces and infrastructure namespaces (such as *.Design and *.Permissions), for example System, System.IO, System.Xml, and System.Net. CA1724 reports some of these conflicts (see FDG3032).
+  notes: "Core namespaces are all System namespaces except application model namespaces and infrastructure namespaces (such as *.Design and *.Permissions), for example System, System.IO, System.Xml, and System.Net. CA1724 does not check this rule: it compares type names with namespace names, not with the types of the core namespaces (a type named Stream or EventLog is not reported; probe with SDK 10.0.402)."
 - id: FDG3036
   strength: DO NOT
   text: assign type names that would conflict with other types within a single technology.
@@ -1348,14 +1347,14 @@
   body:
     - kind: paragraph
       text: For example, `IComponent` (descriptive noun), `ICustomAttributeProvider` (noun phrase), and `IPersistable` (adjective) are appropriate interface names. As with other type names, avoid abbreviations.
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1715
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1364,7 +1363,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming a public interface changes the public API, so the fix is breaking; CA1715 has no code fix.
 - id: FDG3043
   strength: DO
   text: ensure that the names differ only by the “I” prefix on the interface name when you are defining a class–interface pair where the class is a standard implementation of the interface.
@@ -1521,7 +1520,7 @@
       text: |-
         public class ElementStream : Object { ... }
         public class WindowsAttribute : Control { ... }
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
@@ -1538,7 +1537,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 and CA1711 have no code fix.
+  notes: By default (dotnet_code_quality.CA1710.exclude_indirect_base_types = true) CA1710 checks only the direct base type, so a type derived from a subclass, such as an exception derived from ArgumentException or a class derived from Dictionary<TKey, TValue>, is not reported (probe with SDK 10.0.402). Renaming a public type changes the public API, so the fix is breaking; CA1710 and CA1711 have no code fix.
 - id: FDG3049
   strength: DO
   text: add the suffix “Attribute” to names of custom attribute classes.
@@ -1546,13 +1545,13 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1710
-    coverage: full
+    coverage: partial
   autofix: breaking
   severity:
     library: warning
@@ -1562,7 +1561,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 reports a class derived directly from System.Attribute whose name does not end with Attribute; with its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report an attribute derived from another attribute class (probe with SDK 10.0.402), although the body of FDG3048 applies the suffixes to the whole hierarchy, so coverage is partial. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3050
   strength: DO
   text: add the suffix “EventHandler” to names of delegates that are used in events.
@@ -1594,14 +1593,14 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG3051
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1612,7 +1611,7 @@
   analyzer:
     message: 'Add the suffix ''Callback'' to the delegate ''{0}'', which no event in this assembly uses'
     category: Naming
-  notes: "FDG3051 reports an externally visible delegate whose name ends with neither 'Callback' nor 'EventHandler' and that no event declared in the same compilation uses. A delegate named '...EventHandler' is left to FDG3050 and FDG3074."
+  notes: FDG3051 reports an externally visible delegate whose name ends with neither 'Callback' nor 'EventHandler' and that no event declared in the same compilation uses. A delegate named '...EventHandler' is left to FDG3050 and FDG3074. Renaming a public delegate changes the public API, so the fix is breaking; FDG3051 has no code fix.
 - id: FDG3052
   strength: DO NOT
   text: add the suffix “Delegate” to a delegate.
@@ -1644,13 +1643,13 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1710
-    coverage: full
+    coverage: partial
   autofix: breaking
   severity:
     library: warning
@@ -1660,7 +1659,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 reports a class derived directly from System.EventArgs whose name does not end with EventArgs; with its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report a class derived from another EventArgs class, such as CancelEventArgs (probe with SDK 10.0.402), so coverage is partial. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3054
   strength: DO NOT
   text: derive from this class; use the keyword supported by your language instead; for example, in C#, use the `enum` keyword.
@@ -1715,13 +1714,13 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1710
-    coverage: full
+    coverage: partial
   autofix: breaking
   severity:
     library: warning
@@ -1731,7 +1730,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 reports a class derived directly from System.Exception whose name does not end with Exception; with its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report a class derived from another exception class, such as ArgumentException (probe with SDK 10.0.402), so coverage is partial. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3057
   strength: DO
   text: add the suffix “Dictionary.” Note that `IDictionary` is a specific type of collection, but this guideline takes precedence over the more general collections guideline that follows.
@@ -1763,7 +1762,7 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
@@ -1779,7 +1778,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1710 does not know the exception for reusable, specialized data structures. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 does not know the exception for reusable, specialized data structures. With its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report a type derived from List<T> or Collection<T>, nor a type that implements only IEnumerable<T> (probe with SDK 10.0.402). Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3059
   strength: DO
   text: add the suffix “Stream.”
@@ -1787,13 +1786,13 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1710
-    coverage: full
+    coverage: partial
   autofix: breaking
   severity:
     library: warning
@@ -1803,7 +1802,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 reports a class derived directly from System.IO.Stream whose name does not end with Stream; with its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report a class derived from another stream class, such as MemoryStream (probe with SDK 10.0.402), so coverage is partial. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3060
   strength: DO
   text: use a singular type name for an enumeration unless its values are bit fields.
@@ -1959,14 +1958,14 @@
     - kind: annotation
       text: Notice that this guideline is the exact opposite of common usage in C++ programming. It is important in C++ to fully qualify each enum member because they can be accessed outside of the scope of the enum name. However, in the managed world, enum members are only accessed through the scope of the enum name.
       author: Brad Abrams
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1712
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1975,7 +1974,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1712 reports only the enum's own type name as a prefix.
+  notes: CA1712 reports only the enum's own type name as a prefix. Renaming public enum values changes the public API, so the fix is breaking; CA1712 has no code fix.
 - id: FDG3065
   strength: DO
   text: give methods names that are verbs or verb phrases.
@@ -2047,14 +2046,14 @@
         public string GetTextWriter(int value) { ... }
     - kind: paragraph
       text: This pattern typically indicates that the property should really be a method. See section 5.1.3 for additional information.
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1721
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2063,7 +2062,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: Renaming the property or the Get method changes the public API, so the fix is breaking; CA1721 has no code fix.
 - id: FDG3068
   strength: DO
   text: name collection properties with a plural phrase describing the items in the collection instead of using a singular phrase followed by “List” or “Collection.”
@@ -2080,14 +2079,14 @@
           // bad naming
           public ItemCollection ItemCollection { get; }
         }
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG3068
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2098,7 +2097,7 @@
   analyzer:
     message: 'Name the collection property ''{0}'' with a plural phrase instead of a ''List'' or ''Collection'' suffix'
     category: Naming
-  notes: "FDG3068 reports an externally visible property of an array or IEnumerable type (other than string) whose last word is 'List' or 'Collection', as in the book's bad example. It cannot tell whether the rest of the name is a plural phrase. Overrides and interface implementations are not reported. Known limitation: a compound noun that ends in the word List, such as MailingList or WhiteList, is reported too; the rule text gives no list of such nouns to exclude."
+  notes: "FDG3068 reports an externally visible property of an array or IEnumerable type (other than string) whose last word is 'List' or 'Collection', as in the book's bad example. It cannot tell whether the rest of the name is a plural phrase. Overrides and interface implementations are not reported. Known limitation: a compound noun that ends in the word List, such as MailingList or WhiteList, is reported too; the rule text gives no list of such nouns to exclude. Renaming a public property changes the public API, so the fix is breaking; FDG3068 has no code fix."
 - id: FDG3069
   strength: DO
   text: name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value.
@@ -2235,14 +2234,14 @@
   section: 3.6.3 Names of Events
   anchor: sec3_6_3
   body: []
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1713
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2251,7 +2250,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1713 reports the Before and After prefixes, not postfixes.
+  notes: CA1713 reports the Before and After prefixes, not postfixes. Renaming a public event changes the public API, so the fix is breaking; CA1713 has no code fix.
 - id: FDG3074
   strength: DO
   text: name event handlers (delegates used as types of events) with the “EventHandler” suffix, such as `ClickedEventHandler`.
@@ -2301,14 +2300,14 @@
       text: |-
         public delegate void <EventName>EventHandler(object sender,
                                                      <EventName>EventArgs e);
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG3075
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2319,7 +2318,7 @@
   analyzer:
     message: 'Name the two parameters of the event handler ''{0}'' ''sender'' and ''e'''
     category: Naming
-  notes: "FDG3075 reports an externally visible delegate that an event in the same compilation uses, or whose name ends with 'EventHandler', when its parameters are not exactly 'sender' and 'e'. Parameter types are not checked."
+  notes: FDG3075 reports an externally visible delegate that an event in the same compilation uses, or whose name ends with 'EventHandler', when its parameters are not exactly 'sender' and 'e'. Parameter types are not checked. Renaming or changing the parameters of a public delegate changes the public API (Appendix D.11.1), so the fix is breaking; FDG3075 has no code fix.
 - id: FDG3076
   strength: DO
   text: 'name event argument classes with the “EventArgs” suffix, as shown in the following example:'
@@ -2339,13 +2338,13 @@
           public int X { get { return x; } }
           public int Y { get { return y; } }
         }
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1710
-    coverage: full
+    coverage: partial
   autofix: breaking
   severity:
     library: warning
@@ -2355,7 +2354,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 reports a class derived directly from System.EventArgs whose name does not end with EventArgs; with its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report a class derived from another EventArgs class, such as CancelEventArgs (probe with SDK 10.0.402), so coverage is partial. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3077
   strength: DO
   text: use PascalCasing in field names.
@@ -2657,14 +2656,14 @@
       text: The types and members automatically generated by a resource editor should use the `internal` access modifier.
     - kind: paragraph
       text: When it does make sense to expose a resource via public API, use intentional type and member design.
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG3087
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: none
@@ -2675,4 +2674,4 @@
   analyzer:
     message: 'Make the resource class ''{0}'' internal'
     category: Naming
-  notes: "FDG3087 reports an externally visible class marked [GeneratedCode(\"System.Resources.Tools.StronglyTypedResourceBuilder\", ...)], a resource class that a resource editor generated as public. Resources exposed through hand-written members are not detected. Library profile only: an application's resource classes are not public API, so this rule is off in the application profile."
+  notes: "FDG3087 reports an externally visible class marked [GeneratedCode(\"System.Resources.Tools.StronglyTypedResourceBuilder\", ...)], a resource class that a resource editor generated as public. Resources exposed through hand-written members are not detected. Library profile only: an application's resource classes are not public API, so this rule is off in the application profile. Making a public class internal removes it from the public API, so the fix is breaking; FDG3087 has no code fix."

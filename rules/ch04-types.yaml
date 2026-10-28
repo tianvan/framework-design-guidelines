@@ -180,14 +180,14 @@
     - kind: annotation
       text: Namespaces are a language thing. The CLR doesn’t know anything about them, really. As far as the CLR is concerned, the name of the class really is something like `MyNameSpace.MyOtherNameSpace.MyAmazingType`. The compilers give you syntax (e.g., “using”) so that you don’t have to type those long class names all the time. So the CLR is never confused about class names because everything is always fully qualified.
       author: Rico Mariani
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1050
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -196,7 +196,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1050 reports externally visible types declared outside any namespace; internal types in the global namespace are not reported. CA1050 has no code fix.
+  notes: CA1050 reports externally visible types declared outside any namespace; internal types in the global namespace are not reported. Moving a public type into a namespace changes its full name, which changes the public API, so the fix is breaking; CA1050 has no code fix.
 - id: FDG4007
   strength: CONSIDER
   text: defining a struct instead of a class if instances of the type are small and commonly short-lived or are commonly embedded in other objects, especially arrays.
@@ -1252,14 +1252,14 @@
           ReservedForFutureUse1,
           ReservedForFutureUse2,
         }
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1700
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1268,7 +1268,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1700 reports enum values whose names contain 'Reserved'. Reserved values with other names are not detected. CA1700 has no code fix.
+  notes: CA1700 reports enum values whose names contain 'Reserved'. Reserved values with other names are not detected. Removing or renaming a public enum value changes the public API, so the fix is breaking; CA1700 has no code fix.
 - id: FDG4038
   strength: AVOID
   text: publicly exposing enums with only one value.

@@ -89,6 +89,31 @@ For acronym capitalization rules, see section 3.1.2.
 
 > **Brad Abrams:** We continually debate about whether a given acronym is well known or not. A good divining rod is what I call the grep test. Simply use some search engine to grep the Web for the acronym. If the first few results returned are indeed the meaning you intend, it is likely that your acronym qualifies as well known; if you don’t get those search results, think harder about the name. If you fail the test, don’t just spell out the acronym but consider how you can be descriptive in the name.
 
+## FDG3017
+
+DO use a generic CLR type name, rather than a language-specific name, in the rare cases when an identifier has no semantic meaning beyond its type.
+
+For example, a method converting to `System.Int64` should be named `ToInt64`, not `ToLong` (because `System.Int64` is a CLR name for the C#-specific alias `long`). Table 3-4 presents several base data types using the CLR type names (as well as the corresponding type names for C#, Visual Basic, and C++).
+
+**Table 3-4: CLR Type Names for Language-Specific Type Names**
+
+| C# | Visual Basic | C++ | CLR |
+| --- | --- | --- | --- |
+| `Sbyte` | `SByte` | `char` | `SByte` |
+| `Byte` | `Byte` | `unsigned char` | `Byte` |
+| `short` | `Short` | `short` | `Int16` |
+| `ushort` | `UInt16` | `unsigned short` | `UInt16` |
+| `int` | `Integer` | `int` | `Int32` |
+| `uint` | `UInt32` | `unsigned int` | `UInt32` |
+| `long` | `Long` | `__int64` | `Int64` |
+| `ulong` | `UInt64` | `unsigned __int64` | `UInt64` |
+| `float` | `Single` | `float` | `Single` |
+| `double` | `Double` | `double` | `Double` |
+| `bool` | `Boolean` | `bool` | `Boolean` |
+| `char` | `Char` | `wchar_t` | `Char` |
+| `string` | `String` | `String` | `String` |
+| `object` | `Object` | `Object` | `Object` |
+
 ## FDG3019
 
 DO use a name similar to the old API when creating new versions of an existing API.

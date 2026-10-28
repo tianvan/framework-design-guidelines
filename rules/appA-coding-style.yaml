@@ -11,13 +11,13 @@
         {
             DoSomething();
         }
-  status: verified
+  status: draft
   style: true
   check:
     kind: sdk
     diagnostics:
       - IDE0055
-    coverage: full
+    coverage: partial
   autofix: yes
   severity:
     library: warning
@@ -28,7 +28,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE0055 keeps blocks that open and close on one line (csharp_preserve_single_line_blocks = true, for FDGA008); FDGA003 reports those of statements and member bodies.
 - id: FDGA002
   strength: DO
   text: align the closing brace with the opening brace.
@@ -80,14 +80,14 @@
         {
             ...
         }
-  status: verified
+  status: draft
   style: true
   check:
     kind: fdg
     diagnostics:
       - FDGA003
       - IDE0055
-    coverage: full
+    coverage: partial
   autofix: yes
   severity:
     library: warning
@@ -104,7 +104,7 @@
   analyzer:
     message: Place the closing brace on its own line
     category: Layout
-  notes: IDE0055 moves else, catch, and finally, and statements that follow an opening brace, to their own lines. FDGA003 reports the remaining closing braces that share a line, except the end of a do-while statement, single-line accessor lists such as '{ get; set; }' (FDGA008), initializers, and lambda bodies.
+  notes: IDE0055 moves else, catch, and finally, and statements that follow an opening brace, to their own lines. FDGA003 reports the remaining closing braces that share a line, except the end of a do-while statement, single-line accessor lists such as '{ get; set; }' (FDGA008), initializers, and lambda bodies. Type bodies such as 'class Empty { }', anonymous methods, and a do body on one line ('do { M(); } while (c);') are not reported either.
 - id: FDGA004
   strength: AVOID
   text: omitting braces, even if the language allows it.
@@ -127,7 +127,7 @@
         case 0:
            DoSomething();
            break;
-  status: verified
+  status: draft
   style: true
   check:
     kind: fdg
@@ -146,7 +146,7 @@
   analyzer:
     message: Enclose the embedded statement in braces
     category: Layout
-  notes: 'FDGA004 reports the embedded statement of if, else, for, foreach, while, do, using, lock and fixed when it is not a block, as IDE0011 does, and exempts argument validation preambles (FDGA005): the run of if...throw statements without else at the start of a method, constructor, accessor, operator, local function or lambda body, up to the first blank line. Like IDE0011, it does not report an else if, a using, lock or fixed statement directly nested in one of the same kind, or a statement with a preprocessor directive between its keyword and the end of its embedded statement. IDE0011 is not mapped because it does not know the preamble exception.'
+  notes: "FDGA004 reports the embedded statement of if, else, for, foreach, while, do, using, lock and fixed when it is not a block, as IDE0011 does, and exempts argument validation preambles (FDGA005): the run of if...throw statements without else at the start of a method, constructor, accessor, operator, local function or lambda body, up to the first blank line. Like IDE0011, it does not report an else if, a using, lock or fixed statement whose embedded statement is another statement of the same kind, or a statement with a preprocessor directive between its keyword and the end of its embedded statement. IDE0011 is not mapped because it does not know the preamble exception."
 - id: FDGA005
   strength: CONSIDER
   text: omitting braces in an argument validation preamble.
@@ -1544,7 +1544,7 @@
             internal long HitCount { get; private set; }
             internal long MissCount { get; private set; }
         }
-  status: verified
+  status: draft
   style: true
   check:
     kind: sdk
@@ -1561,7 +1561,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: With C# 14 and later, IDE0032 also reports a property whose accessors have logic around one backing field, such as validation in the setter or a call after the assignment, and its fix turns it into a property that uses the field keyword (probe with SDK 10.0.402 and the default language version of net10.0); that is not an auto-implemented property.
 - id: FDGA047
   strength: DO
   text: restrict code to ASCII characters, and use Unicode escape sequences (`\uXXXX`) when needed for non-ASCII values.
@@ -1607,12 +1607,13 @@
       text: |-
         Right: throw new ArgumentNullException(nameof(target));
         Wrong: throw new ArgumentNullException("target");
-  status: verified
+  status: draft
   style: true
   check:
     kind: sdk
     diagnostics:
       - CA1507
+      - IDE0280
     coverage: partial
   autofix: yes
   severity:
@@ -1623,7 +1624,7 @@
   minLanguage: "6"
   alternative: Before C# 6, use a string literal that matches the name exactly.
   analyzer: null
-  notes: CA1507 reports string literals that match a parameter or property name.
+  notes: "CA1507 reports string literals that match a parameter or property name. IDE0280 reports parameter names written as string literals in attribute arguments such as [NotNullIfNotNull(\"value\")] (C# 11 and later)."
 - id: FDGA049
   strength: DO
   text: apply the `readonly` modifier to fields when possible.
@@ -2328,7 +2329,7 @@
         {
             ...
         }
-  status: verified
+  status: draft
   style: true
   check:
     kind: sdk
@@ -2345,7 +2346,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE0065's fix can change which type a name binds to when an enclosing namespace declares a type with the same name as an imported one; review the moved directives.
 - id: FDGA071
   strength: DO
   text: sort the using directives alphabetically, but place all System namespaces first.

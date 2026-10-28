@@ -19,6 +19,10 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG3014** DO NOT use abbreviations or contractions as part of identifier names. — examples: examples/ch03-naming.md#fdg3014
 - **FDG3015** DO NOT use any acronyms that are not widely accepted, and even if they are, only when necessary. — examples: examples/ch03-naming.md#fdg3015
 
+## 3.2.3 Avoiding Language-Specific Names
+
+- **FDG3017** DO use a generic CLR type name, rather than a language-specific name, in the rare cases when an identifier has no semantic meaning beyond its type. — examples: examples/ch03-naming.md#fdg3017
+
 ## 3.2.4 Naming New Versions of Existing APIs
 
 - **FDG3019** DO use a name similar to the old API when creating new versions of an existing API. (library only) — examples: examples/ch03-naming.md#fdg3019

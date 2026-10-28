@@ -56,8 +56,8 @@ counts. FDGA004 replaces IDE0011 (see the notes).
 | CA1708 | FDG3007 | 0 | 0 | 0 | 0 | 5 | 5 | 0 | 5 | Narrowed to the public API (`dotnet_code_quality.CA1708.api_surface = public`), because chapter 3 governs public names. See the notes. |
 | CA1711 | FDG3023 and others | 0 | 0 | 0 | 1 | 3 | 4 | 0 | 4 | None needed. |
 | CA1716 | FDG3012 | 12 | 0 | 0 | 0 | 0 | 12 | 0 | 12 | None needed. |
-| CA1720 | FDG3016, FDG3017, FDG3018 | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | Over the threshold (n = 1). Already `suggestion` in every profile; no change. |
-| CA1724 | FDG3032 | 0 | 0 | 0 | 0 | 3 | 3 | 2 | 1 | Over the threshold (n = 3). No change yet; see the notes. |
+| CA1720 | FDG3016, FDG3018 (and FDG3017 until phase 2) | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | Over the threshold (n = 1). Already `suggestion` in every profile; no change. |
+| CA1724 | FDG3032 | 0 | 0 | 0 | 0 | 3 | 3 | 2 | 1 | Over the threshold (n = 3). FDG3032 lowered to suggestion in phase 2; see the notes. |
 | FDGA003 | FDGA003 | 0 | 0 | 0 | 1 | 9 | 10 | 0 | 10 | None needed. |
 | FDGA004 | FDGA004 | 109 | 0 | 0 | 6 | 94 | 20 | 0 | 20 | R6: this project's analyzer, which exempts argument validation preambles (FDGA005), replaces IDE0011. |
 | FDGA023 | FDGA023 | 141 | 89 | 986 | 20 | 84 | 20 | 0 | 20 | R6: narrowed so that an enclosing operator expression no longer makes a list long. Under the threshold after the narrowing. |
@@ -103,8 +103,10 @@ counts. FDGA004 replaces IDE0011 (see the notes).
   borderline case is an `if`...`throw` that follows a guard call (`Guard.AgainstNull(name);`); the book says code
   other than `if`...`throw` ends the preamble, so it is a true warning.
 - **CA1724.** Two of the three reports name a type the same as a framework namespace that the type is not in; the
-  FDG3032 text covers only "a type in that namespace". The sample is too small for a decision, and FDG3032's notes
-  deliberately include framework namespaces, so the mapping is left unchanged.
+  FDG3032 text covers only "a type in that namespace". The sample was too small for a decision at first. In phase 2
+  a probe confirmed that CA1724 compares a type name with the namespaces of referenced assemblies too, so these
+  reports are not violations: FDG3032 is now a suggestion in the library and application profiles (2 false positives
+  of 3, as for FDG4022 and FDG4044), and its notes say so.
 - **CA1708.** In the first measurement (internal-b 70), all 20 checked reports were a private field and a public
   property whose names differ only by case. The rule text states no exception, so they were true warnings, but chapter
   3 governs public names, and polly's own configuration also limits CA1708 to the public API surface. FDG3007 now sets
