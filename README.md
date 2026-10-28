@@ -25,7 +25,8 @@ Microsoft or Pearson. See [NOTICE](https://github.com/tianvan/framework-design-g
 
 ## Requirements
 
-- .NET SDK 8.0.100 or later (CI and the pilot used 10.0.402). A `.slnx` solution needs SDK 9.0.200 or later.
+- .NET SDK 8.0.100 or later (CI and the pilot used 10.0.402). Some rules need SDK 10.0.100 or later; with an older
+  SDK, the session start message says so. A `.slnx` solution needs SDK 9.0.200 or later.
 - SDK-style C# projects. Projects can still target .NET Framework or .NET Standard and use C# 7.3: the SDK version
   is independent of the target framework.
 - For the plugin: Claude Code or Codex, and git. On Windows, Git for Windows (Claude Code runs the hooks in Git

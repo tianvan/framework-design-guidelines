@@ -21,8 +21,8 @@
 - 参考文件（`references/` 下每个 `.md`，包括 `examples/`）不超过 32768 字节；fdg-write 的 SKILL.md 不超过 500 行。
 - 自写分析器门槛（§5）：能用语法或符号信息直接判定；在噪音样本上抽查误报不超过 1/20；有 CodeFix 时不改公开 API 的签名或名称，并支持 FixAll。每个分析器都要有正反例测试、C# 7.3 测试、CodeFix 测试（如果有），帮助页由生成器产生。
 - “误报”的定义（§7）：报告的位置实际符合书中原文（含原文写明的例外）。不规范代码产生的真实警告不算误报，但单独计数。
-- 试点克隆 `D:\Repos\fdg-pilot\`：只构建、统计和抽查。不做任何 git 操作，不修改源文件。写进仓库的结果全部匿名，不出现项目、命名空间或路径名。
-- 不修改 `D:\DigitalTeachingPlatform-PC` 和 `D:\Repos\DigitalTeachingPlatform-PC`。
+- 试点克隆（the pilot clone）：只构建、统计和抽查。不做任何 git 操作，不修改源文件。写进仓库的结果全部匿名，不出现项目、命名空间或路径名。
+- 不修改用户的内部仓库（the user's internal repositories）。
 - 交叉核对代理由控制者派发，实施者不派发子代理。规则只有在交叉核对同意后才能改为 `verified`。
 - 推送到远端前必须询问用户（第一期的推送授权不延续到本期）。
 - `docs/phase-2-backlog.md` 中 “Hooks and CLI” 和 “Before the first release” 两节不在本期范围内，例外见 §2。

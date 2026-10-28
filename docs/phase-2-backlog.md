@@ -6,14 +6,6 @@ These are known issues and open decisions left over from the vertical slice (cha
 
 The design calls for full coverage of the book before version 1.0. Until then, releases are previews.
 
-- Write a README:
-  - a statement of independence from the book's authors and publisher;
-  - install steps for both hosts;
-  - which chapters are covered;
-  - the minimum SDK and VS versions;
-  - the optional "run `dotnet fdg fix` first, commit it separately, and add the commit to `.git-blame-ignore-revs`" workflow.
-- Set a preview version, for example `0.1.0-preview.1`.
-- Publish the analyzer package and `dotnet-fdg` to nuget.org. Once they are published, check that `docs/install.md` works exactly as written.
 - Add a CI job on SDK 8.0.1xx running the integration tests, or raise the documented minimum SDK to a tested version. `.slnx` needs SDK 9.0.200 or later.
 - Pin GitHub Actions to commit SHAs, on versions that run on Node.js 24 (CI warns that Node.js 20 is deprecated).
 - Not yet verified on a real host:
@@ -21,6 +13,13 @@ The design calls for full coverage of the book before version 1.0. Until then, r
   - Codex SessionStart after compaction;
   - re-approving Codex hooks after a plugin update;
   - the interactive confirmation path of `/fdg-setup`.
+- Bump the version before the next release, in `Directory.Build.props`, both `plugin.json` files and
+  `.claude-plugin/marketplace.json` (`check` fails when they differ).
+- `ExistingApi` judges a diagnostic only by its location: when `IDisposable` and a faulty `Dispose` are added to an
+  existing type, CA1063 is reported on the type's name and counted as existing API, so Stop does not send it back. For
+  a diagnostic on a type declaration, also compare the base type list with the baseline.
+- The reference file names mix casing: `appA-coding-style.md` keeps the appendix letter's case, while the split names
+  such as `appd-breaking-changes-d-1-to-d-8.md` must be lowercase. Pick one before the paths are relied on.
 
 ## Generator
 
