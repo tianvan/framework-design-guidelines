@@ -36,6 +36,24 @@ public sealed class RulesManifestTests
             e.Message);
     }
 
+    /// <summary>
+    /// breakingFixDiagnostics is derived from the rules' autofix values; this pins representative entries of the
+    /// shipped data, so a rule set back to autofix yes by mistake is caught here.
+    /// </summary>
+    [Fact]
+    public void Shipped_rules_json_holds_the_breaking_fix_diagnostics()
+    {
+        string path = Path.Combine(RepositoryRoot(), "src", "FrameworkDesignGuidelines.Package", "data", "rules.json");
+
+        RulesManifest manifest = RulesManifest.Load(path);
+
+        Assert.All(
+            new[] { "CA1710", "CA1711", "CA1724", "CA1034", "FDG3006", "FDG4026" },
+            id => Assert.Contains(id, manifest.BreakingFixDiagnostics));
+        Assert.DoesNotContain("IDE0055", manifest.BreakingFixDiagnostics);
+        Assert.Equal(manifest.BreakingFixDiagnostics, RulesManifest.LoadEmbedded().BreakingFixDiagnostics);
+    }
+
     private static string RepositoryRoot()
     {
         for (DirectoryInfo? directory = new(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)

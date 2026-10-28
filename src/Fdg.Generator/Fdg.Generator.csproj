@@ -18,4 +18,8 @@
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Fdg.Generator.Tests" />
+  </ItemGroup>
+
 </Project>

@@ -87,9 +87,10 @@ public static class RuleDocEmitter
     /// <summary>
     /// Escapes the characters of book text and notes that GitHub would otherwise read as Markdown: a <c>&lt;</c> that
     /// could open an HTML tag, such as <c>&lt;project root&gt;</c> or <c>List&lt;T&gt;</c>, and a <c>_</c> that could
-    /// open or close emphasis, which is any <c>_</c> that is not between two letters or digits. Code spans, fenced
-    /// code, link destinations, backslash escapes and the extractor's own <c>&lt;br&gt;</c> and <c>&lt;sup&gt;</c>
-    /// markup are kept as they are. Skill references are not escaped: the AI reads them as text.
+    /// open or close emphasis, which is any <c>_</c> that is not between two letters or digits. Code spans, code
+    /// fenced with <c>```</c> or <c>~~~</c>, link destinations, autolinks such as <c>&lt;https://...&gt;</c>, backslash
+    /// escapes and the extractor's own <c>&lt;br&gt;</c> and <c>&lt;sup&gt;</c> markup are kept as they are, so
+    /// escaping twice gives the same text. Skill references are not escaped: the AI reads them as text.
     /// </summary>
     internal static string EscapeLiterals(string markdown)
     {
@@ -104,7 +105,8 @@ public static class RuleDocEmitter
             }
 
             string line = lines[i];
-            if (line.TrimStart(' ', '>').StartsWith("```", StringComparison.Ordinal))
+            string start = line.TrimStart(' ', '>');
+            if (start.StartsWith("```", StringComparison.Ordinal) || start.StartsWith("~~~", StringComparison.Ordinal))
             {
                 inFence = !inFence;
                 text.Append(line);
@@ -149,9 +151,10 @@ public static class RuleDocEmitter
             }
             else if (c == '<')
             {
-                string? tag = KeptTags.FirstOrDefault(t => string.CompareOrdinal(line, i, t, 0, t.Length) == 0);
-                next = i + (tag?.Length ?? 1);
-                text.Append(tag ?? "&lt;");
+                string? kept = KeptTags.FirstOrDefault(t => string.CompareOrdinal(line, i, t, 0, t.Length) == 0)
+                    ?? Autolink(line, i);
+                next = i + (kept?.Length ?? 1);
+                text.Append(kept ?? "&lt;");
             }
             else if (c == '_' && !(i > 0 && char.IsLetterOrDigit(line[i - 1]) && next < line.Length
                 && char.IsLetterOrDigit(line[next])))
@@ -167,7 +170,26 @@ public static class RuleDocEmitter
         }
     }
 
-    private static readonly string[] KeptTags = { "<br>", "<sup>", "</sup>" };
+    private static readonly string[] KeptTags = { "<br>", "<br/>", "<br />", "<sup>", "</sup>" };
+
+    private static readonly string[] AutolinkSchemes = { "http://", "https://", "mailto:" };
+
+    /// <summary>The CommonMark autolink that starts at <paramref name="start"/>, such as <c>&lt;https://...&gt;</c>, or null.</summary>
+    private static string? Autolink(string line, int start)
+    {
+        if (!AutolinkSchemes.Any(s => string.Compare(line, start + 1, s, 0, s.Length, StringComparison.OrdinalIgnoreCase) == 0))
+        {
+            return null;
+        }
+
+        int end = start + 1;
+        while (end < line.Length && line[end] is not ('>' or '<' or ' '))
+        {
+            end++;
+        }
+
+        return end < line.Length && line[end] == '>' ? line.Substring(start, end - start + 1) : null;
+    }
 
     /// <summary>The characters a backslash escapes in CommonMark.</summary>
     private static bool IsAsciiPunctuation(char c)

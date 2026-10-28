@@ -21,7 +21,7 @@ public static class CoverageEmitter
         text.Append("| --- | ---: | ---: | ---: | ---: | ---: | ---: |\n");
         foreach (RuleFile file in input.Files)
         {
-            text.Append(Row($"{file.Chapter} {file.Title}", file.Rules)).Append('\n');
+            text.Append(Row($"{file.Chapter} {RuleDocEmitter.EscapeLiterals(file.Title)}", file.Rules)).Append('\n');
         }
 
         text.Append(Row("Total", input.Rules.ToList())).Append('\n');
@@ -31,7 +31,7 @@ public static class CoverageEmitter
         text.Append("kept as background, or dropped as obsolete.\n");
         foreach (RuleFile file in input.Files)
         {
-            text.Append($"\n### {RuleText.ChapterLabel(file.Chapter)}: {file.Title}\n\n");
+            text.Append($"\n### {RuleText.ChapterLabel(file.Chapter)}: {RuleDocEmitter.EscapeLiterals(file.Title)}\n\n");
             if (file.NonGuideline.Count == 0)
             {
                 text.Append("Nothing recorded yet.\n");
@@ -46,7 +46,7 @@ public static class CoverageEmitter
         text.Append("and where their text went.\n");
         foreach (OtherContent part in input.Meta.OtherContent)
         {
-            text.Append($"\n### {part.Title}\n\n");
+            text.Append($"\n### {RuleDocEmitter.EscapeLiterals(part.Title)}\n\n");
             AppendEntries(text, part.Entries);
         }
 
@@ -57,7 +57,7 @@ public static class CoverageEmitter
     {
         foreach (NonGuidelineEntry entry in entries)
         {
-            text.Append($"- **{entry.Section}** ({RuleYaml.EnumText(entry.Disposition)}): {entry.Note}\n");
+            text.Append($"- **{entry.Section}** ({RuleYaml.EnumText(entry.Disposition)}): {RuleDocEmitter.EscapeLiterals(entry.Note)}\n");
         }
     }
 

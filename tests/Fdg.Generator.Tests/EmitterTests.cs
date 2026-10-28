@@ -622,6 +622,50 @@ public sealed class EmitterTests : IDisposable
         Assert.DoesNotContain("&lt;", reference);
     }
 
+    [Theory]
+    [InlineData("a ``x_<y`` b_ <c", "a ``x_<y`` b\\_ &lt;c")]
+    [InlineData("an ` unclosed run_ <x", "an ` unclosed run\\_ &lt;x")]
+    [InlineData("kept \\_ and &lt;T> and _x", "kept \\_ and &lt;T> and \\_x")]
+    [InlineData(
+        "see <https://example.com/_a_> or <mailto:a_b@example.com>",
+        "see <https://example.com/_a_> or <mailto:a_b@example.com>")]
+    [InlineData("one<br/>two<br />three<br>four", "one<br/>two<br />three<br>four")]
+    [InlineData("~~~\nif (a < b) _c();\n~~~\n<d", "~~~\nif (a < b) _c();\n~~~\n&lt;d")]
+    public void Escape_literals_keeps_code_escapes_autolinks_and_line_breaks(string markdown, string expected)
+    {
+        Assert.Equal(expected, RuleDocEmitter.EscapeLiterals(markdown));
+    }
+
+    [Theory]
+    [InlineData("use “_” and <project root>, ``a`b``, \\* and _x_")]
+    [InlineData("~~~\n<a>\n~~~\n<b> <http://x/_y> List<T>_")]
+    public void Escape_literals_is_idempotent(string markdown)
+    {
+        string once = RuleDocEmitter.EscapeLiterals(markdown);
+
+        Assert.Equal(once, RuleDocEmitter.EscapeLiterals(once));
+    }
+
+    [Fact]
+    public void Coverage_escapes_literal_angle_brackets_and_underscores_in_notes()
+    {
+        GeneratorInput input = Input();
+        input = input with
+        {
+            Files = input.Files.Select(f => f with
+            {
+                NonGuideline = f.NonGuideline
+                    .Select(e => e with { Note = "Names such as <Company>.<Product>, List<T>, “_” and `List<T>`." })
+                    .ToList(),
+            }).ToList(),
+        };
+
+        string coverage = CoverageEmitter.Emit(input);
+
+        Assert.Contains("Names such as &lt;Company>.&lt;Product>, List&lt;T>, “\\_” and `List<T>`.", coverage);
+        Assert.DoesNotContain("<Company>", coverage);
+    }
+
     [Fact]
     public void Skill_reference_groups_rules_by_section_and_links_examples()
     {
