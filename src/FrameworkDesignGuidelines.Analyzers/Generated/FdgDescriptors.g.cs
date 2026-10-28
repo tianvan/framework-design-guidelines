@@ -25,6 +25,15 @@ internal static class FdgDescriptors
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3004.md");
 
+    public static readonly DiagnosticDescriptor FDG3006 = new DiagnosticDescriptor(
+        id: "FDG3006",
+        title: "DO NOT capitalize each word in so-called closed-form compound words.",
+        messageFormat: "Use '{2}' instead of '{1}' in the name '{0}'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3006.md");
+
     public static readonly DiagnosticDescriptor FDG3013 = new DiagnosticDescriptor(
         id: "FDG3013",
         title: "DO use only ASCII characters in identifier names.",
@@ -69,6 +78,15 @@ internal static class FdgDescriptors
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3075.md");
+
+    public static readonly DiagnosticDescriptor FDG3086 = new DiagnosticDescriptor(
+        id: "FDG3086",
+        title: "DO NOT use abbreviations or numeric indices for operator overload parameter names.",
+        messageFormat: "Do not use a numeric index in the operator parameter name '{0}'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3086.md");
 
     public static readonly DiagnosticDescriptor FDG3087 = new DiagnosticDescriptor(
         id: "FDG3087",

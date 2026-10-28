@@ -2,61 +2,6 @@
 
 # Chapter 3: Naming Guidelines — explanations and examples
 
-## FDG3006
-
-DO NOT capitalize each word in so-called closed-form compound words.
-
-These are compound words written as a single word, such as endpoint. For the purpose of casing guidelines, treat a closed-form compound word as a single word. Use a current dictionary to determine if a compound word is written in closed form.
-
-Table 3-2 shows capitalization for some of the most commonly used compound words and common terms.
-
-**Table 3-2: Capitalization and Spelling for Common Compound Words and Common Terms**
-
-| Pascal | Camel | Not |
-| --- | --- | --- |
-| `BitFlag` | `bitFlag` | `Bitflag` |
-| `Callback` | `callback` | `CallBack` |
-| `Canceled` | `canceled` | `Cancelled` |
-| `DoNot` | `doNot` | `Don't` |
-| `Email` | `email` | `EMail` |
-| `Endpoint` | `endpoint` | `EndPoint` |
-| `Filename` | `filename` | `FileName` |
-| `Gridline` | `gridline` | `GridLine` |
-| `Hashtable` | `hashtable` | `HashTable` |
-| `Id` | `id` | `ID` |
-| `Indexes` | `indexes` | `Indices` |
-| `Logoff`<sup>1</sup> | `logoff` | `LogOut` |
-| `Logon`<sup>1</sup> | `logon` | `LogIn`<sup>2</sup> |
-| `Metadata` | `metadata` | `MetaData, metaData` |
-| `Multipanel` | `multipanel` | `MultiPanel` |
-| `Multiview` | `multiview` | `MultiView` |
-| `Namespace` | `namespace` | `NameSpace` |
-| `Ok` | `ok` | `OK` |
-| `Pi` | `pi` | `PI` |
-| `Placeholder` | `placeholder` | `PlaceHolder` |
-| `SignIn` | `signIn` | `SignOn` |
-| `SignOut` | `signOut` | `SignOff` |
-| `Timestamp` | `timestamp` | `TimeStamp` |
-| `Username` | `username` | `UserName` |
-| `WhiteSpace` | `whiteSpace` | `Whitespace` |
-| `Writable` | `writable` | `Writeable` |
-
-1. When used as a noun (properties, fields, parameters, types). As a verb (methods) it should be considered two words—for example, `LogOff`.
-
-2. “Login” is now regarded as a closed-form noun, so a type with members named “Login” and “Password” would be OK, except in .NET we prefer “Logon” to “Login.” As a compound verb, “Log In” should be “Log On,” so “LogIn” is never used, and “LogOn” does not appear in this table.
-
-Two other terms that are in common usage are in a category by themselves, because they are common slang abbreviations. The two words *Ok* and *Id* (cased as shown here) are exceptions to the guideline that no abbreviations should be used in names.
-
-Table 3-2 and the rule about closed-form nouns are secondary to the general guideline of maintaining consistency. As of September 2019, “white space” is the dictionary entry, with some dictionaries having a note that computer science often uses it as a single word. If and when “whitespace” becomes an accepted closed-form noun, you should continue to use “WhiteSpace” in type hierarchies built with the older form of the word.
-
-> **Brad Abrams:** Table 3-2 presents specific examples found in the development of the .NET Framework. You might find it useful to create your own appendix to this table for compound words and other terms commonly used in your domain.
-
-> **Brad Abrams:** One abbreviation commonly used in COM interface names was Ex (for interfaces that were extended versions of previously existing interfaces). This abbreviation should be avoided in reusable libraries. Use instead a meaningful name that describes the new functionality. For example, rather than `IDispatchEx`, consider `IDynamicDispatch`.
-
-> **Jeremy Barton:** Several changes were made to Table 3-2 for the third edition of this book. The *Oxford English Dictionary*, as well as others, now considers “filename,” “logoff,” “logout,” “login,” “logon,” and “username” as closed-form *nouns*, enabling identifiers like `LogoffTime`. In the sense of an action, the OED still considers “log in,” “log on,” “log off,” or “log out” to be the only acceptable forms.
->
-> That doesn’t mean you should immediately change all of your existing names. However, in types that don’t interact with the older forms, you are free (and encouraged) to accept the evolving nature of language when it comes to these terms.
-
 ## FDG3008
 
 DO choose easily readable identifier names.
@@ -457,14 +402,4 @@ CONSIDER meaningful names for operator overload parameters if doing so adds sign
 ```csharp
 public static BigInteger Divide(BigInteger dividend,
                                 BigInteger divisor);
-```
-
-## FDG3086
-
-DO NOT use abbreviations or numeric indices for operator overload parameter names.
-
-```csharp
-// incorrect parameter naming
-public static bool operator ==(DateTimeOffset d1,
-                               DateTimeOffset d2);
 ```

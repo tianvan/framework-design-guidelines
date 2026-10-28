@@ -17,6 +17,8 @@ public sealed class NamingDescriptorTests
         new CollectionPropertyNameAnalyzer(),
         new PublicResourceAnalyzer(),
         new GeneralTypeNameAnalyzer(),
+        new CompoundWordAnalyzer(),
+        new OperatorParameterIndexAnalyzer(),
     ];
 
     [Fact]
@@ -24,7 +26,7 @@ public sealed class NamingDescriptorTests
     {
         DiagnosticDescriptor[] descriptors = _analyzers.SelectMany(analyzer => analyzer.SupportedDiagnostics).ToArray();
         Assert.Equal(
-            ["FDG3003", "FDG3004", "FDG3013", "FDG3033", "FDG3051", "FDG3068", "FDG3075", "FDG3087"],
+            ["FDG3003", "FDG3004", "FDG3006", "FDG3013", "FDG3033", "FDG3051", "FDG3068", "FDG3075", "FDG3086", "FDG3087"],
             descriptors.Select(descriptor => descriptor.Id).Order());
         Assert.All(descriptors, descriptor => Assert.False(descriptor.IsEnabledByDefault));
         Assert.All(descriptors, descriptor => Assert.Equal("FrameworkDesignGuidelines.Naming", descriptor.Category));
@@ -45,6 +47,13 @@ public sealed class NamingDescriptorTests
             public class Message
             {
                 public List<int> ValueList { get; set; }
+
+                public string FileName;
+
+                public static Message operator +(Message m1, Message right)
+                {
+                    return m1;
+                }
             }
             """;
         CSharpCompilation compilation = CSharpCompilation.Create(
@@ -67,7 +76,7 @@ public sealed class NamingDescriptorTests
             .GetAnalyzerDiagnosticsAsync();
 
         Assert.Equal(
-            ["FDG3004", "FDG3013", "FDG3033", "FDG3068", "FDG3075"],
+            ["FDG3004", "FDG3006", "FDG3013", "FDG3033", "FDG3068", "FDG3075", "FDG3086"],
             enabledDiagnostics.Select(diagnostic => diagnostic.Id).Order());
     }
 }

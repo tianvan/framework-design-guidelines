@@ -4,10 +4,6 @@
 
 Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
 
-## 3.1.3 Capitalizing Compound Words and Common Terms
-
-- **FDG3006** DO NOT capitalize each word in so-called closed-form compound words. — examples: examples/ch03-naming.md#fdg3006
-
 ## 3.2.1 Word Choice
 
 - **FDG3008** DO choose easily readable identifier names. — examples: examples/ch03-naming.md#fdg3008
@@ -108,4 +104,3 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG3083** DO use *left* and *right* for binary operator overload parameter names if there is no meaning to the parameters. — examples: examples/ch03-naming.md#fdg3083
 - **FDG3084** DO use *value* for unary operator overload parameter names if there is no meaning to the parameters. — examples: examples/ch03-naming.md#fdg3084
 - **FDG3085** CONSIDER meaningful names for operator overload parameters if doing so adds significant value. — examples: examples/ch03-naming.md#fdg3085
-- **FDG3086** DO NOT use abbreviations or numeric indices for operator overload parameter names. — examples: examples/ch03-naming.md#fdg3086

@@ -564,8 +564,10 @@
       "strength": "DO NOT",
       "text": "capitalize each word in so-called closed-form compound words.",
       "section": "3.1.3 Capitalizing Compound Words and Common Terms",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG3006"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -1785,8 +1787,10 @@
       "strength": "DO NOT",
       "text": "use abbreviations or numeric indices for operator overload parameter names.",
       "section": "3.7.1 Naming Operator Overload Parameters",
-      "diagnostics": [],
-      "autofix": "no",
+      "diagnostics": [
+        "FDG3086"
+      ],
+      "autofix": "breaking",
       "severity": {
         "library": "warning",
         "application": "warning",
@@ -12468,11 +12472,13 @@
     "CA2237",
     "FDG3003",
     "FDG3004",
+    "FDG3006",
     "FDG3013",
     "FDG3033",
     "FDG3051",
     "FDG3068",
     "FDG3075",
+    "FDG3086",
     "FDG3087",
     "FDG4013",
     "FDG4026",
@@ -12667,11 +12673,13 @@
     "CA2227",
     "FDG3003",
     "FDG3004",
+    "FDG3006",
     "FDG3013",
     "FDG3033",
     "FDG3051",
     "FDG3068",
     "FDG3075",
+    "FDG3086",
     "FDG3087",
     "FDG4013",
     "FDG5003",

@@ -158,6 +158,20 @@ checked (20 in all), because no diagnostic had more than 20.
 - **Rejected at gate 1 (not measured).** FDG3069 (negative Boolean property names): the rule text gives one example
   and no word list, so a check would have to guess intent. Its notes say so.
 
+### Phase 2 additions: FDG3006 and FDG3086
+
+Package 0.1.0 with the two analyzers added in the phase-2 re-check (Ruling 50), measured with
+`-Diagnostics FDG3006,FDG3086`. Every report was checked (18 in all).
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| FDG3006 | FDG3006 | 0 | 0 | 2 | 6 | 10 | 18 | 0 | 18 | None needed. |
+| FDG3086 | FDG3086 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
+
+- **FDG3006.** Every report is a form from the Not column of Table 3-2: `Whitespace` in two newtonsoft-json writer
+  methods; `FileName` or `fileName` (12), `UserName` or `userName` (3) and `UserID` (1) in the internal samples.
+- **FDG3086.** No sample declares an operator with an indexed parameter name; the tests cover the positive cases.
+
 ## Chapter 2 mappings
 
 Chapter 2 (Framework Design Fundamentals, FDG2001 to FDG2032) maps no SDK diagnostic and adds no analyzer: all 32

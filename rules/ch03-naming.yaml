@@ -287,13 +287,14 @@
 
         That doesn’t mean you should immediately change all of your existing names. However, in types that don’t interact with the older forms, you are free (and encouraged) to accept the evolving nature of language when it comes to these terms.
       author: Jeremy Barton
-  status: verified
+  status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG3006
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -301,8 +302,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: 'planned-analyzer: closed-form compound words from Table 3-2.'
+  analyzer:
+    message: 'Use ''{2}'' instead of ''{1}'' in the name ''{0}'''
+    category: Naming
+  notes: FDG3006 reports, in the names that externally visible declarations choose (see FDG3003 for which names), a run of whole words that spells a form of the Not column of Table 3-2, such as FileName, CallBack or ID, and gives the Pascal form. The case of each word must match the table, except the first letter of a camel-cased name, so fileName is reported and Filename or filename is not. LogOut is not reported in a method name, where footnote 1 makes the verb two words; LogIn is reported in every name. Closed-form compound words outside the table are not checked, because the book gives no longer list. Renaming a public name changes the public API, so the fix is breaking; FDG3006 has no code fix.
 - id: FDG3007
   strength: DO NOT
   text: assume that all programming languages are case sensitive. They are not. Names cannot differ by case alone.
@@ -2629,13 +2632,14 @@
         // incorrect parameter naming
         public static bool operator ==(DateTimeOffset d1,
                                        DateTimeOffset d2);
-  status: verified
+  status: draft
   style: false
   check:
-    kind: judgment
-    diagnostics: []
-    coverage: none
-  autofix: no
+    kind: fdg
+    diagnostics:
+      - FDG3086
+    coverage: partial
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -2643,8 +2647,10 @@
   config: []
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: 'planned-analyzer: operator parameters with numeric indices.'
+  analyzer:
+    message: 'Do not use a numeric index in the operator parameter name ''{0}'''
+    category: Naming
+  notes: FDG3086 reports a parameter of an externally visible user-defined operator or conversion operator whose name ends with a digit, such as d1 and d2. A name equal to its type's name apart from case, such as vector3 for Vector3, is not reported. Abbreviations are not checked, because they cannot be told from words. Renaming a public parameter changes the public API for callers that use named arguments, so the fix is breaking; FDG3086 has no code fix.
 - id: FDG3087
   strength: DO NOT
   text: directly expose localizable resources as public (or protected) members.
