@@ -146,7 +146,7 @@
   analyzer:
     message: Enclose the embedded statement in braces
     category: Layout
-  notes: "FDGA004 reports the embedded statement of if, else, for, foreach, while, do, using, lock and fixed when it is not a block, as IDE0011 does, and exempts argument validation preambles (FDGA005): the run of if...throw statements without else at the start of a method, constructor, accessor, operator, local function or lambda body, up to the first blank line. Like IDE0011, it does not report an else if, a using, lock or fixed statement whose embedded statement is another statement of the same kind, or a statement with a preprocessor directive between its keyword and the end of its embedded statement. IDE0011 is not mapped because it does not know the preamble exception."
+  notes: 'FDGA004 reports the embedded statement of if, else, for, foreach, while, do, using, lock and fixed when it is not a block, as IDE0011 does, and exempts argument validation preambles (FDGA005): the run of if...throw statements without else at the start of a method, constructor, accessor, operator, local function or lambda body, up to the first blank line. Like IDE0011, it does not report an else if, a using, lock or fixed statement whose embedded statement is another statement of the same kind, or a statement with a preprocessor directive between its keyword and the end of its embedded statement. IDE0011 is not mapped because it does not know the preamble exception.'
 - id: FDGA005
   strength: CONSIDER
   text: omitting braces in an argument validation preamble.
@@ -774,7 +774,7 @@
   analyzer:
     message: Place each argument or parameter of a long list on its own line, starting on the line after the opening parenthesis
     category: Layout
-  notes: 'A list is long when its line exceeds max_line_length (default 120). Scope: A parameter or argument list is treated as exceedingly long, because the author chose to wrap it, when a line break falls between its items (at a separator, or before the first item or any later item); it must then be chopped before the first item, indented one level, with one item per line. Line breaks only inside a single item (a lambda body, an initializer, a nested call or a continued expression) do not by themselves make the list wrapped, but a list whose line exceeds the length guide is still covered. A line that is long only because an enclosing conditional, ||, && or ?? expression joins short calls does not make their lists long; the list''s own invocation, with the fluent chain it is part of, must exceed the guide (docs/noise-samples.md).'
+  notes: "A list is long when its line exceeds max_line_length (default 120). Scope: A parameter or argument list is treated as exceedingly long, because the author chose to wrap it, when a line break falls between its items (at a separator, or before the first item or any later item); it must then be chopped before the first item, indented one level, with one item per line. Line breaks only inside a single item (a lambda body, an initializer, a nested call or a continued expression) do not by themselves make the list wrapped, but a list whose line exceeds the length guide is still covered. A line that is long only because an enclosing conditional, ||, && or ?? expression joins short calls does not make their lists long; the list's own invocation, with the fluent chain it is part of, must exceed the guide (docs/noise-samples.md)."
 - id: FDGA024
   strength: DO
   text: add a blank line before control flow statements.
@@ -1624,7 +1624,7 @@
   minLanguage: "6"
   alternative: Before C# 6, use a string literal that matches the name exactly.
   analyzer: null
-  notes: "CA1507 reports string literals that match a parameter or property name. IDE0280 reports parameter names written as string literals in attribute arguments such as [NotNullIfNotNull(\"value\")] (C# 11 and later). dotnet format applies IDE0280's fix only when its severity is set in an .editorconfig (see the phase 2 backlog)."
+  notes: CA1507 reports string literals that match a parameter or property name. IDE0280 reports parameter names written as string literals in attribute arguments such as [NotNullIfNotNull("value")] (C# 11 and later). dotnet format applies IDE0280's fix only when its severity is set in an .editorconfig (see the phase 2 backlog).
 - id: FDGA049
   strength: DO
   text: apply the `readonly` modifier to fields when possible.

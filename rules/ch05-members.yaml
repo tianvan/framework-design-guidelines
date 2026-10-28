@@ -2224,7 +2224,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Add a protected virtual method ''On{0}'' that raises the event ''{0}'''
+    message: Add a protected virtual method 'On{0}' that raises the event '{0}'
     category: Members
   notes: 'Library only: the protected virtual method is for derived classes outside the library, an extensibility point of public API. FDG5059 reports an externally visible instance event declared in an unsealed class when neither the class nor a base class has a protected (or protected internal) virtual, abstract or override method named "On" followed by the event name, the convention the body gives. Structs, sealed and static classes and static events are not reported, as the text says. Override, abstract and explicitly implemented events are not reported: they declare no new event that the class can raise. A raising method with another name is reported; the body names the convention. Adding a protected virtual method changes no existing signature, so the fix is not breaking, but there is no code fix.'
 - id: FDG5060
@@ -2257,7 +2257,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'The method ''{0}'' that raises an event should take one parameter'
+    message: The method '{0}' that raises an event should take one parameter
     category: Members
   notes: 'Library only: the protected raising method is an extensibility point for derived classes outside the library. FDG5060 reports an externally visible protected (or protected internal) method named "On" followed by the name of an event of its class, or of a base class event that the class can access, when it does not take exactly one parameter. Overrides are not reported; their parameters come from the base method. A raising method with another name is not seen. The name e and the event argument type, which the body adds, are not checked. Changing the parameters of a protected method changes the public API, so the fix is breaking.'
 - id: FDG5061
@@ -2283,9 +2283,9 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not pass null as the sender when raising the instance event ''{0}'''
+    message: Do not pass null as the sender when raising the instance event '{0}'
     category: Members
-  notes: 'FDG5061 reports a call that raises an instance field-like event directly (Event(...) or Event?.Invoke(...)) with a constant null as the first argument, when the event''s delegate takes an object sender first. An event raised through a local copy of the delegate (the handler variable of the AlarmClock example) is not seen. The fix changes a call, not a signature; there is no code fix.'
+  notes: FDG5061 reports a call that raises an instance field-like event directly (Event(...) or Event?.Invoke(...)) with a constant null as the first argument, when the event's delegate takes an object sender first. An event raised through a local copy of the delegate (the handler variable of the AlarmClock example) is not seen. The fix changes a call, not a signature; there is no code fix.
 - id: FDG5062
   strength: DO
   text: pass `null` as the sender when raising a static event.
@@ -2313,9 +2313,9 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Pass null as the sender when raising the static event ''{0}'''
+    message: Pass null as the sender when raising the static event '{0}'
     category: Members
-  notes: 'FDG5062 reports a call that raises a static field-like event directly (Event(...) or Event?.Invoke(...)) with a first argument that is not a constant null, when the event''s delegate takes an object sender first. An event raised through a local copy of the delegate, as in the body''s example, is not seen. The fix changes a call, not a signature; there is no code fix.'
+  notes: FDG5062 reports a call that raises a static field-like event directly (Event(...) or Event?.Invoke(...)) with a first argument that is not a constant null, when the event's delegate takes an object sender first. An event raised through a local copy of the delegate, as in the body's example, is not seen. The fix changes a call, not a signature; there is no code fix.
 - id: FDG5063
   strength: DO NOT
   text: pass `null` as the event data parameter when raising an event.
@@ -2341,9 +2341,9 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not pass null as the event data when raising the event ''{0}'''
+    message: Do not pass null as the event data when raising the event '{0}'
     category: Members
-  notes: 'FDG5063 reports a call that raises a field-like event directly (Event(...) or Event?.Invoke(...)) with a constant null as the second argument, when the event''s delegate takes an EventArgs or a subclass second. An event raised through a local copy of the delegate is not seen, nor a null passed through a variable. The fix changes a call, not a signature; there is no code fix.'
+  notes: FDG5063 reports a call that raises a field-like event directly (Event(...) or Event?.Invoke(...)) with a constant null as the second argument, when the event's delegate takes an EventArgs or a subclass second. An event raised through a local copy of the delegate is not seen, nor a null passed through a variable. The fix changes a call, not a signature; there is no code fix.
 - id: FDG5064
   strength: CONSIDER
   text: raising events that the end user can cancel. This guideline applies only to pre-events.
@@ -2432,7 +2432,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Library only: the body''s reasons are versioning (a field cannot become a property while keeping binary compatibility). CA1051 reports public and protected instance fields of externally visible types; in a probe with SDK 10.0.402 it reported fields of structs and readonly fields too, and no static fields, as the text says. CA1051 has no code fix, and making a public field a property changes the public API, so the fix is breaking.'
+  notes: "Library only: the body's reasons are versioning (a field cannot become a property while keeping binary compatibility). CA1051 reports public and protected instance fields of externally visible types; in a probe with SDK 10.0.402 it reported fields of structs and readonly fields too, and no static fields, as the text says. CA1051 has no code fix, and making a public field a property changes the public API, so the fix is breaking."
 - id: FDG5066
   strength: DO
   text: use constant fields for constants that will never change.
@@ -2464,7 +2464,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'CA1802 reports a static readonly field of a primitive type or string that is initialized with a constant and could be const. With its default api_surface it reports only fields that are not externally visible (a probe with SDK 10.0.402 reported internal and private fields and not a public one), where the body''s compatibility risk does not arise because every caller is in the same assembly; do not widen api_surface, since a public value that may change in a later version should stay static readonly. Instance fields and constants that are not fields are not seen. The code fix makes the field const, which changes no public API.'
+  notes: CA1802 reports a static readonly field of a primitive type or string that is initialized with a constant and could be const. With its default api_surface it reports only fields that are not externally visible (a probe with SDK 10.0.402 reported internal and private fields and not a public one), where the body's compatibility risk does not arise because every caller is in the same assembly; do not widen api_surface, since a public value that may change in a later version should stay static readonly. Instance fields and constants that are not fields are not seen. The code fix makes the field const, which changes no public API.
 - id: FDG5067
   strength: CONSIDER
   text: using public `static readonly` fields for predefined object instances.
@@ -2550,7 +2550,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'The public or protected readonly field ''{0}'' has the mutable type ''{1}'''
+    message: The public or protected readonly field '{0}' has the mutable type '{1}'
     category: Members
   notes: 'FDG5068 reports an externally visible readonly field, static or instance, whose type is an array, a mutable collection of System.Collections, System.Collections.Generic or System.Collections.ObjectModel (ArrayList, Hashtable, List<T>, Dictionary<TKey, TValue>, HashSet<T>, Queue<T>, Stack<T>, LinkedList<T>, SortedDictionary<TKey, TValue>, SortedList<TKey, TValue>, SortedSet<T>, Collection<T>, ObservableCollection<T>), System.Text.StringBuilder, or System.IO.Stream or a subclass: the arrays, collections and streams that the body names. Other mutable types are not known. Changing the type of a public field or replacing it with a property changes the public API, so the fix is breaking.'
 - id: FDG5069
@@ -2783,7 +2783,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not define the extension method ''{0}'' on System.Object'
+    message: Do not define the extension method '{0}' on System.Object
     category: Members
   notes: 'Library only: the reason is callers in VB and other languages that cannot call such methods with extension syntax. FDG5074 reports an externally visible extension method whose this parameter is System.Object. Changing the extended type changes the public API, so the fix is breaking.'
 - id: FDG5075
@@ -2853,7 +2853,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Name the class ''{0}'' that holds extension methods for its functionality'
+    message: Name the class '{0}' that holds extension methods for its functionality
     category: Members
   notes: 'Library only: the reason is the experience in languages without extension syntax, where callers see the class name. FDG5075 reports an externally visible static class named "[ExtendedType]Extensions", the pattern of the text: "Extensions" alone, or after the name of a type that one of its extension methods extends (for an interface, with or without its leading I). A name that adds the functionality before the extended type ("[Feature][ExtendedType]Extensions") names the class for its functionality and is not reported. A class named for its extended type in another way (a Helpers suffix, for example) is not seen. Renaming a public class changes the public API, so the fix is breaking.'
 - id: FDG5076
@@ -2881,9 +2881,9 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Move the extension method ''{0}'' out of the namespace of the type ''{1}'' it extends'
+    message: Move the extension method '{0}' out of the namespace of the type '{1}' it extends
     category: Members
-  notes: 'FDG5076 reports an externally visible extension method declared in the namespace of the type it extends when that type is declared in the same assembly, is not an interface, and the method does not restrict a generic type: the extended type is not generic, or every type argument is a type parameter of the method without constraints. The three exceptions of the text are interfaces, generic type restriction and dependency management; for the last the body says the extension methods are in a different assembly, and since symbols do not show why an assembly extends another assembly''s type in that type''s namespace, extended types from other assemblies are not reported at all. Moving a public class to another namespace changes the public API, so the fix is breaking.'
+  notes: "FDG5076 reports an externally visible extension method declared in the namespace of the type it extends when that type is declared in the same assembly, is not an interface, and the method does not restrict a generic type: the extended type is not generic, or every type argument is a type parameter of the method without constraints. The three exceptions of the text are interfaces, generic type restriction and dependency management; for the last the body says the extension methods are in a different assembly, and since symbols do not show why an assembly extends another assembly's type in that type's namespace, extended types from other assemblies are not reported at all. Moving a public class to another namespace changes the public API, so the fix is breaking."
 - id: FDG5077
   strength: AVOID
   text: defining two or more extension methods with the same signature, even if they reside in different namespaces.
@@ -2953,9 +2953,9 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'The extension method ''{0}'' has the same signature as an extension method in ''{1}'''
+    message: The extension method '{0}' has the same signature as an extension method in '{1}'
     category: Members
-  notes: 'FDG5077 reports externally visible extension methods of one assembly that have the same name, the same number of type parameters and the same parameter types, this parameter included, in different classes. Methods in other assemblies are not seen. The Mariani annotation describes namespaces that offer the same services as mutually exclusive flavors; such pairs are reported, and the text keeps them under AVOID. Renaming or removing a public method changes the public API, so the fix is breaking.'
+  notes: FDG5077 reports externally visible extension methods of one assembly that have the same name, the same number of type parameters and the same parameter types, this parameter included, in different classes. Methods in other assemblies are not seen. The Mariani annotation describes namespaces that offer the same services as mutually exclusive flavors; such pairs are reported, and the text keeps them under AVOID. Renaming or removing a public method changes the public API, so the fix is breaking.
 - id: FDG5078
   strength: CONSIDER
   text: defining extension methods in the same namespace as the extended type if the type is an interface and if the extension methods are meant to be used in most or all cases.
@@ -3295,7 +3295,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Library only: the reason is languages that do not support operator overloading; an application''s code is used from one language. CA2225 reports an operator of an externally visible type that has no method with the friendly name (for example Add for op_Addition, ToXxx or FromXxx for conversions); in a probe with SDK 10.0.402 it accepted CompareTo or Compare for the comparison operators, as Table 5-1 lists CompareTo. CA2225 does not check the C# 14 user-defined compound assignment and instance increment/decrement operators (op_AdditionAssignment and the others of Table 5-1). Adding a method changes no signature, but the code fix adds a method whose body must still be written, so it is not a safe fix.'
+  notes: "Library only: the reason is languages that do not support operator overloading; an application's code is used from one language. CA2225 reports an operator of an externally visible type that has no method with the friendly name (for example Add for op_Addition, ToXxx or FromXxx for conversions); in a probe with SDK 10.0.402 it accepted CompareTo or Compare for the comparison operators, as Table 5-1 lists CompareTo. CA2225 does not check the C# 14 user-defined compound assignment and instance increment/decrement operators (op_AdditionAssignment and the others of Table 5-1). Adding a method changes no signature, but the code fix adds a method whose body must still be written, so it is not a safe fix."
 - id: FDG5088
   strength: DO NOT
   text: provide a conversion operator if such a conversion is not clearly expected by the end users.
@@ -3350,7 +3350,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Not checked: what lies outside a type''s domain is a design judgment.'
+  notes: "Not checked: what lies outside a type's domain is a design judgment."
 - id: FDG5090
   strength: DO NOT
   text: provide an implicit conversion operator if the conversion is potentially lossy.
@@ -3429,7 +3429,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'CA1065 reports an exception thrown directly in an implicit conversion operator; in a probe with SDK 10.0.402 it reported an ArgumentException thrown there. Exceptions from methods that the operator calls are not seen. CA1065 also reports other members, such as Equals, GetHashCode, property getters and finalizers, which FDG5031 and FDG5054 cover in part and this rule does not. The fix changes behavior, not a signature; CA1065 has no code fix.'
+  notes: CA1065 reports an exception thrown directly in an implicit conversion operator; in a probe with SDK 10.0.402 it reported an ArgumentException thrown there. Exceptions from methods that the operator calls are not seen. CA1065 also reports other members, such as Equals, GetHashCode, property getters and finalizers, which FDG5031 and FDG5054 cover in part and this rule does not. The fix changes behavior, not a signature; CA1065 has no code fix.
 - id: FDG5093
   strength: DO
   text: throw `System.InvalidCastException` if a call to a cast operator results in a lossy conversion and the contract of the operator does not allow lossy conversions.
@@ -3484,7 +3484,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Implement IComparable<{0}> on ''{0}'', which defines inequality operators'
+    message: Implement IComparable<{0}> on '{0}', which defines inequality operators
     category: Members
   notes: 'FDG5094 reports, once per type, an externally visible class or struct that declares operator <, >, <= or >= and does not implement IComparable<T> with T the type itself. Interfaces are not reported. The body of FDG5095 says that a type with the operators has an easy basis for implementing the interface; adding an interface changes no existing signature, so the fix is not breaking, but there is no code fix. CA1036 is not mapped: it asks a type that implements IComparable to define all the comparison operators, the opposite direction, which the text does not ask.'
 - id: FDG5095
@@ -3541,9 +3541,9 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Define operator <= on ''{0}'', which defines operator < and implements IEquatable<{0}>'
+    message: Define operator <= on '{0}', which defines operator < and implements IEquatable<{0}>
     category: Members
-  notes: 'FDG5096 reports an externally visible class or struct that declares operator < and implements IEquatable<T> with T the type itself, but declares no operator <=. The report is on operator <. Records implement IEquatable<T> implicitly and are reported the same way. Adding an operator changes no existing signature, so the fix is not breaking, but there is no code fix.'
+  notes: FDG5096 reports an externally visible class or struct that declares operator < and implements IEquatable<T> with T the type itself, but declares no operator <=. The report is on operator <. Records implement IEquatable<T> implicitly and are reported the same way. Adding an operator changes no existing signature, so the fix is not breaking, but there is no code fix.
 - id: FDG5097
   strength: DO
   text: return a Boolean value from custom inequality operators.
@@ -3567,9 +3567,9 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Return a Boolean value from the inequality operator ''{0}'''
+    message: Return a Boolean value from the inequality operator '{0}'
     category: Members
-  notes: 'FDG5097 reports an operator <, >, <= or >= of an externally visible class or struct whose return type is not bool. Interfaces (the generic math operator interfaces, for example) are not reported. Changing the return type of a public operator changes the public API, so the fix is breaking.'
+  notes: FDG5097 reports an operator <, >, <= or >= of an externally visible class or struct whose return type is not bool. Interfaces (the generic math operator interfaces, for example) are not reported. Changing the return type of a public operator changes the public API, so the fix is breaking.
 - id: FDG5098
   strength: DO
   text: define inequality operators consistent with their mathematical properties.
@@ -3662,9 +3662,9 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not define the inequality operator ''{0}'' against the type ''{1}'''
+    message: Do not define the inequality operator '{0}' against the type '{1}'
     category: Members
-  notes: 'FDG5099 reports an operator <, >, <= or >= of an externally visible class or struct with a parameter whose type is not the declaring type or Nullable<T> of it. Interfaces are not reported. The body''s alternative is a conversion operator or a converting member, so removing the operator changes the public API and the fix is breaking.'
+  notes: FDG5099 reports an operator <, >, <= or >= of an externally visible class or struct with a parameter whose type is not the declaring type or Nullable<T> of it. Interfaces are not reported. The body's alternative is a conversion operator or a converting member, so removing the operator changes the public API and the fix is breaking.
 - id: FDG5100
   strength: DO
   text: use the least derived parameter type that provides the functionality required by the member.
@@ -3765,7 +3765,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not take the pointer or multidimensional array parameter ''{0}'' in the publicly exposed member ''{1}'''
+    message: Do not take the pointer or multidimensional array parameter '{0}' in the publicly exposed member '{1}'
     category: Members
   notes: 'Library only: the text is about publicly exposed methods, whose callers outside the library find pointers and multidimensional arrays difficult to use. FDG5102 reports a parameter of an externally visible method, constructor, operator, delegate or indexer whose type is a pointer, a function pointer, an array of either, or a multidimensional array, at any level of a jagged array. The 5.8.5 introduction allows pointers where interoperability requires them, with an alternative (FDG5124): a pointer parameter of a method or constructor that has an overload of the same name without pointer parameters is not reported. Whether interoperability requires the pointer is otherwise not seen. Multidimensional arrays are reported in every member. Overrides and interface implementations are not reported, since they take their signature from the member they override or implement. CA1814 is not mapped: it also reports fields and return values and suggests jagged arrays, which the text does not ask. FDG5124 reports pointer members without an alternative. Changing a parameter type changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5103
@@ -3800,9 +3800,9 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Place the out parameter ''{0}'' of ''{1}'' after the by-value and ref parameters'
+    message: Place the out parameter '{0}' of '{1}' after the by-value and ref parameters
     category: Members
-  notes: 'FDG5103 reports an out parameter of an externally visible method, constructor or delegate that is followed by a parameter that is not out and is not a params array. Overrides and interface implementations are not reported. FDG5003 leaves out parameters out when it compares positions across overloads, as this rule allows. Reordering parameters changes the public API, so the fix is breaking; there is no code fix.'
+  notes: FDG5103 reports an out parameter of an externally visible method, constructor or delegate that is followed by a parameter that is not out and is not a params array. Overrides and interface implementations are not reported. FDG5003 leaves out parameters out when it compares positions across overloads, as this rule allows. Reordering parameters changes the public API, so the fix is breaking; there is no code fix.
 - id: FDG5104
   strength: DO
   text: be consistent in naming parameters when overriding members or implementing interface members.
@@ -3852,7 +3852,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'CA1725 reports a parameter of an override or of an implicit interface implementation whose name differs from the name in the base declaration. In a probe with SDK 10.0.402 it reported both, and did not report an explicit interface implementation or a member of an internal type. CA1725 has a code fix that renames the parameter, but renaming a public parameter breaks callers that pass it as a named argument, so autofix is breaking.'
+  notes: CA1725 reports a parameter of an override or of an implicit interface implementation whose name differs from the name in the base declaration. In a probe with SDK 10.0.402 it reported both, and did not report an explicit interface implementation or a member of an internal type. CA1725 has a code fix that renames the parameter, but renaming a public parameter breaks callers that pass it as a named argument, so autofix is breaking.
 - id: FDG5105
   strength: DO
   text: use enums if a member would otherwise have two or more Boolean parameters.
@@ -3911,7 +3911,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Use an enum in place of the {0} Boolean parameters of ''{1}'''
+    message: Use an enum in place of the {0} Boolean parameters of '{1}'
     category: Members
   notes: 'FDG5105 reports an externally visible method, constructor, delegate or indexer that has two or more bool parameters, out parameters left out. Overrides and interface implementations are not reported. A constructor is not reported when each of its bool parameters has the name of a bool property of its type or of a base type, ignoring case: the case of FDG5107, two-state values used to initialize Boolean properties (a positional record is one). Whether such values are truly two-state is not seen. Replacing Boolean parameters with an enum changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5106
@@ -4131,7 +4131,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not use Enum.IsDefined to range-check the enum argument ''{0}'''
+    message: Do not use Enum.IsDefined to range-check the enum argument '{0}'
     category: Members
   notes: 'FDG5111 reports a call to Enum.IsDefined, generic or not, whose value argument is a parameter of the calling member and whose result, negated or combined with && or || or not, is the condition of an if statement or a conditional expression with a branch that throws: a throw statement, a block with a throw statement among its statements, or a throw expression. That is an enum range check of an argument. Other calls are not reported, since the Rector annotation finds Enum.IsDefined appropriate for asking whether a value is one of the defined ones. CA2263 is not mapped: it only prefers the generic overload. The fix, a comparison with the bounds the member needs, changes no signature; there is no code fix.'
 - id: FDG5112
@@ -4234,9 +4234,9 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not pass the reference type parameter ''{0}'' of ''{1}'' by reference'
+    message: Do not pass the reference type parameter '{0}' of '{1}' by reference
     category: Members
-  notes: 'FDG5114 reports a ref, in or ref readonly parameter of a reference type (a class, interface, delegate, array or string, or a type parameter constrained to a reference type) of an externally visible method, constructor, delegate, operator or indexer. Overrides and interface implementations are not reported. The swap exception of the body is recognized by its shape: ref parameters are not reported when the member has two or more ref parameters of the same type. Other limited exceptions, such as a helper that assigns a caller''s field through a ref parameter of a class-constrained type parameter (LazyInitializer.EnsureInitialized, Interlocked.Exchange, a property setter helper), are reported; such reports are false positives. in and ref readonly parameters are always reported, since the body says there is no reason for them. An unconstrained type parameter, as in the Swap<T> example, is not a reference type and is not reported. CA1045 is not mapped (see FDG5113). Changing how a public parameter is passed changes the public API, so the fix is breaking; there is no code fix.'
+  notes: "FDG5114 reports a ref, in or ref readonly parameter of a reference type (a class, interface, delegate, array or string, or a type parameter constrained to a reference type) of an externally visible method, constructor, delegate, operator or indexer. Overrides and interface implementations are not reported. The swap exception of the body is recognized by its shape: ref parameters are not reported when the member has two or more ref parameters of the same type. Other limited exceptions, such as a helper that assigns a caller's field through a ref parameter of a class-constrained type parameter (LazyInitializer.EnsureInitialized, Interlocked.Exchange, a property setter helper), are reported; such reports are false positives. in and ref readonly parameters are always reported, since the body says there is no reason for them. An unconstrained type parameter, as in the Swap<T> example, is not a reference type and is not reported. CA1045 is not mapped (see FDG5113). Changing how a public parameter is passed changes the public API, so the fix is breaking; there is no code fix."
 - id: FDG5115
   strength: DO NOT
   text: pass value types by read-only reference (`in`).
@@ -4267,7 +4267,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not pass the value type parameter ''{0}'' of ''{1}'' by read-only reference'
+    message: Do not pass the value type parameter '{0}' of '{1}' by read-only reference
     category: Members
   notes: 'Library only: the text and the Barton annotation are about public and protected members, which cannot change the modifier later without breaking callers; in private or internal code the in modifier can be useful. FDG5115 reports an in or ref readonly parameter of a value type (a struct, an enum, or a type parameter constrained to a value type) of an externally visible method, constructor, delegate, operator or indexer. Overrides and interface implementations are not reported, and neither is an in parameter of an unconstrained type parameter. Changing the modifier changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5116
@@ -4348,7 +4348,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not use params for the parameter ''{0}'' of ''{1}'', which modifies the array'
+    message: Do not use params for the parameter '{0}' of '{1}', which modifies the array
     category: Members
   notes: 'FDG5118 reports the params array parameter of an externally visible method or constructor when its body, lambdas and local functions included, assigns an element of the array: a simple, compound, null-coalescing or deconstruction assignment, or an increment or decrement. Overrides and interface implementations are not reported. Changes made through calls, such as Array.Sort or Array.Clear, or through ref arguments, are not seen, and neither are params collections other than arrays (C# 13). The text asks not to use params for such a member, so the fix removes params, which callers that pass the elements inline rely on; it is breaking, and there is no code fix.'
 - id: FDG5119
@@ -4535,7 +4535,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not use a varargs (__arglist) parameter list in ''{0}'''
+    message: Do not use a varargs (__arglist) parameter list in '{0}'
     category: Members
   notes: 'Library only: the reason is CLS compliance, which matters to callers of a framework in other languages. The Kotas annotation advises against varargs in internal code too, but the text is about frameworks. FDG5123 reports an externally visible method or constructor declared with __arglist. Removing __arglist changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5124
@@ -4572,7 +4572,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Provide an alternative without pointer parameters for ''{0}'''
+    message: Provide an alternative without pointer parameters for '{0}'
     category: Members
   notes: 'Library only: the reason is CLS compliance, which matters to callers of a framework in other languages. FDG5124 reports an externally visible method or constructor with a parameter whose type is a pointer, a function pointer or an array of either, when every overload of the same name declared in the same type (every constructor, for a constructor) has such a parameter. An alternative with another name, or one declared in a base type, is not seen. Overrides and interface implementations are not reported. Adding an overload changes no existing signature, so the fix is not breaking, but there is no code fix. FDG5102 reports the pointer parameters themselves.'
 - id: FDG5125
@@ -4699,7 +4699,7 @@
   minLanguage: "7.0"
   alternative: Before C# 7.0 there are no named tuples; use a descriptive type (FDG5127).
   analyzer:
-    message: 'Name the elements of the tuple type ''{0}'' in the signature of ''{1}'''
+    message: Name the elements of the tuple type '{0}' in the signature of '{1}'
     category: Members
   notes: 'Library only: see FDG5127. FDG5128 reports, once per member, an externally visible method, constructor, delegate, operator, property, indexer, field or event whose signature uses an unnamed tuple: System.Tuple<...>, or a value tuple with an element that has no name, such as (int, int) or ValueTuple<int, int>, also as a type argument or an array element type. Overrides and interface implementations are not reported. Replacing System.Tuple with a named tuple changes the type, so the fix is breaking; only adding names to a value tuple is not. There is no code fix.'
 - id: FDG5129
@@ -4727,7 +4727,7 @@
   minLanguage: "7.0"
   alternative: Before C# 7.0 there are no named tuples; name the properties of a descriptive type in PascalCase.
   analyzer:
-    message: 'Name the tuple element ''{0}'' in the signature of ''{1}'' in PascalCase'
+    message: Name the tuple element '{0}' in the signature of '{1}' in PascalCase
     category: Members
   notes: 'Library only: see FDG5127. FDG5129 reports each element name of a tuple in the signature of an externally visible method, constructor, delegate, operator, property, indexer, field or event that does not start with an uppercase letter. The rest of PascalCase is not checked. Overrides and interface implementations are not reported. Callers read the elements by name, so renaming them breaks their source and the fix is breaking; there is no code fix.'
 - id: FDG5130
@@ -4758,7 +4758,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Use a descriptive type in place of the tuple with {0} fields in the signature of ''{1}'''
+    message: Use a descriptive type in place of the tuple with {0} fields in the signature of '{1}'
     category: Members
   notes: 'Library only: see FDG5127. FDG5130 reports, once per member, an externally visible method, constructor, delegate, operator, property, indexer, field or event whose signature uses a tuple with more than three elements: a value tuple, named or not, or System.Tuple (an eight-argument System.Tuple counts the elements of its last one), also as a type argument or an array element type. Overrides and interface implementations are not reported. Replacing the tuple with a descriptive type changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5131
@@ -4804,7 +4804,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not use a tuple in the type of the parameter ''{0}'' of ''{1}'''
+    message: Do not use a tuple in the type of the parameter '{0}' of '{1}'
     category: Members
   notes: 'Library only: see FDG5127. FDG5131 reports a parameter of an externally visible method, constructor, delegate, operator or indexer whose type is or contains a tuple (a value tuple or System.Tuple), a collection of tuples included, which the body says is better served by descriptive types. The this parameter of an extension method over a tuple is left to FDG5132. A type parameter that callers substitute with a tuple is not reported, as the body allows, and neither are overrides and interface implementations, whose tuple can come from such a substitution in the member they override or implement. Replacing the parameter type changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5132
@@ -4849,7 +4849,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not define the extension method ''{0}'' over the tuple type ''{1}'''
+    message: Do not define the extension method '{0}' over the tuple type '{1}'
     category: Members
   notes: 'Library only: see FDG5127. FDG5132 reports an externally visible extension method whose this parameter is a tuple: a value tuple, named or not, or System.Tuple. Moving the method off the tuple changes the public API, so the fix is breaking; there is no code fix.'
 - id: FDG5133

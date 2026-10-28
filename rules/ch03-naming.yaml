@@ -115,9 +115,9 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Capitalize both characters of the two-character acronym ''{1}'' in ''{0}'''
+    message: Capitalize both characters of the two-character acronym '{1}' in '{0}'
     category: Naming
-  notes: "FDG3003 and FDG3004 report, in the names that externally visible declarations choose (namespaces, types, members, parameters and type parameters; not overrides or interface implementations), a word that is one of the acronyms chapter 3 itself names and that is cased otherwise than the book shows: IO and UI in capitals; Html, Xml, Rgb and Argb with only the first letter capitalized. The first word of a parameter name is left to FDG3005, and the I prefix of an interface and the T prefix of a type parameter are not part of the first word. Other acronyms are not checked, because the book gives no longer list. Renaming a public name changes the public API, so the fix is breaking; FDG3003 has no code fix."
+  notes: 'FDG3003 and FDG3004 report, in the names that externally visible declarations choose (namespaces, types, members, parameters and type parameters; not overrides or interface implementations), a word that is one of the acronyms chapter 3 itself names and that is cased otherwise than the book shows: IO and UI in capitals; Html, Xml, Rgb and Argb with only the first letter capitalized. The first word of a parameter name is left to FDG3005, and the I prefix of an interface and the T prefix of a type parameter are not part of the first word. Other acronyms are not checked, because the book gives no longer list. Renaming a public name changes the public API, so the fix is breaking; FDG3003 has no code fix.'
 - id: FDG3004
   strength: DO
   text: capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier.
@@ -146,7 +146,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Capitalize only the first character of the acronym ''{1}'' in ''{0}'''
+    message: Capitalize only the first character of the acronym '{1}' in '{0}'
     category: Naming
   notes: Checked by the FDG3003 analyzer; see FDG3003 for the acronyms and the names it checks. Renaming a public name changes the public API, so the fix is breaking; FDG3004 has no code fix.
 - id: FDG3005
@@ -303,7 +303,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Use ''{2}'' instead of ''{1}'' in the name ''{0}'''
+    message: Use '{2}' instead of '{1}' in the name '{0}'
     category: Naming
   notes: FDG3006 reports, in the names that externally visible declarations choose (see FDG3003 for which names), a run of whole words that spells a form of the Not column of Table 3-2, such as FileName, CallBack or ID, and gives the Pascal form. The case of each word must match the table, except the first letter of a camel-cased name, so fileName is reported and Filename or filename is not. LogOut and LogIn are reported in every name; in a method name, where footnote 1 makes the verb two words, the message gives LogOff and LogOn instead of Logoff and Logon. The last word of a form may carry a plural s, which the message keeps (FileNames gives Filenames, UserIDs gives UserIds), and an acronym plural such as IDEs or PIDs is one word, except before the words As, Is and Us, so UserIDIsValid is reported. A form never spans a digit or underscore of the name, so File2Name is not reported and MAX_ID is. A form that starts with two capitals (EMail, ID, OK, PI) right after an interface's I prefix, as in IEMailService, is not reported. Closed-form compound words outside the table are not checked, because the book gives no longer list. Renaming a public name changes the public API, so the fix is breaking; FDG3006 has no code fix.
 - id: FDG3007
@@ -508,7 +508,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Use only ASCII characters in the name ''{0}'''
+    message: Use only ASCII characters in the name '{0}'
     category: Naming
   notes: FDG3013 reports a non-ASCII character in a name that an externally visible declaration chooses (see FDG3003 for which names). Locals and non-public members are not checked, as chapter 3 governs public names. Renaming a public name changes the public API, so the fix is breaking; FDG3013 has no code fix.
 - id: FDG3014
@@ -636,7 +636,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: "Not mapped to CA1720: in a probe with SDK 10.0.402 it reported only members and parameters whose whole name is a type name, CLR names such as Int32 included, and not names such as ToLong that contain a language-specific name."
+  notes: 'Not mapped to CA1720: in a probe with SDK 10.0.402 it reported only members and parameters whose whole name is a type name, CLR names such as Int32 included, and not names such as ToLong that contain a language-specific name.'
 - id: FDG3018
   strength: DO
   text: use a common name, such as *value* or *item*, rather than repeating the type name, in the rare cases when an identifier has no semantic meaning and the type of the parameter is not important.
@@ -1090,7 +1090,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: "CA1724 reports a type whose name matches a namespace, including namespaces of referenced assemblies that the type is not in, such as a type Data and System.Data (probe with SDK 10.0.402); the rule text covers only a type in that namespace, so those reports are not violations. Noise: lowered to suggestion (2 false positives of 3 reports). Renaming a public type changes the public API, so the fix is breaking; CA1724 has no code fix."
+  notes: 'CA1724 reports a type whose name matches a namespace, including namespaces of referenced assemblies that the type is not in, such as a type Data and System.Data (probe with SDK 10.0.402); the rule text covers only a type in that namespace, so those reports are not violations. Noise: lowered to suggestion (2 false positives of 3 reports). Renaming a public type changes the public API, so the fix is breaking; CA1724 has no code fix.'
 - id: FDG3033
   strength: DO NOT
   text: introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`.
@@ -1124,7 +1124,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Qualify the overly general type name ''{0}'''
+    message: Qualify the overly general type name '{0}'
     category: Naming
   notes: FDG3033 reports an externally visible type (any kind, any arity) named exactly Element, Node, Log or Message, the names the rule text lists. Other overly general names are not detected. Renaming a public type changes the public API, so the fix is breaking; FDG3033 has no code fix.
 - id: FDG3034
@@ -1178,7 +1178,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: "Core namespaces are all System namespaces except application model namespaces and infrastructure namespaces (such as `*.Design` and `*.Permissions`), for example System, System.IO, System.Xml, and System.Net. CA1724 does not check this rule: it compares type names with namespace names, not with the types of the core namespaces (a type named Stream or EventLog is not reported; probe with SDK 10.0.402)."
+  notes: 'Core namespaces are all System namespaces except application model namespaces and infrastructure namespaces (such as `*.Design` and `*.Permissions`), for example System, System.IO, System.Xml, and System.Net. CA1724 does not check this rule: it compares type names with namespace names, not with the types of the core namespaces (a type named Stream or EventLog is not reported; probe with SDK 10.0.402).'
 - id: FDG3036
   strength: DO NOT
   text: assign type names that would conflict with other types within a single technology.
@@ -1612,7 +1612,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Add the suffix ''Callback'' to the delegate ''{0}'', which no event in this assembly uses'
+    message: Add the suffix 'Callback' to the delegate '{0}', which no event in this assembly uses
     category: Naming
   notes: FDG3051 reports an externally visible delegate whose name ends with neither 'Callback' nor 'EventHandler' and that no event declared in the same compilation uses. A delegate named '...EventHandler' is left to FDG3050 and FDG3074. Renaming a public delegate changes the public API, so the fix is breaking; FDG3051 has no code fix.
 - id: FDG3052
@@ -2098,7 +2098,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Name the collection property ''{0}'' with a plural phrase instead of a ''List'' or ''Collection'' suffix'
+    message: Name the collection property '{0}' with a plural phrase instead of a 'List' or 'Collection' suffix
     category: Naming
   notes: "FDG3068 reports an externally visible property of an array or IEnumerable type (other than string) whose last word is 'List' or 'Collection', as in the book's bad example. It cannot tell whether the rest of the name is a plural phrase. Overrides and interface implementations are not reported. Known limitation: a compound noun that ends in the word List, such as MailingList or WhiteList, is reported too; the rule text gives no list of such nouns to exclude. Renaming a public property changes the public API, so the fix is breaking; FDG3068 has no code fix."
 - id: FDG3069
@@ -2148,7 +2148,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: "Analyzer candidate rejected (gate 1): the rule text gives one negative example (CantSeek) and no word list. Telling a negative phrase from an affirmative one (Disabled, Hidden, NoWrap) would need a word list the book does not give, so a check would have to guess intent."
+  notes: 'Analyzer candidate rejected (gate 1): the rule text gives one negative example (CantSeek) and no word list. Telling a negative phrase from an affirmative one (Disabled, Hidden, NoWrap) would need a word list the book does not give, so a check would have to guess intent.'
 - id: FDG3070
   strength: CONSIDER
   text: giving a property the same name as its type.
@@ -2319,7 +2319,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Name the two parameters of the event handler ''{0}'' ''sender'' and ''e'''
+    message: Name the two parameters of the event handler '{0}' 'sender' and 'e'
     category: Naming
   notes: FDG3075 reports an externally visible delegate that an event in the same compilation uses, or whose name ends with 'EventHandler', when its parameters are not exactly 'sender' and 'e'. Parameter types are not checked. Renaming or changing the parameters of a public delegate changes the public API (Appendix D.11.1), so the fix is breaking; FDG3075 has no code fix.
 - id: FDG3076
@@ -2648,7 +2648,7 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Do not use a numeric index in the operator parameter name ''{0}'''
+    message: Do not use a numeric index in the operator parameter name '{0}'
     category: Naming
   notes: FDG3086 reports a parameter of an externally visible user-defined operator or conversion operator whose name ends with a digit, such as d1 and d2. A name equal to its type's name apart from case, such as vector3 for Vector3, Vector3? or Vector3[], is not reported. Abbreviations are not checked, because they cannot be told from words. Renaming an operator parameter changes the parameter names in the public API's metadata, which languages that call the operator method by name can use, so the fix is treated as breaking, although C# cannot call an operator with named arguments (CS0571); FDG3086 has no code fix.
 - id: FDG3087
@@ -2678,6 +2678,6 @@
   minLanguage: null
   alternative: null
   analyzer:
-    message: 'Make the resource class ''{0}'' internal'
+    message: Make the resource class '{0}' internal
     category: Naming
   notes: "FDG3087 reports an externally visible class marked [GeneratedCode(\"System.Resources.Tools.StronglyTypedResourceBuilder\", ...)], a resource class that a resource editor generated as public. Resources exposed through hand-written members are not detected. Library profile only: an application's resource classes are not public API, so this rule is off in the application profile. Making a public class internal removes it from the public API, so the fix is breaking; FDG3087 has no code fix."
