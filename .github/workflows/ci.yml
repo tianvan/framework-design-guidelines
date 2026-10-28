@@ -33,13 +33,13 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
       DISABLE_AUTOUPDATER: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
 
@@ -77,14 +77,15 @@ jobs:
 
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-results-${{ matrix.os }}
           path: TestResults
           if-no-files-found: ignore
 
-  # The package and the CLI must work on the oldest SDK they support. The repository builds with the SDK in global.json
-  # (10.0.402); the integration tests pin FDG_TEST_SDK in the global.json of every sample workspace they create.
+  # The package and the CLI must work on the oldest SDK they support. The repository builds with the SDK in global.json;
+  # the integration tests pin FDG_TEST_SDK in the global.json of every sample workspace they create. Both inputs of
+  # setup-dotnet are used, so it installs the SDK from global.json and the minimum SDK.
   integration-minimum-sdk:
     name: integration-minimum-sdk
     runs-on: ubuntu-latest
@@ -95,13 +96,12 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
       FDG_TEST_SDK: 10.0.100
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
-          dotnet-version: |
-            10.0.402
-            10.0.100
+          global-json-file: global.json
+          dotnet-version: 10.0.100
 
       - name: Integration tests on the minimum SDK
         run: dotnet test tests/Fdg.IntegrationTests -c Release -nologo
