@@ -62,8 +62,9 @@ This is a review: give findings and change no files.
    | Changes a library's public or protected surface (step 5) | [appd-breaking-changes-d-1-to-d-8.md](../fdg-write/references/appd-breaking-changes-d-1-to-d-8.md), [appd-breaking-changes-d-9-on.md](../fdg-write/references/appd-breaking-changes-d-9-on.md) |
 
    In `test` projects read only the Chapter 7, Chapter 8 and Appendix A references; the other chapters are off
-   there. In `application` projects skip the rules marked "(library only)": they are about a library's public
-   surface and are off there. The references list the rules tools do not enforce; follow a rule's `examples:` link
+   there, and skip the rules marked "(library only)" or "(not in test projects)" in the references you read. In
+   `application` projects skip the rules marked "(library only)": they are about a library's public surface and are
+   off there. The references list the rules tools do not enforce; follow a rule's `examples:` link
    when its wording is not enough.
 4. Check every declaration in scope against those rules. Report a finding only when a specific rule clearly applies
    to a specific line. Do not invent advice the rules do not support, and do not report what analyzers and
@@ -96,8 +97,8 @@ One finding per rule and line, ordered by file and line, in exactly this form:
   <one sentence: why the line breaks the rule and what would follow it>
 ```
 
-The strength and rule text are copied verbatim from the reference, without `(library only)`, `(context: ...)` or
-`(can cause: ...)`, the version tag, `(alt: ...)` or the `examples:` link. For example:
+The strength and rule text are copied verbatim from the reference, without `(library only)`, `(not in test projects)`,
+`(context: ...)` or `(can cause: ...)`, the version tag, `(alt: ...)` or the `examples:` link. For example:
 
 ```
 src/Orders/OrderMgr.cs:12 — FDG3014 DO NOT use abbreviations or contractions as part of identifier names.

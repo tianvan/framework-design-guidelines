@@ -57,8 +57,9 @@ If you cannot find them, say so and stop. Never review from memory: every findin
    - Try-Write and `OperationStatus`: `references/ch09-patterns-buffers-try-write.md`.
 
    In `test` projects read only the Chapter 7, Chapter 8 and Appendix A references; the other chapters are off
-   there. In `application` projects skip the rules marked "(library only)": they are about a library's public
-   surface and are off there. The references list, by section, the rules tools do not enforce. When a rule's
+   there, and skip the rules marked "(library only)" or "(not in test projects)" in the references you read. In
+   `application` projects skip the rules marked "(library only)": they are about a library's public surface and are
+   off there. The references list, by section, the rules tools do not enforce. When a rule's
    wording is not enough, follow the `examples:` link at the end of its line (relative to the references
    directory).
 4. Check every declaration in scope against those rules. Report a finding only when a specific rule clearly applies
@@ -93,8 +94,8 @@ Return only the findings, one per rule and line, ordered by file and line, in ex
   <one sentence: why the line breaks the rule and what would follow it>
 ```
 
-Copy the strength and rule text verbatim from the reference, without `(library only)`, `(context: ...)` or
-`(can cause: ...)`, the version tag, `(alt: ...)` or the `examples:` link. For example:
+Copy the strength and rule text verbatim from the reference, without `(library only)`, `(not in test projects)`,
+`(context: ...)` or `(can cause: ...)`, the version tag, `(alt: ...)` or the `examples:` link. For example:
 
 ```
 src/Orders/OrderMgr.cs:12 — FDG3014 DO NOT use abbreviations or contractions as part of identifier names.

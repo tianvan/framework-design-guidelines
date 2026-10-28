@@ -61,66 +61,68 @@ reference for its topic in the table above.
 In `test` projects only rules from Chapter 7 (exceptions), Chapter 8 (usage guidelines) and Appendix A (coding
 style) apply. The naming, type, member, extensibility and pattern rules are off there, so test names such as
 `Method_WhenX_DoesY` are fine. In `application` projects the rules about a library's public surface are off; the
-reference lines, and the top rules below, mark them "(library only)".
+reference lines, and the top rules below, mark them "(library only)". In `test` projects skip the rules marked
+"(library only)" or "(not in test projects)", including those in the Chapter 7, Chapter 8 and Appendix A
+references.
 
 Appendix A is the .NET BCL team's style; the book calls it a set of suggestions, not requirements. Follow it unless
 the repository's own `.editorconfig` says otherwise.
 
-- **FDG3014** DO NOT use abbreviations or contractions as part of identifier names.
-- **FDG3009** DO favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the *X*-axis).
-- **FDG3008** DO choose easily readable identifier names.
+- **FDG3014** DO NOT use abbreviations or contractions as part of identifier names. (not in test projects)
+- **FDG3009** DO favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the *X*-axis). (not in test projects)
+- **FDG3008** DO choose easily readable identifier names. (not in test projects)
 - **FDG7001** DO NOT return error codes.
 - **FDG7042** DO throw `ArgumentException` or one of its subtypes if bad arguments are passed to a member. Prefer the most derived exception type, if applicable.
 - **FDG7041** DO throw an `InvalidOperationException` if the object is in an inappropriate state.
-- **FDG5106** DO NOT use Boolean parameters unless you are absolutely sure there will never be a need for more than two values.
-- **FDG3065** DO give methods names that are verbs or verb phrases.
-- **FDG3069** DO name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value.
-- **FDG3081** DO use descriptive parameter names.
+- **FDG5106** DO NOT use Boolean parameters unless you are absolutely sure there will never be a need for more than two values. (not in test projects)
+- **FDG3065** DO give methods names that are verbs or verb phrases. (not in test projects)
+- **FDG3069** DO name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value. (not in test projects)
+- **FDG3081** DO use descriptive parameter names. (not in test projects)
 - **FDG7004** DO NOT use exceptions for the normal flow of control, if possible. Prefer Tester–Doer or the Try pattern to throwing exceptions in common cases.
 - **FDG7029** DO NOT overcatch. Exceptions should often be allowed to propagate up the call stack.
 - **FDG7012** DO NOT create new exception types to communicate usage errors. Throw one of the existing base library exceptions instead. See section 7.3 for detailed usage guidelines for the most common standard exception types.
-- **FDG4034** DO use an enum to strongly type parameters, properties, and return values that represent sets of values.
-- **FDG5100** DO use the least derived parameter type that provides the functionality required by the member.
+- **FDG4034** DO use an enum to strongly type parameters, properties, and return values that represent sets of values. (not in test projects)
+- **FDG5100** DO use the least derived parameter type that provides the functionality required by the member. (not in test projects)
 - **FDG8001** DO prefer using collections over arrays in public APIs. Section 8.3.3 provides details about how to choose between collections and arrays. (library only)
 - **FDG8013** DO NOT use weakly typed collections in public APIs. (library only)
-- **FDG9018** DO implement new asynchronous API using the Task-Based Async Pattern.
-- **FDG9044** DO throw execution error exceptions via the Task-like value returned from an Async method.
-- **FDG6011** DO NOT make members virtual unless you have a good reason to do so and you are aware of all the costs related to designing, testing, and maintaining virtual members.
+- **FDG9018** DO implement new asynchronous API using the Task-Based Async Pattern. (not in test projects)
+- **FDG9044** DO throw execution error exceptions via the Task-like value returned from an Async method. (not in test projects)
+- **FDG6011** DO NOT make members virtual unless you have a good reason to do so and you are aware of all the costs related to designing, testing, and maintaining virtual members. (not in test projects)
 - **FDG6003** DO treat protected members in unsealed classes as public for the purpose of security, documentation, and compatibility analysis. (library only)
 - **FDG4025** DO NOT add members to an interface that has previously shipped. (library only)
-- **FDG5048** DO minimal work in the constructor.
-- **FDG5026** DO create get-only properties if the caller should not be able to change the value of the property.
-- **FDG5030** DO preserve the previous value if a property setter throws an exception.
-- **FDG3038** DO name classes and structs with nouns or noun phrases, using PascalCasing.
-- **FDG4001** DO ensure that each type is a well-defined set of related members, not just a random collection of unrelated functionality.
-- **FDG4017** DO NOT treat static classes as a miscellaneous bucket.
-- **FDG4036** DO NOT use an enum for open sets (such as the operating system version, names of your friends, etc.).
+- **FDG5048** DO minimal work in the constructor. (not in test projects)
+- **FDG5026** DO create get-only properties if the caller should not be able to change the value of the property. (not in test projects)
+- **FDG5030** DO preserve the previous value if a property setter throws an exception. (not in test projects)
+- **FDG3038** DO name classes and structs with nouns or noun phrases, using PascalCasing. (not in test projects)
+- **FDG4001** DO ensure that each type is a well-defined set of related members, not just a random collection of unrelated functionality. (not in test projects)
+- **FDG4017** DO NOT treat static classes as a miscellaneous bucket. (not in test projects)
+- **FDG4036** DO NOT use an enum for open sets (such as the operating system version, names of your friends, etc.). (not in test projects)
 - **FDG4052** DO NOT use public nested types as a logical grouping construct; use namespaces for this purpose. (library only)
-- **FDG4030** DO ensure that a state where all instance data is set to zero, false, or null (as appropriate) is valid.
-- **FDG5110** DO validate enum parameters.
-- **FDG5029** DO allow properties to be set in any order, even if this results in a temporary invalid state of the object.
-- **FDG5002** DO NOT arbitrarily vary parameter names in overloads. If a parameter in one overload represents the same input as a parameter in another overload, the parameters should have the same name.
-- **FDG5006** DO NOT have overloads with parameters at the same position and similar types, yet with different semantics.
+- **FDG4030** DO ensure that a state where all instance data is set to zero, false, or null (as appropriate) is valid. (not in test projects)
+- **FDG5110** DO validate enum parameters. (not in test projects)
+- **FDG5029** DO allow properties to be set in any order, even if this results in a temporary invalid state of the object. (not in test projects)
+- **FDG5002** DO NOT arbitrarily vary parameter names in overloads. If a parameter in one overload represents the same input as a parameter in another overload, the parameters should have the same name. (not in test projects)
+- **FDG5006** DO NOT have overloads with parameters at the same position and similar types, yet with different semantics. (not in test projects)
 - **FDG5127** DO prefer descriptive types over tuples, `System.Tuple<T1, ...>`, and `System.ValueTuple<T1, ...>`; they improve discoverability and can better evolve over time. (library only)
-- **FDG5069** AVOID frivolously defining extension methods, especially on types outside your library or framework.
-- **FDG5090** DO NOT provide an implicit conversion operator if the conversion is potentially lossy.
-- **FDG6014** DO NOT provide abstractions unless they are tested by developing several concrete implementations and APIs consuming the abstractions.
-- **FDG6008** DO use the `Func<...>`, `Action<...>`, or `Expression<...>` types instead of custom delegates when possible, when defining APIs with callbacks.
-- **FDG8022** DO use `ReadOnlyCollection<T>`, a subclass of `ReadOnlyCollection<T>`, or in rare cases `IEnumerable<T>` for properties or return values representing read-only collections.
+- **FDG5069** AVOID frivolously defining extension methods, especially on types outside your library or framework. (not in test projects)
+- **FDG5090** DO NOT provide an implicit conversion operator if the conversion is potentially lossy. (not in test projects)
+- **FDG6014** DO NOT provide abstractions unless they are tested by developing several concrete implementations and APIs consuming the abstractions. (not in test projects)
+- **FDG6008** DO use the `Func<...>`, `Action<...>`, or `Expression<...>` types instead of custom delegates when possible, when defining APIs with callbacks. (not in test projects)
+- **FDG8022** DO use `ReadOnlyCollection<T>`, a subclass of `ReadOnlyCollection<T>`, or in rare cases `IEnumerable<T>` for properties or return values representing read-only collections. (not in test projects)
 - **FDG8027** DO NOT return snapshot collections from properties. Properties should return live collections.
 - **FDG8044** DO use `DateTimeOffset` whenever you are referring to an exact point in time. For example, use it to calculate “now,” transaction times, file change times, logging event times, and so on. If the time zone is not known, use it with UTC. These usages are much more common than the scenarios where `DateTime` is preferred, so this should be considered the default.
 - **FDG8072** DO ensure that if the `Object.Equals` method returns true for any two objects, `GetHashCode` returns the same value for these objects.
 - **FDG8084** DO ensure that `ToString` has no observable side effects.
-- **FDG9026** DO NOT return Tasks for long-running synchronous methods.
-- **FDG9025** CONSIDER accepting a `CancellationToken` in long-running or blocking synchronous methods.
-- **FDG9070** DO throw an `ObjectDisposedException` from any member that cannot be used after the object has been disposed of.
-- **FDG9068** DO allow the `Dispose(bool)` method to be called more than once. The method might choose to do nothing after the first call.
-- **FDG9084** DO prefer constructors to factories, because they are generally more usable, consistent, and convenient than specialized construction mechanisms.
-- **FDG9105** DO defer execution of query operator implementations. The expected behavior of most of the Query Pattern members is that they simply construct a new object which, upon enumeration, produces the elements of the set that match the query.
+- **FDG9026** DO NOT return Tasks for long-running synchronous methods. (not in test projects)
+- **FDG9025** CONSIDER accepting a `CancellationToken` in long-running or blocking synchronous methods. (not in test projects)
+- **FDG9070** DO throw an `ObjectDisposedException` from any member that cannot be used after the object has been disposed of. (not in test projects)
+- **FDG9068** DO allow the `Dispose(bool)` method to be called more than once. The method might choose to do nothing after the first call. (not in test projects)
+- **FDG9084** DO prefer constructors to factories, because they are generally more usable, consistent, and convenient than specialized construction mechanisms. (not in test projects)
+- **FDG9105** DO defer execution of query operator implementations. The expected behavior of most of the Query Pattern members is that they simply construct a new object which, upon enumeration, produces the elements of the set that match the query. (not in test projects)
 - **FDG7030** DO use try-finally and avoid using try-catch for cleanup code. In well-written exception code, try-finally is far more common than try-catch.
 - **FDG7023** DO NOT disclose security-sensitive information in exception messages.
 - **FDG7065** DO pick one kind of reason for why your Try method can return `false`, and throw an exception for any other failure reason.
-- **FDG2027** DO provide strongly typed APIs if at all possible.
+- **FDG2027** DO provide strongly typed APIs if at all possible. (not in test projects)
 - **FDGA050** DO use `if`…`throw` instead of assignment–expression–throw for argument validation.
 - **FDGA041** DO use language keywords (`string`, `int`, `double`, …) instead of BCL type names (`String`, `Int32`, `Double`, …), for both variable declarations and method invocation.
 - **FDGA059** DO NOT use comments unless they describe something not obvious to someone other than the developer who wrote the code.

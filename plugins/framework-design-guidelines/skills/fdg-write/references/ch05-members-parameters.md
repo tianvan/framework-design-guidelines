@@ -6,31 +6,31 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 5.8 Parameter Design
 
-- **FDG5100** DO use the least derived parameter type that provides the functionality required by the member. — examples: examples/ch05-members-parameters.md#fdg5100
-- **FDG5101** DO NOT use reserved parameters. — examples: examples/ch05-members-parameters.md#fdg5101
+- **FDG5100** DO use the least derived parameter type that provides the functionality required by the member. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5100
+- **FDG5101** DO NOT use reserved parameters. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5101
 
 ## 5.8.1 Choosing Between Enum and Boolean Parameters
 
-- **FDG5106** DO NOT use Boolean parameters unless you are absolutely sure there will never be a need for more than two values. — examples: examples/ch05-members-parameters.md#fdg5106
-- **FDG5107** CONSIDER using Booleans for constructor parameters that are truly two-state values and are simply used to initialize Boolean properties. — examples: examples/ch05-members-parameters.md#fdg5107
+- **FDG5106** DO NOT use Boolean parameters unless you are absolutely sure there will never be a need for more than two values. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5106
+- **FDG5107** CONSIDER using Booleans for constructor parameters that are truly two-state values and are simply used to initialize Boolean properties. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5107
 
 ## 5.8.2 Validating Arguments
 
-- **FDG5110** DO validate enum parameters. — examples: examples/ch05-members-parameters.md#fdg5110
-- **FDG5112** DO be aware that mutable arguments might have changed after they were validated. — examples: examples/ch05-members-parameters.md#fdg5112
+- **FDG5110** DO validate enum parameters. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5110
+- **FDG5112** DO be aware that mutable arguments might have changed after they were validated. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5112
 
 ## 5.8.4 Members with Variable Number of Parameters
 
-- **FDG5116** CONSIDER adding the `params` keyword to array parameters if you expect the end users to pass arrays with a small number of elements. — examples: examples/ch05-members-parameters.md#fdg5116
-- **FDG5117** AVOID using params arrays if the caller would almost always have the input already in an array. — examples: examples/ch05-members-parameters.md#fdg5117
-- **FDG5119** CONSIDER using the `params` keyword in a simple overload, even if a more complex overload could not use it. — examples: examples/ch05-members-parameters.md#fdg5119
-- **FDG5120** DO try to order parameters to make it possible to use the `params` keyword. — examples: examples/ch05-members-parameters.md#fdg5120
-- **FDG5121** CONSIDER providing special overloads and code paths for calls with a small number of arguments in extremely performance-sensitive APIs. — examples: examples/ch05-members-parameters.md#fdg5121
+- **FDG5116** CONSIDER adding the `params` keyword to array parameters if you expect the end users to pass arrays with a small number of elements. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5116
+- **FDG5117** AVOID using params arrays if the caller would almost always have the input already in an array. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5117
+- **FDG5119** CONSIDER using the `params` keyword in a simple overload, even if a more complex overload could not use it. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5119
+- **FDG5120** DO try to order parameters to make it possible to use the `params` keyword. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5120
+- **FDG5121** CONSIDER providing special overloads and code paths for calls with a small number of arguments in extremely performance-sensitive APIs. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5121
 
 ## 5.8.5 Pointer Parameters
 
-- **FDG5125** AVOID doing expensive argument checking for pointer arguments. — examples: examples/ch05-members-parameters.md#fdg5125
-- **FDG5126** DO follow common pointer-related conventions when designing members with pointers. — examples: examples/ch05-members-parameters.md#fdg5126
+- **FDG5125** AVOID doing expensive argument checking for pointer arguments. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5125
+- **FDG5126** DO follow common pointer-related conventions when designing members with pointers. (not in test projects) — examples: examples/ch05-members-parameters.md#fdg5126
 
 ## 5.9 Using Tuples in Member Signatures
 

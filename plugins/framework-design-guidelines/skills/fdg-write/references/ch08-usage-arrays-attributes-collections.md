@@ -19,16 +19,16 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 8.3.1 Collection Parameters
 
-- **FDG8018** DO use the least-specialized type possible as a parameter type. Most members taking collections as parameters use the `IEnumerable<T>` interface. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8018
-- **FDG8019** AVOID using `ICollection<T>` or `ICollection` as a parameter just to access the `Count` property. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8019
+- **FDG8018** DO use the least-specialized type possible as a parameter type. Most members taking collections as parameters use the `IEnumerable<T>` interface. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8018
+- **FDG8019** AVOID using `ICollection<T>` or `ICollection` as a parameter just to access the `Count` property. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8019
 
 ## 8.3.2 Collection Properties and Return Values
 
-- **FDG8021** DO use `Collection<T>` or a subclass of `Collection<T>` for properties or return values representing read/write collections. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8021
-- **FDG8022** DO use `ReadOnlyCollection<T>`, a subclass of `ReadOnlyCollection<T>`, or in rare cases `IEnumerable<T>` for properties or return values representing read-only collections. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8022
-- **FDG8023** CONSIDER using subclasses of generic base collections instead of using the collections directly. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8023
-- **FDG8024** CONSIDER returning a subclass of `Collection<T>` or `ReadOnlyCollection<T>` from very commonly used methods and properties. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8024
-- **FDG8025** CONSIDER using a keyed collection if the items stored in the collection have unique keys (e.g., names, IDs). Keyed collections are collections that can be indexed by both an integer and a key, and they are usually implemented by inheriting from `KeyedCollection<TKey,TItem>`. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8025
+- **FDG8021** DO use `Collection<T>` or a subclass of `Collection<T>` for properties or return values representing read/write collections. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8021
+- **FDG8022** DO use `ReadOnlyCollection<T>`, a subclass of `ReadOnlyCollection<T>`, or in rare cases `IEnumerable<T>` for properties or return values representing read-only collections. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8022
+- **FDG8023** CONSIDER using subclasses of generic base collections instead of using the collections directly. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8023
+- **FDG8024** CONSIDER returning a subclass of `Collection<T>` or `ReadOnlyCollection<T>` from very commonly used methods and properties. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8024
+- **FDG8025** CONSIDER using a keyed collection if the items stored in the collection have unique keys (e.g., names, IDs). Keyed collections are collections that can be indexed by both an integer and a key, and they are usually implemented by inheriting from `KeyedCollection<TKey,TItem>`. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8025
 
 ## 8.3.2.1 Snapshots Versus Live Collections
 
@@ -37,8 +37,8 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 8.3.3 Choosing Between Arrays and Collections
 
-- **FDG8029** DO prefer collections over arrays. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8029
-- **FDG8030** CONSIDER using arrays in low-level APIs to minimize memory consumption and maximize performance.
+- **FDG8029** DO prefer collections over arrays. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8029
+- **FDG8030** CONSIDER using arrays in low-level APIs to minimize memory consumption and maximize performance. (not in test projects)
 
 ## 8.3.4 Implementing Custom Collections
 

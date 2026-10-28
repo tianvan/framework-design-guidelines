@@ -6,33 +6,33 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 5.6 Extension Methods
 
-- **FDG5069** AVOID frivolously defining extension methods, especially on types outside your library or framework. — examples: examples/ch05-members-extensions-operators.md#fdg5069
-- **FDG5070** CONSIDER using extension methods to provide helper functionality relevant to every implementation of an interface. — examples: examples/ch05-members-extensions-operators.md#fdg5070
-- **FDG5071** CONSIDER using extension methods when an instance method would introduce an unwanted dependency. — examples: examples/ch05-members-extensions-operators.md#fdg5071
-- **FDG5072** CONSIDER using generic extension methods when an instance method on a generic type is not well defined for all possible type parameters. — examples: examples/ch05-members-extensions-operators.md#fdg5072
+- **FDG5069** AVOID frivolously defining extension methods, especially on types outside your library or framework. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5069
+- **FDG5070** CONSIDER using extension methods to provide helper functionality relevant to every implementation of an interface. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5070
+- **FDG5071** CONSIDER using extension methods when an instance method would introduce an unwanted dependency. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5071
+- **FDG5072** CONSIDER using generic extension methods when an instance method on a generic type is not well defined for all possible type parameters. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5072
 - **FDG5075** CONSIDER naming the type that holds extension methods for its functionality—for example, use “Routing” instead of “[ExtendedType] Extensions.” (library only) — examples: examples/ch05-members-extensions-operators.md#fdg5075
-- **FDG5078** CONSIDER defining extension methods in the same namespace as the extended type if the type is an interface and if the extension methods are meant to be used in most or all cases.
-- **FDG5079** CONSIDER defining extension methods in the same namespace as the extended type if the type is generic and if the extension methods apply stronger type parameter restrictions than the extended type does. — examples: examples/ch05-members-extensions-operators.md#fdg5079
-- **FDG5080** DO NOT define extension methods implementing a feature in namespaces normally associated with other features. Instead, define them in the namespace associated with the feature they belong to. — examples: examples/ch05-members-extensions-operators.md#fdg5080
+- **FDG5078** CONSIDER defining extension methods in the same namespace as the extended type if the type is an interface and if the extension methods are meant to be used in most or all cases. (not in test projects)
+- **FDG5079** CONSIDER defining extension methods in the same namespace as the extended type if the type is generic and if the extension methods apply stronger type parameter restrictions than the extended type does. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5079
+- **FDG5080** DO NOT define extension methods implementing a feature in namespaces normally associated with other features. Instead, define them in the namespace associated with the feature they belong to. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5080
 
 ## 5.7 Operator Overloads
 
-- **FDG5081** AVOID defining operator overloads, except in types that should feel like primitive (built-in) types.
-- **FDG5082** CONSIDER defining operator overloads in a type that should feel like a primitive type. — examples: examples/ch05-members-extensions-operators.md#fdg5082
-- **FDG5083** DO define operator overloads in structs that represent numbers (such as `System.Decimal`).
-- **FDG5084** DO NOT be cute when defining operator overloads. — examples: examples/ch05-members-extensions-operators.md#fdg5084
-- **FDG5085** DO NOT provide operator overloads unless at least one of the operands is of the type defining the overload. — examples: examples/ch05-members-extensions-operators.md#fdg5085
-- **FDG5086** DO overload operators in a symmetric fashion. — examples: examples/ch05-members-extensions-operators.md#fdg5086
+- **FDG5081** AVOID defining operator overloads, except in types that should feel like primitive (built-in) types. (not in test projects)
+- **FDG5082** CONSIDER defining operator overloads in a type that should feel like a primitive type. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5082
+- **FDG5083** DO define operator overloads in structs that represent numbers (such as `System.Decimal`). (not in test projects)
+- **FDG5084** DO NOT be cute when defining operator overloads. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5084
+- **FDG5085** DO NOT provide operator overloads unless at least one of the operands is of the type defining the overload. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5085
+- **FDG5086** DO overload operators in a symmetric fashion. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5086
 
 ## 5.7.2 Conversion Operators
 
-- **FDG5088** DO NOT provide a conversion operator if such a conversion is not clearly expected by the end users. — examples: examples/ch05-members-extensions-operators.md#fdg5088
-- **FDG5089** DO NOT define conversion operators outside of a type’s domain. — examples: examples/ch05-members-extensions-operators.md#fdg5089
-- **FDG5090** DO NOT provide an implicit conversion operator if the conversion is potentially lossy. — examples: examples/ch05-members-extensions-operators.md#fdg5090
-- **FDG5091** DO NOT provide an implicit conversion operator if the conversion requires nontrivial work. — examples: examples/ch05-members-extensions-operators.md#fdg5091
-- **FDG5093** DO throw `System.InvalidCastException` if a call to a cast operator results in a lossy conversion and the contract of the operator does not allow lossy conversions. — examples: examples/ch05-members-extensions-operators.md#fdg5093
+- **FDG5088** DO NOT provide a conversion operator if such a conversion is not clearly expected by the end users. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5088
+- **FDG5089** DO NOT define conversion operators outside of a type’s domain. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5089
+- **FDG5090** DO NOT provide an implicit conversion operator if the conversion is potentially lossy. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5090
+- **FDG5091** DO NOT provide an implicit conversion operator if the conversion requires nontrivial work. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5091
+- **FDG5093** DO throw `System.InvalidCastException` if a call to a cast operator results in a lossy conversion and the contract of the operator does not allow lossy conversions. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5093
 
 ## 5.7.3 Inequality Operators
 
-- **FDG5095** DO implement inequality operators consistent with the `IComparable<T>` implementation. — examples: examples/ch05-members-extensions-operators.md#fdg5095
-- **FDG5098** DO define inequality operators consistent with their mathematical properties. — examples: examples/ch05-members-extensions-operators.md#fdg5098
+- **FDG5095** DO implement inequality operators consistent with the `IComparable<T>` implementation. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5095
+- **FDG5098** DO define inequality operators consistent with their mathematical properties. (not in test projects) — examples: examples/ch05-members-extensions-operators.md#fdg5098

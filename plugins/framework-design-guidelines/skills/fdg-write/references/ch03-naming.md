@@ -6,18 +6,18 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 3.2.1 Word Choice
 
-- **FDG3008** DO choose easily readable identifier names. — examples: examples/ch03-naming.md#fdg3008
-- **FDG3009** DO favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the *X*-axis).
-- **FDG3011** DO NOT use Hungarian notation. — examples: examples/ch03-naming.md#fdg3011
+- **FDG3008** DO choose easily readable identifier names. (not in test projects) — examples: examples/ch03-naming.md#fdg3008
+- **FDG3009** DO favor readability over brevity. The property name `CanScrollHorizontally` is better than `ScrollableX` (an obscure reference to the *X*-axis). (not in test projects)
+- **FDG3011** DO NOT use Hungarian notation. (not in test projects) — examples: examples/ch03-naming.md#fdg3011
 
 ## 3.2.2 Using Abbreviations and Acronyms
 
-- **FDG3014** DO NOT use abbreviations or contractions as part of identifier names. — examples: examples/ch03-naming.md#fdg3014
-- **FDG3015** DO NOT use any acronyms that are not widely accepted, and even if they are, only when necessary. — examples: examples/ch03-naming.md#fdg3015
+- **FDG3014** DO NOT use abbreviations or contractions as part of identifier names. (not in test projects) — examples: examples/ch03-naming.md#fdg3014
+- **FDG3015** DO NOT use any acronyms that are not widely accepted, and even if they are, only when necessary. (not in test projects) — examples: examples/ch03-naming.md#fdg3015
 
 ## 3.2.3 Avoiding Language-Specific Names
 
-- **FDG3017** DO use a generic CLR type name, rather than a language-specific name, in the rare cases when an identifier has no semantic meaning beyond its type. — examples: examples/ch03-naming.md#fdg3017
+- **FDG3017** DO use a generic CLR type name, rather than a language-specific name, in the rare cases when an identifier has no semantic meaning beyond its type. (not in test projects) — examples: examples/ch03-naming.md#fdg3017
 
 ## 3.2.4 Naming New Versions of Existing APIs
 
@@ -29,78 +29,78 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 3.3 Names of Assemblies, DLLs, and Packages
 
-- **FDG3025** DO choose names for your assembly DLLs that suggest large chunks of functionality, such as `System.Data`. — examples: examples/ch03-naming.md#fdg3025
-- **FDG3026** CONSIDER naming DLLs according to the following pattern: — examples: examples/ch03-naming.md#fdg3026
+- **FDG3025** DO choose names for your assembly DLLs that suggest large chunks of functionality, such as `System.Data`. (not in test projects) — examples: examples/ch03-naming.md#fdg3025
+- **FDG3026** CONSIDER naming DLLs according to the following pattern: (not in test projects) — examples: examples/ch03-naming.md#fdg3026
 
 ## 3.4 Names of Namespaces
 
-- **FDG3027** DO prefix namespace names with a company name to prevent namespaces from different companies from having the same name. — examples: examples/ch03-naming.md#fdg3027
-- **FDG3028** DO use a stable, version-independent product name at the second level of a namespace name. — examples: examples/ch03-naming.md#fdg3028
-- **FDG3029** DO NOT use organizational hierarchies as the basis for names in namespace hierarchies, because group names within corporations tend to be short-lived. Organize the hierarchy of namespaces around groups of related technologies.
-- **FDG3031** CONSIDER using plural namespace names where appropriate. — examples: examples/ch03-naming.md#fdg3031
+- **FDG3027** DO prefix namespace names with a company name to prevent namespaces from different companies from having the same name. (not in test projects) — examples: examples/ch03-naming.md#fdg3027
+- **FDG3028** DO use a stable, version-independent product name at the second level of a namespace name. (not in test projects) — examples: examples/ch03-naming.md#fdg3028
+- **FDG3029** DO NOT use organizational hierarchies as the basis for names in namespace hierarchies, because group names within corporations tend to be short-lived. Organize the hierarchy of namespaces around groups of related technologies. (not in test projects)
+- **FDG3031** CONSIDER using plural namespace names where appropriate. (not in test projects) — examples: examples/ch03-naming.md#fdg3031
 
 ## 3.4.1.1 Application Model Namespaces
 
-- **FDG3034** DO NOT give the same name to multiple types across namespaces within a single application model. — examples: examples/ch03-naming.md#fdg3034
+- **FDG3034** DO NOT give the same name to multiple types across namespaces within a single application model. (not in test projects) — examples: examples/ch03-naming.md#fdg3034
 
 ## 3.4.1.3 Core Namespaces
 
-- **FDG3035** DO NOT give types names that would conflict with any type in the core namespaces. — examples: examples/ch03-naming.md#fdg3035
+- **FDG3035** DO NOT give types names that would conflict with any type in the core namespaces. (not in test projects) — examples: examples/ch03-naming.md#fdg3035
 
 ## 3.4.1.4 Technology Namespace Groups
 
-- **FDG3036** DO NOT assign type names that would conflict with other types within a single technology.
-- **FDG3037** DO NOT introduce type name conflicts between types in technology namespaces and an application model namespace (unless the technology is not expected to be used with the application model). — examples: examples/ch03-naming.md#fdg3037
+- **FDG3036** DO NOT assign type names that would conflict with other types within a single technology. (not in test projects)
+- **FDG3037** DO NOT introduce type name conflicts between types in technology namespaces and an application model namespace (unless the technology is not expected to be used with the application model). (not in test projects) — examples: examples/ch03-naming.md#fdg3037
 
 ## 3.5 Names of Classes, Structs, and Interfaces
 
-- **FDG3038** DO name classes and structs with nouns or noun phrases, using PascalCasing. — examples: examples/ch03-naming.md#fdg3038
-- **FDG3039** DO name interfaces with adjective phrases, or occasionally with nouns or noun phrases. — examples: examples/ch03-naming.md#fdg3039
-- **FDG3040** DO NOT give class names a prefix (e.g., “C”). — examples: examples/ch03-naming.md#fdg3040
-- **FDG3041** CONSIDER ending the name of derived classes with the name of the base class. — examples: examples/ch03-naming.md#fdg3041
-- **FDG3043** DO ensure that the names differ only by the “I” prefix on the interface name when you are defining a class–interface pair where the class is a standard implementation of the interface. — examples: examples/ch03-naming.md#fdg3043
+- **FDG3038** DO name classes and structs with nouns or noun phrases, using PascalCasing. (not in test projects) — examples: examples/ch03-naming.md#fdg3038
+- **FDG3039** DO name interfaces with adjective phrases, or occasionally with nouns or noun phrases. (not in test projects) — examples: examples/ch03-naming.md#fdg3039
+- **FDG3040** DO NOT give class names a prefix (e.g., “C”). (not in test projects) — examples: examples/ch03-naming.md#fdg3040
+- **FDG3041** CONSIDER ending the name of derived classes with the name of the base class. (not in test projects) — examples: examples/ch03-naming.md#fdg3041
+- **FDG3043** DO ensure that the names differ only by the “I” prefix on the interface name when you are defining a class–interface pair where the class is a standard implementation of the interface. (not in test projects) — examples: examples/ch03-naming.md#fdg3043
 
 ## 3.5.1 Names of Generic Type Parameters
 
-- **FDG3044** DO name generic type parameters with descriptive names unless a single-letter name is completely self-explanatory and a descriptive name would not add value. — examples: examples/ch03-naming.md#fdg3044
-- **FDG3045** CONSIDER using `T` as the type parameter name for types with one single-letter type parameter. — examples: examples/ch03-naming.md#fdg3045
-- **FDG3047** CONSIDER indicating constraints placed on a type parameter in the name of the parameter. — examples: examples/ch03-naming.md#fdg3047
+- **FDG3044** DO name generic type parameters with descriptive names unless a single-letter name is completely self-explanatory and a descriptive name would not add value. (not in test projects) — examples: examples/ch03-naming.md#fdg3044
+- **FDG3045** CONSIDER using `T` as the type parameter name for types with one single-letter type parameter. (not in test projects) — examples: examples/ch03-naming.md#fdg3045
+- **FDG3047** CONSIDER indicating constraints placed on a type parameter in the name of the parameter. (not in test projects) — examples: examples/ch03-naming.md#fdg3047
 
 ## 3.5.2 Names of Common Types
 
-- **FDG3054** DO NOT derive from this class; use the keyword supported by your language instead; for example, in C#, use the `enum` keyword. (context: System.Enum)
+- **FDG3054** DO NOT derive from this class; use the keyword supported by your language instead; for example, in C#, use the `enum` keyword. (not in test projects) (context: System.Enum)
 
 ## 3.5.3 Naming Enumerations
 
-- **FDG3060** DO use a singular type name for an enumeration unless its values are bit fields. — examples: examples/ch03-naming.md#fdg3060
-- **FDG3061** DO use a plural type name for an enumeration with bit fields as values, also called flags enum. — examples: examples/ch03-naming.md#fdg3061
+- **FDG3060** DO use a singular type name for an enumeration unless its values are bit fields. (not in test projects) — examples: examples/ch03-naming.md#fdg3060
+- **FDG3061** DO use a plural type name for an enumeration with bit fields as values, also called flags enum. (not in test projects) — examples: examples/ch03-naming.md#fdg3061
 
 ## 3.6.1 Names of Methods
 
-- **FDG3065** DO give methods names that are verbs or verb phrases. — examples: examples/ch03-naming.md#fdg3065
+- **FDG3065** DO give methods names that are verbs or verb phrases. (not in test projects) — examples: examples/ch03-naming.md#fdg3065
 
 ## 3.6.2 Names of Properties
 
-- **FDG3066** DO name properties using a noun, noun phrase, or adjective. — examples: examples/ch03-naming.md#fdg3066
-- **FDG3069** DO name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value. — examples: examples/ch03-naming.md#fdg3069
-- **FDG3070** CONSIDER giving a property the same name as its type. — examples: examples/ch03-naming.md#fdg3070
+- **FDG3066** DO name properties using a noun, noun phrase, or adjective. (not in test projects) — examples: examples/ch03-naming.md#fdg3066
+- **FDG3069** DO name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value. (not in test projects) — examples: examples/ch03-naming.md#fdg3069
+- **FDG3070** CONSIDER giving a property the same name as its type. (not in test projects) — examples: examples/ch03-naming.md#fdg3070
 
 ## 3.6.3 Names of Events
 
-- **FDG3071** DO name events with a verb or a verb phrase. — examples: examples/ch03-naming.md#fdg3071
-- **FDG3072** DO give events names with a concept of before and after, using the present and past tenses, such as `Closing` and `Closed`. — examples: examples/ch03-naming.md#fdg3072
+- **FDG3071** DO name events with a verb or a verb phrase. (not in test projects) — examples: examples/ch03-naming.md#fdg3071
+- **FDG3072** DO give events names with a concept of before and after, using the present and past tenses, such as `Closing` and `Closed`. (not in test projects) — examples: examples/ch03-naming.md#fdg3072
 
 ## 3.6.4 Naming Fields
 
-- **FDG3078** DO name fields using a noun, noun phrase, or adjective.
+- **FDG3078** DO name fields using a noun, noun phrase, or adjective. (not in test projects)
 
 ## 3.7 Naming Parameters
 
-- **FDG3081** DO use descriptive parameter names. — examples: examples/ch03-naming.md#fdg3081
-- **FDG3082** CONSIDER using names based on a parameter’s meaning rather than the parameter’s type. — examples: examples/ch03-naming.md#fdg3082
+- **FDG3081** DO use descriptive parameter names. (not in test projects) — examples: examples/ch03-naming.md#fdg3081
+- **FDG3082** CONSIDER using names based on a parameter’s meaning rather than the parameter’s type. (not in test projects) — examples: examples/ch03-naming.md#fdg3082
 
 ## 3.7.1 Naming Operator Overload Parameters
 
-- **FDG3083** DO use *left* and *right* for binary operator overload parameter names if there is no meaning to the parameters. — examples: examples/ch03-naming.md#fdg3083
-- **FDG3084** DO use *value* for unary operator overload parameter names if there is no meaning to the parameters. — examples: examples/ch03-naming.md#fdg3084
-- **FDG3085** CONSIDER meaningful names for operator overload parameters if doing so adds significant value. — examples: examples/ch03-naming.md#fdg3085
+- **FDG3083** DO use *left* and *right* for binary operator overload parameter names if there is no meaning to the parameters. (not in test projects) — examples: examples/ch03-naming.md#fdg3083
+- **FDG3084** DO use *value* for unary operator overload parameter names if there is no meaning to the parameters. (not in test projects) — examples: examples/ch03-naming.md#fdg3084
+- **FDG3085** CONSIDER meaningful names for operator overload parameters if doing so adds significant value. (not in test projects) — examples: examples/ch03-naming.md#fdg3085

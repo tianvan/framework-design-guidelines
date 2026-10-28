@@ -6,10 +6,10 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 5.4 Event Design
 
-- **FDG5056** DO use the term “raise” for events rather than “fire” or “trigger.” — examples: examples/ch05-members-events-fields.md#fdg5056
-- **FDG5058** CONSIDER using a subclass of `EventArgs` as the event argument, unless you are absolutely sure the event will never need to carry any data to the event handling method, in which case you can use the `EventArgs` type directly. — examples: examples/ch05-members-events-fields.md#fdg5058
-- **FDG5064** CONSIDER raising events that the end user can cancel. This guideline applies only to pre-events. — examples: examples/ch05-members-events-fields.md#fdg5064
+- **FDG5056** DO use the term “raise” for events rather than “fire” or “trigger.” (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5056
+- **FDG5058** CONSIDER using a subclass of `EventArgs` as the event argument, unless you are absolutely sure the event will never need to carry any data to the event handling method, in which case you can use the `EventArgs` type directly. (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5058
+- **FDG5064** CONSIDER raising events that the end user can cancel. This guideline applies only to pre-events. (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5064
 
 ## 5.5 Field Design
 
-- **FDG5067** CONSIDER using public `static readonly` fields for predefined object instances. — examples: examples/ch05-members-events-fields.md#fdg5067
+- **FDG5067** CONSIDER using public `static readonly` fields for predefined object instances. (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5067

@@ -877,6 +877,52 @@ public sealed class EmitterTests : IDisposable
         Assert.DoesNotContain("(library only)", reference);
     }
 
+    /// <summary>
+    /// A rule that is on for <c>application</c> and off for <c>test</c> is marked like a library-only rule, in the same
+    /// place, so the AI skips it in test code; a library-only rule keeps its own marker, since it is off in test too.
+    /// </summary>
+    [Fact]
+    public void Rule_off_in_test_only_is_marked_after_its_text()
+    {
+        GeneratorInput input = Edit(Input(), rule => rule.Id == "FDG9001"
+            ? Map(rule with { Context = "public types" }, m => m with
+            {
+                Severity = new ProfileSeverity(SeverityLevel.Warning, SeverityLevel.Suggestion, SeverityLevel.None),
+            })
+            : rule);
+
+        string reference = ReferenceMain(input);
+        string line = Lines(reference).Single(l => l.StartsWith("- **FDG9001** ", StringComparison.Ordinal));
+
+        Assert.StartsWith(
+            "- **FDG9001** DO prefer records for immutable data carriers. (not in test projects) " +
+            "(context: public types) [C# 9+]",
+            line);
+        Assert.Contains("- **FDG9006** CONSIDER making types sealed. (not in test projects)", reference);
+    }
+
+    [Fact]
+    public void Library_only_rule_is_not_marked_not_in_test_projects()
+    {
+        GeneratorInput input = Edit(Input(), OnRule("FDG9001", m => m with
+        {
+            Severity = new ProfileSeverity(SeverityLevel.Warning, SeverityLevel.None, SeverityLevel.None),
+        }));
+
+        string line = Lines(ReferenceMain(input)).Single(l => l.StartsWith("- **FDG9001** ", StringComparison.Ordinal));
+
+        Assert.Contains("(library only)", line);
+        Assert.DoesNotContain("(not in test projects)", line);
+    }
+
+    [Fact]
+    public void Rule_on_in_test_is_not_marked_not_in_test_projects()
+    {
+        string line = Lines(ReferenceMain(Input())).Single(l => l.StartsWith("- **FDG9001** ", StringComparison.Ordinal));
+
+        Assert.DoesNotContain("(not in test projects)", line);
+    }
+
     [Fact]
     public void Rule_off_in_every_profile_is_not_marked_library_only()
     {

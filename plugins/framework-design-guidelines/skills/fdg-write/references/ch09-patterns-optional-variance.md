@@ -6,9 +6,9 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 9.7 Optional Feature Pattern
 
-- **FDG9108** CONSIDER using the Optional Feature Pattern for optional features in abstractions. — examples: examples/ch09-patterns-optional-variance.md#fdg9108
-- **FDG9109** DO provide a simple Boolean property that clients can use to determine whether an optional feature is supported. — examples: examples/ch09-patterns-optional-variance.md#fdg9109
-- **FDG9110** DO use virtual methods on the base class that throw `NotSupportedException` to define optional features. — examples: examples/ch09-patterns-optional-variance.md#fdg9110
+- **FDG9108** CONSIDER using the Optional Feature Pattern for optional features in abstractions. (not in test projects) — examples: examples/ch09-patterns-optional-variance.md#fdg9108
+- **FDG9109** DO provide a simple Boolean property that clients can use to determine whether an optional feature is supported. (not in test projects) — examples: examples/ch09-patterns-optional-variance.md#fdg9109
+- **FDG9110** DO use virtual methods on the base class that throw `NotSupportedException` to define optional features. (not in test projects) — examples: examples/ch09-patterns-optional-variance.md#fdg9110
 
 ## 9.8.1 Contravariance
 
@@ -22,7 +22,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 9.8.3 Simulated Covariance Pattern
 
-- **FDG9120** CONSIDER using the Simulated Covariance Pattern if there is a need to have a representation for all instantiations of a generic type. — examples: examples/ch09-patterns-optional-variance.md#fdg9120
-- **FDG9121** DO ensure that the implementation of the root’s members is equivalent to the implementation of the corresponding generic type members. — examples: examples/ch09-patterns-optional-variance.md#fdg9121
-- **FDG9122** CONSIDER using an abstract class instead of an interface to represent the root. — examples: examples/ch09-patterns-optional-variance.md#fdg9122
-- **FDG9123** CONSIDER using a non-generic root type if such type is already available. — examples: examples/ch09-patterns-optional-variance.md#fdg9123
+- **FDG9120** CONSIDER using the Simulated Covariance Pattern if there is a need to have a representation for all instantiations of a generic type. (not in test projects) — examples: examples/ch09-patterns-optional-variance.md#fdg9120
+- **FDG9121** DO ensure that the implementation of the root’s members is equivalent to the implementation of the corresponding generic type members. (not in test projects) — examples: examples/ch09-patterns-optional-variance.md#fdg9121
+- **FDG9122** CONSIDER using an abstract class instead of an interface to represent the root. (not in test projects) — examples: examples/ch09-patterns-optional-variance.md#fdg9122
+- **FDG9123** CONSIDER using a non-generic root type if such type is already available. (not in test projects) — examples: examples/ch09-patterns-optional-variance.md#fdg9123

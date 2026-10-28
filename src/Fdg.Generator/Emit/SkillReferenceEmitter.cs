@@ -22,6 +22,11 @@ public static class SkillReferenceEmitter
     /// </summary>
     public const string LibraryOnlyMarker = "(library only)";
 
+    /// <summary>
+    /// Written after the rule text of a rule that is off in test projects only (<see cref="IsNotInTestProjects"/>).
+    /// </summary>
+    public const string NotInTestProjectsMarker = "(not in test projects)";
+
     private const string ReferencesDirectory = "plugins/framework-design-guidelines/skills/fdg-write/references/";
 
     public static IReadOnlyList<GeneratedFile> Emit(GeneratorInput input)
@@ -173,6 +178,13 @@ public static class SkillReferenceEmitter
     public static bool IsLibraryOnly(Rule rule) =>
         rule.Mapping.Severity.Library != SeverityLevel.None && rule.Mapping.Severity.Application == SeverityLevel.None;
 
+    /// <summary>
+    /// Whether the rule is off in test projects only: on in <c>application</c> (whether it is on in <c>library</c> or
+    /// not) and off in <c>test</c>. Its reference line carries <see cref="NotInTestProjectsMarker"/>.
+    /// </summary>
+    public static bool IsNotInTestProjects(Rule rule) =>
+        rule.Mapping.Severity.Application != SeverityLevel.None && rule.Mapping.Severity.Test == SeverityLevel.None;
+
     private static string Index(RuleFile file, ReferencePart part)
     {
         var text = new StringBuilder();
@@ -203,6 +215,10 @@ public static class SkillReferenceEmitter
         if (IsLibraryOnly(rule))
         {
             line.Append(' ').Append(LibraryOnlyMarker);
+        }
+        else if (IsNotInTestProjects(rule))
+        {
+            line.Append(' ').Append(NotInTestProjectsMarker);
         }
 
         if (rule.Context is not null)

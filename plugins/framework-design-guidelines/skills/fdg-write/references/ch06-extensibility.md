@@ -18,20 +18,20 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG6004** CONSIDER using callbacks to allow users to provide custom code to be executed by the framework. (library only)
 - **FDG6005** CONSIDER using events, instead of virtual members, to allow users to customize the behavior of a framework without the need for understanding object-oriented design. (library only)
 - **FDG6006** CONSIDER using events instead of plain callbacks, because events are more familiar to a broader range of developers and are integrated with Visual Studio statement completion. (library only)
-- **FDG6007** AVOID using callbacks in performance-sensitive APIs. — examples: examples/ch06-extensibility.md#fdg6007
-- **FDG6008** DO use the `Func<...>`, `Action<...>`, or `Expression<...>` types instead of custom delegates when possible, when defining APIs with callbacks. — examples: examples/ch06-extensibility.md#fdg6008
-- **FDG6009** DO measure and understand the performance implications of using `Expression<...>`, instead of using `Func<...>` and `Action<...>` delegates. — examples: examples/ch06-extensibility.md#fdg6009
-- **FDG6010** DO understand that by calling a delegate, you are executing arbitrary code, and that could have security, correctness, and compatibility repercussions. — examples: examples/ch06-extensibility.md#fdg6010
+- **FDG6007** AVOID using callbacks in performance-sensitive APIs. (not in test projects) — examples: examples/ch06-extensibility.md#fdg6007
+- **FDG6008** DO use the `Func<...>`, `Action<...>`, or `Expression<...>` types instead of custom delegates when possible, when defining APIs with callbacks. (not in test projects) — examples: examples/ch06-extensibility.md#fdg6008
+- **FDG6009** DO measure and understand the performance implications of using `Expression<...>`, instead of using `Func<...>` and `Action<...>` delegates. (not in test projects) — examples: examples/ch06-extensibility.md#fdg6009
+- **FDG6010** DO understand that by calling a delegate, you are executing arbitrary code, and that could have security, correctness, and compatibility repercussions. (not in test projects) — examples: examples/ch06-extensibility.md#fdg6010
 
 ## 6.1.4 Virtual Members
 
-- **FDG6011** DO NOT make members virtual unless you have a good reason to do so and you are aware of all the costs related to designing, testing, and maintaining virtual members. — examples: examples/ch06-extensibility.md#fdg6011
+- **FDG6011** DO NOT make members virtual unless you have a good reason to do so and you are aware of all the costs related to designing, testing, and maintaining virtual members. (not in test projects) — examples: examples/ch06-extensibility.md#fdg6011
 - **FDG6012** CONSIDER limiting extensibility to only what is absolutely necessary through the use of the Template Method Pattern, described in section 9.9. (library only)
 
 ## 6.1.5 Abstractions (Abstract Types and Interfaces)
 
-- **FDG6014** DO NOT provide abstractions unless they are tested by developing several concrete implementations and APIs consuming the abstractions.
-- **FDG6015** DO choose carefully between an abstract class and an interface when designing an abstraction. See section 4.3 for more details on this subject.
+- **FDG6014** DO NOT provide abstractions unless they are tested by developing several concrete implementations and APIs consuming the abstractions. (not in test projects)
+- **FDG6015** DO choose carefully between an abstract class and an interface when designing an abstraction. See section 4.3 for more details on this subject. (not in test projects)
 - **FDG6016** CONSIDER providing reference tests for concrete implementations of abstractions. Such tests should allow users to test whether their implementations correctly implement the contract. (library only) — examples: examples/ch06-extensibility.md#fdg6016
 
 ## 6.2 Base Classes
@@ -42,5 +42,5 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 ## 6.3 Sealing
 
 - **FDG6020** DO NOT seal classes without having a good reason to do so. (library only) — examples: examples/ch06-extensibility.md#fdg6020
-- **FDG6021** DO NOT declare protected or virtual members on sealed types. — examples: examples/ch06-extensibility.md#fdg6021
+- **FDG6021** DO NOT declare protected or virtual members on sealed types. (not in test projects) — examples: examples/ch06-extensibility.md#fdg6021
 - **FDG6022** CONSIDER sealing members that you override. (library only) — examples: examples/ch06-extensibility.md#fdg6022

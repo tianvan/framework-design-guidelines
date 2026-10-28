@@ -190,11 +190,12 @@ public sealed class SkillLintTests
 
     /// <summary>
     /// The format of a rule line, the same as the generated references without their examples link:
-    /// <c>**&lt;id&gt;** &lt;STRENGTH&gt; &lt;text&gt;[ (library only)][ (context: &lt;context&gt;)][ [C# N+]]</c>
+    /// <c>**&lt;id&gt;** &lt;STRENGTH&gt; &lt;text&gt;[ (library only) | (not in test projects)][ (context: &lt;context&gt;)][ [C# N+]]</c>
     /// <c>[ (alt: &lt;alt&gt;)]</c>,
     /// with <c>(can cause: &lt;context&gt;)</c> instead of <c>(context: &lt;context&gt;)</c> for an appendix D verdict.
-    /// The bracketed parts are required exactly when the rule is on in <c>library</c> and off in <c>application</c>,
-    /// has a context, a minimum language version or an alternative, so the AI always sees the profile, the version
+    /// The bracketed parts are required exactly when the rule is on in <c>library</c> and off in <c>application</c>
+    /// (or on in <c>application</c> and off in <c>test</c>), has a context, a minimum language version or an
+    /// alternative, so the AI always sees the profile, the version
     /// tag and the fallback. The review output form
     /// <c>— &lt;id&gt; &lt;STRENGTH&gt; &lt;text&gt;</c> carries only the statement.
     /// </summary>
@@ -359,6 +360,30 @@ public sealed class SkillLintTests
     }
 
     /// <summary>
+    /// The listed library-only rules (on in <c>library</c>, off in <c>application</c>) carry
+    /// <see cref="SkillReferenceEmitter.LibraryOnlyMarker"/> in the reference files, and the other listed rules that are
+    /// on in <c>application</c> and off in <c>test</c> carry <see cref="SkillReferenceEmitter.NotInTestProjectsMarker"/>:
+    /// the counts match the rules data.
+    /// </summary>
+    [Fact]
+    public void Skill_references_mark_library_only_and_test_off_rules()
+    {
+        int libraryOnlyInReferences = Directory.GetFiles(FdgWriteReferences, "*.md")
+            .SelectMany(f => File.ReadLines(f))
+            .Count(l => l.Contains(" " + SkillReferenceEmitter.LibraryOnlyMarker));
+        int testOffInReferences = Directory.GetFiles(FdgWriteReferences, "*.md")
+            .SelectMany(f => File.ReadLines(f))
+            .Count(l => l.Contains(" " + SkillReferenceEmitter.NotInTestProjectsMarker));
+
+        Rule[] listed = Rules.Value.Values.Where(SkillReferenceEmitter.IsListed).ToArray();
+        int libraryOnlyInData = listed.Count(SkillReferenceEmitter.IsLibraryOnly);
+        int testOffInData = listed.Count(r => !SkillReferenceEmitter.IsLibraryOnly(r) && SkillReferenceEmitter.IsNotInTestProjects(r));
+
+        Assert.Equal(libraryOnlyInData, libraryOnlyInReferences);
+        Assert.Equal(testOffInData, testOffInReferences);
+    }
+
+    /// <summary>
     /// fdg-write triggers on every .cs file, so it must say first that its rules apply only to onboarded projects
     /// and that other code keeps its existing style.
     /// </summary>
@@ -374,6 +399,27 @@ public sealed class SkillLintTests
         Assert.Contains("obj/fdg/marker.json", opening);
         Assert.Contains("existing style", opening);
         Assert.Contains("/fdg-setup", opening);
+    }
+
+    /// <summary>
+    /// The skills and the reviewer agent tell the AI to skip both profile markers in test projects, and the review
+    /// output, which quotes only the strength and rule text, leaves the new marker out like the others.
+    /// </summary>
+    [Fact]
+    public void Skills_skip_both_profile_markers_in_test_projects()
+    {
+        const string Skip = "skip the rules marked \"(library only)\" or \"(not in test projects)\"";
+        const string Omitted = "without `(library only)`, `(not in test projects)`,";
+
+        Assert.Contains(Skip, Joined(SkillPath("fdg-write")));
+        foreach (string path in new[] { SkillPath("fdg-review"), AgentPath })
+        {
+            string text = Joined(path);
+            Assert.Contains(Skip, text);
+            Assert.Contains(Omitted, text);
+        }
+
+        static string Joined(string path) => string.Join(" ", Read(path).Lines.Select(l => l.Trim()));
     }
 
     /// <summary>
@@ -426,6 +472,10 @@ public sealed class SkillLintTests
         if (severity.Library != SeverityLevel.None && severity.Application == SeverityLevel.None)
         {
             line += " (library only)";
+        }
+        else if (severity.Application != SeverityLevel.None && severity.Test == SeverityLevel.None)
+        {
+            line += " (not in test projects)";
         }
 
         if (rule.Context is not null)

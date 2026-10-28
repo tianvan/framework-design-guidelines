@@ -66,8 +66,8 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 8.11 Uri
 
-- **FDG8092** CONSIDER providing string-based overloads for the most commonly used members with `System.Uri` parameters. — examples: examples/ch08-usage-types.md#fdg8092
-- **FDG8093** DO NOT automatically overload all `Uri`-based members with a version that accepts a string. — examples: examples/ch08-usage-types.md#fdg8093
+- **FDG8092** CONSIDER providing string-based overloads for the most commonly used members with `System.Uri` parameters. (not in test projects) — examples: examples/ch08-usage-types.md#fdg8092
+- **FDG8093** DO NOT automatically overload all `Uri`-based members with a version that accepts a string. (not in test projects) — examples: examples/ch08-usage-types.md#fdg8093
 
 ## 8.11.1 System.Uri Implementation Guidelines
 
@@ -75,7 +75,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 8.12 System.Xml Usage
 
-- **FDG8097** DO use `XmlReader`, `IXPathNavigable`, or subtypes of `XNode` as input or output of members that accept or return XML. — examples: examples/ch08-usage-types.md#fdg8097
+- **FDG8097** DO use `XmlReader`, `IXPathNavigable`, or subtypes of `XNode` as input or output of members that accept or return XML. (not in test projects) — examples: examples/ch08-usage-types.md#fdg8097
 
 ## 8.13 Equality Operators
 

@@ -6,65 +6,65 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 2
 
-- **FDG2001** DO design frameworks that are both powerful and easy to use. — examples: examples/ch02-fundamentals.md#fdg2001
-- **FDG2002** DO understand and explicitly design for a broad range of developers with different programming styles, requirements, and skill levels. — examples: examples/ch02-fundamentals.md#fdg2002
+- **FDG2001** DO design frameworks that are both powerful and easy to use. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2001
+- **FDG2002** DO understand and explicitly design for a broad range of developers with different programming styles, requirements, and skill levels. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2002
 - **FDG2003** DO understand and design for the broad variety of programming languages. (library only) — examples: examples/ch02-fundamentals.md#fdg2003
 
 ## 2.2.1 The Principle of Scenario-Driven Design
 
 - **FDG2004** DO make sure that the API design specification is the central part of the design of any feature that includes a publicly accessible API. (library only) — examples: examples/ch02-fundamentals.md#fdg2004
-- **FDG2005** DO define top usage scenarios for each major feature area. — examples: examples/ch02-fundamentals.md#fdg2005
-- **FDG2006** DO ensure that the scenarios correspond to an appropriate abstraction level. They should roughly correspond to the end-user use cases. — examples: examples/ch02-fundamentals.md#fdg2006
-- **FDG2007** DO design APIs by first writing code samples for the main scenarios and then defining the object model to support the code samples. — examples: examples/ch02-fundamentals.md#fdg2007
+- **FDG2005** DO define top usage scenarios for each major feature area. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2005
+- **FDG2006** DO ensure that the scenarios correspond to an appropriate abstraction level. They should roughly correspond to the end-user use cases. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2006
+- **FDG2007** DO design APIs by first writing code samples for the main scenarios and then defining the object model to support the code samples. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2007
 - **FDG2008** DO write main scenario code samples in at least two different language families (e.g., C# and F#). (library only) — examples: examples/ch02-fundamentals.md#fdg2008
 - **FDG2009** CONSIDER writing main scenario code samples using a dynamically typed language such as PowerShell or IronPython. (library only) — examples: examples/ch02-fundamentals.md#fdg2009
 - **FDG2010** DO NOT rely solely on standard design methodologies when designing the public API layer of a framework. (library only) — examples: examples/ch02-fundamentals.md#fdg2010
 
 ## 2.2.1.1 Usability Studies
 
-- **FDG2011** DO organize usability studies to test APIs in main scenarios. — examples: examples/ch02-fundamentals.md#fdg2011
+- **FDG2011** DO organize usability studies to test APIs in main scenarios. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2011
 
 ## 2.2.2 The Principle of Low Barrier to Entry
 
-- **FDG2012** DO ensure that each main feature area namespace contains only types that are used in the most common scenarios. Types used in advanced scenarios should be placed in subnamespaces. — examples: examples/ch02-fundamentals.md#fdg2012
-- **FDG2013** DO provide simple overloads of constructors and methods. A simple overload has a very small number of parameters, and all parameters are primitives.
-- **FDG2014** DO NOT have members intended for advanced scenarios on types intended for mainline scenarios. — examples: examples/ch02-fundamentals.md#fdg2014
-- **FDG2015** DO NOT require users to explicitly instantiate more than one type in the most basic scenarios. — examples: examples/ch02-fundamentals.md#fdg2015
-- **FDG2016** DO NOT require that users perform any extensive initialization before they can start programming basic scenarios. — examples: examples/ch02-fundamentals.md#fdg2016
-- **FDG2017** DO provide good defaults for all properties and parameters (using convenience overloads), if possible. — examples: examples/ch02-fundamentals.md#fdg2017
-- **FDG2018** DO communicate incorrect usage of APIs using exceptions. — examples: examples/ch02-fundamentals.md#fdg2018
+- **FDG2012** DO ensure that each main feature area namespace contains only types that are used in the most common scenarios. Types used in advanced scenarios should be placed in subnamespaces. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2012
+- **FDG2013** DO provide simple overloads of constructors and methods. A simple overload has a very small number of parameters, and all parameters are primitives. (not in test projects)
+- **FDG2014** DO NOT have members intended for advanced scenarios on types intended for mainline scenarios. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2014
+- **FDG2015** DO NOT require users to explicitly instantiate more than one type in the most basic scenarios. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2015
+- **FDG2016** DO NOT require that users perform any extensive initialization before they can start programming basic scenarios. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2016
+- **FDG2017** DO provide good defaults for all properties and parameters (using convenience overloads), if possible. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2017
+- **FDG2018** DO communicate incorrect usage of APIs using exceptions. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2018
 
 ## 2.2.3 The Principle of Self-Documenting Object Models
 
-- **FDG2019** DO ensure that APIs are intuitive and can be successfully used in basic scenarios without referring to the reference documentation.
-- **FDG2020** DO provide great documentation with all APIs.
-- **FDG2021** DO provide code samples illustrating how to use your most important APIs in common scenarios. — examples: examples/ch02-fundamentals.md#fdg2021
+- **FDG2019** DO ensure that APIs are intuitive and can be successfully used in basic scenarios without referring to the reference documentation. (not in test projects)
+- **FDG2020** DO provide great documentation with all APIs. (not in test projects)
+- **FDG2021** DO provide code samples illustrating how to use your most important APIs in common scenarios. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2021
 
 ## 2.2.3.1 Naming
 
-- **FDG2022** DO make the discussion about identifier naming choices a significant part of specification reviews. — examples: examples/ch02-fundamentals.md#fdg2022
-- **FDG2023** DO NOT be afraid to use verbose identifier names when doing so makes the API self-documenting. — examples: examples/ch02-fundamentals.md#fdg2023
+- **FDG2022** DO make the discussion about identifier naming choices a significant part of specification reviews. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2022
+- **FDG2023** DO NOT be afraid to use verbose identifier names when doing so makes the API self-documenting. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2023
 - **FDG2024** CONSIDER involving technical writers early in the design process. They can be a great resource for spotting designs with bad name choices and designs that would be difficult to explain to users. (library only)
-- **FDG2025** CONSIDER reserving the best type names for the most commonly used types. — examples: examples/ch02-fundamentals.md#fdg2025
+- **FDG2025** CONSIDER reserving the best type names for the most commonly used types. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2025
 
 ## 2.2.3.2 Exceptions
 
-- **FDG2026** DO use exception messages to communicate framework usage mistakes to the developer. — examples: examples/ch02-fundamentals.md#fdg2026
+- **FDG2026** DO use exception messages to communicate framework usage mistakes to the developer. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2026
 
 ## 2.2.3.3 Strong Typing
 
-- **FDG2027** DO provide strongly typed APIs if at all possible. — examples: examples/ch02-fundamentals.md#fdg2027
+- **FDG2027** DO provide strongly typed APIs if at all possible. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2027
 
 ## 2.2.3.4 Consistency
 
-- **FDG2028** DO ensure consistency with .NET and other frameworks your users are likely to interact with. — examples: examples/ch02-fundamentals.md#fdg2028
+- **FDG2028** DO ensure consistency with .NET and other frameworks your users are likely to interact with. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2028
 
 ## 2.2.3.5 Limiting Abstractions
 
-- **FDG2029** AVOID many abstractions in mainline-scenario APIs. — examples: examples/ch02-fundamentals.md#fdg2029
+- **FDG2029** AVOID many abstractions in mainline-scenario APIs. (not in test projects) — examples: examples/ch02-fundamentals.md#fdg2029
 
 ## 2.2.4.2 Exposing Layers in the Same Namespace
 
-- **FDG2030** CONSIDER using a layered framework with high-level APIs optimized for productivity, and using low-level APIs optimized for power and expressiveness.
-- **FDG2031** AVOID mixing low-level and high-level APIs in a single namespace if the low-level APIs are very complex (i.e., they contain many types).
-- **FDG2032** DO ensure that layers of a single feature area are well integrated. Developers should be able to start programming using one of the layers and then change their code to use the other layer without rewriting the whole application.
+- **FDG2030** CONSIDER using a layered framework with high-level APIs optimized for productivity, and using low-level APIs optimized for power and expressiveness. (not in test projects)
+- **FDG2031** AVOID mixing low-level and high-level APIs in a single namespace if the low-level APIs are very complex (i.e., they contain many types). (not in test projects)
+- **FDG2032** DO ensure that layers of a single feature area are well integrated. Developers should be able to start programming using one of the layers and then change their code to use the other layer without rewriting the whole application. (not in test projects)

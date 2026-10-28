@@ -10,21 +10,21 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 9.4.1 Basic Dispose Pattern
 
-- **FDG9068** DO allow the `Dispose(bool)` method to be called more than once. The method might choose to do nothing after the first call. — examples: examples/ch09-patterns-dispose.md#fdg9068
-- **FDG9070** DO throw an `ObjectDisposedException` from any member that cannot be used after the object has been disposed of. — examples: examples/ch09-patterns-dispose.md#fdg9070
-- **FDG9071** AVOID allowing an object to regain meaningful state after a call to `Dispose()`. — examples: examples/ch09-patterns-dispose.md#fdg9071
-- **FDG9072** CONSIDER providing a `Close()` method, in addition to the `Dispose()` method, if “close” is standard terminology in the area. — examples: examples/ch09-patterns-dispose.md#fdg9072
+- **FDG9068** DO allow the `Dispose(bool)` method to be called more than once. The method might choose to do nothing after the first call. (not in test projects) — examples: examples/ch09-patterns-dispose.md#fdg9068
+- **FDG9070** DO throw an `ObjectDisposedException` from any member that cannot be used after the object has been disposed of. (not in test projects) — examples: examples/ch09-patterns-dispose.md#fdg9070
+- **FDG9071** AVOID allowing an object to regain meaningful state after a call to `Dispose()`. (not in test projects) — examples: examples/ch09-patterns-dispose.md#fdg9071
+- **FDG9072** CONSIDER providing a `Close()` method, in addition to the `Dispose()` method, if “close” is standard terminology in the area. (not in test projects) — examples: examples/ch09-patterns-dispose.md#fdg9072
 
 ## 9.4.2 Finalizable Types
 
-- **FDG9075** DO NOT access any finalizable objects in the finalizer code path, because there is significant risk that they will have already been finalized. — examples: examples/ch09-patterns-dispose.md#fdg9075
+- **FDG9075** DO NOT access any finalizable objects in the finalizer code path, because there is significant risk that they will have already been finalized. (not in test projects) — examples: examples/ch09-patterns-dispose.md#fdg9075
 - **FDG9077** DO NOT remove a finalizer from an unsealed public type once it has one. (library only) — examples: examples/ch09-patterns-dispose.md#fdg9077
 
 ## 9.4.3 Scoped Operations
 
-- **FDG9078** CONSIDER returning a disposable value instead of making callers manually pair “begin” and “end” methods. — examples: examples/ch09-patterns-dispose.md#fdg9078
-- **FDG9079** CONSIDER returning a disposable value instead of making callers manually pair “begin” and “end” methods when the “end” method must be in a `finally` block for program correctness. — examples: examples/ch09-patterns-dispose.md#fdg9079
+- **FDG9078** CONSIDER returning a disposable value instead of making callers manually pair “begin” and “end” methods. (not in test projects) — examples: examples/ch09-patterns-dispose.md#fdg9078
+- **FDG9079** CONSIDER returning a disposable value instead of making callers manually pair “begin” and “end” methods when the “end” method must be in a `finally` block for program correctness. (not in test projects) — examples: examples/ch09-patterns-dispose.md#fdg9079
 
 ## 9.4.4 IAsyncDisposable
 
-- **FDG9080** DO follow the guidance for both asynchronous design (section 9.2) and synchronous `Dispose` (section 9.4), except as otherwise noted, when implementing `IAsyncDisposable`. — examples: examples/ch09-patterns-dispose.md#fdg9080
+- **FDG9080** DO follow the guidance for both asynchronous design (section 9.2) and synchronous `Dispose` (section 9.4), except as otherwise noted, when implementing `IAsyncDisposable`. (not in test projects) — examples: examples/ch09-patterns-dispose.md#fdg9080
