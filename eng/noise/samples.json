@@ -1,0 +1,8 @@
+[
+  { "name": "serilog", "repository": "https://github.com/serilog/serilog", "commit": "81af75f3a5e28ec9f5be18ef74357a9914a51745",
+    "project": "src/Serilog/Serilog.csproj", "framework": "netstandard2.0", "profile": "library" },
+  { "name": "polly", "repository": "https://github.com/App-vNext/Polly", "commit": "3f3adad9d5af85658fc3585018f02a2d8c2173e8",
+    "project": "src/Polly.Core/Polly.Core.csproj", "framework": "netstandard2.0", "profile": "library" },
+  { "name": "newtonsoft-json", "repository": "https://github.com/JamesNK/Newtonsoft.Json", "commit": "52fa3aef1f2cadcd3a3f874251eddc98d3efbbaa",
+    "project": "Src/Newtonsoft.Json/Newtonsoft.Json.csproj", "framework": "netstandard2.0", "profile": "library" }
+]

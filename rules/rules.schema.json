@@ -16,7 +16,7 @@
       ],
       "properties": {
         "id": { "type": "string", "pattern": "^FDG[0-9A-Z][0-9]{3}$" },
-        "strength": { "enum": ["DO", "DO NOT", "AVOID", "CONSIDER"] },
+        "strength": { "enum": ["DO", "DO NOT", "AVOID", "CONSIDER", "PERMITTED", "NOT PERMITTED", "CONTEXTUAL"] },
         "text": { "type": "string", "minLength": 1 },
         "context": { "type": ["string", "null"] },
         "section": { "type": "string", "minLength": 1 },
@@ -30,8 +30,32 @@
         "config": { "type": "array", "items": { "type": "string" } },
         "minLanguage": { "type": ["string", "null"], "pattern": "^[0-9]+([.][0-9]+)?$" },
         "alternative": { "type": ["string", "null"] },
-        "analyzer": { "$ref": "#/$defs/analyzer" },
-        "notes": { "type": ["string", "null"] }
+        "naming": {
+      "description": "Optional. Which IDE1006 violations the rule explains: the kinds of symbol it applies to and the failures it covers. Only rules that list IDE1006 carry it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbols", "failures"],
+      "properties": {
+        "symbols": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "namespace", "type", "typeParameter", "method", "property", "event",
+              "visibleField", "privateField", "constField", "parameter", "local", "constLocal"
+            ]
+          }
+        },
+        "failures": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "enum": ["casing", "prefix"] }
+        }
+      }
+    },
+    "analyzer": { "$ref": "#/$defs/analyzer" },
+        "notes": { "type": ["string", "null"] },
+        "naming": { "$ref": "#/$defs/naming" }
       }
     },
     "block": {
@@ -65,6 +89,29 @@
       }
     },
     "level": { "enum": ["none", "silent", "suggestion", "warning"] },
+    "naming": {
+      "description": "Optional. Which IDE1006 violations the rule explains: the kinds of symbol it applies to and the failures it covers. Only rules that list IDE1006 carry it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbols", "failures"],
+      "properties": {
+        "symbols": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "namespace", "type", "typeParameter", "method", "property", "event",
+              "visibleField", "privateField", "constField", "parameter", "local", "constLocal"
+            ]
+          }
+        },
+        "failures": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "enum": ["casing", "prefix"] }
+        }
+      }
+    },
     "analyzer": {
       "description": "The message and category of an fdg analyzer's descriptor; null for other check kinds.",
       "type": ["object", "null"],

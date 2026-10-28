@@ -7,6 +7,1275 @@ namespace FrameworkDesignGuidelines.Analyzers;
 
 internal static class FdgDescriptors
 {
+    public static readonly DiagnosticDescriptor FDG3003 = new DiagnosticDescriptor(
+        id: "FDG3003",
+        title: "DO capitalize both characters of two-character acronyms, except the first word of a camel-cased identifier.",
+        messageFormat: "Capitalize both characters of the two-character acronym '{1}' in '{0}'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3003.md");
+
+    public static readonly DiagnosticDescriptor FDG3004 = new DiagnosticDescriptor(
+        id: "FDG3004",
+        title: "DO capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier.",
+        messageFormat: "Capitalize only the first character of the acronym '{1}' in '{0}'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3004.md");
+
+    public static readonly DiagnosticDescriptor FDG3006 = new DiagnosticDescriptor(
+        id: "FDG3006",
+        title: "DO NOT capitalize each word in so-called closed-form compound words.",
+        messageFormat: "Use '{2}' instead of '{1}' in the name '{0}'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3006.md");
+
+    public static readonly DiagnosticDescriptor FDG3013 = new DiagnosticDescriptor(
+        id: "FDG3013",
+        title: "DO use only ASCII characters in identifier names.",
+        messageFormat: "Use only ASCII characters in the name '{0}'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3013.md");
+
+    public static readonly DiagnosticDescriptor FDG3033 = new DiagnosticDescriptor(
+        id: "FDG3033",
+        title: "DO NOT introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`.",
+        messageFormat: "Qualify the overly general type name '{0}'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3033.md");
+
+    public static readonly DiagnosticDescriptor FDG3051 = new DiagnosticDescriptor(
+        id: "FDG3051",
+        title: "DO add the suffix “Callback” to names of delegates other than those used as event handlers.",
+        messageFormat: "Add the suffix 'Callback' to the delegate '{0}', which no event in this assembly uses",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3051.md");
+
+    public static readonly DiagnosticDescriptor FDG3068 = new DiagnosticDescriptor(
+        id: "FDG3068",
+        title: "DO name collection properties with a plural phrase describing the items in the collection instead of using a singular phrase followed by “List” or “Collection.”",
+        messageFormat: "Name the collection property '{0}' with a plural phrase instead of a 'List' or 'Collection' suffix",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3068.md");
+
+    public static readonly DiagnosticDescriptor FDG3075 = new DiagnosticDescriptor(
+        id: "FDG3075",
+        title: "DO use two parameters named *sender* and *e* in event handlers.",
+        messageFormat: "Name the two parameters of the event handler '{0}' 'sender' and 'e'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3075.md");
+
+    public static readonly DiagnosticDescriptor FDG3086 = new DiagnosticDescriptor(
+        id: "FDG3086",
+        title: "DO NOT use abbreviations or numeric indices for operator overload parameter names.",
+        messageFormat: "Do not use a numeric index in the operator parameter name '{0}'",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3086.md");
+
+    public static readonly DiagnosticDescriptor FDG3087 = new DiagnosticDescriptor(
+        id: "FDG3087",
+        title: "DO NOT directly expose localizable resources as public (or protected) members.",
+        messageFormat: "Make the resource class '{0}' internal",
+        category: "FrameworkDesignGuidelines.Naming",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG3087.md");
+
+    public static readonly DiagnosticDescriptor FDG4013 = new DiagnosticDescriptor(
+        id: "FDG4013",
+        title: "DO NOT define public or protected internal constructors in abstract types.",
+        messageFormat: "Make the constructor of the abstract class '{0}' protected instead of protected internal",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4013.md");
+
+    public static readonly DiagnosticDescriptor FDG4026 = new DiagnosticDescriptor(
+        id: "FDG4026",
+        title: "DO NOT provide a default constructor for a struct.",
+        messageFormat: "Remove the parameterless constructor of the struct '{0}'",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4026.md");
+
+    public static readonly DiagnosticDescriptor FDG4027 = new DiagnosticDescriptor(
+        id: "FDG4027",
+        title: "DO NOT define mutable value types.",
+        messageFormat: "The value type '{0}' can be changed through '{1}'",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4027.md");
+
+    public static readonly DiagnosticDescriptor FDG4032 = new DiagnosticDescriptor(
+        id: "FDG4032",
+        title: "DO implement `IEquatable<T>` on value types.",
+        messageFormat: "Implement IEquatable<{0}> on the value type '{0}'",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4032.md");
+
+    public static readonly DiagnosticDescriptor FDG4038 = new DiagnosticDescriptor(
+        id: "FDG4038",
+        title: "AVOID publicly exposing enums with only one value.",
+        messageFormat: "The enum '{0}' has only one value",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4038.md");
+
+    public static readonly DiagnosticDescriptor FDG4056 = new DiagnosticDescriptor(
+        id: "FDG4056",
+        title: "DO NOT define a nested type as a member of an interface. Many languages do not support such a construct.",
+        messageFormat: "Move the type '{0}' out of the interface '{1}'",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4056.md");
+
+    public static readonly DiagnosticDescriptor FDG4059 = new DiagnosticDescriptor(
+        id: "FDG4059",
+        title: "DO apply the following informational attributes to assemblies. These attributes are used by tools, such as Visual Studio, to inform the user of the assembly about its contents.",
+        messageFormat: "Apply {0} to the assembly",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4059.md");
+
+    public static readonly DiagnosticDescriptor FDG4061 = new DiagnosticDescriptor(
+        id: "FDG4061",
+        title: "CONSIDER applying `AssemblyFileVersionAttribute` and `Assembly-CopyrightAttribute` to provide additional information about the assembly.",
+        messageFormat: "Apply {0} to the assembly",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4061.md");
+
+    public static readonly DiagnosticDescriptor FDG4062 = new DiagnosticDescriptor(
+        id: "FDG4062",
+        title: "CONSIDER using the format `<V>.<S>.<B>.<R>` for the assembly file version, where `V` is the major version number, `S` is the servicing number, `B` is the build number, and `R` is the build revision number.",
+        messageFormat: "Use the format <V>.<S>.<B>.<R> for the assembly file version '{0}'",
+        category: "FrameworkDesignGuidelines.Types",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG4062.md");
+
+    public static readonly DiagnosticDescriptor FDG5003 = new DiagnosticDescriptor(
+        id: "FDG5003",
+        title: "AVOID being inconsistent in the ordering of parameters in overloaded members. Parameters with the same name should appear in the same position in all overloads.",
+        messageFormat: "Put the parameter '{0}' at the same position in every overload of '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5003.md");
+
+    public static readonly DiagnosticDescriptor FDG5004 = new DiagnosticDescriptor(
+        id: "FDG5004",
+        title: "DO make only the longest overload virtual (if extensibility is required). Shorter overloads should simply call through to a longer overload.",
+        messageFormat: "Make only the longest overload of '{0}' virtual and have this overload call it",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5004.md");
+
+    public static readonly DiagnosticDescriptor FDG5005 = new DiagnosticDescriptor(
+        id: "FDG5005",
+        title: "DO NOT use `ref`, `out`, or `in` modifiers to overload members.",
+        messageFormat: "Do not overload '{0}' on the '{1}' modifier of the parameter '{2}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5005.md");
+
+    public static readonly DiagnosticDescriptor FDG5008 = new DiagnosticDescriptor(
+        id: "FDG5008",
+        title: "DO NOT have overloads with a generic type parameter in one method and a specific type in another.",
+        messageFormat: "The overload of '{0}' that takes '{1}' cannot be called when '{1}' is '{2}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5008.md");
+
+    public static readonly DiagnosticDescriptor FDG5010 = new DiagnosticDescriptor(
+        id: "FDG5010",
+        title: "DO provide a simple overload, with no default parameters, for any method with two or more defaulted parameters.",
+        messageFormat: "Provide a simple overload of '{0}' without default parameters",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5010.md");
+
+    public static readonly DiagnosticDescriptor FDG5011 = new DiagnosticDescriptor(
+        id: "FDG5011",
+        title: "DO NOT use default parameters, for any parameter type other than `CancellationToken`, on interface methods or virtual methods on classes.",
+        messageFormat: "Do not give the parameter '{0}' of the virtual or interface member '{1}' a default value",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5011.md");
+
+    public static readonly DiagnosticDescriptor FDG5013 = new DiagnosticDescriptor(
+        id: "FDG5013",
+        title: "DO NOT have two overloads of a method with “compatible” required parameters that both use default parameters.",
+        messageFormat: "Another overload of '{0}' with compatible required parameters also uses default parameters",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5013.md");
+
+    public static readonly DiagnosticDescriptor FDG5015 = new DiagnosticDescriptor(
+        id: "FDG5015",
+        title: "DO NOT have different defaults for the same parameter in two overloads of the same method.",
+        messageFormat: "The parameter '{0}' has a different default value in another overload of '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5015.md");
+
+    public static readonly DiagnosticDescriptor FDG5034 = new DiagnosticDescriptor(
+        id: "FDG5034",
+        title: "AVOID using indexed properties with more than one parameter.",
+        messageFormat: "Use methods instead of the indexer of '{0}' with more than one parameter",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5034.md");
+
+    public static readonly DiagnosticDescriptor FDG5040 = new DiagnosticDescriptor(
+        id: "FDG5040",
+        title: "DO return the declaring type from an indexer that accepts `System.Range`.",
+        messageFormat: "Return '{0}' from '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5040.md");
+
+    public static readonly DiagnosticDescriptor FDG5046 = new DiagnosticDescriptor(
+        id: "FDG5046",
+        title: "DO use the same name for constructor parameters and a property if the constructor parameters are used just to set the property.",
+        messageFormat: "Name the parameter '{0}' like the property '{1}' that it sets",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5046.md");
+
+    public static readonly DiagnosticDescriptor FDG5059 = new DiagnosticDescriptor(
+        id: "FDG5059",
+        title: "DO use a protected virtual method to raise each event. This is applicable only to nonstatic events on unsealed classes—not to structs, sealed classes, or static events.",
+        messageFormat: "Add a protected virtual method 'On{0}' that raises the event '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5059.md");
+
+    public static readonly DiagnosticDescriptor FDG5060 = new DiagnosticDescriptor(
+        id: "FDG5060",
+        title: "DO take one parameter to the protected method that raises an event.",
+        messageFormat: "The method '{0}' that raises an event should take one parameter",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5060.md");
+
+    public static readonly DiagnosticDescriptor FDG5061 = new DiagnosticDescriptor(
+        id: "FDG5061",
+        title: "DO NOT pass `null` as the sender when raising a nonstatic event.",
+        messageFormat: "Do not pass null as the sender when raising the instance event '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5061.md");
+
+    public static readonly DiagnosticDescriptor FDG5062 = new DiagnosticDescriptor(
+        id: "FDG5062",
+        title: "DO pass `null` as the sender when raising a static event.",
+        messageFormat: "Pass null as the sender when raising the static event '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5062.md");
+
+    public static readonly DiagnosticDescriptor FDG5063 = new DiagnosticDescriptor(
+        id: "FDG5063",
+        title: "DO NOT pass `null` as the event data parameter when raising an event.",
+        messageFormat: "Do not pass null as the event data when raising the event '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5063.md");
+
+    public static readonly DiagnosticDescriptor FDG5068 = new DiagnosticDescriptor(
+        id: "FDG5068",
+        title: "DO NOT assign instances of mutable types to public or protected `readonly` fields.",
+        messageFormat: "The public or protected readonly field '{0}' has the mutable type '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5068.md");
+
+    public static readonly DiagnosticDescriptor FDG5074 = new DiagnosticDescriptor(
+        id: "FDG5074",
+        title: "AVOID defining extension methods on `System.Object`.",
+        messageFormat: "Do not define the extension method '{0}' on System.Object",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5074.md");
+
+    public static readonly DiagnosticDescriptor FDG5075 = new DiagnosticDescriptor(
+        id: "FDG5075",
+        title: "CONSIDER naming the type that holds extension methods for its functionality—for example, use “Routing” instead of “[ExtendedType] Extensions.”",
+        messageFormat: "Name the class '{0}' that holds extension methods for its functionality",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5075.md");
+
+    public static readonly DiagnosticDescriptor FDG5076 = new DiagnosticDescriptor(
+        id: "FDG5076",
+        title: "DO NOT put extension methods in the same namespace as the extended type unless the intention is to add methods to interfaces, for generic type restriction, or for dependency management.",
+        messageFormat: "Move the extension method '{0}' out of the namespace of the type '{1}' it extends",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5076.md");
+
+    public static readonly DiagnosticDescriptor FDG5077 = new DiagnosticDescriptor(
+        id: "FDG5077",
+        title: "AVOID defining two or more extension methods with the same signature, even if they reside in different namespaces.",
+        messageFormat: "The extension method '{0}' has the same signature as an extension method in '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5077.md");
+
+    public static readonly DiagnosticDescriptor FDG5094 = new DiagnosticDescriptor(
+        id: "FDG5094",
+        title: "DO only implement inequality operators on types that implement `IComparable<T>`.",
+        messageFormat: "Implement IComparable<{0}> on '{0}', which defines inequality operators",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5094.md");
+
+    public static readonly DiagnosticDescriptor FDG5096 = new DiagnosticDescriptor(
+        id: "FDG5096",
+        title: "DO implement `operator <=` on types that implement `operator <` and `IEquatable<T>`.",
+        messageFormat: "Define operator <= on '{0}', which defines operator < and implements IEquatable<{0}>",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5096.md");
+
+    public static readonly DiagnosticDescriptor FDG5097 = new DiagnosticDescriptor(
+        id: "FDG5097",
+        title: "DO return a Boolean value from custom inequality operators.",
+        messageFormat: "Return a Boolean value from the inequality operator '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5097.md");
+
+    public static readonly DiagnosticDescriptor FDG5099 = new DiagnosticDescriptor(
+        id: "FDG5099",
+        title: "AVOID defining inequality operators against different types.",
+        messageFormat: "Do not define the inequality operator '{0}' against the type '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5099.md");
+
+    public static readonly DiagnosticDescriptor FDG5102 = new DiagnosticDescriptor(
+        id: "FDG5102",
+        title: "DO NOT have publicly exposed methods that take pointers, arrays of pointers, or multidimensional arrays as parameters.",
+        messageFormat: "Do not take the pointer or multidimensional array parameter '{0}' in the publicly exposed member '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5102.md");
+
+    public static readonly DiagnosticDescriptor FDG5103 = new DiagnosticDescriptor(
+        id: "FDG5103",
+        title: "DO place all `out` parameters following all of the by-value and `ref` parameters (excluding parameter arrays), even if it results in an inconsistency in parameter ordering between overloads (see section 5.1.1).",
+        messageFormat: "Place the out parameter '{0}' of '{1}' after the by-value and ref parameters",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5103.md");
+
+    public static readonly DiagnosticDescriptor FDG5105 = new DiagnosticDescriptor(
+        id: "FDG5105",
+        title: "DO use enums if a member would otherwise have two or more Boolean parameters.",
+        messageFormat: "Use an enum in place of the {0} Boolean parameters of '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5105.md");
+
+    public static readonly DiagnosticDescriptor FDG5111 = new DiagnosticDescriptor(
+        id: "FDG5111",
+        title: "DO NOT use `Enum.IsDefined` for enum range checks.",
+        messageFormat: "Do not use Enum.IsDefined to range-check the enum argument '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5111.md");
+
+    public static readonly DiagnosticDescriptor FDG5114 = new DiagnosticDescriptor(
+        id: "FDG5114",
+        title: "DO NOT pass reference types by reference (`ref` or `in`).",
+        messageFormat: "Do not pass the reference type parameter '{0}' of '{1}' by reference",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5114.md");
+
+    public static readonly DiagnosticDescriptor FDG5115 = new DiagnosticDescriptor(
+        id: "FDG5115",
+        title: "DO NOT pass value types by read-only reference (`in`).",
+        messageFormat: "Do not pass the value type parameter '{0}' of '{1}' by read-only reference",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5115.md");
+
+    public static readonly DiagnosticDescriptor FDG5118 = new DiagnosticDescriptor(
+        id: "FDG5118",
+        title: "DO NOT use params arrays if the array is modified by the member taking the params array parameter.",
+        messageFormat: "Do not use params for the parameter '{0}' of '{1}', which modifies the array",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5118.md");
+
+    public static readonly DiagnosticDescriptor FDG5123 = new DiagnosticDescriptor(
+        id: "FDG5123",
+        title: "DO NOT use the `varargs` methods, otherwise known as the ellipsis.",
+        messageFormat: "Do not use a varargs (__arglist) parameter list in '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5123.md");
+
+    public static readonly DiagnosticDescriptor FDG5124 = new DiagnosticDescriptor(
+        id: "FDG5124",
+        title: "DO provide an alternative for any member that takes a pointer argument, because pointers are not CLS-compliant.",
+        messageFormat: "Provide an alternative without pointer parameters for '{0}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5124.md");
+
+    public static readonly DiagnosticDescriptor FDG5128 = new DiagnosticDescriptor(
+        id: "FDG5128",
+        title: "DO prefer named tuples over unnamed tuples (including `System.Tuple<T1, ...>` and `System.ValueTuple<T1, ...>`).",
+        messageFormat: "Name the elements of the tuple type '{0}' in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5128.md");
+
+    public static readonly DiagnosticDescriptor FDG5129 = new DiagnosticDescriptor(
+        id: "FDG5129",
+        title: "DO name elements of a named tuple using PascalCase, as if they were properties.",
+        messageFormat: "Name the tuple element '{0}' in the signature of '{1}' in PascalCase",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5129.md");
+
+    public static readonly DiagnosticDescriptor FDG5130 = new DiagnosticDescriptor(
+        id: "FDG5130",
+        title: "DO NOT use tuples with more than three fields.",
+        messageFormat: "Use a descriptive type in place of the tuple with {0} fields in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5130.md");
+
+    public static readonly DiagnosticDescriptor FDG5131 = new DiagnosticDescriptor(
+        id: "FDG5131",
+        title: "DO NOT use tuples as method parameters.",
+        messageFormat: "Do not use a tuple in the type of the parameter '{0}' of '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5131.md");
+
+    public static readonly DiagnosticDescriptor FDG5132 = new DiagnosticDescriptor(
+        id: "FDG5132",
+        title: "DO NOT define extension methods over tuples.",
+        messageFormat: "Do not define the extension method '{0}' over the tuple type '{1}'",
+        category: "FrameworkDesignGuidelines.Members",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5132.md");
+
+    public static readonly DiagnosticDescriptor FDG6013 = new DiagnosticDescriptor(
+        id: "FDG6013",
+        title: "DO prefer protected accessibility over public accessibility for virtual members. Public members should provide extensibility (if required) by calling into a protected virtual member.",
+        messageFormat: "Make the virtual member '{0}' protected and call it from a nonvirtual public member",
+        category: "FrameworkDesignGuidelines.Extensibility",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG6013.md");
+
+    public static readonly DiagnosticDescriptor FDG6019 = new DiagnosticDescriptor(
+        id: "FDG6019",
+        title: "AVOID naming base classes with a “Base” suffix if the class is intended for use in public APIs.",
+        messageFormat: "Remove the 'Base' suffix from '{0}', which a public API uses as a type",
+        category: "FrameworkDesignGuidelines.Extensibility",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG6019.md");
+
+    public static readonly DiagnosticDescriptor FDG7007 = new DiagnosticDescriptor(
+        id: "FDG7007",
+        title: "DO NOT have public members that can either throw or not throw based on some option.",
+        messageFormat: "Do not let the parameter '{0}' decide whether '{1}' throws",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7007.md");
+
+    public static readonly DiagnosticDescriptor FDG7008 = new DiagnosticDescriptor(
+        id: "FDG7008",
+        title: "DO NOT have public members that return exceptions as the return value or an `out` parameter.",
+        messageFormat: "Throw the exception instead of returning it from '{0}'",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7008.md");
+
+    public static readonly DiagnosticDescriptor FDG7010 = new DiagnosticDescriptor(
+        id: "FDG7010",
+        title: "DO NOT throw exceptions from exception filter blocks.",
+        messageFormat: "Do not throw from the exception filter",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7010.md");
+
+    public static readonly DiagnosticDescriptor FDG7021 = new DiagnosticDescriptor(
+        id: "FDG7021",
+        title: "DO ensure that each sentence of the message text ends with a period.",
+        messageFormat: "End the exception message with a period",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7021.md");
+
+    public static readonly DiagnosticDescriptor FDG7022 = new DiagnosticDescriptor(
+        id: "FDG7022",
+        title: "AVOID question marks and exclamation points in exception messages.",
+        messageFormat: "Remove the question mark or exclamation point from the exception message",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7022.md");
+
+    public static readonly DiagnosticDescriptor FDG7036 = new DiagnosticDescriptor(
+        id: "FDG7036",
+        title: "DO specify the inner exception when wrapping exceptions.",
+        messageFormat: "Pass the caught exception as the inner exception of '{0}'",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7036.md");
+
+    public static readonly DiagnosticDescriptor FDG7044 = new DiagnosticDescriptor(
+        id: "FDG7044",
+        title: "DO use `value` for the name of the implicit value parameter of property setters.",
+        messageFormat: "Name the parameter 'value' instead of '{0}' in an argument exception thrown by a setter",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7044.md");
+
+    public static readonly DiagnosticDescriptor FDG7047 = new DiagnosticDescriptor(
+        id: "FDG7047",
+        title: "DO NOT catch `StackOverflowException`.",
+        messageFormat: "Do not catch StackOverflowException",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7047.md");
+
+    public static readonly DiagnosticDescriptor FDG7051 = new DiagnosticDescriptor(
+        id: "FDG7051",
+        title: "DO prefer catching `OperationCanceledException` to `TaskCanceledException`.",
+        messageFormat: "Catch OperationCanceledException instead of TaskCanceledException",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7051.md");
+
+    public static readonly DiagnosticDescriptor FDG7064 = new DiagnosticDescriptor(
+        id: "FDG7064",
+        title: "DO use the prefix “Try” and Boolean return type for methods implementing the Try pattern.",
+        messageFormat: "Return bool from the Try method '{0}'",
+        category: "FrameworkDesignGuidelines.Exceptions",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG7064.md");
+
+    public static readonly DiagnosticDescriptor FDG8002 = new DiagnosticDescriptor(
+        id: "FDG8002",
+        title: "DO remember that arrays are mutable types—even arrays of immutable types.",
+        messageFormat: "Callers can change the elements of the read-only array field '{0}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8002.md");
+
+    public static readonly DiagnosticDescriptor FDG8011 = new DiagnosticDescriptor(
+        id: "FDG8011",
+        title: "AVOID overloading custom attribute constructors.",
+        messageFormat: "Give the attribute '{0}' a single constructor",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8011.md");
+
+    public static readonly DiagnosticDescriptor FDG8014 = new DiagnosticDescriptor(
+        id: "FDG8014",
+        title: "DO NOT use `ArrayList` or `List<T>` in public APIs.",
+        messageFormat: "Do not use ArrayList in the signature of '{0}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8014.md");
+
+    public static readonly DiagnosticDescriptor FDG8015 = new DiagnosticDescriptor(
+        id: "FDG8015",
+        title: "DO NOT use `Hashtable` or `Dictionary<TKey,TValue>` in public APIs.",
+        messageFormat: "Do not use '{0}' in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8015.md");
+
+    public static readonly DiagnosticDescriptor FDG8016 = new DiagnosticDescriptor(
+        id: "FDG8016",
+        title: "DO NOT use `IEnumerator<T>`, `IEnumerator`, or any other type that implements either of these interfaces, except as the return type of a `GetEnumerator` method.",
+        messageFormat: "Do not use the enumerator type '{0}' in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8016.md");
+
+    public static readonly DiagnosticDescriptor FDG8017 = new DiagnosticDescriptor(
+        id: "FDG8017",
+        title: "DO NOT implement both `IEnumerator<T>` and `IEnumerable<T>` on the same type. The same applies to the non-generic interfaces `IEnumerator` and `IEnumerable`.",
+        messageFormat: "Type '{0}' should not be both a collection and an enumerator",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8017.md");
+
+    public static readonly DiagnosticDescriptor FDG8026 = new DiagnosticDescriptor(
+        id: "FDG8026",
+        title: "DO NOT return null values from collection properties or from methods returning collections. Return an empty collection or an empty array instead.",
+        messageFormat: "Return an empty collection instead of null from '{0}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8026.md");
+
+    public static readonly DiagnosticDescriptor FDG8031 = new DiagnosticDescriptor(
+        id: "FDG8031",
+        title: "DO use byte arrays instead of collections of bytes.",
+        messageFormat: "Use a byte array instead of '{0}' in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8031.md");
+
+    public static readonly DiagnosticDescriptor FDG8050 = new DiagnosticDescriptor(
+        id: "FDG8050",
+        title: "DO NOT implement `ICloneable`.",
+        messageFormat: "Type '{0}' should not implement ICloneable",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8050.md");
+
+    public static readonly DiagnosticDescriptor FDG8051 = new DiagnosticDescriptor(
+        id: "FDG8051",
+        title: "DO NOT use `ICloneable` in public APIs.",
+        messageFormat: "Do not use ICloneable in the signature of '{0}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8051.md");
+
+    public static readonly DiagnosticDescriptor FDG8053 = new DiagnosticDescriptor(
+        id: "FDG8053",
+        title: "DO implement `IEquatable<T>` on value types.",
+        messageFormat: "Value type '{0}' should implement IEquatable<{0}>",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8053.md");
+
+    public static readonly DiagnosticDescriptor FDG8057 = new DiagnosticDescriptor(
+        id: "FDG8057",
+        title: "DO implement `IEquatable<T>` any time you implement `IComparable<T>`.",
+        messageFormat: "Type '{0}' implements IComparable<{1}> but not IEquatable<{1}>",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8057.md");
+
+    public static readonly DiagnosticDescriptor FDG8070 = new DiagnosticDescriptor(
+        id: "FDG8070",
+        title: "DO NOT implement value equality on mutable reference types.",
+        messageFormat: "Type '{0}' has value equality but is mutable",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8070.md");
+
+    public static readonly DiagnosticDescriptor FDG8082 = new DiagnosticDescriptor(
+        id: "FDG8082",
+        title: "DO NOT return an empty string or null from `ToString`.",
+        messageFormat: "ToString of '{0}' should not return null or an empty string",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8082.md");
+
+    public static readonly DiagnosticDescriptor FDG8088 = new DiagnosticDescriptor(
+        id: "FDG8088",
+        title: "DO make the `(SerializationInfo info, StreamingContext context)` serialization constructor `protected` (`private` for sealed types) when implementing `ISerializable`.",
+        messageFormat: "Make the serialization constructor of '{0}' {1}",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8088.md");
+
+    public static readonly DiagnosticDescriptor FDG8089 = new DiagnosticDescriptor(
+        id: "FDG8089",
+        title: "DO implement the `ISerializable` members explicitly.",
+        messageFormat: "Implement ISerializable.GetObjectData explicitly in '{0}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8089.md");
+
+    public static readonly DiagnosticDescriptor FDG8096 = new DiagnosticDescriptor(
+        id: "FDG8096",
+        title: "DO NOT use `XmlNode` or `XmlDocument` to represent XML data. Instead, favor using instances of `IXPathNavigable`, `XmlReader`, `XmlWriter`, or subtypes of `XNode`. `XmlNode` and `XmlDocument` are not designed for exposing in public APIs.",
+        messageFormat: "Do not use '{0}' in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8096.md");
+
+    public static readonly DiagnosticDescriptor FDG8102 = new DiagnosticDescriptor(
+        id: "FDG8102",
+        title: "DO implement `IEquatable<T>`, with the same behavior as the operator, on any type that defines `operator==`.",
+        messageFormat: "Type '{0}' defines operator == but does not implement IEquatable<{0}>",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8102.md");
+
+    public static readonly DiagnosticDescriptor FDG8103 = new DiagnosticDescriptor(
+        id: "FDG8103",
+        title: "DO implement `operator==` with the mathematical reflexive and transitive properties.",
+        messageFormat: "operator ==({0}, {1}) needs the overload operator ==({2}, {3})",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8103.md");
+
+    public static readonly DiagnosticDescriptor FDG8104 = new DiagnosticDescriptor(
+        id: "FDG8104",
+        title: "AVOID defining `operator==` with arguments of different types.",
+        messageFormat: "Avoid operator == with arguments of different types ({0} and {1})",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8104.md");
+
+    public static readonly DiagnosticDescriptor FDG8106 = new DiagnosticDescriptor(
+        id: "FDG8106",
+        title: "AVOID overloading equality operators on mutable reference types.",
+        messageFormat: "Avoid overloading equality operators on the mutable reference type '{0}'",
+        category: "FrameworkDesignGuidelines.Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG8106.md");
+
+    public static readonly DiagnosticDescriptor FDG9020 = new DiagnosticDescriptor(
+        id: "FDG9020",
+        title: "DO use the suffix “Async” when naming an asynchronous method.",
+        messageFormat: "Add the suffix 'Async' to the name of the asynchronous method '{0}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9020.md");
+
+    public static readonly DiagnosticDescriptor FDG9022 = new DiagnosticDescriptor(
+        id: "FDG9022",
+        title: "DO accept a `CancellationToken` parameter, named “cancellation-Token,” in asynchronous methods.",
+        messageFormat: "Accept a CancellationToken parameter named 'cancellationToken' in the asynchronous method '{0}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9022.md");
+
+    public static readonly DiagnosticDescriptor FDG9023 = new DiagnosticDescriptor(
+        id: "FDG9023",
+        title: "DO provide a default value to the `CancellationToken` value.",
+        messageFormat: "Give the CancellationToken parameter '{0}' of the asynchronous method '{1}' a default value",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9023.md");
+
+    public static readonly DiagnosticDescriptor FDG9027 = new DiagnosticDescriptor(
+        id: "FDG9027",
+        title: "DO NOT use `ref` or `out` parameter modifiers in an Async method.",
+        messageFormat: "Remove the {1} modifier from the parameter '{0}' of the asynchronous method '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9027.md");
+
+    public static readonly DiagnosticDescriptor FDG9028 = new DiagnosticDescriptor(
+        id: "FDG9028",
+        title: "DO NOT use the `in` (ref readonly) parameter modifier in a virtual or abstract Async method.",
+        messageFormat: "Remove the in modifier from the parameter '{0}' of the virtual asynchronous method '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9028.md");
+
+    public static readonly DiagnosticDescriptor FDG9029 = new DiagnosticDescriptor(
+        id: "FDG9029",
+        title: "AVOID the `in` (ref readonly) parameter modifier in nonvirtual Async methods.",
+        messageFormat: "Avoid the in modifier on the parameter '{0}' of the asynchronous method '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9029.md");
+
+    public static readonly DiagnosticDescriptor FDG9033 = new DiagnosticDescriptor(
+        id: "FDG9033",
+        title: "DO keep parameters in the same order in the synchronous and asynchronous variants of a method, when possible.",
+        messageFormat: "Keep the parameters of '{0}' in the same order as in the synchronous method '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9033.md");
+
+    public static readonly DiagnosticDescriptor FDG9036 = new DiagnosticDescriptor(
+        id: "FDG9036",
+        title: "DO NOT return a null `Task` or `Task<TResult>`.",
+        messageFormat: "Do not return a null task from '{0}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9036.md");
+
+    public static readonly DiagnosticDescriptor FDG9037 = new DiagnosticDescriptor(
+        id: "FDG9037",
+        title: "DO NOT return tasks in the `Created` state.",
+        messageFormat: "Do not return a task in the Created state from '{0}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9037.md");
+
+    public static readonly DiagnosticDescriptor FDG9038 = new DiagnosticDescriptor(
+        id: "FDG9038",
+        title: "DO throw an `OperationCanceledException` when aborting work due to a `CancellationToken`.",
+        messageFormat: "Throw an OperationCanceledException instead of returning when cancellation is requested in '{0}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9038.md");
+
+    public static readonly DiagnosticDescriptor FDG9043 = new DiagnosticDescriptor(
+        id: "FDG9043",
+        title: "DO throw usage error exceptions directly from the Async method, to aid in debuggability.",
+        messageFormat: "Throw '{0}' before the task of '{1}' starts: move the check out of the async method",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9043.md");
+
+    public static readonly DiagnosticDescriptor FDG9045 = new DiagnosticDescriptor(
+        id: "FDG9045",
+        title: "DO use the suffix “Async” for methods returning `IAsyncEnumerable<T>`.",
+        messageFormat: "Add the suffix 'Async' to the name of '{0}', which returns IAsyncEnumerable<T>",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9045.md");
+
+    public static readonly DiagnosticDescriptor FDG9047 = new DiagnosticDescriptor(
+        id: "FDG9047",
+        title: "DO NOT use `IAsyncEnumerator<T>`, or any other type that implements or extends that interface, except as the return type of a `GetAsyncEnumerator` method.",
+        messageFormat: "Do not use the enumerator type '{0}' in the signature of '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9047.md");
+
+    public static readonly DiagnosticDescriptor FDG9048 = new DiagnosticDescriptor(
+        id: "FDG9048",
+        title: "DO NOT implement both `IAsyncEnumerator<T>` and `IAsyncEnumerable<T>` on the same public type.",
+        messageFormat: "The public type '{0}' implements both IAsyncEnumerable<T> and IAsyncEnumerator<T>",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9048.md");
+
+    public static readonly DiagnosticDescriptor FDG9049 = new DiagnosticDescriptor(
+        id: "FDG9049",
+        title: "DO use the `WithCancellation` modifier when using `await foreach` on an `IAsyncEnumerable<T>` parameter for the purpose of using your `CancellationToken` with the enumerator.",
+        messageFormat: "Pass the CancellationToken to the enumeration of '{0}' with WithCancellation",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9049.md");
+
+    public static readonly DiagnosticDescriptor FDG9052 = new DiagnosticDescriptor(
+        id: "FDG9052",
+        title: "DO inherit from `DependencyObject`, or one of its subtypes, when implementing dependency properties. The type provides a very efficient implementation of a property store and automatically supports WPF data binding.",
+        messageFormat: "'{0}' registers the dependency property '{1}' but does not derive from DependencyObject",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9052.md");
+
+    public static readonly DiagnosticDescriptor FDG9053 = new DiagnosticDescriptor(
+        id: "FDG9053",
+        title: "DO provide a regular CLR property and public static read-only field storing an instance of `System.Windows.DependencyProperty` for each dependency property.",
+        messageFormat: "Declare the dependency property field '{0}' public static readonly",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9053.md");
+
+    public static readonly DiagnosticDescriptor FDG9054 = new DiagnosticDescriptor(
+        id: "FDG9054",
+        title: "DO implement dependency properties by calling instance methods `DependencyObject.GetValue` and `DependencyObject.SetValue`.",
+        messageFormat: "Implement the accessor of the dependency property '{0}' with {1}",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9054.md");
+
+    public static readonly DiagnosticDescriptor FDG9055 = new DiagnosticDescriptor(
+        id: "FDG9055",
+        title: "DO name the dependency property static field by suffixing the name of the property with “Property.”",
+        messageFormat: "Name the field of the dependency property '{0}' '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9055.md");
+
+    public static readonly DiagnosticDescriptor FDG9056 = new DiagnosticDescriptor(
+        id: "FDG9056",
+        title: "DO NOT set default values of dependency properties explicitly in code; instead, set them in metadata.",
+        messageFormat: "Set the default value of the dependency property '{0}' in its metadata, not in the constructor",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9056.md");
+
+    public static readonly DiagnosticDescriptor FDG9057 = new DiagnosticDescriptor(
+        id: "FDG9057",
+        title: "DO NOT put code in the property accessors other than the standard code to access the static field.",
+        messageFormat: "Remove the code other than the {1} call from the accessor of the dependency property '{0}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9057.md");
+
+    public static readonly DiagnosticDescriptor FDG9067 = new DiagnosticDescriptor(
+        id: "FDG9067",
+        title: "DO NOT declare any overloads of the `Dispose` method other than `Dispose()` and `Dispose(bool)`.",
+        messageFormat: "Remove the Dispose overload '{0}'; declare only Dispose() and Dispose(bool)",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9067.md");
+
+    public static readonly DiagnosticDescriptor FDG9073 = new DiagnosticDescriptor(
+        id: "FDG9073",
+        title: "DO NOT make public types finalizable.",
+        messageFormat: "Move the finalizer of the public type '{0}' to an internal or private nested resource holder",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9073.md");
+
+    public static readonly DiagnosticDescriptor FDG9074 = new DiagnosticDescriptor(
+        id: "FDG9074",
+        title: "DO implement the Basic Dispose Pattern on every finalizable type. See section 9.4.1 for details on the basic pattern.",
+        messageFormat: "Implement the Basic Dispose Pattern on the finalizable type '{0}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9074.md");
+
+    public static readonly DiagnosticDescriptor FDG9081 = new DiagnosticDescriptor(
+        id: "FDG9081",
+        title: "DO NOT declare any overloads of `DisposeAsync()`.",
+        messageFormat: "Remove the DisposeAsync overload '{0}'; declare only DisposeAsync()",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9081.md");
+
+    public static readonly DiagnosticDescriptor FDG9082 = new DiagnosticDescriptor(
+        id: "FDG9082",
+        title: "DO implement `DisposeAsync` as only calling and awaiting `Dispose-AsyncCore()`, calling `Dispose(false)`, and calling `GC.SuppressFinalize(this)`, in that order—except on sealed types.",
+        messageFormat: "Implement '{0}' as only {1}, in that order",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9082.md");
+
+    public static readonly DiagnosticDescriptor FDG9100 = new DiagnosticDescriptor(
+        id: "FDG9100",
+        title: "DO implement `IEnumerable<T>` on types implementing the Query Pattern.",
+        messageFormat: "Implement IEnumerable<T> on '{0}', which declares the query method '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9100.md");
+
+    public static readonly DiagnosticDescriptor FDG9103 = new DiagnosticDescriptor(
+        id: "FDG9103",
+        title: "DO represent ordered sequences as a separate type from their unordered counterpart.",
+        messageFormat: "Return an ordered sequence type from '{0}' that is separate from the unordered type '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9103.md");
+
+    public static readonly DiagnosticDescriptor FDG9106 = new DiagnosticDescriptor(
+        id: "FDG9106",
+        title: "DO place query extensions methods in a “Linq” subnamespace of the main namespace. For example, extension methods for `System.Data` features reside in `System.Data.Linq` namespace.",
+        messageFormat: "Place the query extension method '{0}' in a Linq subnamespace instead of '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9106.md");
+
+    public static readonly DiagnosticDescriptor FDG9111 = new DiagnosticDescriptor(
+        id: "FDG9111",
+        title: "DO mark generic type parameters on generic delegates as contravariant when the type parameter is used as input, but not output, and your language supports creating contravariant types.",
+        messageFormat: "Mark the type parameter '{0}' of the delegate '{1}' as contravariant (in); it is only used as input",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9111.md");
+
+    public static readonly DiagnosticDescriptor FDG9112 = new DiagnosticDescriptor(
+        id: "FDG9112",
+        title: "DO mark generic type parameters on generic interfaces as contravariant when the type parameter is only ever used as an input parameter to methods on the interface.",
+        messageFormat: "Mark the type parameter '{0}' of the interface '{1}' as contravariant (in); it is only used as input",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9112.md");
+
+    public static readonly DiagnosticDescriptor FDG9115 = new DiagnosticDescriptor(
+        id: "FDG9115",
+        title: "DO mark generic type parameters on generic delegates as covariant when the type parameter is used as output, but not input, and your language supports creating covariant types.",
+        messageFormat: "Mark the type parameter '{0}' of the delegate '{1}' as covariant (out); it is only used as output",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9115.md");
+
+    public static readonly DiagnosticDescriptor FDG9116 = new DiagnosticDescriptor(
+        id: "FDG9116",
+        title: "DO mark generic type parameters on generic interfaces as covariant when the type parameter is only ever used in output roles for members on the interface.",
+        messageFormat: "Mark the type parameter '{0}' of the interface '{1}' as covariant (out); it is only used as output",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9116.md");
+
+    public static readonly DiagnosticDescriptor FDG9117 = new DiagnosticDescriptor(
+        id: "FDG9117",
+        title: "DO NOT declare a generic type parameter covariant on an interface that returns an array based on the type parameter.",
+        messageFormat: "Do not return the array type '{0}' from '{1}'; the type parameter of '{2}' is covariant",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9117.md");
+
+    public static readonly DiagnosticDescriptor FDG9130 = new DiagnosticDescriptor(
+        id: "FDG9130",
+        title: "DO prefer using `TimeSpan` to represent timeout time.",
+        messageFormat: "Represent the timeout '{0}' of '{1}' with TimeSpan rather than '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9130.md");
+
+    public static readonly DiagnosticDescriptor FDG9138 = new DiagnosticDescriptor(
+        id: "FDG9138",
+        title: "DO use `ReadOnlySpan<T>` instead of `Span<T>` where possible.",
+        messageFormat: "Declare the parameter '{0}' of '{1}' as ReadOnlySpan<{2}>; the method only reads it",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9138.md");
+
+    public static readonly DiagnosticDescriptor FDG9142 = new DiagnosticDescriptor(
+        id: "FDG9142",
+        title: "CONSIDER returning `System.Range` representing the bounds of a Span parameter, rather than a slice of the parameter.",
+        messageFormat: "Consider returning a Range for the bounds of the parameter '{0}' of '{1}' rather than a slice of it",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9142.md");
+
+    public static readonly DiagnosticDescriptor FDG9143 = new DiagnosticDescriptor(
+        id: "FDG9143",
+        title: "DO use `ReadOnlyMemory<T>` in place of `ReadOnlySpan<T>` in asynchronous methods.",
+        messageFormat: "Use ReadOnlyMemory<{0}> instead of ReadOnlySpan<{0}> for the parameter '{1}' of the asynchronous method '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9143.md");
+
+    public static readonly DiagnosticDescriptor FDG9144 = new DiagnosticDescriptor(
+        id: "FDG9144",
+        title: "DO use `Memory<T>` in place of `Span<T>` in asynchronous methods.",
+        messageFormat: "Use Memory<{0}> instead of Span<{0}> for the parameter '{1}' of the asynchronous method '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9144.md");
+
+    public static readonly DiagnosticDescriptor FDG9147 = new DiagnosticDescriptor(
+        id: "FDG9147",
+        title: "AVOID overloading a method across `Span<T>` and `ReadOnlySpan<T>`, or `Memory<T>` and `ReadOnlyMemory<T>`.",
+        messageFormat: "Give '{0}', which takes '{1}', a different name from its overload that takes '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9147.md");
+
+    public static readonly DiagnosticDescriptor FDG9148 = new DiagnosticDescriptor(
+        id: "FDG9148",
+        title: "AVOID overloading a method across `Span<T>` and `Memory<T>`, or `ReadOnlySpan<T>` and `ReadOnlyMemory<T>`.",
+        messageFormat: "Give '{0}', which takes '{1}', a different name from its overload that takes '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9148.md");
+
+    public static readonly DiagnosticDescriptor FDG9156 = new DiagnosticDescriptor(
+        id: "FDG9156",
+        title: "DO position the input buffer parameter (“source”) as the first method parameter, when there is an explicit input buffer parameter.",
+        messageFormat: "Make the input buffer '{0}' the first parameter of '{1}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9156.md");
+
+    public static readonly DiagnosticDescriptor FDG9157 = new DiagnosticDescriptor(
+        id: "FDG9157",
+        title: "DO position the output buffer parameter (“destination”) as the first method parameter after the source parameter(s).",
+        messageFormat: "Move the output buffer '{0}' of '{1}' after the source parameter '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9157.md");
+
+    public static readonly DiagnosticDescriptor FDG9159 = new DiagnosticDescriptor(
+        id: "FDG9159",
+        title: "CONSIDER naming an `out` parameter that reports the number of values written by a buffer-writing method “bytesWritten,” “charsWritten,” or “valuesWritten” (as appropriate to the data type).",
+        messageFormat: "Name the out parameter '{0}' of '{1}' '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9159.md");
+
+    public static readonly DiagnosticDescriptor FDG9162 = new DiagnosticDescriptor(
+        id: "FDG9162",
+        title: "DO use the prefix “Try” and a Boolean return type for methods implementing the Try-Write Pattern.",
+        messageFormat: "Give the Try-Write method '{0}' the prefix Try and a Boolean return type",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9162.md");
+
+    public static readonly DiagnosticDescriptor FDG9163 = new DiagnosticDescriptor(
+        id: "FDG9163",
+        title: "DO report the number of values written by a Try-Write method via an `out` parameter.",
+        messageFormat: "Report the number of values written by the Try-Write method '{0}' through an out parameter",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9163.md");
+
+    public static readonly DiagnosticDescriptor FDG9171 = new DiagnosticDescriptor(
+        id: "FDG9171",
+        title: "DO report the number of input values successfully processed by an `OperationStatus` method via an `out` parameter.",
+        messageFormat: "Report the number of input values processed by '{0}' through an out parameter",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9171.md");
+
+    public static readonly DiagnosticDescriptor FDG9172 = new DiagnosticDescriptor(
+        id: "FDG9172",
+        title: "CONSIDER naming the `out` parameter that reports the number of values successfully processed by an `OperationStatus` method “bytesConsumed,” “charsConsumed,” or “valuesConsumed” (as appropriate to the data type).",
+        messageFormat: "Name the out parameter '{0}' of '{1}' '{2}'",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9172.md");
+
+    public static readonly DiagnosticDescriptor FDG9173 = new DiagnosticDescriptor(
+        id: "FDG9173",
+        title: "DO report the number of output values successfully written by an `OperationStatus` method via an `out` parameter, declared after the out parameter that reports the number of input values that were successfully processed.",
+        messageFormat: "Report the number of values written by '{0}' through an out parameter declared after the one for the input",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9173.md");
+
+    public static readonly DiagnosticDescriptor FDG9174 = new DiagnosticDescriptor(
+        id: "FDG9174",
+        title: "DO include a Boolean parameter named “isFinalBlock,” if an `OperationStatus` method needs to treat the last input block in a special way. The parameter should be optional and have a default value of true.",
+        messageFormat: "Name the Boolean parameter '{0}' of '{1}' isFinalBlock, optional with a default value of true",
+        category: "FrameworkDesignGuidelines.Patterns",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG9174.md");
+
     public static readonly DiagnosticDescriptor FDGA003 = new DiagnosticDescriptor(
         id: "FDGA003",
         title: "DO place the closing brace on its own line, except the end of a `do`..`while` statement.",
@@ -15,6 +1284,15 @@ internal static class FdgDescriptors
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: false,
         helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDGA003.md");
+
+    public static readonly DiagnosticDescriptor FDGA004 = new DiagnosticDescriptor(
+        id: "FDGA004",
+        title: "AVOID omitting braces, even if the language allows it.",
+        messageFormat: "Enclose the embedded statement in braces",
+        category: "FrameworkDesignGuidelines.Layout",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: false,
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDGA004.md");
 
     public static readonly DiagnosticDescriptor FDGA023 = new DiagnosticDescriptor(
         id: "FDGA023",

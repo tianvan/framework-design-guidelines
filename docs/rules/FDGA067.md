@@ -28,4 +28,4 @@ dotnet_style_namespace_match_folder = true
 
 For example, the source file for `System.Collections.Generic.List<T>` should be in the System\Collections\Generic directory.
 
-For assemblies that have a common namespace prefix for all types, removing empty top-level directories is a usual practice. Thus, a type named “SomeProject.BitManipulation.Simd” from an assembly with a common prefix of “SomeProject” would usually be found at <project root>\BitManipulation\Simd.cs.
+For assemblies that have a common namespace prefix for all types, removing empty top-level directories is a usual practice. Thus, a type named “SomeProject.BitManipulation.Simd” from an assembly with a common prefix of “SomeProject” would usually be found at &lt;project root>\BitManipulation\Simd.cs.

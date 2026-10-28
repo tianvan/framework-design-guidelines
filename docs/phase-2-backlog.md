@@ -1,19 +1,11 @@
 # Phase 2 backlog
 
-These are known issues and open decisions left over from the vertical slice (chapter 3 and appendix A). None of them blocks a preview release. Pilot findings and their measurements are in [pilot-2026-10.md](pilot-2026-10.md).
+These are known issues and open decisions left over from the vertical slice (chapter 3 and appendix A) and from phase 2 (the rest of the book). They go to phase 3. None of them blocks a preview release. Pilot findings and their measurements are in [pilot-2026-10.md](pilot-2026-10.md).
 
 ## Before the first release
 
 The design calls for full coverage of the book before version 1.0. Until then, releases are previews.
 
-- Write a README:
-  - a statement of independence from the book's authors and publisher;
-  - install steps for both hosts;
-  - which chapters are covered;
-  - the minimum SDK and VS versions;
-  - the optional "run `dotnet fdg fix` first, commit it separately, and add the commit to `.git-blame-ignore-revs`" workflow.
-- Set a preview version, for example `0.1.0-preview.1`.
-- Publish the analyzer package and `dotnet-fdg` to nuget.org. Once they are published, check that `docs/install.md` works exactly as written.
 - Add a CI job on SDK 8.0.1xx running the integration tests, or raise the documented minimum SDK to a tested version. `.slnx` needs SDK 9.0.200 or later.
 - Pin GitHub Actions to commit SHAs, on versions that run on Node.js 24 (CI warns that Node.js 20 is deprecated).
 - Not yet verified on a real host:
@@ -21,24 +13,26 @@ The design calls for full coverage of the book before version 1.0. Until then, r
   - Codex SessionStart after compaction;
   - re-approving Codex hooks after a plugin update;
   - the interactive confirmation path of `/fdg-setup`.
+- Bump the version before the next release, in `Directory.Build.props`, both `plugin.json` files and
+  `.claude-plugin/marketplace.json` (`check` fails when they differ).
+- `ExistingApi` judges a diagnostic only by its location: when `IDisposable` and a faulty `Dispose` are added to an
+  existing type, CA1063 is reported on the type's name and counted as existing API, so Stop does not send it back. For
+  a diagnostic on a type declaration, also compare the base type list with the baseline.
+- The reference file names mix casing: `appA-coding-style.md` keeps the appendix letter's case, while the split names
+  such as `appd-breaking-changes-d-1-to-d-8.md` must be lowercase. Pick one before the paths are relied on.
 
-## Before extending to more chapters
+## Generator
 
-- The extractor flattens `ul`, `ol` and `table` inside sidebars, as well as inline emphasis, links and `<br>`. Later chapters use these.
-- `generate` does not delete stale files in `references/`, and the drift check does not see extra files.
-- Decide on ligature artifacts copied from the epub text, such as "Conf licts" in 3.4.1. The choice is between fidelity to the source and clean text.
-- `verify-source`, `extract` and `check` print stack traces on malformed YAML, on a missing `dotnet`, and on schema load errors.
 - `check` depends on the SDK-internal layout of `DotnetTools/dotnet-format`. It also resolves the SDK from the parent directory of `--rules`, not from the current directory.
+- A one-line YAML error names neither the file nor the position, although `YamlException.Start` has it.
+- The generator emits no `customTags`. The analyzers that report only at compilation end (FDG5077 in `DuplicateExtensionMethodAnalyzer`, FDG6019 in `BaseSuffixAnalyzer`) lack `WellKnownDiagnosticTags.CompilationEnd` (RS1037).
 
 ## Rule mapping
 
-- Map IDE1006 to FDG rules by symbol kind:
-  - tag each naming rule in the YAML with its symbol kinds (type, member, parameter, private field, visible field, const, local, namespace);
-  - keep `startColumn` from SARIF;
-  - pick rules by the kind of failure, for example "must begin with upper case" or "Missing prefix".
-
-  Today, a many-rule diagnostic quotes no rule text unless the message names one. The prefix messages can still pair FDGA055 with an unrelated second rule.
-- FDGA023 reports only when the opening line exceeds the limit. Decide whether it should also report multi-line lists that are not chopped before the first item; the pilot's Codex session wrote one.
+- CA1710 keeps its default `exclude_indirect_base_types = true`, so a type that derives from a collection or exception type through another base is not reported; FDG3049, FDG3053, FDG3056, FDG3059 and FDG3076 are coverage partial for that reason. The book's text covers the whole hierarchy. Setting the option to `false` needs a noise run over FDG3048 to FDG3059, FDG3076, FDG7057, FDG8005, FDG8038 and FDG8039 first (Ruling 48).
+- `DeclarationLocator.FieldKind` classifies every `const` as `constField` before it looks at visibility, so a miscased public const quotes only FDGA053, never FDG3077 or FDG3001, although FDG3077's own example is `public const MinValue`. Adding `constField` to FDG3077's tags would quote it for private consts too; classify a visible const as both kinds instead (Ruling 54).
+- `dotnet format` applies the fix of an IDE rule that has no option (IDE0280, IDE0250, IDE0251) only when its severity is in an `.editorconfig`; the globalconfig's `dotnet_diagnostic` entry is not enough (probe with SDK 10.0.402), so `dotnet fdg fix` and the Stop hook do not apply those fixes unless the project's `.editorconfig` sets their severity.
+- Partial `sdk` and `fdg` DO rules stay out of the skill references (spec §6), so the AI does not see the part of the rule the check misses. Decide whether listing them is worth the larger reference files (Ruling 22).
 - When two rules write the same globalconfig key, the generator takes the IDE severity from the first rule only (`GlobalConfigEmitter`). The current data has no such case.
 
 ## Hooks and CLI

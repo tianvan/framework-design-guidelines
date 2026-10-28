@@ -17,11 +17,12 @@ public static class RuleDocEmitter
         var text = new StringBuilder();
         text.Append(Header.Markdown).Append("\n\n");
         text.Append($"# {rule.Id}\n\n");
-        text.Append($"> {RuleText.Statement(rule)}\n\n");
-        text.Append($"Framework Design Guidelines, 3rd edition, section {rule.Section}.");
+        text.Append($"> {RuleText.EscapeLiterals(RuleText.Statement(rule))}\n\n");
+        text.Append($"Framework Design Guidelines, 3rd edition, section {RuleText.EscapeMarkdown(rule.Section)}.");
         if (rule.Context is not null)
         {
-            text.Append($" Applies to: {rule.Context}.");
+            string context = RuleText.EscapeLiterals(rule.Context);
+            text.Append(rule.Strength.IsVerdict() ? $" Can cause: {context}." : $" Applies to: {context}.");
         }
 
         text.Append("\n\n");
@@ -57,12 +58,12 @@ public static class RuleDocEmitter
         text.Append($"- Status: {RuleYaml.EnumText(mapping.Status)}\n");
         if (mapping.Analyzer is not null)
         {
-            text.Append($"\nMessage: {mapping.Analyzer.Message}\n");
+            text.Append($"\nMessage: {RuleText.EscapeLiterals(mapping.Analyzer.Message)}\n");
         }
 
         if (mapping.Notes is not null)
         {
-            text.Append($"\n{mapping.Notes}\n");
+            text.Append($"\n{RuleText.EscapeLiterals(mapping.Notes)}\n");
         }
 
         if (mapping.Config.Count > 0)
@@ -74,7 +75,10 @@ public static class RuleDocEmitter
         if (rule.Body.Count > 0)
         {
             text.Append("\n## From the book\n\n");
-            text.Append(RuleText.RenderBody(rule.Body)).Append('\n');
+            IReadOnlyList<Block> body = rule.Body
+                .Select(b => b.Kind == BlockKind.Code ? b : b with { Text = RuleText.EscapeLiterals(b.Text) })
+                .ToList();
+            text.Append(RuleText.RenderBody(body)).Append('\n');
         }
 
         return text.ToString();

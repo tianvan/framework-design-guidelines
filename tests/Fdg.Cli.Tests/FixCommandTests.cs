@@ -133,19 +133,40 @@ public sealed class FixCommandTests : IDisposable
     }
 
     [Fact]
-    public async Task Only_registered_diagnostics_without_breaking_fixes_are_fixed()
+    public async Task Only_the_listed_fix_diagnostics_are_fixed()
     {
         string rules = _tree.Write(
             "packages/rules.json",
             """
-            { "protocol": 1, "version": "0.1.0", "rules": [], "registeredDiagnostics": ["CA1707", "FDGA003", "IDE0055"],
-              "breakingFixDiagnostics": ["CA1707", "IDE1006", "FDG9999"] }
+            { "protocol": 1, "version": "0.1.0", "rules": [], "registeredDiagnostics": ["CA1066", "CA1707", "FDGA003", "IDE0055"],
+              "breakingFixDiagnostics": ["CA1707"], "fixDiagnostics": ["FDGA003", "IDE0055"] }
             """);
         AddProject("A/A.csproj", ProjectState.InScope, rulesPath: rules);
 
         await RunAsync();
 
         Assert.Equal(["FDGA003", "IDE0055"], Assert.Single(_formatter.Calls).Diagnostics);
+    }
+
+    [Fact]
+    public async Task Rules_json_without_fix_diagnostics_fixes_only_autofix_yes_diagnostics()
+    {
+        string rules = _tree.Write(
+            "packages/rules.json",
+            """
+            { "protocol": 1, "version": "0.1.0",
+              "rules": [
+                { "id": "FDGA003", "strength": "DO", "text": "a", "section": "A", "diagnostics": ["FDGA003"], "autofix": "yes", "severity": {} },
+                { "id": "FDG4001", "strength": "DO", "text": "b", "section": "4", "diagnostics": ["CA1066"], "autofix": "no", "severity": {} },
+                { "id": "FDG3002", "strength": "DO", "text": "c", "section": "3", "diagnostics": ["CA1707"], "autofix": "breaking", "severity": {} }
+              ],
+              "registeredDiagnostics": ["CA1066", "CA1707", "FDGA003"], "breakingFixDiagnostics": ["CA1707"] }
+            """);
+        AddProject("A/A.csproj", ProjectState.InScope, rulesPath: rules);
+
+        await RunAsync();
+
+        Assert.Equal(["FDGA003"], Assert.Single(_formatter.Calls).Diagnostics);
     }
 
     [Fact]

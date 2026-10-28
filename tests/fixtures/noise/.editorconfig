@@ -1,0 +1,2 @@
+# Stops the walk up to the repository's .editorconfig, so its naming and style rules do not reach noise samples.
+root = true

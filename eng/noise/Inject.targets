@@ -1,0 +1,22 @@
+<Project>
+
+  <!--
+    Noise measurement: passed as CustomAfterMicrosoftCommonTargets by Measure-Noise.ps1. Imports the extracted
+    package's targets, adds its analyzers and writes one SARIF log per project and target framework.
+  -->
+  <Import Project="$(FdgNoisePackage)/build/FrameworkDesignGuidelines.Analyzers.targets" />
+
+  <!--
+    A sample that already references the package would load a second copy of the analyzers and globalconfig, so the
+    reference is dropped and only the extracted package is measured.
+  -->
+  <ItemGroup>
+    <PackageReference Remove="FrameworkDesignGuidelines.Analyzers" />
+    <Analyzer Include="$(FdgNoisePackage)/analyzers/dotnet/cs/*.dll" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <ErrorLog>$(FdgNoiseSarifDir)/$(MSBuildProjectName)-$(TargetFramework).sarif,version=2.1</ErrorLog>
+  </PropertyGroup>
+
+</Project>

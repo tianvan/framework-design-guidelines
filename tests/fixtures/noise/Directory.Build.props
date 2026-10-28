@@ -1,0 +1,8 @@
+<Project>
+
+  <!--
+    Stops the walk up to the repository's Directory.Build.props, so noise samples here see only what
+    eng/noise injects.
+  -->
+
+</Project>

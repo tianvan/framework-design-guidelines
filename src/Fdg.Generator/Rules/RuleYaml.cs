@@ -113,6 +113,9 @@ public static class RuleYaml
 
         public string? Notes { get; set; }
 
+        [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitNull)]
+        public NamingDto? Naming { get; set; }
+
         public static RuleDto From(Rule rule)
         {
             RuleMapping mapping = rule.Mapping;
@@ -152,6 +155,9 @@ public static class RuleYaml
                     ? null
                     : new AnalyzerDto { Message = mapping.Analyzer.Message, Category = mapping.Analyzer.Category },
                 Notes = mapping.Notes,
+                Naming = mapping.Naming is null
+                    ? null
+                    : new NamingDto { Symbols = mapping.Naming.Symbols.ToList(), Failures = mapping.Naming.Failures.ToList() },
             };
         }
 
@@ -173,7 +179,8 @@ public static class RuleYaml
                 MinLanguage,
                 Alternative,
                 Analyzer is null ? null : new AnalyzerInfo(Analyzer.Message, Analyzer.Category),
-                Notes);
+                Notes,
+                Naming is null ? null : new NamingTags(Naming.Symbols, Naming.Failures));
 
             return new Rule(
                 Id,
@@ -220,5 +227,12 @@ public static class RuleYaml
         public string Message { get; set; } = string.Empty;
 
         public string Category { get; set; } = string.Empty;
+    }
+
+    internal sealed class NamingDto
+    {
+        public List<string> Symbols { get; set; } = new();
+
+        public List<string> Failures { get; set; } = new();
     }
 }

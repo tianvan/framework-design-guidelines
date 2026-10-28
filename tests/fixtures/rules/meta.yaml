@@ -1,4 +1,15 @@
 repositoryUrl: https://example.test/repo
+# Before chapters, so that tests can append keys to the last chapter.
+otherContent:
+  - source: pref04.xhtml
+    title: Preface
+    entries:
+      - { section: "Guideline Presentation", disposition: rationale, note: "The legend of the strengths." }
+  - source: app02.xhtml
+    title: Obsolete Guidance
+    entries:
+      - { section: "B.3.8", disposition: obsolete, note: "Superseded by FDG9001." }
+      - { section: "B.4.1", disposition: obsolete, note: "No current rule replaces it." }
 chapters:
   - token: "9"
     file: sample.xhtml

@@ -2,81 +2,6 @@
 
 # Chapter 3: Naming Guidelines — explanations and examples
 
-## FDG3003
-
-DO capitalize both characters of two-character acronyms, except the first word of a camel-cased identifier.
-
-```csharp
-System.IO
-System.Threading.IOCompletionCallback
-public void StartIO(Stream ioStream)
-```
-
-## FDG3004
-
-DO capitalize only the first character of acronyms with three or more characters, except the first word of a camel-cased identifier.
-
-```csharp
-System.Xml
-System.Xml.XmlNode
-public void ProcessHtmlTag(string htmlTag)
-```
-
-## FDG3006
-
-DO NOT capitalize each word in so-called closed-form compound words.
-
-These are compound words written as a single word, such as endpoint. For the purpose of casing guidelines, treat a closed-form compound word as a single word. Use a current dictionary to determine if a compound word is written in closed form.
-
-Table 3-2 shows capitalization for some of the most commonly used compound words and common terms.
-
-**Table 3-2: Capitalization and Spelling for Common Compound Words and Common Terms**
-
-| Pascal | Camel | Not |
-| --- | --- | --- |
-| `BitFlag` | `bitFlag` | `Bitflag` |
-| `Callback` | `callback` | `CallBack` |
-| `Canceled` | `canceled` | `Cancelled` |
-| `DoNot` | `doNot` | `Don't` |
-| `Email` | `email` | `EMail` |
-| `Endpoint` | `endpoint` | `EndPoint` |
-| `Filename` | `filename` | `FileName` |
-| `Gridline` | `gridline` | `GridLine` |
-| `Hashtable` | `hashtable` | `HashTable` |
-| `Id` | `id` | `ID` |
-| `Indexes` | `indexes` | `Indices` |
-| `Logoff`1 | `logoff` | `LogOut` |
-| `Logon`1 | `logon` | `LogIn`2 |
-| `Metadata` | `metadata` | `MetaData, metaData` |
-| `Multipanel` | `multipanel` | `MultiPanel` |
-| `Multiview` | `multiview` | `MultiView` |
-| `Namespace` | `namespace` | `NameSpace` |
-| `Ok` | `ok` | `OK` |
-| `Pi` | `pi` | `PI` |
-| `Placeholder` | `placeholder` | `PlaceHolder` |
-| `SignIn` | `signIn` | `SignOn` |
-| `SignOut` | `signOut` | `SignOff` |
-| `Timestamp` | `timestamp` | `TimeStamp` |
-| `Username` | `username` | `UserName` |
-| `WhiteSpace` | `whiteSpace` | `Whitespace` |
-| `Writable` | `writable` | `Writeable` |
-
-1. When used as a noun (properties, fields, parameters, types). As a verb (methods) it should be considered two words—for example, `LogOff`.
-
-2. “Login” is now regarded as a closed-form noun, so a type with members named “Login” and “Password” would be OK, except in .NET we prefer “Logon” to “Login.” As a compound verb, “Log In” should be “Log On,” so “LogIn” is never used, and “LogOn” does not appear in this table.
-
-Two other terms that are in common usage are in a category by themselves, because they are common slang abbreviations. The two words Ok and Id (cased as shown here) are exceptions to the guideline that no abbreviations should be used in names.
-
-Table 3-2 and the rule about closed-form nouns are secondary to the general guideline of maintaining consistency. As of September 2019, “white space” is the dictionary entry, with some dictionaries having a note that computer science often uses it as a single word. If and when “whitespace” becomes an accepted closed-form noun, you should continue to use “WhiteSpace” in type hierarchies built with the older form of the word.
-
-> **Brad Abrams:** Table 3-2 presents specific examples found in the development of the .NET Framework. You might find it useful to create your own appendix to this table for compound words and other terms commonly used in your domain.
-
-> **Brad Abrams:** One abbreviation commonly used in COM interface names was Ex (for interfaces that were extended versions of previously existing interfaces). This abbreviation should be avoided in reusable libraries. Use instead a meaningful name that describes the new functionality. For example, rather than `IDispatchEx`, consider `IDynamicDispatch`.
-
-> **Jeremy Barton:** Several changes were made to Table 3-2 for the third edition of this book. The Oxford English Dictionary, as well as others, now considers “filename,” “logoff,” “logout,” “login,” “logon,” and “username” as closed-form nouns, enabling identifiers like `LogoffTime`. In the sense of an action, the OED still considers “log in,” “log on,” “log off,” or “log out” to be the only acceptable forms.
->
-> That doesn’t mean you should immediately change all of your existing names. However, in types that don’t interact with the older forms, you are free (and encouraged) to accept the evolving nature of language when it comes to these terms.
-
 ## FDG3008
 
 DO choose easily readable identifier names.
@@ -93,26 +18,6 @@ DO NOT use Hungarian notation.
 
 > **Krzysztof Cwalina:** There have always been both positive and negative effects of using the Hungarian naming convention, and they still exist today. Positives include better readability (if used correctly). Negatives include cost of maintenance, confusion if maintenance was not done properly, and finally, Hungarian makes the API more cryptic (less approachable) to some developers. In the world of procedural languages (e.g., C) and the separation of the System APIs for advanced developers from framework libraries for a much wider developer group, the positives seemed to be greater than the negatives. Today, with System APIs designed to be approachable to more developers, and with object-oriented (OO) languages, the trade-off seems to be pulling in the other direction. OO encapsulation brings variable declaration and usage points closer together, OO style favors short, well-factored methods, and abstractions often make the exact type less important or even meaningless.
 
-## FDG3013
-
-DO use only ASCII characters in identifier names.
-
-All of the identifiers in .NET use ASCII characters, so anyone working with .NET is capable of typing those characters and working with files or tools that understand those characters. But the developers who want to use your library may not have easy capability to type non-ASCII characters, or may use text editors (or other tools) that do not reliably preserve non-ASCII data.
-
-When basing an identifier on a word that properly requires diacritical marks, either use (or invent) the diacritical-free approximation or choose a different identifier.
-
-Table 3-3 describes some suggested replacement spellings to avoid diacritical marks. It is provided for clarity, but is neither authoritative nor exhaustive.
-
-**Table 3-3: Alternative Spellings to Avoid Diacritical Marks**
-
-| Spelling with Diacritics | Spelling for an Identifier |
-| --- | --- |
-| `Edelweiß` | `Edelweiss` |
-| `Mêlée` | `Melee` |
-| `Naïve` | `Naive` |
-| `Résumé` | `Resume` |
-| `Röntgen` | `Roentgen` |
-
 ## FDG3014
 
 DO NOT use abbreviations or contractions as part of identifier names.
@@ -128,6 +33,31 @@ For example, UI is used for User Interface and HTML is used for HyperText Markup
 For acronym capitalization rules, see section 3.1.2.
 
 > **Brad Abrams:** We continually debate about whether a given acronym is well known or not. A good divining rod is what I call the grep test. Simply use some search engine to grep the Web for the acronym. If the first few results returned are indeed the meaning you intend, it is likely that your acronym qualifies as well known; if you don’t get those search results, think harder about the name. If you fail the test, don’t just spell out the acronym but consider how you can be descriptive in the name.
+
+## FDG3017
+
+DO use a generic CLR type name, rather than a language-specific name, in the rare cases when an identifier has no semantic meaning beyond its type.
+
+For example, a method converting to `System.Int64` should be named `ToInt64`, not `ToLong` (because `System.Int64` is a CLR name for the C#-specific alias `long`). Table 3-4 presents several base data types using the CLR type names (as well as the corresponding type names for C#, Visual Basic, and C++).
+
+**Table 3-4: CLR Type Names for Language-Specific Type Names**
+
+| C# | Visual Basic | C++ | CLR |
+| --- | --- | --- | --- |
+| `Sbyte` | `SByte` | `char` | `SByte` |
+| `Byte` | `Byte` | `unsigned char` | `Byte` |
+| `short` | `Short` | `short` | `Int16` |
+| `ushort` | `UInt16` | `unsigned short` | `UInt16` |
+| `int` | `Integer` | `int` | `Int32` |
+| `uint` | `UInt32` | `unsigned int` | `UInt32` |
+| `long` | `Long` | `__int64` | `Int64` |
+| `ulong` | `UInt64` | `unsigned __int64` | `UInt64` |
+| `float` | `Single` | `float` | `Single` |
+| `double` | `Double` | `double` | `Double` |
+| `bool` | `Boolean` | `bool` | `Boolean` |
+| `char` | `Char` | `wchar_t` | `Char` |
+| `string` | `String` | `String` | `String` |
+| `object` | `Object` | `Object` | `Object` |
 
 ## FDG3019
 
@@ -240,19 +170,6 @@ DO use a stable, version-independent product name at the second level of a names
 CONSIDER using plural namespace names where appropriate.
 
 For example, use `System.Collections` instead of `System.Collection`. Brand names and acronyms are exceptions to this rule, however. For example, use `System.IO` instead of `System.IOs`.
-
-## FDG3033
-
-DO NOT introduce overly general type names such as `Element`, `Node`, `Log`, and `Message`.
-
-There is a very high probability that doing so will lead to type name conflicts in common scenarios. You should qualify the general type names (e.g., `FormElement`, `XmlNode`, `EventLog`, `SoapMessage`).
-
-There are specific guidelines for avoiding type name conflicts for different categories of namespaces. Namespaces can be divided into the following categories:
-
-- Application model namespaces
-- Infrastructure namespaces
-- Core namespaces
-- Technology namespace groups
 
 ## FDG3034
 
@@ -395,20 +312,6 @@ public class String {
 }
 ```
 
-## FDG3068
-
-DO name collection properties with a plural phrase describing the items in the collection instead of using a singular phrase followed by “List” or “Collection.”
-
-```csharp
-public class ListView {
-  // good naming
-  public ItemCollection Items { get; }
-
-  // bad naming
-  public ItemCollection ItemCollection { get; }
-}
-```
-
 ## FDG3069
 
 DO name Boolean properties with an affirmative phrase (`CanSeek` instead of `CantSeek`). Optionally, you can also prefix Boolean properties with “Is,” “Can,” or “Has,” but only where it adds value.
@@ -461,19 +364,6 @@ DO give events names with a concept of before and after, using the present and p
 
 For example, a close event that is raised before a window is closed would be called `Closing`, and one that is raised after the window is closed would be called `Closed`.
 
-## FDG3075
-
-DO use two parameters named sender and e in event handlers.
-
-The sender parameter represents the object that raised the event. The sender parameter is typically of type `object`, even if it is possible to employ a more specific type. The pattern is used consistently across .NET and is described in more detail in section 5.4.
-
-> **Jeremy Barton:** The `object sender` parameter may be my least favorite guideline in .NET. But, for consistency, I have followed it in every event I’ve ever declared.
-
-```csharp
-public delegate void <EventName>EventHandler(object sender,
-                                             <EventName>EventArgs e);
-```
-
 ## FDG3081
 
 DO use descriptive parameter names.
@@ -488,7 +378,7 @@ Development tools generally provide useful information about the type, so the pa
 
 ## FDG3083
 
-DO use left and right for binary operator overload parameter names if there is no meaning to the parameters.
+DO use *left* and *right* for binary operator overload parameter names if there is no meaning to the parameters.
 
 ```csharp
 public static TimeSpan operator-(DateTimeOffset left,
@@ -499,7 +389,7 @@ public static bool operator==(DateTimeOffset left,
 
 ## FDG3084
 
-DO use value for unary operator overload parameter names if there is no meaning to the parameters.
+DO use *value* for unary operator overload parameter names if there is no meaning to the parameters.
 
 ```csharp
 public static BigInteger operator-(BigInteger value);
@@ -513,21 +403,3 @@ CONSIDER meaningful names for operator overload parameters if doing so adds sign
 public static BigInteger Divide(BigInteger dividend,
                                 BigInteger divisor);
 ```
-
-## FDG3086
-
-DO NOT use abbreviations or numeric indices for operator overload parameter names.
-
-```csharp
-// incorrect parameter naming
-public static bool operator ==(DateTimeOffset d1,
-                               DateTimeOffset d2);
-```
-
-## FDG3087
-
-DO NOT directly expose localizable resources as public (or protected) members.
-
-The types and members automatically generated by a resource editor should use the `internal` access modifier.
-
-When it does make sense to expose a resource via public API, use intentional type and member design.

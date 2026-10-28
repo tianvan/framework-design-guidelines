@@ -245,6 +245,427 @@ public sealed class EmitterTests : IDisposable
             line);
     }
 
+    /// <summary>The sample chapter with the given reference splits; <paramref name="keep"/> restricts it to some rules.</summary>
+    private GeneratorInput Split(Func<Rule, bool> keep, params ReferenceSplit[] splits)
+    {
+        GeneratorInput input = Input();
+        return input with
+        {
+            Files = input.Files.Select(f => f with { Rules = f.Rules.Where(keep).ToList(), References = splits }).ToList(),
+        };
+    }
+
+    private static ReferenceSplit Part(string file, params string[] sections)
+    {
+        return new ReferenceSplit(file, sections);
+    }
+
+    [Fact]
+    public void Splits_chapter_references_by_section_prefix()
+    {
+        GeneratorInput input = Split(r => r.Section.StartsWith("9.1", StringComparison.Ordinal) || r.Section.StartsWith("9.2", StringComparison.Ordinal),
+            Part("ch09-first", "9.1"),
+            Part("ch09-second", "9.2"));
+
+        IReadOnlyList<GeneratedFile> files = SkillReferenceEmitter.Emit(input);
+
+        string Content(string path) => files.Single(f => f.Path.EndsWith(path, StringComparison.Ordinal)).Content;
+        string first = Content("references/ch09-first.md");
+        string second = Content("references/ch09-second.md");
+        string firstExamples = Content("references/examples/ch09-first.md");
+        string secondExamples = Content("references/examples/ch09-second.md");
+        Assert.Equal(4, files.Count);
+        Assert.Contains("# Chapter 9: Sample Chapter — 9.1", first);
+        Assert.Contains("# Chapter 9: Sample Chapter — 9.2", second);
+        Assert.Contains("**FDG9001**", first);
+        Assert.Contains("examples/ch09-first.md#fdg9001", first);
+        Assert.DoesNotContain("**FDG9001**", second);
+        Assert.Contains("## FDG9001", firstExamples);
+        Assert.DoesNotContain("## FDG9001", secondExamples);
+        Assert.DoesNotContain("9.2 Tool Checked", first);
+        Assert.Contains("## 9.2 Tool Checked", second);
+    }
+
+    [Fact]
+    public void Split_title_spans_the_first_to_the_last_section()
+    {
+        GeneratorInput input = Split(_ => true, Part("ch09-all", "9.1", "9.2", "9.3"));
+
+        string main = SkillReferenceEmitter.Emit(input).Single(f => f.Path.EndsWith("references/ch09-all.md", StringComparison.Ordinal)).Content;
+
+        Assert.Contains("# Chapter 9: Sample Chapter — 9.1–9.3", main);
+    }
+
+    [Fact]
+    public void Section_prefix_matches_on_dot_boundary()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-first", "9.1"), Part("ch09-rest", "9.2", "9.3")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.10 Foo" } : r);
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("Chapter 9: rule FDG9001 (section 9.10) matches no reference split.", exception.Message);
+    }
+
+    [Fact]
+    public void Prefix_matches_deeper_sections()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-first", "9.1"), Part("ch09-rest", "9.2", "9.3")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.1.2 Foo" } : r);
+
+        string main = SkillReferenceEmitter.Emit(input).Single(f => f.Path.EndsWith("references/ch09-first.md", StringComparison.Ordinal)).Content;
+
+        Assert.Contains("**FDG9001**", main);
+    }
+
+    [Fact]
+    public void Chapter_number_prefix_matches_only_the_chapter_introduction()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-first", "9", "9.1"), Part("ch09-rest", "9.2", "9.3")),
+            r => r.Id == "FDG9001" ? r with { Section = "9" } : r);
+
+        IReadOnlyList<GeneratedFile> files = SkillReferenceEmitter.Emit(input);
+
+        string Content(string path) => files.Single(f => f.Path.EndsWith(path, StringComparison.Ordinal)).Content;
+        Assert.Contains("**FDG9001**", Content("references/ch09-first.md"));
+        Assert.DoesNotContain("**FDG9001**", Content("references/ch09-rest.md"));
+        Assert.Contains("## 9.2 Tool Checked", Content("references/ch09-rest.md"));
+    }
+
+    [Fact]
+    public void Chapter_number_prefix_does_not_cover_an_omitted_section()
+    {
+        GeneratorInput input = Split(_ => true, Part("a", "9", "9.1"), Part("b", "9.2"));
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("(section 9.3) matches no reference split.", exception.Message);
+    }
+
+    [Fact]
+    public void Nested_prefixes_in_two_splits_fail()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-a", "9.1", "9.2", "9.3"), Part("ch09-b", "9.1.2")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.1.2 Foo" } : r);
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("matches more than one reference split (ch09-a, ch09-b)", exception.Message);
+    }
+
+    [Fact]
+    public void Exact_section_matches_the_section_itself()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-a", "=9.12"), Part("ch09-b", "9.1", "9.2", "9.3")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.12 Foo" } : r);
+
+        string main = SkillReferenceEmitter.Emit(input).Single(f => f.Path.EndsWith("references/ch09-a.md", StringComparison.Ordinal)).Content;
+
+        Assert.Contains("**FDG9001**", main);
+        Assert.Contains("# Chapter 9: Sample Chapter — 9.12\n", main);
+    }
+
+    [Fact]
+    public void Exact_section_does_not_match_a_subsection()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-a", "=9.12"), Part("ch09-b", "9.1", "9.2", "9.3")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.12.3 Foo" } : r);
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("Chapter 9: rule FDG9001 (section 9.12.3) matches no reference split.", exception.Message);
+    }
+
+    [Fact]
+    public void Exact_section_leaves_an_unlisted_subsection_unmatched()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("a", "=9.12", "9.1", "9.2", "9.3"), Part("b", "9.12.3")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.12.1 Foo" } : r);
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("(section 9.12.1) matches no reference split.", exception.Message);
+    }
+
+    [Fact]
+    public void Exact_section_and_prefix_in_two_splits_fail()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("ch09-a", "=9.12", "9.1", "9.2", "9.3"), Part("ch09-b", "9.12")),
+            r => r.Id == "FDG9001" ? r with { Section = "9.12 Foo" } : r);
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("matches more than one reference split (ch09-a, ch09-b)", exception.Message);
+    }
+
+    [Fact]
+    public void Rule_matching_two_splits_fails()
+    {
+        GeneratorInput input = Split(_ => true, Part("ch09-a", "9.1", "9.2", "9.3"), Part("ch09-b", "9.1"));
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Contains("matches more than one reference split (ch09-a, ch09-b)", exception.Message);
+    }
+
+    [Fact]
+    public void Oversized_reference_file_fails_generation()
+    {
+        string huge = new('x', SkillReferenceEmitter.MaxReferenceBytes);
+        GeneratorInput input = Edit(
+            Input(),
+            r => r.Id == "FDG9001" ? r with { Body = new[] { new Block(BlockKind.Paragraph, huge) } } : r);
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Matches(@"references/examples/ch09-sample\.md is \d+ bytes; the limit is 32768\. Split the chapter with references in meta\.yaml\.", exception.Message);
+    }
+
+    [Fact]
+    public void Oversize_is_measured_in_utf8_bytes()
+    {
+        string wide = new('é', SkillReferenceEmitter.MaxReferenceBytes / 2);
+        GeneratorInput input = Edit(
+            Input(),
+            r => r.Id == "FDG9001" ? r with { Body = new[] { new Block(BlockKind.Paragraph, wide) } } : r);
+
+        Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+    }
+
+    [Fact]
+    public void Chapter_without_splits_keeps_one_file_per_chapter()
+    {
+        string[] paths = SkillReferenceEmitter.Emit(Input()).Select(f => f.Path).ToArray();
+
+        Assert.Equal(
+            new[]
+            {
+                "plugins/framework-design-guidelines/skills/fdg-write/references/ch09-sample.md",
+                "plugins/framework-design-guidelines/skills/fdg-write/references/examples/ch09-sample.md",
+            },
+            paths);
+    }
+
+    [Fact]
+    public void Meta_references_reach_the_rule_files()
+    {
+        string rules = TempDir();
+        foreach (string path in Directory.GetFiles(_fixtureRules))
+        {
+            File.Copy(path, Path.Combine(rules, Path.GetFileName(path)));
+        }
+
+        string meta = Path.Combine(rules, "meta.yaml");
+        File.WriteAllText(
+            meta,
+            File.ReadAllText(meta) + """
+                    references:
+                      - file: ch09-a
+                        sections: ["9.1", "9.2"]
+                      - file: ch09-b
+                        sections: ["9.3"]
+
+                """);
+
+        GeneratorInput input = GeneratorInput.Load(rules, "0.1.0");
+
+        ReferenceSplit[] expected = { Part("ch09-a", "9.1", "9.2"), Part("ch09-b", "9.3") };
+        Assert.Equal(expected.Select(r => r.File), input.Files.Single().References.Select(r => r.File));
+        Assert.Equal(expected.Select(r => r.Sections), input.Files.Single().References.Select(r => r.Sections));
+        Assert.Equal(expected.Select(r => r.File), input.Meta.Chapters.Single().References.Select(r => r.File));
+    }
+
+    private MetaFile LoadMetaWith(string references)
+    {
+        string rules = TempDir();
+        File.WriteAllText(
+            Path.Combine(rules, "meta.yaml"),
+            "repositoryUrl: x\nchapters:\n  - token: \"9\"\n    file: s.xhtml\n    rules: ch09-sample.yaml\n    title: T\n" + references);
+        return RuleLoader.LoadMeta(rules);
+    }
+
+    [Theory]
+    [InlineData("    references:\n      - file: ch09-a\n")]
+    [InlineData("    references:\n      - file: ch09-a\n        sections:\n")]
+    [InlineData("    references:\n      - file: ch09-a\n        sections: []\n")]
+    [InlineData("    references:\n      - sections: [\"9.1\"]\n")]
+    [InlineData("    references:\n      -\n")]
+    [InlineData("    references: [{ file: Bad_Name, sections: [\"9.1\"] }]\n")]
+    [InlineData("    references: [{ file: ../x, sections: [\"9.1\"] }]\n")]
+    public void Invalid_meta_references_fail_with_a_format_exception(string references)
+    {
+        Assert.Throws<FormatException>(() => LoadMetaWith(references));
+    }
+
+    [Fact]
+    public void Meta_reference_sections_may_be_appendix_sections()
+    {
+        MetaFile meta = LoadMetaWith("    references: [{ file: appd-a, sections: [\"D.1\", \"=D.2\", \"D.10\"] }]\n");
+
+        Assert.Equal(new[] { "D.1", "=D.2", "D.10" }, meta.Chapters.Single().References.Single().Sections);
+    }
+
+    [Fact]
+    public void Appendix_section_prefix_matches_on_dot_boundary()
+    {
+        GeneratorInput input = Edit(
+            Split(_ => true, Part("appd-first", "D.1"), Part("appd-rest", "D.2", "D.10")),
+            r => r with
+            {
+                Section = r.Section.StartsWith("9.1", StringComparison.Ordinal) ? "D.1.1 Foo"
+                    : r.Section.StartsWith("9.2", StringComparison.Ordinal) ? "D.2.1 Bar"
+                    : "D.10.1 Baz",
+            });
+
+        IReadOnlyList<GeneratedFile> files = SkillReferenceEmitter.Emit(input);
+
+        string first = files.Single(f => f.Path.EndsWith("references/appd-first.md", StringComparison.Ordinal)).Content;
+        string rest = files.Single(f => f.Path.EndsWith("references/appd-rest.md", StringComparison.Ordinal)).Content;
+        Assert.Contains("## D.1.1 Foo", first);
+        Assert.DoesNotContain("D.10.1 Baz", first);
+        Assert.Contains("## D.10.1 Baz", rest);
+        Assert.Contains("— D.2–D.10", rest);
+    }
+
+    [Fact]
+    public void Null_meta_references_mean_no_split()
+    {
+        Assert.Empty(LoadMetaWith("    references:\n").Chapters.Single().References);
+    }
+
+    [Fact]
+    public void Reference_stem_used_twice_fails_generation()
+    {
+        GeneratorInput duplicate = Split(_ => true, Part("ch09-a", "9.1", "9.2"), Part("ch09-a", "9.3"));
+        GeneratorInput first = Input();
+        RuleFile other = first.Files.Single() with { Chapter = "10" };
+        GeneratorInput clash = first with { Files = new[] { first.Files.Single(), other } };
+
+        Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(duplicate));
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(clash));
+        Assert.Contains("Chapter 10: reference file 'ch09-sample' is already used by Chapter 9.", exception.Message);
+    }
+
+    [Fact]
+    public void Split_matching_no_rule_fails_generation()
+    {
+        GeneratorInput input = Split(_ => true, Part("ch09-a", "9.1", "9.2", "9.3"), Part("ch09-empty", "9.4"));
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Equal("Chapter 9: reference split 'ch09-empty' matches no rule.", exception.Message);
+    }
+
+    [Fact]
+    public void Split_title_orders_sections_numerically()
+    {
+        GeneratorInput input = Split(_ => true, Part("ch09-all", "9.3", "9.1", "9.2"));
+
+        string main = SkillReferenceEmitter.Emit(input).Single(f => f.Path.EndsWith("references/ch09-all.md", StringComparison.Ordinal)).Content;
+
+        Assert.Contains("# Chapter 9: Sample Chapter — 9.1–9.3", main);
+    }
+
+    [Fact]
+    public void Section_text_is_escaped_where_it_becomes_markdown()
+    {
+        GeneratorInput input = Edit(Input(), r => r.Id == "FDG9001" ? r with { Section = "9.1 IComparable<T> and IEquatable<T>" } : r);
+
+        string main = ReferenceMain(input);
+        string page = RuleDocEmitter.Emit(input).Single(f => f.Path == "docs/rules/FDG9001.md").Content;
+
+        Assert.Contains("## 9.1 IComparable&lt;T> and IEquatable&lt;T>", main);
+        Assert.Contains("section 9.1 IComparable&lt;T> and IEquatable&lt;T>.", page);
+        Assert.DoesNotContain("IComparable<T>", main);
+        Assert.DoesNotContain("IComparable<T>", page);
+    }
+
+    /// <summary>
+    /// Book text can hold a literal <c>&lt;</c> or <c>_</c> that GitHub would read as an HTML tag or as emphasis, such
+    /// as <c>&lt;project root&gt;</c> or the quoted prefixes <c>“_”</c> and <c>“s_”</c>. The rule page escapes them outside
+    /// code spans and code blocks, and keeps the extractor's own <c>&lt;br&gt;</c> and <c>&lt;sup&gt;</c> markup.
+    /// </summary>
+    [Fact]
+    public void Rule_page_escapes_literal_angle_brackets_and_underscores_outside_code()
+    {
+        GeneratorInput input = Edit(Input(), r => r.Id == "FDG9001"
+            ? Map(r with
+            {
+                Text = "use a prefix “_” (underscore) for instance fields, “s_” for static fields, and `t_x` in code.",
+                Body = new[]
+                {
+                    new Block(BlockKind.Paragraph, "It is found at <project root>\\Simd.cs, near `List<T>`, *here*<br>and<sup>1</sup>, [s_](https://example.com/_x_)."),
+                    new Block(BlockKind.Code, "if (a < b) _c = d_;"),
+                    new Block(BlockKind.Annotation, "Use a_b or _y_ here.\n\n```\nif (a < b) _c();\n```", "Author"),
+                },
+            }, m => m with { Notes = "CA1710 skips List<T> and _z." })
+            : r);
+
+        string page = RuleDocEmitter.Emit(input).Single(f => f.Path == "docs/rules/FDG9001.md").Content;
+        string reference = ReferenceMain(input);
+
+        Assert.Contains("> DO use a prefix “\\_” (underscore) for instance fields, “s\\_” for static fields, and `t_x` in code.\n", page);
+        Assert.Contains("It is found at &lt;project root>\\Simd.cs, near `List<T>`, *here*<br>and<sup>1</sup>, [s\\_](https://example.com/_x_).", page);
+        Assert.Contains("```csharp\nif (a < b) _c = d_;\n```", page);
+        Assert.Contains("> **Author:** Use a_b or \\_y\\_ here.\n>\n> ```\n> if (a < b) _c();\n> ```", page);
+        Assert.Contains("\nCA1710 skips List&lt;T> and \\_z.\n", page);
+        Assert.Contains("use a prefix “_” (underscore)", reference);
+        Assert.DoesNotContain("\\_", reference);
+        Assert.DoesNotContain("&lt;", reference);
+    }
+
+    [Theory]
+    [InlineData("a ``x_<y`` b_ <c", "a ``x_<y`` b\\_ &lt;c")]
+    [InlineData("an ` unclosed run_ <x", "an ` unclosed run\\_ &lt;x")]
+    [InlineData("kept \\_ and &lt;T> and _x", "kept \\_ and &lt;T> and \\_x")]
+    [InlineData(
+        "see <https://example.com/_a_> or <mailto:a_b@example.com>",
+        "see <https://example.com/_a_> or <mailto:a_b@example.com>")]
+    [InlineData("one<br/>two<br />three<br>four", "one<br/>two<br />three<br>four")]
+    [InlineData("~~~\nif (a < b) _c();\n~~~\n<d", "~~~\nif (a < b) _c();\n~~~\n&lt;d")]
+    public void Escape_literals_keeps_code_escapes_autolinks_and_line_breaks(string markdown, string expected)
+    {
+        Assert.Equal(expected, RuleText.EscapeLiterals(markdown));
+    }
+
+    [Theory]
+    [InlineData("use “_” and <project root>, ``a`b``, \\* and _x_")]
+    [InlineData("~~~\n<a>\n~~~\n<b> <http://x/_y> List<T>_")]
+    public void Escape_literals_is_idempotent(string markdown)
+    {
+        string once = RuleText.EscapeLiterals(markdown);
+
+        Assert.Equal(once, RuleText.EscapeLiterals(once));
+    }
+
+    [Fact]
+    public void Coverage_escapes_literal_angle_brackets_and_underscores_in_notes()
+    {
+        GeneratorInput input = Input();
+        input = input with
+        {
+            Files = input.Files.Select(f => f with
+            {
+                NonGuideline = f.NonGuideline
+                    .Select(e => e with { Note = "Names such as <Company>.<Product>, List<T>, “_” and `List<T>`." })
+                    .ToList(),
+            }).ToList(),
+        };
+
+        string coverage = CoverageEmitter.Emit(input);
+
+        Assert.Contains("Names such as &lt;Company>.&lt;Product>, List&lt;T>, “\\_” and `List<T>`.", coverage);
+        Assert.DoesNotContain("<Company>", coverage);
+    }
+
     [Fact]
     public void Skill_reference_groups_rules_by_section_and_links_examples()
     {
@@ -309,6 +730,45 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Fix_diagnostics_omit_breaking_and_autofix_no()
+    {
+        // FDG9007 is the only all-yes rule; CA1710 has both no and breaking; IDE1006 is all no.
+        GeneratorInput input = Input();
+
+        Assert.Equal(new[] { "FDG9007" }, Fixed(input));
+
+        // IDE1006 is mapped by FDG9003 and FDG9009: one yes rule is not enough, both must be yes.
+        GeneratorInput mixed = Edit(input, OnRule("FDG9003", m => m with { Autofix = AutofixKind.Yes }));
+        Assert.Equal(new[] { "FDG9007" }, Fixed(mixed));
+
+        GeneratorInput allYes = Edit(mixed, OnRule("FDG9009", m => m with { Autofix = AutofixKind.Yes }));
+        Assert.Equal(new[] { "FDG9007", "IDE1006" }, Fixed(allYes));
+
+        static IEnumerable<string> Fixed(GeneratorInput input)
+        {
+            JsonObject json = JsonNode.Parse(RulesJsonEmitter.Emit(input))!.AsObject();
+            return json["fixDiagnostics"]!.AsArray().Select(n => n!.GetValue<string>()).ToList();
+        }
+    }
+
+    [Fact]
+    public void Rules_json_carries_naming_tags()
+    {
+        var tags = new NamingTags(new[] { "parameter", "local" }, new[] { "casing" });
+        GeneratorInput input = Edit(Input(), OnRule("FDG9003", m => m with { Naming = tags }));
+
+        JsonObject json = JsonNode.Parse(RulesJsonEmitter.Emit(input))!.AsObject();
+        JsonObject[] rules = json["rules"]!.AsArray().Select(n => n!.AsObject()).ToArray();
+
+        JsonObject naming = rules.Single(r => r["id"]!.GetValue<string>() == "FDG9003")["naming"]!.AsObject();
+        Assert.Equal(new[] { "parameter", "local" }, naming["symbols"]!.AsArray().Select(n => n!.GetValue<string>()));
+        Assert.Equal(new[] { "casing" }, naming["failures"]!.AsArray().Select(n => n!.GetValue<string>()));
+        Assert.Equal(1, json["protocol"]!.GetValue<int>());
+        Assert.All(rules.Where(r => r["id"]!.GetValue<string>() != "FDG9003"), r => Assert.Null(r["naming"]));
+        Assert.All(rules, r => Assert.True(r.ContainsKey("naming")));
+    }
+
+    [Fact]
     public void Rules_json_describes_each_rule()
     {
         JsonObject json = JsonNode.Parse(RulesJsonEmitter.Emit(Input()))!.AsObject();
@@ -336,6 +796,145 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Appendix_d_verdict_is_set_off_from_the_heading_text_by_a_colon()
+    {
+        GeneratorInput input = Edit(Input(), rule => rule.Id == "FDG9001"
+            ? rule with { Strength = Strength.NotPermitted, Text = "Changing the Name of an Assembly" }
+            : rule);
+
+        GeneratedFile page = RuleDocEmitter.Emit(input).Single(f => f.Path == "docs/rules/FDG9001.md");
+
+        Assert.Contains("> NOT PERMITTED: Changing the Name of an Assembly\n", page.Content);
+        Assert.Contains("- **FDG9001** NOT PERMITTED: Changing the Name of an Assembly", ReferenceMain(input));
+        JsonObject json = JsonNode.Parse(RulesJsonEmitter.Emit(input))!.AsObject();
+        JsonObject rule = json["rules"]!.AsArray().Select(n => n!.AsObject())
+            .Single(r => r["id"]!.GetValue<string>() == "FDG9001");
+        Assert.Equal("NOT PERMITTED", rule["strength"]!.GetValue<string>());
+        Assert.Equal("Changing the Name of an Assembly", rule["text"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public void Appendix_d_verdict_context_is_the_breaks_it_can_cause()
+    {
+        GeneratorInput input = Edit(Input(), rule => rule.Id == "FDG9001"
+            ? rule with { Strength = Strength.NotPermitted, Context = "runtime break" }
+            : rule);
+
+        string page = RuleDocEmitter.Emit(input).Single(f => f.Path == "docs/rules/FDG9001.md").Content;
+        string reference = ReferenceMain(input);
+
+        Assert.Contains(" Can cause: runtime break.\n", page);
+        Assert.DoesNotContain("Applies to:", page);
+        Assert.Contains("- **FDG9001** NOT PERMITTED: ", reference);
+        Assert.Contains(" (can cause: runtime break)", reference);
+        Assert.DoesNotContain("(context: runtime break)", reference);
+    }
+
+    [Fact]
+    public void Guideline_context_is_where_the_rule_applies()
+    {
+        GeneratorInput input = Edit(Input(), rule => rule.Id == "FDG9001"
+            ? rule with { Context = "public types" }
+            : rule);
+
+        string page = RuleDocEmitter.Emit(input).Single(f => f.Path == "docs/rules/FDG9001.md").Content;
+        string reference = ReferenceMain(input);
+
+        Assert.Contains(" Applies to: public types.\n", page);
+        Assert.DoesNotContain("Can cause:", page);
+        Assert.Contains(" (context: public types)", reference);
+        Assert.DoesNotContain("(can cause:", reference);
+    }
+
+    /// <summary>
+    /// A rule that is on for <c>library</c> and off for <c>application</c> is about a library's public surface; its
+    /// reference line says so right after the rule text, so the AI skips it in application code.
+    /// </summary>
+    [Fact]
+    public void Library_only_rule_is_marked_after_its_text()
+    {
+        GeneratorInput input = Edit(Input(), rule => rule.Id == "FDG9001"
+            ? Map(rule with { Context = "public types" }, m => m with
+            {
+                Severity = new ProfileSeverity(SeverityLevel.Warning, SeverityLevel.None, SeverityLevel.None),
+            })
+            : rule);
+
+        string line = Lines(ReferenceMain(input)).Single(l => l.StartsWith("- **FDG9001** ", StringComparison.Ordinal));
+
+        Assert.StartsWith(
+            "- **FDG9001** DO prefer records for immutable data carriers. (library only) " +
+            "(context: public types) [C# 9+]",
+            line);
+    }
+
+    [Fact]
+    public void Rule_on_in_application_is_not_marked_library_only()
+    {
+        string reference = ReferenceMain(Input());
+
+        Assert.Contains("- **FDG9001** DO prefer records for immutable data carriers. [C# 9+]", reference);
+        Assert.DoesNotContain("(library only)", reference);
+    }
+
+    /// <summary>
+    /// A rule that is on for <c>application</c> and off for <c>test</c> is marked like a library-only rule, in the same
+    /// place, so the AI skips it in test code; a library-only rule keeps its own marker, since it is off in test too.
+    /// </summary>
+    [Fact]
+    public void Rule_off_in_test_only_is_marked_after_its_text()
+    {
+        GeneratorInput input = Edit(Input(), rule => rule.Id == "FDG9001"
+            ? Map(rule with { Context = "public types" }, m => m with
+            {
+                Severity = new ProfileSeverity(SeverityLevel.Warning, SeverityLevel.Suggestion, SeverityLevel.None),
+            })
+            : rule);
+
+        string reference = ReferenceMain(input);
+        string line = Lines(reference).Single(l => l.StartsWith("- **FDG9001** ", StringComparison.Ordinal));
+
+        Assert.StartsWith(
+            "- **FDG9001** DO prefer records for immutable data carriers. (not in test projects) " +
+            "(context: public types) [C# 9+]",
+            line);
+        Assert.Contains("- **FDG9006** CONSIDER making types sealed. (not in test projects)", reference);
+    }
+
+    [Fact]
+    public void Library_only_rule_is_not_marked_not_in_test_projects()
+    {
+        GeneratorInput input = Edit(Input(), OnRule("FDG9001", m => m with
+        {
+            Severity = new ProfileSeverity(SeverityLevel.Warning, SeverityLevel.None, SeverityLevel.None),
+        }));
+
+        string line = Lines(ReferenceMain(input)).Single(l => l.StartsWith("- **FDG9001** ", StringComparison.Ordinal));
+
+        Assert.Contains("(library only)", line);
+        Assert.DoesNotContain("(not in test projects)", line);
+    }
+
+    [Fact]
+    public void Rule_on_in_test_is_not_marked_not_in_test_projects()
+    {
+        string line = Lines(ReferenceMain(Input())).Single(l => l.StartsWith("- **FDG9001** ", StringComparison.Ordinal));
+
+        Assert.DoesNotContain("(not in test projects)", line);
+    }
+
+    [Fact]
+    public void Rule_off_in_every_profile_is_not_marked_library_only()
+    {
+        GeneratorInput input = Edit(Input(), OnRule("FDG9001", m => m with
+        {
+            Severity = new ProfileSeverity(SeverityLevel.None, SeverityLevel.None, SeverityLevel.None),
+        }));
+
+        Assert.DoesNotContain("(library only)", ReferenceMain(input));
+    }
+
+    [Fact]
     public void Coverage_counts_each_chapter_and_lists_non_guideline_content()
     {
         string coverage = CoverageEmitter.Emit(Input());
@@ -344,6 +943,25 @@ public sealed class EmitterTests : IDisposable
         Assert.Contains("Non-guideline content", coverage);
         Assert.Contains("9.1", coverage);
         Assert.Contains("Narrative introduction to the sample chapter.", coverage);
+    }
+
+    [Fact]
+    public void Coverage_lists_other_parts_of_the_book()
+    {
+        string coverage = CoverageEmitter.Emit(Input());
+
+        int nonGuideline = coverage.IndexOf("\n## Non-guideline content\n", StringComparison.Ordinal);
+        int otherParts = coverage.IndexOf("\n## Other parts of the book\n", StringComparison.Ordinal);
+        int preface = coverage.IndexOf(
+            "\n### Preface\n\n- **Guideline Presentation** (rationale): The legend of the strengths.\n",
+            StringComparison.Ordinal);
+        int obsolete = coverage.IndexOf("\n### Obsolete Guidance\n\n- **B.3.8** (obsolete): Superseded by FDG9001.\n" +
+            "- **B.4.1** (obsolete): No current rule replaces it.\n", StringComparison.Ordinal);
+        Assert.True(nonGuideline >= 0, "the non-guideline section is missing");
+        Assert.True(otherParts > nonGuideline, "the other parts must follow the non-guideline content");
+        Assert.True(preface > otherParts, "the preface entries are missing");
+        Assert.True(obsolete > preface, "the appendix B entries must follow the preface, in meta.yaml order");
+        Assert.EndsWith("No current rule replaces it.\n", coverage);
     }
 
     [Fact]
@@ -361,6 +979,61 @@ public sealed class EmitterTests : IDisposable
         Assert.Equal(0, second);
         Assert.Equal(files, Directory.GetFiles(root, "*", SearchOption.AllDirectories));
         Assert.All(files, f => Assert.Equal(times[f], File.GetLastWriteTimeUtc(f)));
+    }
+
+    [Fact]
+    public void Write_removes_stale_reference_files()
+    {
+        string root = TempDir();
+        GeneratedFiles.Write(root, GeneratedFiles.Create(Input()));
+        string skill = Path.Combine(root, "plugins", "framework-design-guidelines", "skills", "fdg-write");
+        string references = Path.Combine(skill, "references");
+        string[] stale = { Path.Combine(references, "old.md"), Path.Combine(references, "examples", "old.md") };
+        string[] kept = { Path.Combine(references, "keep.txt"), Path.Combine(skill, "SKILL.md") };
+        foreach (string path in stale.Concat(kept))
+        {
+            File.WriteAllText(path, "hand-made");
+        }
+
+        // Every generated file already matches the disk, so the count is exactly the two removals.
+        int changes = GeneratedFiles.Write(root, GeneratedFiles.Create(Input()));
+
+        Assert.All(stale, path => Assert.False(File.Exists(path), path));
+        Assert.All(kept, path => Assert.True(File.Exists(path), path));
+        Assert.Equal(2, changes);
+    }
+
+    [Fact]
+    public void Write_reports_the_removed_files_separately()
+    {
+        string root = TempDir();
+        IReadOnlyList<GeneratedFile> files = GeneratedFiles.Create(Input());
+        GeneratedFiles.Write(root, files, out int removedOnFirstWrite);
+        File.WriteAllText(Path.Combine(root, "docs", "rules", "FDG0000.md"), "hand-made");
+
+        int changes = GeneratedFiles.Write(root, files, out int removed);
+
+        Assert.Equal(0, removedOnFirstWrite);
+        Assert.Equal(1, removed);
+        Assert.Equal(1, changes);
+    }
+
+    [Fact]
+    public void Generate_command_reports_written_removed_and_unchanged_counts()
+    {
+        string root = TempDir();
+        string[] args = { "generate", "--rules", _fixtureRules, "--out", root, "--version", "0.1.0" };
+        var first = new StringWriter();
+        GeneratorCli.Run(args, first, new StringWriter());
+        int count = Directory.GetFiles(root, "*", SearchOption.AllDirectories).Length;
+        File.WriteAllText(Path.Combine(root, "docs", "rules", "FDG0000.md"), "hand-made");
+        var second = new StringWriter();
+
+        int exitCode = GeneratorCli.Run(args, second, new StringWriter());
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains($"Generated {count} files under {root}: {count} written, 0 removed, 0 unchanged.", first.ToString());
+        Assert.Contains($"{count} files under {root}: 0 written, 1 removed, {count} unchanged.", second.ToString());
     }
 
     [Fact]

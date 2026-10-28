@@ -23,7 +23,8 @@ public sealed class HookEndToEndTests : IClassFixture<PackageFixture>
         """;
 
     // A private field without the "_" prefix (IDE1006: a rename, never fixed automatically) and a single-line
-    // catch (FDGA003: expanded by the Stop hook's format step).
+    // catch (FDGA003: expanded by the Stop hook's format step). The catch names a specific exception, since a catch of
+    // every exception that swallows it is CA1031.
     private const string ChangedSource =
         """
         namespace Sample
@@ -38,7 +39,7 @@ public sealed class HookEndToEndTests : IClassFixture<PackageFixture>
                     {
                         count++;
                     }
-                    catch { }
+                    catch (System.InvalidOperationException) { }
                 }
             }
         }
@@ -86,7 +87,7 @@ public sealed class HookEndToEndTests : IClassFixture<PackageFixture>
         // The single-line catch was expanded by the format step, so it is not reported.
         Assert.DoesNotContain("FDGA003", reason);
         string formatted = workspace.Read(Path.Combine("Sample", "Sample.cs"));
-        Assert.DoesNotContain("catch { }", formatted);
+        Assert.DoesNotContain("InvalidOperationException) { }", formatted);
 
         // The AI fixes the field; the next Stop in the same turn is silent.
         workspace.Write(Path.Combine("Sample", "Sample.cs"), formatted.Replace("count", "_count"));
@@ -152,7 +153,9 @@ public sealed class HookEndToEndTests : IClassFixture<PackageFixture>
         Assert.True(turnStart.ExitCode == 0 && turnStart.Output.Trim().Length == 0, turnStart.Output);
 
         // The AI changes App, builds it itself, then changes only a method body in Lib.
-        workspace.Write(Path.Combine("App", "App.cs"), ChangedSource.Replace("catch { }", "catch\n            {\n            }"));
+        workspace.Write(Path.Combine("App", "App.cs"), ChangedSource.Replace(
+            "InvalidOperationException) { }",
+            "InvalidOperationException)\n            {\n            }"));
         DotnetResult aiBuild = workspace.Build(app);
         Assert.True(aiBuild.ExitCode == 0, aiBuild.Output);
         workspace.Write(Path.Combine("Lib", "Lib.cs"), LibSource(2));

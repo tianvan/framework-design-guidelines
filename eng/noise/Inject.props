@@ -1,0 +1,9 @@
+<Project>
+
+  <!--
+    Noise measurement: passed as CustomBeforeMicrosoftCommonProps by Measure-Noise.ps1, so the extracted
+    FrameworkDesignGuidelines.Analyzers package takes the place NuGet would give it, without editing the sample.
+  -->
+  <Import Project="$(FdgNoisePackage)/build/FrameworkDesignGuidelines.Analyzers.props" />
+
+</Project>

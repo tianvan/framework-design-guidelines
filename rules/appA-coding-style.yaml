@@ -17,7 +17,7 @@
     kind: sdk
     diagnostics:
       - IDE0055
-    coverage: full
+    coverage: partial
   autofix: yes
   severity:
     library: warning
@@ -28,7 +28,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE0055 keeps blocks that open and close on one line (csharp_preserve_single_line_blocks = true, for FDGA008); FDGA003 reports those of statements and member bodies.
 - id: FDGA002
   strength: DO
   text: align the closing brace with the opening brace.
@@ -87,7 +87,7 @@
     diagnostics:
       - FDGA003
       - IDE0055
-    coverage: full
+    coverage: partial
   autofix: yes
   severity:
     library: warning
@@ -104,7 +104,7 @@
   analyzer:
     message: Place the closing brace on its own line
     category: Layout
-  notes: IDE0055 moves else, catch, and finally, and statements that follow an opening brace, to their own lines. FDGA003 reports the remaining closing braces that share a line, except the end of a do-while statement, single-line accessor lists such as '{ get; set; }' (FDGA008), initializers, and lambda bodies.
+  notes: IDE0055 moves else, catch, and finally, and statements that follow an opening brace, to their own lines. FDGA003 reports the remaining closing braces that share a line, except the end of a do-while statement, single-line accessor lists such as '{ get; set; }' (FDGA008), initializers, and lambda bodies. Type bodies such as 'class Empty { }', anonymous methods, and a do body on one line ('do { M(); } while (c);') are not reported either.
 - id: FDGA004
   strength: AVOID
   text: omitting braces, even if the language allows it.
@@ -130,9 +130,9 @@
   status: verified
   style: true
   check:
-    kind: sdk
+    kind: fdg
     diagnostics:
-      - IDE0011
+      - FDGA004
     coverage: partial
   autofix: yes
   severity:
@@ -143,8 +143,10 @@
     - csharp_prefer_braces = true
   minLanguage: null
   alternative: null
-  analyzer: null
-  notes: 'IDE0011 does not know the argument validation preamble exception (FDGA005). planned-analyzer: braces, exempting argument validation preambles.'
+  analyzer:
+    message: Enclose the embedded statement in braces
+    category: Layout
+  notes: 'FDGA004 reports the embedded statement of if, else, for, foreach, while, do, using, lock and fixed when it is not a block, as IDE0011 does, and exempts argument validation preambles (FDGA005): the run of if...throw statements without else at the start of a method, constructor, accessor, operator, local function or lambda body, up to the first blank line. Like IDE0011, it does not report an else if, a using, lock or fixed statement whose embedded statement is another statement of the same kind, or a statement with a preprocessor directive between its keyword and the end of its embedded statement. IDE0011 is not mapped because it does not know the preamble exception.'
 - id: FDGA005
   strength: CONSIDER
   text: omitting braces in an argument validation preamble.
@@ -187,7 +189,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'IDE0011 (FDGA004) reports and adds braces in argument validation preambles too. The project accepts that conflict: braces everywhere is its readability goal.'
+  notes: FDGA004 does not report the braceless if...throw statements of an argument validation preamble, and its code fix leaves them alone; adding braces to them anyway is allowed.
 - id: FDGA006
   strength: DO NOT
   text: use the braceless variant of the `using` (dispose) statement.
@@ -772,7 +774,7 @@
   analyzer:
     message: Place each argument or parameter of a long list on its own line, starting on the line after the opening parenthesis
     category: Layout
-  notes: A list is long when its line exceeds max_line_length (default 120).
+  notes: "A list is long when its line exceeds max_line_length (default 120). Scope: A parameter or argument list is treated as exceedingly long, because the author chose to wrap it, when a line break falls between its items (at a separator, or before the first item or any later item); it must then be chopped before the first item, indented one level, with one item per line. Line breaks only inside a single item (a lambda body, an initializer, a nested call or a continued expression) do not by themselves make the list wrapped, but a list whose line exceeds the length guide is still covered. A line that is long only because an enclosing conditional, ||, && or ?? expression joins short calls does not make their lists long; the list's own invocation, with the fluent chain it is part of, must exceed the guide (docs/noise-samples.md)."
 - id: FDGA024
   strength: DO
   text: add a blank line before control flow statements.
@@ -1559,7 +1561,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: With C# 14 and later, IDE0032 also reports a property whose accessors have logic around one backing field, such as validation in the setter or a call after the assignment, and its fix turns it into a property that uses the field keyword (probe with SDK 10.0.402 and the default language version of net10.0); that is not an auto-implemented property.
 - id: FDGA047
   strength: DO
   text: restrict code to ASCII characters, and use Unicode escape sequences (`\uXXXX`) when needed for non-ASCII values.
@@ -1611,6 +1613,7 @@
     kind: sdk
     diagnostics:
       - CA1507
+      - IDE0280
     coverage: partial
   autofix: yes
   severity:
@@ -1621,7 +1624,7 @@
   minLanguage: "6"
   alternative: Before C# 6, use a string literal that matches the name exactly.
   analyzer: null
-  notes: CA1507 reports string literals that match a parameter or property name.
+  notes: CA1507 reports string literals that match a parameter or property name. IDE0280 reports parameter names written as string literals in attribute arguments such as [NotNullIfNotNull("value")] (C# 11 and later). dotnet format applies IDE0280's fix only when its severity is set in an .editorconfig (see the phase 2 backlog).
 - id: FDGA049
   strength: DO
   text: apply the `readonly` modifier to fields when possible.
@@ -1762,6 +1765,17 @@
   alternative: null
   analyzer: null
   notes: IDE1006 checks the first letter only.
+  naming:
+    symbols:
+      - namespace
+      - type
+      - typeParameter
+      - method
+      - property
+      - event
+      - visibleField
+    failures:
+      - casing
 - id: FDGA053
   strength: DO
   text: use PascalCasing for const locals and const fields except for interop code, where it should match the name from the called code exactly.
@@ -1811,6 +1825,12 @@
   alternative: null
   analyzer: null
   notes: Interop names such as ERROR_MORE_DATA start with an uppercase letter and pass.
+  naming:
+    symbols:
+      - constField
+      - constLocal
+    failures:
+      - casing
 - id: FDGA054
   strength: DO
   text: use camelCasing for private and internal fields.
@@ -1835,6 +1855,11 @@
   alternative: null
   analyzer: null
   notes: Checked through the naming rules configured by FDGA055. The fix renames private and internal fields only; check reflection or serialization that uses field names.
+  naming:
+    symbols:
+      - privateField
+    failures:
+      - casing
 - id: FDGA055
   strength: DO
   text: use a prefix “_” (underscore) for private and internal instance fields, “s_” for private and internal static fields, and “t_” for private and internal thread-static fields.
@@ -1885,6 +1910,11 @@
   alternative: null
   analyzer: null
   notes: Naming rules cannot select [ThreadStatic] fields, so IDE1006 reports 't_' fields; suppress it there. The fix renames private and internal fields only; check reflection or serialization that uses field names.
+  naming:
+    symbols:
+      - privateField
+    failures:
+      - prefix
 - id: FDGA056
   strength: DO
   text: use camelCasing for local variables.
@@ -1914,6 +1944,11 @@
   alternative: null
   analyzer: null
   notes: null
+  naming:
+    symbols:
+      - local
+    failures:
+      - casing
 - id: FDGA057
   strength: DO
   text: use camelCasing for parameters.
@@ -1943,6 +1978,11 @@
   alternative: null
   analyzer: null
   notes: null
+  naming:
+    symbols:
+      - parameter
+    failures:
+      - casing
 - id: FDGA058
   strength: DO NOT
   text: use Hungarian notation (i.e., do not encode the type of a variable in its name).
@@ -2306,7 +2346,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: null
+  notes: IDE0065's fix can change which type a name binds to when an enclosing namespace declares a type with the same name as an imported one; review the moved directives.
 - id: FDGA071
   strength: DO
   text: sort the using directives alphabetically, but place all System namespaces first.

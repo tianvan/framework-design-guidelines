@@ -69,4 +69,43 @@ public class RuleYamlTests
 
         Assert.Equal(yaml, RuleYaml.Serialize(loaded));
     }
+
+    [Fact]
+    public void Naming_tags_round_trip_and_are_omitted_when_null()
+    {
+        IReadOnlyList<Rule> rules = SampleRules();
+        Assert.DoesNotContain("naming:", RuleYaml.Serialize(rules));
+
+        var tags = new NamingTags(new[] { "privateField", "local" }, new[] { "casing" });
+        Rule tagged = rules[0] with { Mapping = rules[0].Mapping with { Naming = tags } };
+
+        string yaml = RuleYaml.Serialize(new[] { tagged, rules[1] });
+        IReadOnlyList<Rule> loaded = RuleYaml.Deserialize(yaml);
+
+        Assert.Equal(1, yaml.Split("naming:").Length - 1);
+        Assert.Equal(new[] { "privateField", "local" }, loaded[0].Mapping.Naming!.Symbols);
+        Assert.Equal(new[] { "casing" }, loaded[0].Mapping.Naming!.Failures);
+        Assert.Null(loaded[1].Mapping.Naming);
+        Assert.Equal(yaml, RuleYaml.Serialize(loaded));
+    }
+
+    /// <summary>
+    /// Every rule file of the repository is in the form <see cref="RuleYaml.Serialize"/> writes, so a file edited by
+    /// hand or by another tool, such as one that quotes <c>autofix: 'no'</c>, is caught.
+    /// </summary>
+    [Fact]
+    public void Repository_rule_files_are_in_serialized_form()
+    {
+        string rulesDir = Path.Combine(InstalledSdkFixture.RepositoryRoot(), "rules");
+
+        foreach (ChapterMeta chapter in RuleLoader.LoadMeta(rulesDir).Chapters)
+        {
+            string path = Path.Combine(rulesDir, chapter.Rules);
+            string yaml = File.ReadAllText(path).Replace("\r\n", "\n");
+
+            Assert.True(
+                yaml == RuleYaml.Serialize(RuleLoader.LoadRules(path)),
+                $"rules/{chapter.Rules} is not in the form RuleYaml.Serialize writes; load and serialize it once.");
+        }
+    }
 }

@@ -5,11 +5,43 @@ namespace Fdg.Generator.Rules;
 
 /// <summary>
 /// Checks the mapping half of every rule: ids, check kind against diagnostics and coverage, autofix against the
-/// SDK's code fixes, analyzer, style flag, language requirements, and (through <see cref="ConfigValidator"/>) config.
+/// SDK's code fixes, analyzer, style flag, naming tags, language requirements, test profile, and (through <see cref="ConfigValidator"/>) config.
 /// </summary>
 public static class MappingValidator
 {
     private const string AppendixWithStyle = "A";
+    private const string TestProfileNote = "Test profile:";
+    private const string NamingDiagnostic = "IDE1006";
+
+    /// <summary>A rule id cited in a note: FDG, a chapter number or an appendix letter, and three digits.</summary>
+    private static readonly Regex CitedRuleId = new(@"\bFDG[1-9A-Z][0-9]{3}\b", RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// Checks that every rule id cited in a <c>nonGuideline</c> or <c>otherContent</c> note of <c>meta.yaml</c> is the
+    /// id of one of <paramref name="chapters"/>' rules.
+    /// </summary>
+    public static IReadOnlyList<CheckError> ValidateNotes(MetaFile meta, IReadOnlyList<ChapterRules> chapters)
+    {
+        var ids = chapters.SelectMany(c => c.Rules).Select(r => r.Id).ToHashSet(StringComparer.Ordinal);
+        IEnumerable<(string Note, NonGuidelineEntry Entry)> notes = meta.Chapters
+            .SelectMany(c => c.NonGuideline.Select(e => ($"nonGuideline note of chapter {c.Token}", e)))
+            .Concat(meta.OtherContent.SelectMany(p => p.Entries.Select(e => ($"otherContent note of {p.Source}", e))));
+
+        var errors = new List<CheckError>();
+        foreach ((string note, NonGuidelineEntry entry) in notes)
+        {
+            foreach (string id in CitedRuleId.Matches(entry.Note).Select(m => m.Value).Distinct())
+            {
+                if (!ids.Contains(id))
+                {
+                    errors.Add(new CheckError(
+                        "meta.yaml", id, $"the {note}, section {entry.Section}, cites a rule that does not exist."));
+                }
+            }
+        }
+
+        return errors;
+    }
 
     public static IReadOnlyList<CheckError> Validate(
         IReadOnlyList<ChapterRules> chapters,
@@ -45,6 +77,18 @@ public static class MappingValidator
                 }
 
                 ValidateCheck(rule, catalog, Report);
+
+                if (!chapter.Chapter.TestProfileOn && rule.Mapping.Severity.Test != SeverityLevel.None
+                    && rule.Mapping.Notes?.Contains(TestProfileNote, StringComparison.Ordinal) != true)
+                {
+                    Report($"chapter {chapter.Chapter.Token} is off in the test profile; " +
+                        $"set severity.test to none or explain it in notes with \"{TestProfileNote}\".");
+                }
+
+                if (rule.Mapping.Naming is not null && !rule.Mapping.Check.Diagnostics.Contains(NamingDiagnostic))
+                {
+                    Report($"naming tags select among the rules of {NamingDiagnostic}, so check.diagnostics must list it.");
+                }
 
                 if (rule.Mapping.Alternative is not null && rule.Mapping.MinLanguage is null)
                 {
@@ -130,7 +174,7 @@ public static class MappingValidator
             }
         }
 
-        if (check.Kind == CheckKind.Sdk && mapping.Autofix != AutofixKind.No
+        if (check.Kind == CheckKind.Sdk && mapping.Autofix == AutofixKind.Yes
             && known.Count == check.Diagnostics.Count && !known.Any(d => d.HasCodeFix))
         {
             report($"autofix {RuleYaml.EnumText(mapping.Autofix)} needs a code fix, but none of " +

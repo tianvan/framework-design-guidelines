@@ -1,3 +1,4 @@
+using Fdg.Generator.Book;
 using Fdg.Generator.Plugin;
 using Fdg.Generator.Rules;
 using Fdg.Generator.Sdk;
@@ -7,8 +8,10 @@ namespace Fdg.Generator.Commands;
 
 /// <summary>
 /// <c>check [--book &lt;OEBPS dir&gt;]</c>: validates every rule file against the schema and the mapping
-/// conventions, and every referenced CA/IDE diagnostic against the installed SDK. With <c>--book</c> it also
-/// runs <c>verify-source</c>. It also checks that the plugin manifests carry the version of
+/// conventions, every referenced CA/IDE diagnostic against the installed SDK, and every rule id cited in a
+/// <c>meta.yaml</c> note against the rules. With <c>--book</c> it also
+/// runs <c>verify-source</c> and checks that no <c>meta.yaml</c> note copies the book (<see cref="NoteCopyValidator"/>).
+/// It also checks that the plugin manifests carry the version of
 /// <c>Directory.Build.props</c> in the parent of the rules directory.
 /// </summary>
 public static class CheckCommand
@@ -16,6 +19,11 @@ public static class CheckCommand
     private static readonly string[] AllowedOptions = { "book", "rules", "sdk" };
 
     public static int Run(IReadOnlyList<string> args, TextWriter output, TextWriter error)
+    {
+        return ToolErrors.Run("check", error, () => Execute(args, output, error));
+    }
+
+    private static int Execute(IReadOnlyList<string> args, TextWriter output, TextWriter error)
     {
         if (!CommandOptions.TryParse(args, AllowedOptions, out CommandOptions options, out string message)
             || !RulesDirectory.TryResolve(options.Get("rules"), out string rulesDir, out message))
@@ -32,7 +40,7 @@ public static class CheckCommand
         }
         catch (Exception exception) when (exception is InvalidOperationException or IOException)
         {
-            error.WriteLine($"Could not load the SDK's analyzers: {exception.Message}");
+            error.WriteLine($"Could not load the SDK's analyzers: {ToolErrors.OneLine(exception.Message)}");
             return 2;
         }
 
@@ -56,9 +64,41 @@ public static class CheckCommand
         if (bookDir is not null)
         {
             exitCode = Math.Max(exitCode, VerifySourceCommand.Run(new[] { "--book", bookDir, "--rules", rulesDir }, output, error));
+            exitCode = Math.Max(exitCode, CheckNoteCopies(rulesDir, bookDir, output, error));
         }
 
         return exitCode;
+    }
+
+    /// <summary>
+    /// Reports the <c>meta.yaml</c> notes that copy the book (<see cref="NoteCopyValidator"/>). A <c>meta.yaml</c> that
+    /// does not load was already reported by <see cref="Check"/>.
+    /// </summary>
+    private static int CheckNoteCopies(string rulesDir, string bookDir, TextWriter output, TextWriter error)
+    {
+        MetaFile meta;
+        try
+        {
+            meta = RuleLoader.LoadMeta(rulesDir);
+        }
+        catch (Exception exception) when (exception is YamlException or FormatException)
+        {
+            return 1;
+        }
+
+        IReadOnlyList<CheckError> copies = NoteCopyValidator.Validate(meta, bookDir);
+        foreach (CheckError copy in copies)
+        {
+            error.WriteLine(copy);
+        }
+
+        if (copies.Count > 0)
+        {
+            return 1;
+        }
+
+        output.WriteLine($"No meta.yaml note shares {NoteCopyValidator.CopiedRunLength} consecutive words with the book.");
+        return 0;
     }
 
     /// <summary>
@@ -82,17 +122,18 @@ public static class CheckCommand
             profiles = new Dictionary<string, IReadOnlyList<string>>();
         }
 
-        IReadOnlyList<ChapterMeta> metaChapters;
+        MetaFile? meta;
         try
         {
-            metaChapters = RuleLoader.LoadMeta(rulesDir).Chapters;
+            meta = RuleLoader.LoadMeta(rulesDir);
         }
         catch (Exception exception) when (exception is YamlException or FormatException)
         {
             errors.Add(new CheckError("meta.yaml", CheckError.NoRule, exception.Message));
-            metaChapters = Array.Empty<ChapterMeta>();
+            meta = null;
         }
 
+        IReadOnlyList<ChapterMeta> metaChapters = meta?.Chapters ?? Array.Empty<ChapterMeta>();
         var chapters = new List<ChapterRules>();
         foreach (ChapterMeta chapter in metaChapters)
         {
@@ -121,6 +162,13 @@ public static class CheckCommand
         }
 
         errors.AddRange(MappingValidator.Validate(chapters, profiles, catalog));
+
+        // A rule file that failed to load hides its ids, so the notes are only checked when every chapter loaded.
+        if (meta is not null && chapters.Count == metaChapters.Count)
+        {
+            errors.AddRange(MappingValidator.ValidateNotes(meta, chapters));
+        }
+
         errors.AddRange(ManifestVersionValidator.Validate(Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(Path.GetFullPath(rulesDir)))!));
         return errors;
     }

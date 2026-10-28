@@ -467,6 +467,162 @@ public sealed class LongListWrappingTests
     }
 
     [Fact]
+    public Task Lists_on_a_line_made_long_only_by_an_operator_are_not_reported()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            class C
+            {
+                int M(bool isAsync, int value, int token)
+                {
+                    if (IsFirst(value, token) || IsSecond(value, token) && IsThird(value, token))
+                    {
+                        return isAsync ? ReadFirst(value, token) : ReadSecond(value, token);
+                    }
+
+                    return (Find(value, token) ?? Find(token, value) ?? Find(value, value)).Value;
+                }
+
+                static bool IsFirst(int a, int b) => a == b;
+
+                static bool IsSecond(int a, int b) => a != b;
+
+                static bool IsThird(int a, int b) => a > b;
+
+                static int ReadFirst(int a, int b) => a;
+
+                static int ReadSecond(int a, int b) => b;
+
+                static int? Find(int a, int b) => a;
+            }
+            """,
+            extraEditorConfig: "max_line_length = 60\n");
+    }
+
+    [Fact]
+    public Task List_nested_in_an_exempt_call_is_not_reported()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            class C
+            {
+                int M(bool flag, int value, int token)
+                {
+                    return flag ? Outer(Inner(value, token), token) : Other(value);
+                }
+
+                static int Outer(int a, int b) => a;
+
+                static int Inner(int a, int b) => a;
+
+                static int Other(int a) => a;
+            }
+            """,
+            extraEditorConfig: "max_line_length = 60\n");
+    }
+
+    [Fact]
+    public Task Long_invocation_in_an_operator_is_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                int M(bool isAsync, int value, int token)
+                {
+                    return isAsync ? ReadFirst(value, token) : Combine{|FDGA023:(|}value, token, value, token, value, token, value);
+                }
+
+                static int ReadFirst(int a, int b) => a;
+
+                static int Combine(
+                    int a,
+                    int b,
+                    int c,
+                    int d,
+                    int e,
+                    int f,
+                    int g) => a;
+            }
+            """,
+            """
+            class C
+            {
+                int M(bool isAsync, int value, int token)
+                {
+                    return isAsync ? ReadFirst(value, token) : Combine(
+                        value,
+                        token,
+                        value,
+                        token,
+                        value,
+                        token,
+                        value);
+                }
+
+                static int ReadFirst(int a, int b) => a;
+
+                static int Combine(
+                    int a,
+                    int b,
+                    int c,
+                    int d,
+                    int e,
+                    int f,
+                    int g) => a;
+            }
+            """,
+            extraEditorConfig: "max_line_length = 60\n");
+    }
+
+    [Fact]
+    public Task Long_fluent_chain_in_an_operator_is_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class B
+            {
+                public bool Valid { get; }
+
+                public B Add(int first, int second)
+                {
+                    return this;
+                }
+            }
+
+            class C
+            {
+                bool M(bool isReady)
+                {
+                    return isReady && new B().Add{|FDGA023:(|}1111111, 2222222).Add(3333333, 4444444).Valid;
+                }
+            }
+            """,
+            """
+            class B
+            {
+                public bool Valid { get; }
+
+                public B Add(int first, int second)
+                {
+                    return this;
+                }
+            }
+
+            class C
+            {
+                bool M(bool isReady)
+                {
+                    return isReady && new B().Add(
+                        1111111,
+                        2222222).Add(3333333, 4444444).Valid;
+                }
+            }
+            """,
+            extraEditorConfig: "max_line_length = 60\n");
+    }
+
+    [Fact]
     public Task Fluent_chain_next_link_is_chopped_from_its_new_line()
     {
         return Verifier.VerifyAsync(
@@ -789,6 +945,377 @@ public sealed class LongListWrappingTests
                     TimeSpan timeout,
                     object state,
                     string note)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Multi_line_list_not_chopped_before_first_item_is_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M{|FDGA023:(|}int a,
+                    int b)
+                {
+                    Report{|FDGA023:(|}a, b,
+                        3);
+                }
+
+                static void Report(
+                    int a,
+                    int b,
+                    int c)
+                {
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M(
+                    int a,
+                    int b)
+                {
+                    Report(
+                        a,
+                        b,
+                        3);
+                }
+
+                static void Report(
+                    int a,
+                    int b,
+                    int c)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Code_fix_chops_a_manually_wrapped_list()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M()
+                {
+                    var widget = new Widget{|FDGA023:(|}1, // the first
+                                            2,
+                                            3);
+                    Report{|FDGA023:(|}
+                        1, 2,
+                        3);
+                    Report{|FDGA023:(|}
+                        1, 2, 3);
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+
+                sealed class Widget
+                {
+                    public Widget(int a, int b, int c)
+                    {
+                    }
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M()
+                {
+                    var widget = new Widget(
+                        1, // the first
+                        2,
+                        3);
+                    Report(
+                        1,
+                        2,
+                        3);
+                    Report(
+                        1,
+                        2,
+                        3);
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+
+                sealed class Widget
+                {
+                    public Widget(int a, int b, int c)
+                    {
+                    }
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Break_before_the_first_item_with_items_sharing_a_line_is_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M{|FDGA023:(|}
+                    int a, int b)
+                {
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M(
+                    int a,
+                    int b)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Line_breaks_only_inside_one_item_are_not_a_wrap()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            using System;
+
+            class C
+            {
+                void M()
+                {
+                    Run(1, () =>
+                    {
+                        M();
+                    }, 2);
+                    Hold(1, new Holder
+                    {
+                        Count = 1,
+                    }, 2);
+                }
+
+                static void Run(int a, Action b, int c)
+                {
+                }
+
+                static void Hold(int a, Holder b, int c)
+                {
+                }
+
+                sealed class Holder
+                {
+                    public int Count { get; set; }
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Closing_paren_on_its_own_line_is_joined_to_the_last_item()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M()
+                {
+                    Report{|FDGA023:(|}
+                        1,
+                        2,
+                        3
+                    );
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M()
+                {
+                    Report(
+                        1,
+                        2,
+                        3);
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Closing_paren_alone_on_a_line_is_not_a_wrap()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            class C
+            {
+                void M()
+                {
+                    Report(1, 2, 3
+                    );
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Nested_wrapped_lists_are_fixed_by_FixAll()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M()
+                {
+                    Outer{|FDGA023:(|}1,
+                        Inner{|FDGA023:(|}2,
+                            3));
+                }
+
+                static void Outer(int a, int b)
+                {
+                }
+
+                static int Inner(int a, int b)
+                {
+                    return a + b;
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M()
+                {
+                    Outer(
+                        1,
+                        Inner(
+                            2,
+                            3));
+                }
+
+                static void Outer(int a, int b)
+                {
+                }
+
+                static int Inner(int a, int b)
+                {
+                    return a + b;
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Preprocessor_directives_inside_a_wrapped_list_are_kept()
+    {
+        return Verifier.VerifyAsync(
+            """
+            #define FLAG
+
+            class C
+            {
+                void M()
+                {
+                    Report{|FDGA023:(|}1,
+            #if FLAG
+                        2,
+            #endif
+                        3);
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """,
+            """
+            #define FLAG
+
+            class C
+            {
+                void M()
+                {
+                    Report(
+                        1,
+            #if FLAG
+                        2,
+            #endif
+                        3);
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Single_line_list_within_limit_is_not_reported()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            class C
+            {
+                void M(int a, int b)
+                {
+                    Report(a, b, 3);
+                }
+
+                static void Report(int a, int b, int c)
+                {
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Chopped_list_is_not_reported()
+    {
+        return Verifier.VerifyNoDiagnosticsAsync(
+            """
+            class C
+            {
+                void M(
+                    int a,
+                    int b)
+                {
+                    Report(
+                        a,
+                        b, // the second
+                        3);
+                    Report(
+                        a,
+                        b,
+                        3 // the last
+                        );
+                }
+
+                static void Report(int a, int b, int c)
                 {
                 }
             }

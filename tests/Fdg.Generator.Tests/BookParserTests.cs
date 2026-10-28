@@ -1,3 +1,5 @@
+using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
 using Fdg.Generator.Book;
 using Fdg.Generator.Rules;
 
@@ -35,6 +37,51 @@ public class BookParserTests
 
         Assert.Contains("FDG9002", exception.Message);
         Assert.Contains("cross", exception.Message);
+    }
+
+    [Fact]
+    public void Known_icon_mismatches_take_the_strength_word()
+    {
+        BookChapter chapter = BookParser.Parse(Fixture("ch07.xhtml"), "7");
+
+        Assert.Equal(new[] { Strength.Do, Strength.Consider }, chapter.Rules.Select(r => r.Strength));
+        Assert.Equal(2, chapter.IconCount);
+    }
+
+    [Fact]
+    public void Known_icon_mismatches_apply_only_to_their_own_file()
+    {
+        BookFormatException exception = Assert.Throws<BookFormatException>(
+            () => BookParser.Parse(Fixture("ch08.xhtml"), "8"));
+
+        Assert.Contains("FDG8001", exception.Message);
+        Assert.Contains("check", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("<strong>DO</strong> report execution failures by throwing exceptions.", "<strong>DO</strong> report execution failures by returning error codes.", "FDG7001")]
+    [InlineData("<strong>DO</strong> report execution failures", "<strong>CONSIDER</strong> report execution failures", "FDG7001")]
+    [InlineData("<strong>CONSIDER</strong> terminating", "<strong>DO</strong> terminating", "FDG7002")]
+    public void Known_icon_mismatches_need_both_the_strength_and_the_text(string original, string replacement, string id)
+    {
+        // The same file (ch07.xhtml) with either the text or the strength changed is an ordinary mismatch again.
+        string source = File.ReadAllText(Fixture("ch07.xhtml"));
+        Assert.Contains(original, source);
+        string directory = Directory.CreateTempSubdirectory("fdg-book-").FullName;
+        try
+        {
+            string path = Path.Combine(directory, "ch07.xhtml");
+            File.WriteAllText(path, source.Replace(original, replacement));
+
+            BookFormatException exception = Assert.Throws<BookFormatException>(() => BookParser.Parse(path, "7"));
+
+            Assert.Contains(id, exception.Message);
+            Assert.Contains("requires a check icon", exception.Message);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
     }
 
     [Fact]
@@ -182,6 +229,135 @@ public class BookParserTests
             considerMapping.Severity);
     }
 
+    private static BookChapter ParseAppendixD()
+    {
+        return BookParser.Parse(Fixture("appendix-d.xhtml"), "D", testProfileOn: false);
+    }
+
+    [Fact]
+    public void Appendix_d_headings_with_a_verdict_icon_become_rules()
+    {
+        BookChapter chapter = ParseAppendixD();
+
+        Assert.Equal(new[] { "FDGD001", "FDGD002", "FDGD003", "FDGD004" }, chapter.Rules.Select(r => r.Id));
+        Assert.Equal(4, chapter.IconCount);
+        Assert.Equal(
+            new[] { Strength.NotPermitted, Strength.Permitted, Strength.Contextual, Strength.NotPermitted },
+            chapter.Rules.Select(r => r.Strength));
+    }
+
+    [Fact]
+    public void Appendix_d_text_and_section_are_the_heading_without_its_icons()
+    {
+        BookChapter chapter = ParseAppendixD();
+
+        Assert.Equal("Changing the Name of a Thing", chapter.Rules[0].Text);
+        Assert.Equal("D.1.1 Changing the Name of a Thing", chapter.Rules[0].Section);
+        Assert.Equal("secD_1_1", chapter.Rules[0].Anchor);
+        Assert.Equal("Changing a `ref struct` to a (Non-`ref`) `struct`", chapter.Rules[1].Text);
+        Assert.Equal("D.1.2 Changing a ref struct to a (Non-ref) struct", chapter.Rules[1].Section);
+    }
+
+    [Fact]
+    public void Appendix_d_context_lists_the_kinds_of_break_in_legend_order()
+    {
+        BookChapter chapter = ParseAppendixD();
+
+        Assert.Equal("runtime, compilation, recompile and reflection breaks", chapter.Rules[0].Context);
+        Assert.Null(chapter.Rules[1].Context);
+        Assert.Equal("runtime break", chapter.Rules[2].Context);
+        Assert.Equal("compilation and recompile breaks", chapter.Rules[3].Context);
+    }
+
+    [Fact]
+    public void Appendix_d_body_is_the_prose_up_to_the_next_heading()
+    {
+        BookChapter chapter = ParseAppendixD();
+
+        Assert.Equal(
+            new[]
+            {
+                "Renaming breaks callers, for example with a `FileNotFoundException`.",
+                "The team considers this unacceptable.",
+            },
+            chapter.Rules[0].Body.Select(b => b.Text));
+        Assert.Equal(new[] { "Compilation fails." }, chapter.Rules[3].Body.Select(b => b.Text));
+    }
+
+    [Fact]
+    public void Appendix_d_rules_start_as_library_judgment_rules_with_verdict_based_severity()
+    {
+        BookChapter chapter = ParseAppendixD();
+
+        Assert.All(chapter.Rules, r => Assert.False(r.Mapping.Style));
+        Assert.Equal(
+            new ProfileSeverity(SeverityLevel.Warning, SeverityLevel.Warning, SeverityLevel.None),
+            chapter.Rules[0].Mapping.Severity);
+        Assert.Equal(
+            new ProfileSeverity(SeverityLevel.Suggestion, SeverityLevel.Suggestion, SeverityLevel.None),
+            chapter.Rules[1].Mapping.Severity);
+        Assert.Equal(
+            new ProfileSeverity(SeverityLevel.Suggestion, SeverityLevel.Suggestion, SeverityLevel.None),
+            chapter.Rules[2].Mapping.Severity);
+    }
+
+    [Fact]
+    public void Appendix_d_heading_without_a_verdict_icon_is_an_error()
+    {
+        string source = File.ReadAllText(Fixture("appendix-d.xhtml"));
+        string verdict =
+            "(<span class=\"middle\"><img src=\"Images/check.jpg\" alt=\"Images\" width=\"20\" height=\"26\"/></span>)";
+        Assert.Contains(verdict, source);
+        string directory = Directory.CreateTempSubdirectory("fdg-book-").FullName;
+        try
+        {
+            string path = Path.Combine(directory, "app04.xhtml");
+            File.WriteAllText(path, source.Replace(verdict, string.Empty));
+
+            BookFormatException exception = Assert.Throws<BookFormatException>(() => BookParser.Parse(path, "D"));
+
+            Assert.Contains("D.1.2", exception.Message);
+            Assert.Contains("verdict icon", exception.Message);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Appendix_d_heading_without_an_id_is_an_error()
+    {
+        string source = File.ReadAllText(Fixture("appendix-d.xhtml"));
+        string anchor = "<h4 class=\"h4\" id=\"secD_1_2\">";
+        Assert.Contains(anchor, source);
+        string directory = Directory.CreateTempSubdirectory("fdg-book-").FullName;
+        try
+        {
+            string path = Path.Combine(directory, "app04.xhtml");
+            File.WriteAllText(path, source.Replace(anchor, "<h4 class=\"h4\">"));
+
+            BookFormatException exception = Assert.Throws<BookFormatException>(() => BookParser.Parse(path, "D"));
+
+            Assert.Contains("FDGD002", exception.Message);
+            Assert.Contains("has no id or no text", exception.Message);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("PERMITTED", Strength.Permitted)]
+    [InlineData("NOT PERMITTED", Strength.NotPermitted)]
+    [InlineData("CONTEXTUAL", Strength.Contextual)]
+    public void Appendix_d_strengths_round_trip_as_text(string text, Strength strength)
+    {
+        Assert.Equal(strength, StrengthExtensions.Parse(text));
+        Assert.Equal(text, strength.ToText());
+    }
+
     [Fact]
     public void Appendix_a_rules_are_style_conventions()
     {
@@ -189,5 +365,138 @@ public class BookParserTests
 
         Assert.Equal("FDGA001", chapter.Rules[0].Id);
         Assert.All(chapter.Rules, r => Assert.True(r.Mapping.Style));
+    }
+
+    [Fact]
+    public void Inline_emphasis_strong_and_external_links_are_kept_as_markdown()
+    {
+        Rule rule = BookParser.Parse(Fixture("fidelity.xhtml"), "8").Rules[0];
+
+        Assert.Equal("keep *inline* markup.", rule.Text);
+        Assert.Equal(
+            "Use *this* and **that** with `Foo` per [the spec](https://example.com/spec), see section 3.1.<br>Next line.",
+            rule.Body[0].Text);
+    }
+
+    [Fact]
+    public void Internal_links_keep_only_their_text()
+    {
+        Rule rule = BookParser.Parse(Fixture("fidelity.xhtml"), "8").Rules[0];
+
+        Assert.Contains("see section 3.1.", rule.Body[0].Text);
+        Assert.DoesNotContain("fidelity.xhtml", rule.Body[0].Text);
+        Assert.DoesNotContain("[section 3.1]", rule.Body[0].Text);
+    }
+
+    [Fact]
+    public void Sidebar_lists_and_tables_are_rendered_inside_the_annotation()
+    {
+        Rule rule = BookParser.Parse(Fixture("fidelity.xhtml"), "8").Rules[0];
+
+        Block annotation = Assert.Single(rule.Body, b => b.Kind == BlockKind.Annotation);
+        Assert.Equal("Jeremy Barton", annotation.Author);
+        Assert.Equal(
+            "An annotation with structure.\n\n- first\n- second\n\n1. one\n2. two\n\n| A | B |\n| --- | --- |\n| 1 | 2 |",
+            annotation.Text);
+    }
+
+    private static Rule ParseFidelity()
+    {
+        return BookParser.Parse(Fixture("fidelity.xhtml"), "8").Rules[0];
+    }
+
+    [Fact]
+    public void Markers_are_not_added_inside_inline_code()
+    {
+        Assert.StartsWith("Call `GetValue` once.", ParseFidelity().Body[2].Text);
+    }
+
+    [Fact]
+    public void Footnote_references_become_superscripts_in_text_and_are_dropped_from_sections()
+    {
+        Rule rule = ParseFidelity();
+
+        Assert.Equal("Call `GetValue` once.<sup>2</sup> Then stop.", rule.Body[2].Text);
+        Assert.Equal("8.1 Fidelity Section for the Foo Type", rule.Section);
+    }
+
+    [Fact]
+    public void Headings_become_plain_text_sections()
+    {
+        Assert.Equal("8.1 Fidelity Section for the Foo Type", ParseFidelity().Section);
+    }
+
+    [Fact]
+    public void Table_cells_keep_line_breaks_and_emphasis_and_partial_bold_headers()
+    {
+        Block table = ParseFidelity().Body[3];
+
+        Assert.Equal(BlockKind.Table, table.Kind);
+        Assert.Equal(
+            "| **Name** (kind) | Value |\n| --- | --- |\n| line one<br>line two | an *emphasized* cell |",
+            table.Text);
+    }
+
+    [Fact]
+    public void List_items_keep_emphasis_drop_codelinks_and_quote_nested_sidebars()
+    {
+        Block list = ParseFidelity().Body[4];
+
+        Assert.Equal(BlockKind.List, list.Kind);
+        Assert.Equal(
+            "- an *emphasized* item\n" +
+            "- an item with code\n" +
+            "  ```\n" +
+            "  int x = 1;\n" +
+            "  ```\n" +
+            "- an item with a note\n" +
+            "  > **Brad Abrams**\n" +
+            "  >\n" +
+            "  > A nested *note*.",
+            list.Text);
+    }
+
+    [Fact]
+    public void Code_in_a_list_item_is_fenced_at_the_content_column_of_the_item()
+    {
+        IElement list = new HtmlParser().ParseDocument(
+            "<ol><li><p>outer</p><ul><li><p>inner</p><pre>int a;\n\nint b;</pre></li></ul><pre>int c;</pre></li></ol>")
+            .QuerySelector("ol")!;
+
+        Assert.Equal(
+            "1. outer\n" +
+            "   - inner\n" +
+            "     ```\n" +
+            "     int a;\n" +
+            "\n" +
+            "     int b;\n" +
+            "     ```\n" +
+            "   ```\n" +
+            "   int c;\n" +
+            "   ```",
+            BlockRenderer.List(list).Text);
+    }
+
+    [Fact]
+    public void List_item_children_keep_document_order()
+    {
+        IElement list = new HtmlParser().ParseDocument(
+            "<ul><li><p>head</p><p class=\"codelink1\"><a href=\"x.xhtml#p\">Click here to view code image</a></p>" +
+            "<pre>int x;</pre><p>after the code</p><ul><li><p>nested</p></li></ul><p>after the list</p></li>" +
+            "<li><p>next</p></li></ul>")
+            .QuerySelector("ul")!;
+
+        Assert.Equal(
+            "- head\n" +
+            "  ```\n" +
+            "  int x;\n" +
+            "  ```\n" +
+            "\n" +
+            "  after the code\n" +
+            "  - nested\n" +
+            "\n" +
+            "  after the list\n" +
+            "- next",
+            BlockRenderer.List(list).Text);
     }
 }

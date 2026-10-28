@@ -3,7 +3,10 @@ using Fdg.Generator.Rules;
 
 namespace Fdg.Generator.Emit;
 
-/// <summary>Writes <c>docs/coverage.md</c>: rule counts per chapter and where the book's non-guideline text went.</summary>
+/// <summary>
+/// Writes <c>docs/coverage.md</c>: rule counts per chapter, where the book's non-guideline text went, and the parts
+/// of the book without rules.
+/// </summary>
 public static class CoverageEmitter
 {
     public static string Emit(GeneratorInput input)
@@ -18,7 +21,7 @@ public static class CoverageEmitter
         text.Append("| --- | ---: | ---: | ---: | ---: | ---: | ---: |\n");
         foreach (RuleFile file in input.Files)
         {
-            text.Append(Row($"{file.Chapter} {file.Title}", file.Rules)).Append('\n');
+            text.Append(Row($"{file.Chapter} {RuleText.EscapeLiterals(file.Title)}", file.Rules)).Append('\n');
         }
 
         text.Append(Row("Total", input.Rules.ToList())).Append('\n');
@@ -28,20 +31,34 @@ public static class CoverageEmitter
         text.Append("kept as background, or dropped as obsolete.\n");
         foreach (RuleFile file in input.Files)
         {
-            text.Append($"\n### {RuleText.ChapterLabel(file.Chapter)}: {file.Title}\n\n");
+            text.Append($"\n### {RuleText.ChapterLabel(file.Chapter)}: {RuleText.EscapeLiterals(file.Title)}\n\n");
             if (file.NonGuideline.Count == 0)
             {
                 text.Append("Nothing recorded yet.\n");
                 continue;
             }
 
-            foreach (NonGuidelineEntry entry in file.NonGuideline)
-            {
-                text.Append($"- **{entry.Section}** ({RuleYaml.EnumText(entry.Disposition)}): {entry.Note}\n");
-            }
+            AppendEntries(text, file.NonGuideline);
+        }
+
+        text.Append("\n## Other parts of the book\n\n");
+        text.Append("The parts of the book outside the chapters and appendices above, which carry no rules, ");
+        text.Append("and where their text went.\n");
+        foreach (OtherContent part in input.Meta.OtherContent)
+        {
+            text.Append($"\n### {RuleText.EscapeLiterals(part.Title)}\n\n");
+            AppendEntries(text, part.Entries);
         }
 
         return text.ToString();
+    }
+
+    private static void AppendEntries(StringBuilder text, IEnumerable<NonGuidelineEntry> entries)
+    {
+        foreach (NonGuidelineEntry entry in entries)
+        {
+            text.Append($"- **{entry.Section}** ({RuleYaml.EnumText(entry.Disposition)}): {RuleText.EscapeLiterals(entry.Note)}\n");
+        }
     }
 
     private static string Row(string label, IReadOnlyCollection<Rule> rules)

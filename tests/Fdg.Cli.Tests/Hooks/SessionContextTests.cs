@@ -59,10 +59,30 @@ public sealed class SessionContextTests : IDisposable
         Assert.Equal(
             "This repository follows Framework Design Guidelines (3rd ed.).\n" +
             "- Profiles: src/** = application, tests/** = test. C# 7.3; targets net472, netstandard2.0. Do not use newer syntax or APIs.\n" +
-            "- Write in .NET BCL style: Allman braces, one statement per line, parameter/argument lists that exceed the line limit chopped before the first item, one per line.\n" +
+            "- Write in .NET BCL style: Allman braces, one statement per line, parameter/argument lists that are wrapped or exceed the line limit chopped before the first item, one per line.\n" +
             "- Layout and machine-checkable rules are auto-fixed and checked at the end of each turn; only fix the FDG/CA/IDE issues reported to you.\n" +
-            "- Before designing or changing types, members, or public APIs, use the fdg-write skill; use fdg-review to review an API.",
+            "- Before designing or changing types, members, exception handling or common patterns, read the " +
+            "fdg-write skill. Use fdg-review to review an API.",
             Build());
+    }
+
+    /// <summary>
+    /// The context names the design work fdg-write covers, the whole book rather than names alone, so the AI reads
+    /// the skill before it writes types, members, exception handling or one of the book's patterns.
+    /// </summary>
+    [Fact]
+    public void Context_points_to_fdg_write_before_design_work()
+    {
+        Project("src/A/A.csproj", "library", "12.0", "net8.0");
+
+        string context = Build()!;
+
+        Assert.Contains(
+            "Before designing or changing types, members, exception handling or common patterns, read the fdg-write " +
+            "skill.",
+            context);
+        Assert.DoesNotContain("or public APIs, use the fdg-write skill", context);
+        Assert.Contains("Use fdg-review to review an API.", context);
     }
 
     [Fact]
@@ -296,8 +316,6 @@ public sealed class SessionContextTests : IDisposable
         Assert.Equal(
             ["FDG setup issue: .NET SDK 7.0.410 is older than 8.0.100. Run /fdg-setup to fix."],
             Issues(Build()!));
-        _sdkVersion = "9.0.100-rc.1.24452.12";
-        Assert.Empty(Issues(Build()!));
 
         var failing = new FakeProcessRunner().Respond(
             args => args is ["--version"],
@@ -305,6 +323,53 @@ public sealed class SessionContextTests : IDisposable
         Assert.Equal(
             ["FDG setup issue: dotnet --version failed here; FDG needs .NET SDK 8.0.100 or later. Run /fdg-setup to fix."],
             Issues(new SessionContext(failing).Build(_repo.Root)!));
+    }
+
+    [Theory]
+    [InlineData("8.0.100")]
+    [InlineData("9.0.300")]
+    public void Sdk_below_10_0_100_notes_missing_rules(string version)
+    {
+        Project("src/A/A.csproj", "application");
+        _sdkVersion = version;
+
+        Assert.Equal(
+            [$"FDG setup issue: .NET SDK {version} is older than 10.0.100: some rules need SDK 10.0.100 or later."],
+            Issues(Build()!));
+    }
+
+    [Theory]
+    [InlineData("10.0.100")]
+    [InlineData("10.0.100-rc.2")]
+    [InlineData("10.0.402")]
+    public void Sdk_10_0_100_or_later_has_no_note(string version)
+    {
+        Project("src/A/A.csproj", "application");
+        _sdkVersion = version;
+
+        Assert.Empty(Issues(Build()!));
+    }
+
+    [Fact]
+    public void Sdk_below_8_0_100_reports_only_the_minimum()
+    {
+        Project("src/A/A.csproj", "application");
+        _sdkVersion = "7.0.410";
+
+        Assert.Equal(
+            ["FDG setup issue: .NET SDK 7.0.410 is older than 8.0.100. Run /fdg-setup to fix."],
+            Issues(Build()!));
+    }
+
+    [Fact]
+    public void Prerelease_sdk_is_compared_by_its_numeric_part()
+    {
+        Project("src/A/A.csproj", "application");
+        _sdkVersion = "9.0.100-rc.1.24452.12";
+
+        Assert.Equal(
+            ["FDG setup issue: .NET SDK 9.0.100-rc.1.24452.12 is older than 10.0.100: some rules need SDK 10.0.100 or later."],
+            Issues(Build()!));
     }
 
     [Fact]

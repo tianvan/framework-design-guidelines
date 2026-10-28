@@ -18,7 +18,7 @@ This is a coding style convention. The book treats the appendix A conventions as
 
 Message: Place each argument or parameter of a long list on its own line, starting on the line after the opening parenthesis
 
-A list is long when its line exceeds max_line_length (default 120).
+A list is long when its line exceeds max_line_length (default 120). Scope: A parameter or argument list is treated as exceedingly long, because the author chose to wrap it, when a line break falls between its items (at a separator, or before the first item or any later item); it must then be chopped before the first item, indented one level, with one item per line. Line breaks only inside a single item (a lambda body, an initializer, a nested call or a continued expression) do not by themselves make the list wrapped, but a list whose line exceeds the length guide is still covered. A line that is long only because an enclosing conditional, ||, && or ?? expression joins short calls does not make their lists long; the list's own invocation, with the fluent chain it is part of, must exceed the guide (docs/noise-samples.md).
 
 ## From the book
 

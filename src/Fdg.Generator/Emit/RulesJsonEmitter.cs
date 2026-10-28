@@ -26,6 +26,7 @@ public static class RulesJsonEmitter
             ["rules"] = new JsonArray(input.Rules.Select(RuleEntry).ToArray<JsonNode?>()),
             ["registeredDiagnostics"] = Strings(DiagnosticMap.Registered(input.Rules)),
             ["breakingFixDiagnostics"] = Strings(DiagnosticMap.BreakingFix(input.Rules)),
+            ["fixDiagnostics"] = Strings(DiagnosticMap.Fix(input.Rules)),
         };
 
         return json.ToJsonString(Options) + "\n";
@@ -48,6 +49,13 @@ public static class RulesJsonEmitter
                 ["application"] = RuleText.Level(mapping.Severity.Application),
                 ["test"] = RuleText.Level(mapping.Severity.Test),
             },
+            ["naming"] = mapping.Naming is null
+                ? null
+                : new JsonObject
+                {
+                    ["symbols"] = Strings(mapping.Naming.Symbols),
+                    ["failures"] = Strings(mapping.Naming.Failures),
+                },
         };
     }
 

@@ -7,4 +7,7 @@ public sealed record RuleFile(string Chapter, string Title, string SourceFile, I
     public string RulesFile { get; init; } = string.Empty;
 
     public IReadOnlyList<NonGuidelineEntry> NonGuideline { get; init; } = Array.Empty<NonGuidelineEntry>();
+
+    /// <summary>The chapter's skill reference splits from <c>meta.yaml</c>; empty when it has one pair of files.</summary>
+    public IReadOnlyList<ReferenceSplit> References { get; init; } = Array.Empty<ReferenceSplit>();
 }

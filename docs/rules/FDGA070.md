@@ -16,6 +16,8 @@ This is a coding style convention. The book treats the appendix A conventions as
 - Severity: library warning, application warning, test warning
 - Status: verified
 
+IDE0065's fix can change which type a name binds to when an enclosing namespace declares a type with the same name as an imported one; review the moved directives.
+
 ## Options
 
 ```ini

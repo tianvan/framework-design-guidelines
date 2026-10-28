@@ -1,0 +1,743 @@
+- id: FDG6001
+  strength: CONSIDER
+  text: using unsealed classes with no added virtual or protected members as a great way to provide inexpensive yet much appreciated extensibility to a framework.
+  context: null
+  section: 6.1.1 Unsealed Classes
+  anchor: sec6_1_1
+  body:
+    - kind: paragraph
+      text: Developers often want to inherit from unsealed classes so as to add convenience members such as custom constructors, new methods, or method overloads.<sup>1</sup> For example, `System.Messaging.MessageQueue` is unsealed and thus allows users to create custom queues that default to a particular queue path or to add custom methods that simplify the API for specific scenarios. In the following example, the scenario is for a method sending `Order` objects to the queue.
+    - kind: paragraph
+      text: 1. Some convenience methods can be added to sealed types as extension methods.
+    - kind: code
+      text: |-
+        public class OrdersQueue : MessageQueue {
+          public OrdersQueue() : base(OrdersQueue.Path){
+            this.Formatter = new BinaryMessageFormatter();
+          }
+
+          public void SendOrder(Order order){
+            Send(order,order.Id);
+          }
+        }
+    - kind: annotation
+      text: |-
+        Because test-driven development has caught fire in the .NET developer community, many developers want to inherit from unsealed classes (often dynamically using a mock framework) in order to substitute a test double in the place of the real implementation.
+
+        At the very least, if you’ve gone to the trouble of making your class unsealed, consider making key members virtual, perhaps via the Template Method Pattern, to provide more control.
+      author: Phil Haack
+    - kind: paragraph
+      text: Classes are unsealed by default in most programming languages, and this is also the recommended default for most classes in frameworks. The extensibility afforded by unsealed types is much appreciated by framework users and quite inexpensive to provide because of the relatively low test costs associated with unsealed types.
+    - kind: annotation
+      text: The key word in this advice is “CONSIDER.” Keep in mind that you always have the option of unsealing a class in the future (it is not a breaking change); however, once unsealed, a class must remain unsealed. Also, unsealing does inhibit some optimizations [e.g., converting virtual calls to more efficient nonvirtual calls (and then inlining)]. Finally, unsealing helps your users only if they control the creation of the class (sometimes true, sometimes not). In short, designs are only rarely usefully extensible “by accident.” Being unsealed is part of the contract of a class and its users, and like everything about the contract, it deserves to be a conscious, deliberate choice on the part of the designer.
+      author: Vance Morrison
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the extensibility is for users of the framework who inherit from the class. Not an analyzer candidate: a design option, which the Morrison annotation calls a deliberate choice of the designer; FDG6020 is the rule against sealing without a reason.'
+- id: FDG6002
+  strength: CONSIDER
+  text: using protected members for advanced customization.
+  context: null
+  section: 6.1.2 Protected Members
+  anchor: sec6_1_2
+  body:
+    - kind: paragraph
+      text: Protected members are a great way to provide advanced customization without complicating the public interface.
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the customization is for users who derive from the class outside the library. Not an analyzer candidate: a design option.'
+- id: FDG6003
+  strength: DO
+  text: treat protected members in unsealed classes as public for the purpose of security, documentation, and compatibility analysis.
+  context: null
+  section: 6.1.2 Protected Members
+  anchor: sec6_1_2
+  body:
+    - kind: paragraph
+      text: Anyone can inherit from a class and access the protected members.
+    - kind: annotation
+      text: Protected members are just as much a part of your publicly callable interface as public members. In designing the framework, we considered protected and public to be roughly equivalent. We generally did the same level of review and error checking in protected APIs as we did in public APIs because they can be called from any code that just happens to subclass.
+      author: Brad Abrams
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: any subclass outside the library can call the protected members of an unsealed class, as the body and the Abrams annotation say. Not machine-checkable: security, documentation and compatibility analysis are review practices.'
+- id: FDG6004
+  strength: CONSIDER
+  text: using callbacks to allow users to provide custom code to be executed by the framework.
+  context: null
+  section: 6.1.3 Events and Callbacks
+  anchor: sec6_1_3
+  body: []
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: callbacks let the users of a framework run their own code in it. Not an analyzer candidate: a design option.'
+- id: FDG6005
+  strength: CONSIDER
+  text: using events, instead of virtual members, to allow users to customize the behavior of a framework without the need for understanding object-oriented design.
+  context: null
+  section: 6.1.3 Events and Callbacks
+  anchor: sec6_1_3
+  body: []
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the rule is about how users customize a framework. Not an analyzer candidate: whether an event can replace a virtual member is a design choice.'
+- id: FDG6006
+  strength: CONSIDER
+  text: using events instead of plain callbacks, because events are more familiar to a broader range of developers and are integrated with Visual Studio statement completion.
+  context: null
+  section: 6.1.3 Events and Callbacks
+  anchor: sec6_1_3
+  body: []
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the reasons are what the users of a framework know (events) and their tools (statement completion). Not an analyzer candidate: whether a callback should be an event is a design choice.'
+- id: FDG6007
+  strength: AVOID
+  text: using callbacks in performance-sensitive APIs.
+  context: null
+  section: 6.1.3 Events and Callbacks
+  anchor: sec6_1_3
+  body:
+    - kind: annotation
+      text: Delegate calls were made much faster in CLR 2.0, but they are still about two times slower than direct calls to virtual members. In addition, delegate-based APIs are generally less efficient in terms of memory usage. Having said that, the differences are relatively small and should only matter if the API is called very frequently.
+      author: Krzysztof Cwalina
+    - kind: annotation
+      text: In a performance-critical method, you want to think about all forms of extensibility and what kind of impact they may have on throughput. This goes beyond delegates. In fact, in some situations it may actually be better for your common case to use delegates instead of virtual methods. For example, consider a design where you want a default behavior that can then be potentially replaced if a delegate is provided. If you made the functionality virtual, you’d be paying for the virtual dispatch (unless the JIT could devirtualize the call) regardless of whether a replacement was provided. But with a delegate, you could have a nonvirtual, inlineable implementation that just does a null check on the delegate instance and only pays the delegate invocation costs if there is something else to do instead of the default behavior.
+      author: Stephen Toub
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not an analyzer candidate: which APIs are performance-sensitive is intent, and the Toub annotation says that a delegate can cost less than a virtual member when it only replaces a default behavior.'
+- id: FDG6008
+  strength: DO
+  text: use the `Func<...>`, `Action<...>`, or `Expression<...>` types instead of custom delegates when possible, when defining APIs with callbacks.
+  context: null
+  section: 6.1.3 Events and Callbacks
+  anchor: sec6_1_3
+  body:
+    - kind: paragraph
+      text: '`Func<...>` and `Action<...>` represent generic delegates. The following is how .NET defines them:'
+    - kind: code
+      text: |-
+        public delegate void Action()
+        public delegate void Action<T1, T2>(T1 arg1, T2 arg2)
+        public delegate void Action<T1, T2, T3>(T1 arg1, T2 arg2, T3 arg3)
+        public delegate void Action<T1, T2, T3, T4>(T1 arg1, T2 arg2,
+         T3 arg3, T4 arg4)
+        public delegate TResult Func<TResult>()
+        public delegate TResult Func<T, TResult>(T arg)
+        public delegate TResult Func<T1, T2, TResult>(T1 arg1, T2 arg2)
+        public delegate TResult Func<T1, T2, T3, TResult>(T1 arg1, T2 arg2,
+         T3 arg3)
+        public delegate TResult Func<T1, T2, T3, T4, TResult>(T1 arg1, T2 arg2,
+         T3 arg3, T4 arg4)
+    - kind: paragraph
+      text: 'They can be used as follows:'
+    - kind: code
+      text: |-
+        Func<int,int,double> divide = (x,y)=>(double)x/(double)y;
+        Action<double> write = (d)=>Console.WriteLine(d);
+        write(divide(2,3));
+    - kind: paragraph
+      text: '`Expression<...>` represents function definitions that can be compiled and subsequently invoked at runtime but can also be serialized and passed to remote processes. Continuing with our example:'
+    - kind: code
+      text: |-
+        Expression<Func<int,int,double>> expression =
+         (x,y)=>(double)x/(double)y;
+        Func<int,int,double> divide2 = expression.Compile();
+        write(divide2(2,3));
+    - kind: paragraph
+      text: Notice how the syntax for constructing an `Expression<>` object is very similar to that used to construct a `Func<>` object. In fact, the only difference is the static type declaration of the variable (`Expression<>` instead of `Func<...>`).
+    - kind: annotation
+      text: In general, if these generic delegate types *can* be used, they *should* be used. However, there are some relatively rare situations where these generic delegates can’t be used. One such category is when the types being passed as arguments or return values can’t be used as generic type parameters, such as pointer types or `ref struct` types. Another category is when arguments or return values need to be passed as something other than by value—for example, when you want an argument to be `ref`. In such situations, you will need to find an existing delegate (generic or otherwise) that’s been declared with an appropriate signature, or else define a new one.
+      author: Stephen Toub
+    - kind: annotation
+      text: The `Action` and `Func` delegates do not allow naming arguments. That makes it impractical to use these delegates for callbacks with more complex signatures where the meaning of the arguments is not obvious and it is important to name the arguments for clarity. For example, the `System.Runtime.InteropServices.DllImportResolver` delegate violates this rule for this reason.
+      author: Jan Kotas
+    - kind: annotation
+      text: Most times you’re going to want `Func` or `Action` if all that needs to happen is to run some code. You need `Expression` when the code needs to be analyzed, serialized, or optimized before it is run. `Expression` is for thinking about code; `Func`/`Action` is for running it.
+      author: Rico Mariani
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: "Analyzer candidate rejected: an externally visible delegate type whose signature fits Func or Action can be found, and the exceptions of the Toub annotation (pointer and ref struct types, arguments passed other than by value) can be read from symbols, but the Kotas annotation accepts a custom delegate whose arguments need names for clarity, which is a matter of meaning, so no report could be judged a violation from the code. Delegates of events are FDG5057's (CA1003)."
+- id: FDG6009
+  strength: DO
+  text: measure and understand the performance implications of using `Expression<...>`, instead of using `Func<...>` and `Action<...>` delegates.
+  context: null
+  section: 6.1.3 Events and Callbacks
+  anchor: sec6_1_3
+  body:
+    - kind: paragraph
+      text: '`Expression<...>` types are, in most cases, logically equivalent to `Func<...>` and `Action<...>` delegates. The main difference between them is that the delegates are intended to be used in local process scenarios; expressions are intended for cases where it’s beneficial and possible to evaluate the expression in a remote process or machine.'
+    - kind: annotation
+      text: |-
+        The remoteness of the evaluation is sort of incidental. The main thing about `Expressions` is that you use them when you are going to need to reason over the code to be executed, often over a composition of expressions such as in a LINQ query, and then, having considered the whole and the execution options, you create some kind of optimized plan for doing the work. This is how LINQ to SQL is able to create a single SQL fragment from a composition of loose-looking expressions.
+
+        This plan could easily go wrong. You could do too much analysis of expressions or too little. You could use up too much space holding expression trees, or you could avoid all the trees but then find you have bad performance because you have so many small anonymous delegates.
+
+        If you look at the patterns used in the LINQ implementations in .NET, you’ll see several good ways to make use of these constructs:
+
+        - Use expressions only if you need to “think” about the code and not just run it.
+        - Don’t blindly compose and run code that could be meaningfully optimized if you “thought” about it before running it.
+        - Don’t create systems that optimize the code so much before running it that it would have been faster to just run it directly without optimizing.
+        - Optimization isn’t the only use for expression trees, but it is an important one.
+      author: Rico Mariani
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: measuring performance is a practice, not a property of the code.'
+- id: FDG6010
+  strength: DO
+  text: understand that by calling a delegate, you are executing arbitrary code, and that could have security, correctness, and compatibility repercussions.
+  context: null
+  section: 6.1.3 Events and Callbacks
+  anchor: sec6_1_3
+  body:
+    - kind: annotation
+      text: |-
+        The Windows Forms team bumped up against this issue when writing some of the low-level code in `SystemEvents`. `SystemEvents` defines a static API and therefore needs to be threadsafe. Internally, it uses locks to ensure thread safety. Early code in `SystemEvents` would grab a lock and then raise an event. Here’s an example:
+
+        ```
+        lock(someInternalLock) {
+          if(eventHandler!=null) eventHandler(sender, EventArgs.Empty);
+        }
+        ```
+
+        This is bad because you have no idea what the user code in the event handler is going to do. If the user code signals a thread and waits on its own lock, you might have just introduced a deadlock. This would be better code:
+
+        ```
+        EventHandler localHandler = eventHandler;
+        if(localHandler != null) localHandler(sender, EventArgs.Empty);
+        ```
+
+        This way, the user’s code will never deadlock due to your own internal implementation. Note that because assignments in managed code are atomic, I didn’t need a lock at all in this case. That won’t always be true. For example, if your code needed to check more than one variable, you’d still need a lock:
+
+        ```
+        EventHandler localHandler = null;
+        lock(someInternalLock) {
+          if (eventHandler != null && shouldRaiseEvents) {
+              localHandler = eventHandler;
+           }
+        }
+        if(localHandler!=null) localHandler(sender,EventArgs.Empty);
+        ```
+      author: Brian Pepin
+    - kind: annotation
+      text: |-
+        The null-conditional operator introduced in C# 6 can simplify the event invocation.
+
+        ```
+        eventHandler?.Invoke(sender, EventArgs.Empty);
+        ```
+
+        This has the same effect as Brian’s second example (invoking outside the lock), including only ever reading from the “eventHandler” value once:
+
+        ```
+        EventHandler localHandler = eventHandler;
+        if(localHandler != null) localHandler(sender, EventArgs.Empty)
+        ```
+      author: Jeremy Barton
+    - kind: annotation
+      text: |-
+        In addition to deadlock, invoking a callback under a lock like this can cause reentrancy. Locks on the CLR support recursive acquires, so if the callback somehow manages to call back into the same object that initiated the callback, the results are often not good. Locks are typically used to isolate invariants that are temporarily broken, yet this practice can expose them at the reentrant boundary. Needless to say, this is apt to cause weird exceptions and unexpected behavior.
+
+        That said, sometimes this practice is necessary. If the callback is being used to make a decision—as would be the case with a predicate—and that decision needs to be made under a lock, you will have no choice. When invoking a callback under a lock is unavoidable, be sure to carefully document the restrictions (no inter-thread communication, no reentrancy). You must also ensure that, should a developer violate these restrictions, the result will not lead to security vulnerabilities. The risk here is usually greater than the reward.
+      author: Joe Duffy
+    - kind: annotation
+      text: |-
+        From an API design perspective, this whole discussion is really interesting as it applies to compatibility. You may find yourself in a situation where you’ve invoked a user-supplied callback while holding a lock, and you decide to “fix” it by employing approaches like that outlined. In doing so, however, you’re impacting potentially visible behaviors. The invocation will no longer be synchronized with whatever else might be using the same lock. It’s possible the user’s callback was actually relying on that synchronization for safety, whether they knew it or not.
+
+        Extensibility is hard.
+      author: Stephen Toub
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not an analyzer candidate: the rule asks for an analysis of each callback. The case of the Pepin annotation, a delegate invoked under a lock, can be found in code, but the Duffy annotation says that it is sometimes unavoidable (a predicate that must run under the lock), so a report could not tell a violation from that case. Not library only: deadlocks and reentrancy (the Pepin and Duffy annotations) affect any code that invokes a delegate it does not control.'
+- id: FDG6011
+  strength: DO NOT
+  text: make members virtual unless you have a good reason to do so and you are aware of all the costs related to designing, testing, and maintaining virtual members.
+  context: null
+  section: 6.1.4 Virtual Members
+  anchor: sec6_1_4
+  body:
+    - kind: paragraph
+      text: Virtual members are less forgiving in terms of changes that can be made to them without breaking compatibility. Also, they are slower than nonvirtual members, mostly because calls to virtual members are not inlined.
+    - kind: annotation
+      text: Be sure you understand your extensibility requirements completely before you make decisions in the name of extensibility. A common mistake is sprinkling classes with virtual methods and properties, only to find that the needed extensibility still can’t be realized and everything is now (and forever) slower.
+      author: Rico Mariani
+    - kind: annotation
+      text: 'The peril: If you ship types with virtual members, you are promising to forever abide by subtle and complex observable behaviors and subclass interactions. I think framework designers underestimate their peril. For example, we found that `ArrayList` item enumeration calls several virtual methods for each `MoveNext` and `Current`. Fixing those performance problems could (but probably doesn’t) break user-defined implementations of virtual members on the `ArrayList` class that are dependent on virtual method call order and frequency.'
+      author: Jan Gray
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: "Not library only: the body's cost that virtual members are slower because calls to them are not inlined (and the Mariani annotation), and the cost of designing and testing members that can be overridden in unpredictable ways, apply to virtual members in any code, as for FDG5004 and FDG6007. Not an analyzer candidate: whether there is a good reason is a matter of intent. FDG6013 reports public virtual members, and FDG5004 virtual shorter overloads."
+- id: FDG6012
+  strength: CONSIDER
+  text: limiting extensibility to only what is absolutely necessary through the use of the Template Method Pattern, described in section 9.9.
+  context: null
+  section: 6.1.4 Virtual Members
+  anchor: sec6_1_4
+  body: []
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the pattern limits the extensibility that a class offers to subclasses outside the library. Not an analyzer candidate: a design option; section 9.9 describes the pattern, and FDG6013 reports the public virtual members that it replaces with protected virtual ones.'
+- id: FDG6013
+  strength: DO
+  text: prefer protected accessibility over public accessibility for virtual members. Public members should provide extensibility (if required) by calling into a protected virtual member.
+  context: null
+  section: 6.1.4 Virtual Members
+  anchor: sec6_1_4
+  body:
+    - kind: paragraph
+      text: The public members of a class should provide the right set of functionality for direct consumers of that class. Virtual members are designed to be overridden in subclasses, and protected accessibility is a great way to scope all virtual extensibility points to where they can be used.
+    - kind: code
+      text: |-
+        public Control{
+          public void SetBounds(...){
+            ...
+            SetBoundsCore (...);
+          }
+
+          protected virtual void SetBoundsCore(...){
+            // Do the real work here.
+          }
+        }
+    - kind: paragraph
+      text: Section 9.9 provides more insight into this subject.
+    - kind: annotation
+      text: It is common for a type to define multiple overloaded methods for caller convenience. These methods typically allow the caller to pass fewer arguments to the method and then, internally, the method calls a more complex method, passing additional arguments with good default values. If your type offers convenience methods, these methods should not be virtual, but internally they should call the one virtual method that contains the actual implementation of the method (which can be overridden).
+      author: Jeffrey Richter
+  status: verified
+  style: false
+  check:
+    kind: fdg
+    diagnostics:
+      - FDG6013
+    coverage: full
+  autofix: breaking
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer:
+    message: Make the virtual member '{0}' protected and call it from a nonvirtual public member
+    category: Extensibility
+  notes: "Library only: the body separates the public members, for direct consumers of the class, from the protected virtual members, for subclasses outside the library. FDG6013 reports a virtual or abstract method, property, indexer or event declared public in an externally visible class; abstract members count because they are virtual, and the Template Method of section 9.9 has a public member call a protected abstract one as well. Overrides are not reported, since their accessibility comes from the overridden member, nor members that the compiler declares, nor a record's Equals(T), which C# requires to be public and virtual in an unsealed record. Whether a public member calls a protected virtual one is not checked. A virtual shorter overload is reported by FDG5004 too (the Richter annotation). CA1070 (virtual field-like events) is not mapped: its reason is how the compiler implements such events, not accessibility. Making a public member protected or nonvirtual changes the public API, so the fix is breaking; there is no code fix."
+- id: FDG6014
+  strength: DO NOT
+  text: provide abstractions unless they are tested by developing several concrete implementations and APIs consuming the abstractions.
+  context: null
+  section: 6.1.5 Abstractions (Abstract Types and Interfaces)
+  anchor: sec6_1_5
+  body: []
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not an analyzer candidate: the implementations and consuming APIs that test an abstraction can ship in other assemblies or in tests, which one compilation cannot see. Not library only, like FDG4015, FDG4023 and FDG4024 (sections 4.4 and 4.6).'
+- id: FDG6015
+  strength: DO
+  text: choose carefully between an abstract class and an interface when designing an abstraction. See section 4.3 for more details on this subject.
+  context: null
+  section: 6.1.5 Abstractions (Abstract Types and Interfaces)
+  anchor: sec6_1_5
+  body: []
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not machine-checkable: a design choice between abstractions. FDG4009 to FDG4012 hold the guidelines of section 4.3.'
+- id: FDG6016
+  strength: CONSIDER
+  text: providing reference tests for concrete implementations of abstractions. Such tests should allow users to test whether their implementations correctly implement the contract.
+  context: null
+  section: 6.1.5 Abstractions (Abstract Types and Interfaces)
+  anchor: sec6_1_5
+  body:
+    - kind: annotation
+      text: 'I like what the Windows Forms team did: They defined an interface called `System.ComponentModel.IComponent`. Of course, any type can implement this interface. But the Windows Forms team also provided a `System.ComponentModel.Component` class that implements the `IComponent` interface. So a type could choose to derive from `Component` and get the implementation for free, or the type could derive from a different base class and then manually implement the `IComponent` interface. By having available an interface and a base class, developers get to choose whichever works best for them.'
+      author: Jeffrey Richter
+    - kind: annotation
+      text: Before shipping an abstraction, you should plan to validate it by building at least two or three distinct implementations and by using the abstraction in at least two or three distinct consumers. Those tests will provide you with a lot more confidence that you’ve built something that will actually be usable, and in my experience, will most likely help you to find issues that need to be addressed before you ship.
+      author: Stephen Toub
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the reference tests are for users who implement the abstractions of a framework. Not machine-checkable: tests shipped to users are outside the code that is analyzed.'
+- id: FDG6017
+  strength: CONSIDER
+  text: making base classes abstract even if they don’t contain any abstract members. This clearly communicates to the users that the class is designed solely to be inherited from.
+  context: null
+  section: 6.2 Base Classes
+  anchor: sec6_2
+  body:
+    - kind: annotation
+      text: My interpretation of this guideline is that it’s OK to declare the class abstract even if there are no abstract members, but you still need a reason why. If the class works fine on its own, it should probably be instantiable.
+      author: Jeremy Barton
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: the abstract modifier tells the users of a framework that the class is designed to be inherited from. Not an analyzer candidate: whether a class is designed solely to be inherited from is intent, and the Barton annotation still asks for a reason: a class that works on its own should probably stay instantiable.'
+- id: FDG6018
+  strength: CONSIDER
+  text: placing base classes in a separate namespace from the mainline scenario types. By definition, base classes are intended for advanced extensibility scenarios and are not interesting to the majority of users. See section 2.2.4 for details.
+  context: null
+  section: 6.2 Base Classes
+  anchor: sec6_2
+  body: []
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: namespaces organize a framework for its users (section 2.2.4). Not machine-checkable: needs to know which types are mainline scenario types, like FDG2031.'
+- id: FDG6019
+  strength: AVOID
+  text: naming base classes with a “Base” suffix if the class is intended for use in public APIs.
+  context: null
+  section: 6.2 Base Classes
+  anchor: sec6_2
+  body:
+    - kind: paragraph
+      text: For example, despite the fact that `Collection<T>` is designed to be inherited from, many frameworks expose APIs typed as the base class, not as its subclasses, mainly because of the cost associated with a new public type.
+    - kind: code
+      text: |-
+        public Directory {
+          public Collection<string> GetFilenames(){
+             return new FilenameCollection(this);
+             }
+
+          private class FilenameCollection : Collection<string> {
+             ...
+          }
+        }
+    - kind: paragraph
+      text: The fact that `Collection<T>` is a base class is irrelevant for the user of the `GetFilename` method, so the “Base” suffix would simply create an unnecessary distraction for the user of the method.
+  status: verified
+  style: false
+  check:
+    kind: fdg
+    diagnostics:
+      - FDG6019
+    coverage: partial
+  autofix: breaking
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer:
+    message: Remove the 'Base' suffix from '{0}', which a public API uses as a type
+    category: Extensibility
+  notes: 'Library only: the text is about classes intended for use in public APIs. FDG6019 reports an unsealed, externally visible class whose name ends with the word Base (FooBase, not Database) when an externally visible member, delegate or generic type of the same compilation uses it in its signature: the return, parameter, property, indexer, field or event type, or a constraint of a type parameter, also as an array element type or a type argument, the way the GetFilenames method of the body returns Collection<string>. A class that the compilation uses only as a base class is not reported, nor one that only a constraint of its own type parameters names (EntityBase<TSelf> where TSelf : EntityBase<TSelf>), nor uses in other assemblies, and members that the compiler declares do not count. A class counts as a base class when it is abstract, declares a protected or virtual member, or another class of the compilation derives from it (section 6.2: a class designed for inheritance); an unsealed class whose name only ends in the word Base, such as KnowledgeBase, is not reported. Overrides do not count toward a class designed for inheritance, since they implement the design of the class they override, and a subclass that exists only in generated code does not count either. CA1711 does not report the Base suffix (probe with SDK 10.0.402). Renaming a public class breaks callers, so the fix is breaking; there is no code fix.'
+- id: FDG6020
+  strength: DO NOT
+  text: seal classes without having a good reason to do so.
+  context: null
+  section: 6.3 Sealing
+  anchor: sec6_3
+  body:
+    - kind: paragraph
+      text: Sealing a class because you cannot think of an extensibility scenario is not a good reason. Framework users like to inherit from classes for various nonobvious reasons, such as adding convenience members. See section 6.1.1 for examples of nonobvious reasons users want to inherit from a type.
+    - kind: paragraph
+      text: 'Good reasons for sealing a class include the following:'
+    - kind: list
+      text: |-
+        - The class is a static class. For more information on static classes, see section 4.5.
+        - The class inherits many virtual members, and the cost of sealing them individually would outweigh the benefits of leaving the class unsealed.
+        - The class is an attribute that requires very fast runtime look-up. Sealed attributes have slightly higher performance levels than unsealed ones. For more information on attribute design, see section 8.2.
+    - kind: annotation
+      text: Having classes that are open to some level of customization is one of the core differences between a framework and a library. With an API library (such as the Win32 API), you basically get what you get. It is very difficult to extend the data structures and APIs. With a framework such as MFC or AWT, clients can extend and customize the classes. The productivity boost from this flexibility is obvious.
+      author: Brad Abrams
+    - kind: annotation
+      text: People often ask about the cost of sealing individual members. This cost is relatively small, but it is nonzero and should be taken into account. There is development cost (typing in the overrides), testing cost (have you called the base class from the override?), assembly size cost (new overrides), and working set cost (if both the overrides and the base implementation are ever called).
+      author: Krzysztof Cwalina
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: users of a framework inherit from its classes for nonobvious reasons; in an application sealing is safe, and CA1852 suggests it for internal types. Not an analyzer candidate: the body introduces its good reasons with "include the following", so the list is open, and one of them (many inherited virtual members that would cost more to seal one by one) is a judgment, so a sealed class cannot be judged a violation from symbols. CA1813 (unsealed attributes) and CA1852 (internal types) are not mapped: they ask for sealing, which the body allows for attributes, and internal types are not public API.'
+- id: FDG6021
+  strength: DO NOT
+  text: declare protected or virtual members on sealed types.
+  context: null
+  section: 6.3 Sealing
+  anchor: sec6_3
+  body:
+    - kind: paragraph
+      text: By definition, sealed types cannot be inherited from. This means that protected members on sealed types cannot be called, and virtual methods on sealed types cannot be overridden.
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: warning
+    application: warning
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Not checked: the C# compiler reports a new protected member of a sealed type (warning CS0628, protected internal and private protected included) and rejects a new virtual member of a sealed type (error CS0549), a protected member of a struct (error CS0666) and a protected member of a static class (error CS1057); a probe with SDK 10.0.402 showed this for sealed classes and sealed records. Overrides, which the compiler allows, declare no new protected or virtual member.'
+- id: FDG6022
+  strength: CONSIDER
+  text: sealing members that you override.
+  context: null
+  section: 6.3 Sealing
+  anchor: sec6_3
+  body:
+    - kind: code
+      text: |-
+        public class FlowSwitch : SourceSwitch {
+          protected sealed override void OnValueChanged() {
+            ...
+          }
+        }
+    - kind: paragraph
+      text: Problems that can result from introducing virtual members (discussed in section 6.1.4) apply to overrides as well, although to a slightly lesser degree. Sealing an override shields you from these problems starting from that point in the inheritance hierarchy.
+    - kind: paragraph
+      text: In short, part of designing for extensibility is knowing when to limit it, and sealed types are one of the mechanisms by which you do that.
+  status: verified
+  style: false
+  check:
+    kind: judgment
+    diagnostics: []
+    coverage: none
+  autofix: no
+  severity:
+    library: suggestion
+    application: none
+    test: none
+  config: []
+  minLanguage: null
+  alternative: null
+  analyzer: null
+  notes: 'Library only: sealing an override shields the class from the problems of virtual members (section 6.1.4) for subclasses outside the library. Not an analyzer candidate: whether an override stays an extension point for further subclasses is a design decision; in the dispose pattern of section 9.4, for example, subclasses override Dispose(bool) again.'

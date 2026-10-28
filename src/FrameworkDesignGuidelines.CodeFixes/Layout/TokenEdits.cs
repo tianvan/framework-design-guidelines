@@ -135,7 +135,7 @@ internal sealed class TokenEdits
             (_, rewritten) => rewritten.WithoutAnnotations(GapAnnotation)));
     }
 
-    private static string DetectEndOfLine(SourceText text)
+    internal static string DetectEndOfLine(SourceText text)
     {
         if (text.Lines.Count > 1)
         {

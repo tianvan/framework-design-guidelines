@@ -7,6 +7,7 @@ namespace Fdg.Generator.Emit;
 public static class GeneratedFiles
 {
     private const string RuleDocsDirectory = "docs/rules";
+    private const string ReferencesDirectory = "plugins/framework-design-guidelines/skills/fdg-write/references";
 
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false);
 
@@ -32,10 +33,16 @@ public static class GeneratedFiles
     }
 
     /// <summary>
-    /// Writes the files whose content differs from disk, and removes rule pages of rules that no longer exist.
-    /// Returns how many files were written or removed; an unchanged file keeps its timestamp.
+    /// Writes the files whose content differs from disk, and removes the rule pages and skill reference files that are
+    /// no longer generated. Returns how many files were written or removed; an unchanged file keeps its timestamp.
     /// </summary>
-    public static int Write(string root, IReadOnlyList<GeneratedFile> files)
+    public static int Write(string root, IReadOnlyList<GeneratedFile> files) => Write(root, files, out _);
+
+    /// <summary>
+    /// Like <see cref="Write(string, IReadOnlyList{GeneratedFile})"/>, and reports through <paramref name="removed"/>
+    /// how many of the returned changes were removals of stale files.
+    /// </summary>
+    public static int Write(string root, IReadOnlyList<GeneratedFile> files, out int removed)
     {
         int changes = 0;
         foreach (GeneratedFile file in files)
@@ -52,17 +59,44 @@ public static class GeneratedFiles
             changes++;
         }
 
-        string docsDir = Path.Combine(root, RuleDocsDirectory);
-        if (Directory.Exists(docsDir))
+        var expected = files
+            .Select(f => Path.GetFullPath(Path.Combine(root, f.Path)))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        removed = RemoveStale(root, RuleDocsDirectory, "FDG*.md", recurse: false, expected)
+            + RemoveStale(root, ReferencesDirectory, "*.md", recurse: true, expected);
+        return changes + removed;
+    }
+
+    /// <summary>
+    /// Deletes the files under <paramref name="directory"/> (relative to <paramref name="root"/>) that match
+    /// <paramref name="pattern"/> and are not in <paramref name="expected"/>. Returns how many it deleted.
+    /// </summary>
+    private static int RemoveStale(
+        string root,
+        string directory,
+        string pattern,
+        bool recurse,
+        HashSet<string> expected)
+    {
+        string path = Path.Combine(root, directory);
+        if (!Directory.Exists(path))
         {
-            var expected = files.Select(f => Path.GetFullPath(Path.Combine(root, f.Path))).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            foreach (string stale in Directory.GetFiles(docsDir, "FDG*.md").Where(f => !expected.Contains(Path.GetFullPath(f))))
+            return 0;
+        }
+
+        int removed = 0;
+        foreach (string file in Directory.GetFiles(
+            path,
+            pattern,
+            new EnumerationOptions { RecurseSubdirectories = recurse, AttributesToSkip = FileAttributes.ReparsePoint }))
+        {
+            if (!expected.Contains(Path.GetFullPath(file)))
             {
-                File.Delete(stale);
-                changes++;
+                File.Delete(file);
+                removed++;
             }
         }
 
-        return changes;
+        return removed;
     }
 }

@@ -13,6 +13,11 @@ public static class VerifySourceCommand
 
     public static int Run(IReadOnlyList<string> args, TextWriter output, TextWriter error)
     {
+        return ToolErrors.Run("verify-source", error, () => Execute(args, output, error));
+    }
+
+    private static int Execute(IReadOnlyList<string> args, TextWriter output, TextWriter error)
+    {
         if (!CommandOptions.TryParse(args, AllowedOptions, out CommandOptions options, out string message)
             || !options.TryRequire("book", out string bookDir, out message)
             || !RulesDirectory.TryResolve(options.Get("rules"), out string rulesDir, out message))
@@ -71,26 +76,15 @@ public static class VerifySourceCommand
 
         foreach ((Rule expected, Rule actual) in book.Zip(file))
         {
-            CompareField(differences, expected.Id, "id", expected.Id, actual.Id);
-            CompareField(differences, expected.Id, "strength", expected.Strength, actual.Strength);
-            CompareField(differences, expected.Id, "text", expected.Text, actual.Text);
-            CompareField(differences, expected.Id, "context", expected.Context, actual.Context);
-            CompareField(differences, expected.Id, "section", expected.Section, actual.Section);
-            CompareField(differences, expected.Id, "anchor", expected.Anchor, actual.Anchor);
-            if (!expected.Body.SequenceEqual(actual.Body))
+            foreach (BookFieldDifference difference in BookFields.Compare(expected, actual))
             {
-                differences.Add($"{expected.Id}: field 'body' differs from the book.");
+                differences.Add(difference.Field == "body"
+                    ? $"{expected.Id}: field 'body' differs from the book."
+                    : $"{expected.Id}: field '{difference.Field}' differs from the book " +
+                      $"(expected '{difference.Expected}', found '{difference.Actual}').");
             }
         }
 
         return differences;
-    }
-
-    private static void CompareField<T>(List<string> differences, string id, string field, T expected, T actual)
-    {
-        if (!EqualityComparer<T>.Default.Equals(expected, actual))
-        {
-            differences.Add($"{id}: field '{field}' differs from the book (expected '{expected}', found '{actual}').");
-        }
     }
 }

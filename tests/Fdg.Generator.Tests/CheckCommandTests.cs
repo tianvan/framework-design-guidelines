@@ -120,6 +120,188 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
         Assert.Empty(Check());
     }
 
+    private void SetChapterTestProfile(string value)
+    {
+        File.WriteAllText(
+            Path.Combine(_rulesDir, "meta.yaml"),
+            "repositoryUrl: https://example.test/repo\n" +
+            "chapters:\n" +
+            $"  - {{ token: \"9\", file: sample.xhtml, rules: ch09-sample.yaml, title: Sample Chapter, testProfile: {value} }}\n");
+    }
+
+    [Fact]
+    public void Test_severity_must_be_none_in_chapters_off_for_tests()
+    {
+        SetChapterTestProfile("off");
+        Map("FDG9002", m => m with { Severity = m.Severity with { Test = SeverityLevel.None } });
+
+        IReadOnlyList<string> errors = Check();
+
+        Assert.Equal(3, errors.Count);
+        Assert.All(errors, e => Assert.Contains("chapter 9 is off in the test profile", e));
+        Assert.DoesNotContain(errors, e => e.Contains("FDG9002"));
+        Assert.Equal(
+            $"{RulesFileName}:FDG9001: chapter 9 is off in the test profile; " +
+            "set severity.test to none or explain it in notes with \"Test profile:\".",
+            errors[0]);
+    }
+
+    [Fact]
+    public void Test_profile_exception_is_allowed_with_a_note()
+    {
+        SetChapterTestProfile("off");
+        foreach (string id in new[] { "FDG9001", "FDG9002", "FDG9003", "FDG9004" })
+        {
+            Map(id, m => m with { Notes = "Test profile: the rule also holds for test code." });
+        }
+
+        Assert.Empty(Check());
+    }
+
+    [Theory]
+    [InlineData("maybe")]
+    [InlineData("\"\"")]
+    public void Test_profile_value_must_be_on_or_off(string value)
+    {
+        SetChapterTestProfile(value);
+
+        string error = Assert.Single(Check());
+        Assert.StartsWith("meta.yaml:", error);
+        Assert.Contains("testProfile of chapter 9 must be on or off", error);
+    }
+
+    private void SetChapterReferenceSections(string sections)
+    {
+        File.WriteAllText(
+            Path.Combine(_rulesDir, "meta.yaml"),
+            "repositoryUrl: https://example.test/repo\n" +
+            "chapters:\n" +
+            "  - token: \"9\"\n" +
+            "    file: sample.xhtml\n" +
+            "    rules: ch09-sample.yaml\n" +
+            "    title: Sample Chapter\n" +
+            "    references:\n" +
+            $"      - {{ file: ch09-sample, sections: [{sections}] }}\n");
+    }
+
+    [Theory]
+    [InlineData("\"9.1x\"")]
+    [InlineData("\"9.\"")]
+    [InlineData("\"=\"")]
+    [InlineData("\"==9.1\"")]
+    [InlineData("\"9.1=\"")]
+    [InlineData("\"9..1\"")]
+    [InlineData("\"9.1\\n\"")]
+    [InlineData("\"d.1\"")]
+    [InlineData("\"DD.1\"")]
+    [InlineData("\"D.\"")]
+    public void Reference_section_must_be_a_section_number(string section)
+    {
+        SetChapterReferenceSections(section);
+
+        string error = Assert.Single(Check());
+        Assert.StartsWith("meta.yaml:", error);
+        Assert.Contains("of chapter 9 must be a section number such as 9.12", error);
+    }
+
+    [Fact]
+    public void Reference_section_may_be_marked_exact()
+    {
+        SetChapterReferenceSections("\"9\", \"=9.1\", \"9.2\", \"9.3\"");
+
+        Assert.Empty(Check());
+    }
+
+    [Fact]
+    public void Chapters_are_on_for_tests_unless_the_meta_says_otherwise()
+    {
+        Assert.Empty(Check());
+        SetChapterTestProfile("on");
+        Assert.Empty(Check());
+    }
+
+    private void SetNotes(string nonGuidelineNote, string otherEntries, string otherSource = "app02.xhtml")
+    {
+        File.WriteAllText(
+            Path.Combine(_rulesDir, "meta.yaml"),
+            "repositoryUrl: https://example.test/repo\n" +
+            "chapters:\n" +
+            "  - token: \"9\"\n" +
+            "    file: sample.xhtml\n" +
+            "    rules: ch09-sample.yaml\n" +
+            "    title: Sample Chapter\n" +
+            "    nonGuideline:\n" +
+            $"      - {{ section: \"9.1\", disposition: background, note: \"{nonGuidelineNote}\" }}\n" +
+            "otherContent:\n" +
+            $"  - source: {otherSource}\n" +
+            "    title: Obsolete Guidance\n" +
+            "    entries:\n" +
+            otherEntries);
+    }
+
+    [Fact]
+    public void Unknown_rule_id_in_a_note_is_an_error()
+    {
+        SetNotes(
+            "Background for FDG9001 to FDG9999.",
+            "      - { section: \"B.3.8\", disposition: obsolete, note: \"Superseded by FDG9002 and FDGD001.\" }\n" +
+            "      - { section: \"B.4.1\", disposition: obsolete, note: \"FDG90011 and xFDG9998 are no ids.\" }\n");
+
+        Assert.Equal(
+            new[]
+            {
+                "meta.yaml:FDG9999: the nonGuideline note of chapter 9, section 9.1, cites a rule that does not exist.",
+                "meta.yaml:FDGD001: the otherContent note of app02.xhtml, section B.3.8, " +
+                "cites a rule that does not exist.",
+            },
+            Check());
+    }
+
+    [Fact]
+    public void Known_rule_ids_in_notes_pass_check()
+    {
+        SetNotes(
+            "Background for FDG9001 to FDG9004.",
+            "      - { section: \"B.3.8\", disposition: obsolete, note: \"Superseded by FDG9002.\" }\n" +
+            "      - { section: \"B.4.1\", disposition: obsolete, note: \"No current rule replaces it.\" }\n");
+
+        Assert.Empty(Check());
+    }
+
+    [Fact]
+    public void Notes_are_not_checked_when_a_rule_file_fails_to_load()
+    {
+        SetNotes(
+            "Background for FDG9001.",
+            "      - { section: \"B.3.8\", disposition: obsolete, note: \"Superseded by FDG9002.\" }\n");
+        EditRules(yaml => yaml.Replace("strength: CONSIDER", "strength: SHOULD"));
+
+        string error = Assert.Single(Check());
+        Assert.Contains("strength", error);
+    }
+
+    [Theory]
+    [InlineData("      - { section: \"B.3.8\", disposition: obsolete }\n", "needs a section and a note")]
+    [InlineData("      - { section: \"B.3.8\", disposition: gone, note: \"x\" }\n", "Invalid otherContent disposition")]
+    [InlineData("      []\n", "needs a source, a title and at least one entry")]
+    [InlineData(
+        "      - { section: \"B.3.8\", disposition: obsolete, note: \"x\" }\n" +
+        "  - source: app03.xhtml\n    entries:\n      - { section: \"C\", disposition: background, note: \"x\" }\n",
+        "needs a source, a title and at least one entry")]
+    [InlineData(
+        "      - { section: \"B.3.8\", disposition: obsolete, note: \"x\" }\n" +
+        "  - title: Sample API Specification\n    entries:\n" +
+        "      - { section: \"C\", disposition: background, note: \"x\" }\n",
+        "needs a source, a title and at least one entry")]
+    public void Other_content_entries_are_validated(string entries, string message)
+    {
+        SetNotes("Background.", entries);
+
+        string error = Assert.Single(Check());
+        Assert.StartsWith("meta.yaml:", error);
+        Assert.Contains(message, error);
+    }
+
     [Fact]
     public void Schema_rejects_unknown_strength()
     {
@@ -127,6 +309,17 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
 
         string error = Assert.Single(Check(), e => e.Contains("strength"));
         Assert.StartsWith($"{RulesFileName}:FDG9003: ", error);
+    }
+
+    [Theory]
+    [InlineData("PERMITTED")]
+    [InlineData("NOT PERMITTED")]
+    [InlineData("CONTEXTUAL")]
+    public void Schema_accepts_the_appendix_d_verdicts_as_strength(string verdict)
+    {
+        EditRules(yaml => yaml.Replace("strength: CONSIDER", $"strength: {verdict}"));
+
+        Assert.Empty(Check());
     }
 
     [Fact]
@@ -176,6 +369,32 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
 
         Assert.Contains(errors, e => e.Contains("FDG9001") && e.Contains("diagnostics"));
         Assert.Contains(errors, e => e.Contains("FDG9001") && e.Contains("coverage"));
+    }
+
+    [Fact]
+    public void Naming_tags_require_IDE1006()
+    {
+        var tags = new NamingTags(new[] { "privateField" }, new[] { "prefix" });
+        Map("FDG9001", m => Sdk(m, "IDE1006") with { Naming = tags });
+        Map("FDG9002", m => Sdk(m, "CA1716") with { Naming = tags });
+
+        string error = Assert.Single(Check());
+
+        Assert.StartsWith($"{RulesFileName}:FDG9002: ", error);
+        Assert.Contains("IDE1006", error);
+        Assert.Contains("naming", error);
+    }
+
+    [Fact]
+    public void Schema_rejects_unknown_naming_symbols_and_empty_lists()
+    {
+        Map("FDG9001", m => Sdk(m, "IDE1006") with { Naming = new NamingTags(new[] { "field" }, new[] { "suffix" }) });
+        Map("FDG9002", m => Sdk(m, "IDE1006") with { Naming = new NamingTags(Array.Empty<string>(), Array.Empty<string>()) });
+
+        IReadOnlyList<string> errors = Check();
+
+        Assert.Contains(errors, e => e.Contains("FDG9001") && e.Contains("naming"));
+        Assert.Contains(errors, e => e.Contains("FDG9002") && e.Contains("naming"));
     }
 
     [Fact]
@@ -243,11 +462,11 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
     [Fact]
     public void Consider_with_warning_severity_is_allowed_but_default_is_suggestion()
     {
-        RuleMapping defaults = RuleMapping.CreateDefault(Strength.Consider, style: false);
+        RuleMapping defaults = RuleMapping.CreateDefault(Strength.Consider, style: false, testProfileOn: true);
         Assert.Equal(new ProfileSeverity(SeverityLevel.Suggestion, SeverityLevel.Suggestion, SeverityLevel.Suggestion), defaults.Severity);
         Assert.Equal(
             new ProfileSeverity(SeverityLevel.Warning, SeverityLevel.Warning, SeverityLevel.Warning),
-            RuleMapping.CreateDefault(Strength.Avoid, style: false).Severity);
+            RuleMapping.CreateDefault(Strength.Avoid, style: false, testProfileOn: true).Severity);
         Rule consider = Assert.Single(RuleLoader.LoadRules(RulesPath), r => r.Strength == Strength.Consider);
         Assert.Equal(defaults.Severity, consider.Mapping.Severity);
 
@@ -276,6 +495,15 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
         string error = Assert.Single(Check());
         Assert.Contains("FDG9001", error);
         Assert.Contains("code fix", error);
+    }
+
+    [Fact]
+    public void Breaking_autofix_does_not_require_a_code_fix()
+    {
+        // Ruling 24: a fix that changes a public signature or name is breaking whether or not a tool performs it.
+        Map("FDG9001", m => Sdk(m, "CA1716") with { Autofix = AutofixKind.Breaking });
+
+        Assert.Empty(Check());
     }
 
     [Fact]
@@ -486,6 +714,45 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
         Assert.Equal(1, result.ExitCode);
         Assert.Contains($"{RulesFileName}:FDG9001: ", result.Error);
         Assert.Contains($"{RulesFileName}:FDG9002: ", result.Error);
+    }
+
+    /// <summary>
+    /// With <c>--book</c>, no <c>meta.yaml</c> note may share 8 consecutive words with the xhtml file it describes;
+    /// words are compared case-insensitively, without their punctuation.
+    /// </summary>
+    [Fact]
+    public void Check_command_with_book_reports_notes_that_copy_eight_words_of_the_book()
+    {
+        SetNotes(
+            "The book: THIS introduction, comes before any guideline and belongs to no rule.",
+            "      - { section: \"8\", disposition: background, note: \"It says this introduction comes before any guideline and belongs.\" }\n",
+            "ch08.xhtml");
+
+        var result = Run("check", "--rules", _rulesDir, "--sdk", _sdk.Directory, "--book", _bookDir);
+
+        Assert.Equal(1, result.ExitCode);
+        Assert.Contains(
+            "meta.yaml:-: the nonGuideline note of chapter 9, section 9.1, shares 8 consecutive words with " +
+            "sample.xhtml: \"this introduction comes before any guideline and belongs\".",
+            result.Error);
+        Assert.Contains(
+            "meta.yaml:-: the otherContent note of ch08.xhtml, section 8, shares 8 consecutive words with " +
+            "ch08.xhtml: \"this introduction comes before any guideline and belongs\".",
+            result.Error);
+    }
+
+    [Fact]
+    public void Check_command_with_book_accepts_notes_that_share_seven_words_with_the_book()
+    {
+        SetNotes(
+            "Section text that precedes the first guideline, then ours.",
+            "      - { section: \"8\", disposition: background, note: \"This introduction comes before any guideline; it is ours.\" }\n",
+            "ch08.xhtml");
+
+        var result = Run("check", "--rules", _rulesDir, "--sdk", _sdk.Directory, "--book", _bookDir);
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains("No meta.yaml note shares 8 consecutive words with the book.", result.Output);
     }
 
     [Fact]

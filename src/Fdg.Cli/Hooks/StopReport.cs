@@ -6,20 +6,30 @@ namespace Fdg.Cli.Hooks;
 /// <summary>A diagnostic to report, with the rules it checks for the project's profile.</summary>
 /// <param name="DisplayPath">Relative to the repository root, with forward slashes.</param>
 /// <param name="SourceLine">The flagged line, trimmed; <see langword="null"/> when it cannot be read.</param>
+/// <param name="ExistingApi">
+/// The diagnostic is one whose fix breaks callers and it is about an API that already existed when the turn started
+/// (<see cref="Hooks.ExistingApi"/>): the AI is told to leave it to the user instead of changing it.
+/// </param>
 public sealed record ReportedIssue(
     string DisplayPath,
     int Line,
     string RuleId,
     string Message,
     string? SourceLine,
-    IReadOnlyList<RuleEntry> Rules);
+    IReadOnlyList<RuleEntry> Rules,
+    bool ExistingApi = false);
 
-/// <summary>The Stop hook's report: at most 20 issues sorted by file and line, each with at most two rules.</summary>
+/// <summary>
+/// The Stop hook's report: at most 20 issues, each with at most two rules. The issues to fix come first, sorted by file
+/// and line; the issues on existing API follow under <see cref="ExistingApiHeading"/>.
+/// </summary>
 public static class StopReport
 {
     public const int MaxIssues = 20;
 
     public const int MaxRulesPerIssue = 2;
+
+    public const string ExistingApiHeading = "Existing API: do not change it to fix this; tell the user.";
 
     private static readonly HashSet<string> IgnoredWords = new(StringComparer.Ordinal)
     {
@@ -33,8 +43,15 @@ public static class StopReport
     {
         var text = new StringBuilder();
         text.Append(header).Append('\n');
-        foreach (ReportedIssue issue in Sort(issues).Take(MaxIssues))
+        bool existingListed = false;
+        foreach (ReportedIssue issue in Sort(issues.Where(i => !i.ExistingApi)).Concat(Sort(issues.Where(i => i.ExistingApi))).Take(MaxIssues))
         {
+            if (issue.ExistingApi && !existingListed)
+            {
+                text.Append(ExistingApiHeading).Append('\n');
+                existingListed = true;
+            }
+
             text.Append(issue.DisplayPath).Append(':').Append(issue.Line).Append(' ')
                 .Append(issue.RuleId).Append(' ').Append(issue.Message).Append('\n');
             if (!string.IsNullOrEmpty(issue.SourceLine))
@@ -63,21 +80,41 @@ public static class StopReport
         .ThenBy(i => i.Message, StringComparer.Ordinal);
 
     /// <summary>
-    /// The rules a diagnostic checks under <paramref name="profile"/>, most relevant first. One diagnostic such as
-    /// IDE1006 can check many rules; the ones sharing more words with the message and the flagged line (for
-    /// "Missing prefix" on a private field, the private-field prefix rule) come first, otherwise the manifest's
-    /// order is kept. When there are more than <see cref="MaxRulesPerIssue"/>, only rules whose text has a word of
-    /// the message that is not in the flagged line (such as "prefix", but not the flagged name) are kept, so a
-    /// diagnostic like "must begin with upper case characters" quotes no rule rather than a wrong one.
+    /// The rules a diagnostic checks under <paramref name="profile"/>, most relevant first, at most
+    /// <see cref="MaxRulesPerIssue"/>. For IDE1006, if any of its rules carries naming tags, the tags decide: only the
+    /// rules that list the symbol kind and the failure of <paramref name="naming"/> are quoted, and none when it is
+    /// <see langword="null"/> because the position or the message could not be read; the narrower a rule's tags (the
+    /// fewer symbol kinds and failures it lists), the earlier it comes, so the rule written for this kind of symbol
+    /// beats the general one. Otherwise the rules sharing more
+    /// words with the message and the flagged line come first and the manifest's order is kept among equals. When
+    /// there are more than <see cref="MaxRulesPerIssue"/>, only rules whose text has a word of the message that is
+    /// not in the flagged line are kept, so a message that names no rule's subject quotes no rule rather than a wrong one.
     /// </summary>
+    /// <param name="naming">What the diagnostic is about, from <see cref="DeclarationLocator"/>.</param>
     public static IReadOnlyList<RuleEntry> RulesFor(
         RulesManifest manifest,
         string ruleId,
         string message,
         string? sourceLine,
-        string? profile)
+        string? profile,
+        (NamingSymbolKind Kind, NamingFailure Failure)? naming)
     {
         RuleEntry[] rules = manifest.Rules.Where(r => r.Diagnostics.Contains(ruleId)).ToArray();
+        bool tagged = ruleId == DeclarationLocator.NamingDiagnosticId && rules.Any(r => r.Naming is not null);
+        if (tagged)
+        {
+            if (naming is not var (kind, failure))
+            {
+                return [];
+            }
+
+            string symbol = CamelCase(kind);
+            string failureText = CamelCase(failure);
+            rules = rules
+                .Where(r => r.Naming is { } tags && tags.Symbols.Contains(symbol) && tags.Failures.Contains(failureText))
+                .ToArray();
+        }
+
         RuleEntry[] active = profile is null
             ? rules
             : rules.Where(r => !r.Severity.TryGetValue(profile, out string? severity) || severity != "none").ToArray();
@@ -86,7 +123,7 @@ public static class StopReport
             rules = active;
         }
 
-        if (rules.Length > MaxRulesPerIssue)
+        if (!tagged && rules.Length > MaxRulesPerIssue)
         {
             string[] signal = Words(message).Except(Words(sourceLine ?? string.Empty)).ToArray();
             rules = rules.Where(r => TextWords(r.Text).Overlaps(signal)).ToArray();
@@ -95,10 +132,19 @@ public static class StopReport
         string[] words = Words(message + " " + sourceLine);
         return rules
             .Select((rule, index) => (Rule: rule, Index: index, Score: words.Count(w => rule.Text.Contains(w, StringComparison.OrdinalIgnoreCase))))
-            .OrderByDescending(r => r.Score)
+            .OrderBy(r => tagged ? r.Rule.Naming!.Symbols.Count + r.Rule.Naming.Failures.Count : 0)
+            .ThenByDescending(r => r.Score)
             .ThenBy(r => r.Index)
             .Select(r => r.Rule)
+            .Take(MaxRulesPerIssue)
             .ToArray();
+    }
+
+    private static string CamelCase<T>(T value)
+        where T : struct, Enum
+    {
+        string name = value.ToString();
+        return char.ToLowerInvariant(name[0]) + name[1..];
     }
 
     /// <summary>The text's words: its runs of ASCII letters, lower-cased.</summary>

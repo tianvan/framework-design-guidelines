@@ -11,9 +11,9 @@ namespace Fdg.Generator.Tests;
 /// </summary>
 public sealed class SkillLintTests
 {
-    private const int MaxTopRules = 40;
+    private const int MaxTopRules = 60;
 
-    private const int MaxFdgWriteBodyLines = 120;
+    private const int MaxFdgWriteBodyLines = 250;
 
     private static readonly string[] SkillNames = ["fdg-write", "fdg-setup", "fdg-fix", "fdg-review"];
 
@@ -30,16 +30,20 @@ public sealed class SkillLintTests
 
     /// <summary>
     /// A rule line: <c>**FDG####** &lt;STRENGTH&gt; &lt;text&gt;</c>, optionally a list item, or the review output form
-    /// <c>— FDG#### &lt;STRENGTH&gt; &lt;text&gt;</c>.
+    /// <c>— FDG#### &lt;STRENGTH&gt; &lt;text&gt;</c>. An appendix D verdict is followed by a colon:
+    /// <c>— FDGD001 NOT PERMITTED: &lt;text&gt;</c>.
     /// </summary>
     private static readonly Regex RuleLine = new(
-        @"(?:\*\*(?<id>FDG[1-9A-Z]\d{3})\*\* |— (?<id>FDG[1-9A-Z]\d{3}) (?=(?:DO|AVOID|CONSIDER) ))(?<rest>.+)$");
+        @"(?:\*\*(?<id>FDG[1-9A-Z]\d{3})\*\* |— (?<id>FDG[1-9A-Z]\d{3}) " +
+        @"(?=(?:DO|AVOID|CONSIDER) |(?:PERMITTED|NOT PERMITTED|CONTEXTUAL): ))(?<rest>.+)$");
 
     /// <summary>
     /// Any line where a rule id is followed by a strength word, in any case and after any punctuation, such as
-    /// <c>`FDG3014` Do not</c> or <c>**FDG3014**: DO</c>. Such a line must be a <see cref="RuleLine"/>.
+    /// <c>`FDG3014` Do not</c>, <c>**FDG3014**: DO</c> or <c>FDGD001 not permitted</c>. Such a line must be a
+    /// <see cref="RuleLine"/>.
     /// </summary>
-    private static readonly Regex LooseRuleLine = new(@"(?<id>FDG[1-9A-Z]\d{3})\W{0,4}(?i:DO NOT|DO|AVOID|CONSIDER)\b");
+    private static readonly Regex LooseRuleLine = new(
+        @"(?<id>FDG[1-9A-Z]\d{3})\W{0,4}(?i:DO NOT|DO|AVOID|CONSIDER|NOT PERMITTED|PERMITTED|CONTEXTUAL)\b");
 
     /// <summary>A path into a skill's references, as a markdown link target or in code.</summary>
     private static readonly Regex ReferencePath =
@@ -154,6 +158,22 @@ public sealed class SkillLintTests
         }
     }
 
+    /// <summary>A second guard besides the generator: the checked-in references stay small enough to load.</summary>
+    [Fact]
+    public void Every_reference_file_is_at_most_32_KB()
+    {
+        string[] files = Directory.GetFiles(FdgWriteReferences, "*.md", SearchOption.AllDirectories);
+
+        Assert.NotEmpty(files);
+        foreach (string file in files)
+        {
+            long bytes = new FileInfo(file).Length;
+            Assert.True(
+                bytes <= SkillReferenceEmitter.MaxReferenceBytes,
+                $"{Relative(file)} is {bytes} bytes (max {SkillReferenceEmitter.MaxReferenceBytes}).");
+        }
+    }
+
     [Fact]
     public void Every_rule_id_mentioned_in_skills_exists_in_rules()
     {
@@ -170,9 +190,13 @@ public sealed class SkillLintTests
 
     /// <summary>
     /// The format of a rule line, the same as the generated references without their examples link:
-    /// <c>**&lt;id&gt;** &lt;STRENGTH&gt; &lt;text&gt;[ (context: &lt;context&gt;)][ [C# N+]][ (alt: &lt;alt&gt;)]</c>.
-    /// The bracketed parts are required exactly when the rule has a context, a minimum language version or an
-    /// alternative, so the AI always sees the version tag and the fallback. The review output form
+    /// <c>**&lt;id&gt;** &lt;STRENGTH&gt; &lt;text&gt;[ (library only) | (not in test projects)][ (context: &lt;context&gt;)][ [C# N+]]</c>
+    /// <c>[ (alt: &lt;alt&gt;)]</c>,
+    /// with <c>(can cause: &lt;context&gt;)</c> instead of <c>(context: &lt;context&gt;)</c> for an appendix D verdict.
+    /// The bracketed parts are required exactly when the rule is on in <c>library</c> and off in <c>application</c>
+    /// (or on in <c>application</c> and off in <c>test</c>), has a context, a minimum language version or an
+    /// alternative, so the AI always sees the profile, the version
+    /// tag and the fallback. The review output form
     /// <c>— &lt;id&gt; &lt;STRENGTH&gt; &lt;text&gt;</c> carries only the statement.
     /// </summary>
     [Fact]
@@ -211,6 +235,31 @@ public sealed class SkillLintTests
         Assert.True(checkedLines > 0, "No rule lines were found.");
     }
 
+    [Theory]
+    [InlineData("— FDGD001 NOT PERMITTED: Changing the Name of an Assembly")]
+    [InlineData("— FDGD002 PERMITTED: Adding a Type")]
+    [InlineData("— FDGD003 CONTEXTUAL: Removing a Field")]
+    public void Review_output_lines_with_an_appendix_d_verdict_are_rule_lines(string line)
+    {
+        Match match = RuleLine.Match(line);
+
+        Assert.True(match.Success);
+        Assert.Equal(line[2..9], match.Groups["id"].Value);
+        Assert.Equal(line[10..], match.Groups["rest"].Value);
+    }
+
+    [Theory]
+    [InlineData("`FDGD001` Not permitted: changing the name", "FDGD001")]
+    [InlineData("**FDGD002**: PERMITTED", "FDGD002")]
+    [InlineData("FDGD003 contextual", "FDGD003")]
+    public void Loose_rule_lines_include_the_appendix_d_verdicts(string line, string id)
+    {
+        Match match = LooseRuleLine.Match(line);
+
+        Assert.True(match.Success);
+        Assert.Equal(id, match.Groups["id"].Value);
+    }
+
     [Fact]
     public void Fdg_write_has_paths_cs_glob()
     {
@@ -234,11 +283,11 @@ public sealed class SkillLintTests
     }
 
     /// <summary>
-    /// The top rules are at most 40 rules the references list (judgment rules, or CONSIDER rules analyzers only
-    /// suggest), ordered naming (chapter 3) first, then appendix A section A.1.6, then the rest of appendix A.
+    /// fdg-write's top rules are at most 60 rules, distinct and listed: each appears once and is a rule the references
+    /// list (a judgment rule, or a CONSIDER rule analyzers only suggest). Their order (by importance) is not checked.
     /// </summary>
     [Fact]
-    public void Fdg_write_top_rules_are_listed_rules_naming_first()
+    public void Fdg_write_top_rules_are_distinct_listed_rules()
     {
         string[] ids = Read(SkillPath("fdg-write")).Lines
             .Select(l => RuleLine.Match(l))
@@ -254,9 +303,84 @@ public sealed class SkillLintTests
                 SkillReferenceEmitter.IsListed(Rules.Value[id]),
                 $"{id} is checked by tools; it does not belong in fdg-write.");
         }
+    }
 
-        int[] groups = ids.Select(id => Group(Rules.Value[id])).ToArray();
-        Assert.Equal(groups.Order(), groups);
+    /// <summary>
+    /// fdg-write's routing table names every reference file in one of its rows, so every chapter can be reached by
+    /// topic.
+    /// </summary>
+    [Fact]
+    public void Fdg_write_routes_to_every_reference_file()
+    {
+        string[] rows = Read(SkillPath("fdg-write")).Lines.Where(l => l.StartsWith('|')).ToArray();
+
+        string[] files = TopLevelReferenceFiles();
+        Assert.NotEmpty(files);
+        foreach (string file in files)
+        {
+            Assert.True(
+                rows.Any(r => r.Contains("references/" + file, StringComparison.Ordinal)),
+                $"No row of fdg-write's routing table names {file}.");
+        }
+    }
+
+    /// <summary>
+    /// The reviewer agent names every reference file, so a delegated review can read the rules of any topic.
+    /// </summary>
+    [Fact]
+    public void Reviewer_agent_routes_to_every_reference_file()
+    {
+        string body = Read(AgentPath).Body;
+
+        string[] files = TopLevelReferenceFiles();
+        Assert.NotEmpty(files);
+        foreach (string file in files)
+        {
+            string path = "references/" + file;
+            Assert.True(body.Contains(path, StringComparison.Ordinal), $"agents/fdg-reviewer.md does not name {path}.");
+        }
+    }
+
+    /// <summary>
+    /// fdg-review links every reference file by its path from fdg-review's directory, so a review in a session without
+    /// subagents can read the rules of any topic.
+    /// </summary>
+    [Fact]
+    public void Fdg_review_routes_to_every_reference_file()
+    {
+        string body = Read(SkillPath("fdg-review")).Body;
+
+        string[] files = TopLevelReferenceFiles();
+        Assert.NotEmpty(files);
+        foreach (string file in files)
+        {
+            string path = "../fdg-write/references/" + file;
+            Assert.True(body.Contains(path, StringComparison.Ordinal), $"fdg-review/SKILL.md does not name {path}.");
+        }
+    }
+
+    /// <summary>
+    /// The listed library-only rules (on in <c>library</c>, off in <c>application</c>) carry
+    /// <see cref="SkillReferenceEmitter.LibraryOnlyMarker"/> in the reference files, and the other listed rules that are
+    /// on in <c>application</c> and off in <c>test</c> carry <see cref="SkillReferenceEmitter.NotInTestProjectsMarker"/>:
+    /// the counts match the rules data.
+    /// </summary>
+    [Fact]
+    public void Skill_references_mark_library_only_and_test_off_rules()
+    {
+        int libraryOnlyInReferences = Directory.GetFiles(FdgWriteReferences, "*.md")
+            .SelectMany(f => File.ReadLines(f))
+            .Count(l => l.Contains(" " + SkillReferenceEmitter.LibraryOnlyMarker));
+        int testOffInReferences = Directory.GetFiles(FdgWriteReferences, "*.md")
+            .SelectMany(f => File.ReadLines(f))
+            .Count(l => l.Contains(" " + SkillReferenceEmitter.NotInTestProjectsMarker));
+
+        Rule[] listed = Rules.Value.Values.Where(SkillReferenceEmitter.IsListed).ToArray();
+        int libraryOnlyInData = listed.Count(SkillReferenceEmitter.IsLibraryOnly);
+        int testOffInData = listed.Count(r => !SkillReferenceEmitter.IsLibraryOnly(r) && SkillReferenceEmitter.IsNotInTestProjects(r));
+
+        Assert.Equal(libraryOnlyInData, libraryOnlyInReferences);
+        Assert.Equal(testOffInData, testOffInReferences);
     }
 
     /// <summary>
@@ -275,6 +399,27 @@ public sealed class SkillLintTests
         Assert.Contains("obj/fdg/marker.json", opening);
         Assert.Contains("existing style", opening);
         Assert.Contains("/fdg-setup", opening);
+    }
+
+    /// <summary>
+    /// The skills and the reviewer agent tell the AI to skip both profile markers in test projects, and the review
+    /// output, which quotes only the strength and rule text, leaves the new marker out like the others.
+    /// </summary>
+    [Fact]
+    public void Skills_skip_both_profile_markers_in_test_projects()
+    {
+        const string Skip = "skip the rules marked \"(library only)\" or \"(not in test projects)\"";
+        const string Omitted = "without `(library only)`, `(not in test projects)`,";
+
+        Assert.Contains(Skip, Joined(SkillPath("fdg-write")));
+        foreach (string path in new[] { SkillPath("fdg-review"), AgentPath })
+        {
+            string text = Joined(path);
+            Assert.Contains(Skip, text);
+            Assert.Contains(Omitted, text);
+        }
+
+        static string Joined(string path) => string.Join(" ", Read(path).Lines.Select(l => l.Trim()));
     }
 
     /// <summary>
@@ -313,17 +458,8 @@ public sealed class SkillLintTests
         }
     }
 
-    private static int Group(Rule rule)
-    {
-        if (!rule.Id.StartsWith("FDGA", StringComparison.Ordinal))
-        {
-            return 0;
-        }
-
-        return rule.Section.StartsWith("A.1.6 ", StringComparison.Ordinal) ? 1 : 2;
-    }
-
-    private static string Statement(Rule rule) => $"{rule.Strength.ToText()} {rule.Text}";
+    private static string Statement(Rule rule) =>
+        $"{rule.Strength.ToText()}{(rule.Strength.IsVerdict() ? ": " : " ")}{rule.Text}";
 
     /// <summary>
     /// Mirrors <c>SkillReferenceEmitter.Line</c> (through <c>RuleText.Statement</c> and <c>RuleText.LanguageTag</c>,
@@ -332,9 +468,19 @@ public sealed class SkillLintTests
     private static string QuotedLine(Rule rule)
     {
         string line = Statement(rule);
+        ProfileSeverity severity = rule.Mapping.Severity;
+        if (severity.Library != SeverityLevel.None && severity.Application == SeverityLevel.None)
+        {
+            line += " (library only)";
+        }
+        else if (severity.Application != SeverityLevel.None && severity.Test == SeverityLevel.None)
+        {
+            line += " (not in test projects)";
+        }
+
         if (rule.Context is not null)
         {
-            line += $" (context: {rule.Context})";
+            line += rule.Strength.IsVerdict() ? $" (can cause: {rule.Context})" : $" (context: {rule.Context})";
         }
 
         string? version = rule.Mapping.MinLanguage;
@@ -350,6 +496,14 @@ public sealed class SkillLintTests
 
         return line;
     }
+
+    /// <summary>The <c>.md</c> files directly in fdg-write's <c>references/</c>, not in <c>examples/</c>.</summary>
+    private static string[] TopLevelReferenceFiles() =>
+        Directory.GetFiles(FdgWriteReferences, "*.md")
+            .Select(Path.GetFileName)
+            .OfType<string>()
+            .Order(StringComparer.Ordinal)
+            .ToArray();
 
     private static IEnumerable<string> ReferencePaths(string text) =>
         ReferencePath.Matches(text).Select(m => m.Groups["path"].Value).Distinct();

@@ -143,6 +143,9 @@ public sealed record SarifResult(string RuleId, string Level, string Message, st
     /// <summary>Suppressed in source, for example by <c>#pragma warning disable</c>.</summary>
     public bool Suppressed { get; init; }
 
+    /// <summary>1-based, as in SARIF's <c>region.startColumn</c>.</summary>
+    public int Column { get; init; } = 1;
+
     public static string Log(IEnumerable<SarifResult> results)
     {
         var array = new JsonArray();
@@ -158,7 +161,7 @@ public sealed record SarifResult(string RuleId, string Level, string Message, st
                     ["physicalLocation"] = new JsonObject
                     {
                         ["artifactLocation"] = new JsonObject { ["uri"] = r.Uri ?? new Uri(r.FilePath).AbsoluteUri },
-                        ["region"] = new JsonObject { ["startLine"] = r.Line, ["startColumn"] = 1, ["endLine"] = r.Line, ["endColumn"] = 2 },
+                        ["region"] = new JsonObject { ["startLine"] = r.Line, ["startColumn"] = r.Column, ["endLine"] = r.Line, ["endColumn"] = r.Column + 1 },
                     },
                 }),
             };

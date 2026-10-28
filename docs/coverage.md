@@ -6,20 +6,336 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 
 | Chapter | Rules | sdk | fdg | judgment | none | verified |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 3 Naming Guidelines | 87 | 34 | 0 | 53 | 0 | 87 |
-| A C# Coding Style Conventions | 71 | 43 | 2 | 26 | 0 | 71 |
-| Total | 158 | 77 | 2 | 79 | 0 | 158 |
+| 2 Framework Design Fundamentals | 32 | 0 | 0 | 32 | 0 | 32 |
+| 3 Naming Guidelines | 87 | 33 | 10 | 44 | 0 | 87 |
+| 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 70 |
+| 5 Member Design | 133 | 20 | 39 | 74 | 0 | 133 |
+| 6 Designing for Extensibility | 22 | 0 | 2 | 20 | 0 | 22 |
+| 7 Exceptions | 70 | 20 | 10 | 40 | 0 | 70 |
+| 8 Usage Guidelines | 107 | 28 | 21 | 58 | 0 | 107 |
+| 9 Common Design Patterns | 175 | 15 | 50 | 110 | 0 | 175 |
+| A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
+| D Breaking Changes | 63 | 0 | 0 | 63 | 0 | 63 |
+| Total | 830 | 176 | 144 | 510 | 0 | 830 |
 
 ## Non-guideline content
 
 Book text that is not a guideline, and where it went: kept as the rationale of a rule, kept as background, or dropped as obsolete.
 
+### Chapter 2: Framework Design Fundamentals
+
+- **2** (background): The chapter introduction (a framework for a broad range of developers, one programming model for every kind of application and language) is background for FDG2001 to FDG2003, which follow it.
+- **2.1** (background): Progressive Frameworks: the history of multiframework platforms, Figures 2-1 and 2-2 (learning curves) and the Hejlsberg and Vick annotations are background for the chapter's aim of one framework with a gradual learning curve. No guideline is stated.
+- **2.2** (rationale): The section introduction, the Mariani annotation and the Pit of Success sidebar explain why the principles of 2.2.1 to 2.2.4 exist (VB.NET usability problems, making the right way the easy way). They are rationale for all of the chapter's rules.
+- **2.2.1** (rationale): The Framework Design Principle box (frameworks must be designed starting from usage scenarios and code samples), the narrative on scenario-driven API specifications and language-specific samples, and footnote 3 (TDD and use cases) are rationale for FDG2004 to FDG2010.
+- **2.2.1.1** (rationale): The narrative and annotations on formal and informal usability studies are rationale for FDG2011.
+- **2.2.2** (rationale): The Framework Design Principle box (a low barrier to entry through ease of experimentation) and the list of what an API must do to be easy to experiment with are rationale for FDG2012 to FDG2018.
+- **2.2.3** (rationale): The Framework Design Principle box (a framework must be usable for simple scenarios without documentation) and the Sells and Cwalina annotations are rationale for FDG2019 to FDG2021.
+- **2.2.3.1** (rationale): The narrative on reserving simple names for common types (the File and NtfsFile example) and on descriptive names is rationale for FDG2022 to FDG2025.
+- **2.2.3.2** (rationale): The EventLog example of an exception message is rationale for FDG2026; chapter 7 holds the exception guidelines.
+- **2.2.3.3** (rationale): The narrative on strong typing and on property bags as an exception to the rule is rationale for FDG2027.
+- **2.2.3.4** (rationale): The narrative on consistency with familiar APIs is rationale for FDG2028.
+- **2.2.3.5** (rationale): The narrative on abstractions in common-scenario APIs (and their place in testability and extensibility, see chapter 6) is rationale for FDG2029.
+- **2.2.4** (rationale): The Framework Design Principle box (layered design gives both power and ease of use), the narrative on low-level and high-level APIs and the JSON example are rationale for FDG2030 to FDG2032.
+- **2.2.4.1** (rationale): Exposing layers in separate namespaces, the networking example and the remark that most frameworks should factor namespaces this way have no guideline icon. They are rationale for FDG2031, which advises against the alternative of 2.2.4.2 when the low-level APIs are complex.
+- **2.2.4.2** (rationale): The narrative on layers in one namespace (the System.Text example) and the Clarke annotation on runtime behavior across layers are rationale for FDG2030 to FDG2032.
+- **Summary** (background): The chapter summary restates the chapter's aim and states no guideline.
+
 ### Chapter 3: Naming Guidelines
 
-- **3.1.1** (background): Brad Abrams' annotation on the history of Table 3-1 (the dropped convention for instance field names) is background; it is kept in the body of FDG3002.
-- **3.4** (background): The narrative that introduces the namespace categories (application model, core, technology groups) is background for the rules of 3.4.1; the category definitions themselves are not guidelines.
-- **3.6.4** (background): The opening text scopes the field guidelines to static public and protected fields (internal and private fields are not covered, and public or protected instance fields are disallowed by the member design guidelines in chapter 5). It is background for the field rules that follow.
+- **3** (background): The chapter introduction (consistent naming makes a framework usable; most naming guidelines are conventions without a technical rationale) and the Cwalina annotation (the BCL team invests a great deal of time in naming) are background for the whole chapter. Its scope statement (the guidance applies only to publicly exposed APIs: public or protected types and members, and the parameters of public or protected members) is why the chapter 3 analyzers and the CA1707 and CA1708 mappings check only the public API.
+- **3.1** (background): The introduction (the CLR supports case-insensitive languages, so case alone must not distinguish names, but casing makes names readable) is background for FDG3001 to FDG3007.
+- **3.1.1** (rationale): The definitions of PascalCasing and camelCasing with their examples (PropertyDescriptor, HtmlTag, IOStream; propertyDescriptor, ioStream, htmlTag) and the Abrams annotation on the origin of the terms (SCREAMING_CAPS did not survive) are rationale for FDG3001 and FDG3002. Table 3-1 and the Abrams annotation on its history are kept in the body of FDG3002.
+- **3.1.2** (rationale): The introduction (avoid acronyms unless widely understood, such as HTML, XML and IO), the Cwalina annotation (acronyms differ from abbreviations, which are never used), the casing of longer and two-letter acronyms and the StartIO and ProcessHtmlTag examples are rationale for FDG3003 to FDG3005; the acronyms named here are the ones FDG3003 and FDG3004 check.
+- **3.1.3** (background): The one-sentence introduction (most compound terms count as one word for casing) is background for FDG3006; Table 3-2 and the text after it are kept in the body of FDG3006.
+- **3.1.4** (rationale): The introduction (languages on the CLR need not be case sensitive, so externally accessible APIs cannot rely on case alone), the Vick annotation (Visual Basic and COM needed case insensitivity) and the Richter annotation (the CLR itself is case sensitive; compilers and reflection resolve case) are rationale for FDG3007.
+- **3.2** (background): The one-sentence introduction (word choice, abbreviations and acronyms, language-specific names) is background for FDG3008 to FDG3024.
+- **3.2.1** (rationale): The introduction (names must make sense on first reading; clarity matters more than brevity; names follow scenarios and concepts rather than technologies) is rationale for FDG3008 to FDG3013.
+- **3.2.2** (rationale): The introduction (do not use abbreviations or acronyms that are not generally understood) is rationale for FDG3014 and FDG3015.
+- **3.2.3** (rationale): The introduction (languages have aliases for primitive types, such as int for System.Int32, which identifiers avoid for cross-language use) and the Richter annotation (he never uses the aliases; NullReferenceException and Visual Basic's Nothing) are rationale for FDG3016 to FDG3018.
+- **3.2.4** (background): The introduction (a new type or member sometimes has to supersede an existing one and needs a new name) is background for FDG3019 to FDG3024.
+- **3.3** (rationale): The introduction (an assembly usually maps to one DLL and a package has the same name, so only DLL naming is described), the separation of namespaces from DLL and assembly names (the MyCompany.MyTechnology example), and the Richter (multifile assemblies; the CLR does not relate namespaces to file names) and Abrams (developer view versus deployment view) annotations are rationale for FDG3025 and FDG3026.
+- **3.4** (rationale): The introduction, the namespace template &lt;Company>.(&lt;Product>|&lt;Technology>)[.&lt;Feature>][.&lt;Subnamespace>] and its examples (Microsoft.VisualStudio, Fabrikam.Math, Litware.Security) are rationale for FDG3027 to FDG3032. The closing sentence (the next section covers special subnamespaces) is kept in the body of FDG3032.
+- **3.4.1** (rationale): The introduction (namespaces resolve type name ambiguities, which is no excuse for known ambiguities between types commonly used together) is rationale for FDG3033 to FDG3037; the list of namespace categories is kept in the body of FDG3033.
+- **3.4.1.1** (background): The definition of application model namespaces (used together, rarely with other application models: System.Windows*, System.Web.UI*) is background for FDG3034 and FDG3037; their notes repeat it.
+- **3.4.1.2** (background): The definition of infrastructure namespaces (rarely imported in common applications, such as System.Windows.Forms.Design, *.Design and *.Permissions) states no guideline: avoiding conflicts with their types is not critical. FDG3035 excludes them from the core namespaces.
+- **3.4.1.3** (background): The definition of core namespaces (all System namespaces except application model and infrastructure namespaces, such as System.IO, System.Xml, System.Net and System itself) is background for FDG3035; its notes repeat it.
+- **3.4.1.4** (background): The definition of technology namespace groups (namespaces with the same first two parts, for example Microsoft.Build.Tasks and Microsoft.Build.Utilities) is background for FDG3036 and FDG3037; their notes repeat it.
+- **3.5** (rationale): The narrative on noun names for classes and structs and adjective names for capability interfaces, on giving the most recognizable names to the most used types (Printer rather than PrintQueue) and on naming for scenarios rather than the inheritance hierarchy (Stream, StreamReader, TextReader, StringReader, FileStream), with the Cwalina annotation, is rationale for FDG3038 to FDG3043.
+- **3.5.1** (background): The introduction (generics introduced type parameters as a new kind of identifier) is background for FDG3044 to FDG3047.
+- **3.5.2** (background): The one-sentence introduction (follow these guidelines when deriving from or implementing .NET types) is background for FDG3048 to FDG3059. The rows of Table 3-5 are the rules FDG3049 to FDG3059, each with its base type as context; the text after the table is kept in the body of FDG3048.
+- **3.5.3** (background): The introduction (enum names follow the type naming rules, with additional guidelines) is background for FDG3060 to FDG3064.
+- **3.6** (background): The one-sentence introduction (types are made of methods, properties, events, constructors and fields) is background for FDG3065 to FDG3079.
+- **3.6.1** (rationale): The introduction (methods take actions, so their names are verbs, unlike property and type names) and the Clarke annotation (name methods for the task they enable; the XPathDocument usability study) are rationale for FDG3065.
+- **3.6.2** (rationale): The introduction (properties refer to data, so their names are nouns or adjectives, always PascalCased) is rationale for FDG3066 to FDG3070.
+- **3.6.3** (rationale): The introduction (events refer to an action, so they are named with verbs whose tense tells when the event is raised) is rationale for FDG3071 to FDG3076.
+- **3.6.4** (background): The opening text limits the field guidelines to public and protected static fields (no guideline covers internal or private fields, and chapter 5's member design guidelines disallow public or protected instance fields). It is background for the field rules that follow.
+- **3.7** (rationale): The introduction (parameter names are shown in documentation, in designers and in IntelliSense) is rationale for FDG3080 to FDG3082.
+- **3.7.1** (background): The one-sentence introduction (naming parameters of operator overloads) is background for FDG3083 to FDG3086.
+- **3.8** (obsolete): The introduction says the guidance of earlier editions is obsolete and archived in Appendix B (B.3.8, recorded under otherContent); FDG3087 is the current rule.
+- **Summary** (background): The chapter summary states no guideline.
+
+### Chapter 4: Type Design Guidelines
+
+- **4** (background): The chapter introduction and Figure 4-1 (a diagram of the kinds of types: classes, interfaces, structs, enums, static classes, and other special reference types covered elsewhere) are background for the whole chapter; FDG4001 follows them.
+- **4.1** (rationale): The narrative on top-down factoring of a large framework into namespaces is rationale for FDG4002 to FDG4006; the namespace naming guidelines are in section 3.4.
+- **4.2** (rationale): The comparison of reference and value types (allocation, arrays, boxing, assignment, parameter passing), footnote 1 on immutable types and the Mariani and Sells annotations are rationale for FDG4007 and FDG4008.
+- **4.3** (rationale): The narrative on evolving class-based and interface-based APIs (the Stream timeout example, the three StreamReader options, `CollectionContract<T>`), the Barton annotation on default interface methods and the Cwalina annotation on interfaces as contracts are rationale for FDG4009 to FDG4012. The Barton annotation's proto-guideline on default interface methods has no icon and is not a rule.
+- **4.5** (rationale): The definition of static classes, the C# and C++ examples and the narrative on their use (shortcuts, extension method holders) are rationale for FDG4016 to FDG4019.
+- **4.6** (rationale): The narrative on interfaces as the CLR's substitute for multiple inheritance and as a common API for value types (the Component, Boolean and String examples) is rationale for FDG4020 and FDG4021.
+- **4.7** (background): The introduction defines a struct as the general-purpose value type and points to section 4.8 for enums. It is background for FDG4026 to FDG4033.
+- **4.8** (rationale): The definitions of simple and flag enums with the Color and AttributeTargets examples, the Abrams and Clarke annotations and the narrative on enums replacing integer constants are rationale for FDG4034 to FDG4043.
+- **4.8.1** (background): The Richter annotation on using flag enums is background for FDG4044 to FDG4049.
+- **4.8.2** (rationale): The narrative on the compatibility risk of adding a value that an existing API returns is rationale for FDG4050.
+- **4.9** (rationale): The definition of nested types, the OuterType example and the narrative on when nested types suit implementation details are rationale for FDG4051 to FDG4056.
+- **4.10** (background): The introduction, which says several attributes should be applied to assemblies with public types, is background for FDG4057 to FDG4062.
+- **4.11** (rationale): The narrative on the gap between enums and strings (the RSACryptoServiceProvider.SignData example), footnote 6 and the HashAlgorithmName example of a strongly typed string are rationale for FDG4063 to FDG4070.
+- **Summary** (background): The chapter summary states no guideline.
+
+### Chapter 5: Member Design
+
+- **5** (background): The chapter introduction (methods, properties, events, constructors and fields are members; a member is virtual or not, abstract or concrete, and static or instance-level; chapter 6 adds the guidelines for extensibility) is background for the whole chapter.
+- **5.1** (background): The section introduction lists the member kinds that the general guidelines of 5.1 cover. It states no guideline.
+- **5.1.1** (rationale): The definition of member overloading and its signature rules, the WriteLine example, the Rector annotation and the DateTime example are rationale for FDG5001 to FDG5016; operator overloading is covered in section 5.7.
+- **5.1.2** (background): The definition of explicit interface member implementation, its example and the Hejlsberg annotation are background for FDG5017 to FDG5022.
+- **5.1.3** (rationale): The narrative on the two API styles, properties and methods, and when each reads better is rationale for FDG5023 to FDG5025.
+- **5.2** (background): The section introduction (properties are smart fields: used like fields, but as flexible as methods) is background for FDG5026 to FDG5031.
+- **5.2.1** (background): The definition of an indexer, the String example, the sentence that limits indexers to APIs that give access to the items of a logical collection, and the Mariani annotation are background for FDG5032 to FDG5040; FDG5034 and FDG5035 rely on the logical-collection sentence.
+- **5.2.2** (background): The TextChanged example of a property change notification event and the Mariani and Sells annotations are background for FDG5041 and FDG5042.
+- **5.3** (background): The section introduction (type constructors and instance constructors, the Customer example, default constructors, and constructors as the most natural way to create instances) is background for FDG5043 to FDG5052.
+- **5.3.1** (background): The definition of a type (static) constructor and when the runtime runs it is background for FDG5053 to FDG5055.
+- **5.4** (background): The section introduction (events as the most common callbacks, event handlers and event handling methods, the sender and event arguments convention, pre-events and post-events, and the AlarmClock example) is background for FDG5056 to FDG5064; FDG5064 relies on the definition of pre-events.
+- **5.5** (rationale): The encapsulation principle (fields should be private so that they can change without breaking other code), with constant and static read-only fields excluded, is rationale for FDG5065 to FDG5068. CA2211 is not mapped, because no guideline states the principle for static fields.
+- **5.6** (background): The definition of extension methods, the StringExtensions example and the requirement that the holding class be static and its namespace imported are background for FDG5069 to FDG5080.
+- **5.7** (rationale): The System.Decimal example, the warning that operator overloads are often abused and the Sells annotation (operators do not show up in IntelliSense) are rationale for FDG5081 to FDG5087.
+- **5.7.1** (background): The section only says that overloading operator == is complicated and refers to sections 8.9.1 and 8.13, whose rules cover it (CA1046 and CA2231 belong there).
+- **5.7.2** (background): The definition of implicit and explicit conversion operators and the RangedInt32 example are background for FDG5088 to FDG5093.
+- **5.7.3** (background): The section introduction (inequality operators should be consistent with the built-in operators; != belongs with == in section 8.13) is background for FDG5094 to FDG5099.
+- **5.8** (background): The section introduction (broad guidelines on parameter design and argument checks, and a pointer to the parameter naming guidelines of chapter 3) is background for FDG5100 to FDG5104.
+- **5.8.1** (rationale): The introduction (favor enums when they make client code more readable, especially in commonly used APIs, and use Booleans when enums would add unneeded complexity or the API is very rarely used) is rationale for FDG5105 to FDG5107.
+- **5.8.2** (rationale): The introduction (rigorous argument checks are crucial in reusable libraries, and users accept their cost for better error reporting when arguments are validated high on the call stack) and the Mariani annotation (low in the stack, as in comparison and hashing functions, validation can cost too much) are rationale for FDG5108 to FDG5112. The FDG5108 notes record that CA1062 still reports such functions.
+- **5.8.3** (background): The four groups of parameters (by-value, ref, in and out) and their semantics, the Add, Swap and Uri.TryParse examples, and the Vick and Mariani annotations are background for FDG5113 to FDG5115.
+- **5.8.4** (background): The description of variable numbers of arguments through array parameters, the String.Format examples, and the note that only the last parameter can take params are background for FDG5116 to FDG5123.
+- **5.8.5** (rationale): The introduction (a managed framework should keep pointers out of its public surface unless interoperability needs them, and Span&lt;T> and ReadOnlySpan&lt;T> are preferred when possible, see section 9.12) is rationale for FDG5124 to FDG5126 and for FDG5102.
+- **5.9** (rationale): The four tuple mechanisms (System.Tuple, System.ValueTuple, named tuples and descriptive types), the GetPerson and target heart rate examples, the benefits of descriptive types and the note that changing the number of tuple elements is a breaking change are rationale for FDG5127 to FDG5133.
+- **Summary** (background): The chapter summary states no guideline.
+
+### Chapter 6: Designing for Extensibility
+
+- **6** (background): The chapter introduction (extensibility needs a careful look at the costs and benefits of each mechanism: subclassing, events, virtual members, callbacks; the design details are in other sections, which the chapter cross-references; a good understanding of object-oriented programming is assumed) is background for the whole chapter.
+- **6.1** (rationale): The section introduction (mechanisms range from less powerful and less costly to very powerful and expensive; choose the least costly one that meets the requirements, since extensibility can be added later but never taken away without breaking changes) is rationale for FDG6001 to FDG6016.
+- **6.1.1** (rationale): The definition of sealed and unsealed classes, the String and TraceSource example, and the narrative that subclasses can add members, apply attributes and implement interfaces, while protected and virtual members are costly, so an unsealed class without them is inexpensive extensibility, are rationale for FDG6001.
+- **6.1.2** (rationale): The narrative that protected members make subclassing more powerful without complicating the main public interface, the SourceSwitch.Value and FlowSwitch example, and the warning that "protected" gives a false sense of security, so the defensive practices of public members apply, are rationale for FDG6002 and FDG6003.
+- **6.1.3** (rationale): The definitions of callbacks and events, the RemoveAll and Timer examples, the pointer to section 5.4, and the comparison with virtual members (more approachable, customizable at runtime, but slower, using more memory, and running arbitrary code that needs a security, correctness and compatibility analysis) are rationale for FDG6004 to FDG6010.
+- **6.1.4** (rationale): The narrative on virtual members (similar to callbacks in extensibility, faster, natural for specialization, fixed at compile time, costly to design, test and maintain) and on limiting their extensibility is rationale for FDG6011 to FDG6013. The Cwalina annotation (overrides must preserve the contract of the base class, which rarely requires calling the base implementation) is background.
+- **6.1.5** (rationale): The definition of an abstraction (Stream, IEnumerable&lt;T>, Object), extension by implementing one, the narrative on the high design cost of abstractions and on too many abstractions hurting usability, the Richter annotation on the undocumented contract of ICloneable, and the narrative on the power of abstractions (plug-ins, inversion of control, pipelines, testability) are rationale for FDG6014 to FDG6016.
+- **6.2** (rationale): The definition of a base class, the IList&lt;T>, Collection&lt;T> and OrderCollection example, the narrative that base classes hold too much implementation to serve as abstractions, the Cwalina annotation on using Collection&lt;T> directly, and the narrative that base classes add surface area and depth, so they should provide significant value to users (with delegation to an internal implementation when they would help only the implementers), are rationale for FDG6017 to FDG6019. That last advice has no icon and is not a rule.
+- **6.3** (rationale): The narrative on the power and danger of extensible design, the Cwalina annotation on limiting a hierarchy to a fixed set of classes with an internal constructor (the LivingOrganism, Animal and Plant example), the definition of sealing classes and members with the NonNullCollection example, and the advice to seal only with good reasons are rationale for FDG6020 to FDG6022.
+- **Summary** (background): The chapter summary states no guideline.
+
+### Chapter 7: Exceptions
+
+- **7** (rationale): The chapter introduction and its list of the benefits of exceptions over return-value error reporting (they fit object-oriented constructs such as constructors, properties and operators, keep APIs consistent, let handling code be placed near or far from the failure, cannot be silently ignored, carry rich information such as the call stack, allow unhandled exception handlers, and support instrumentation), with the Richter, Sells, Clarke, Abrams, Rector, Barton and Brumme annotations, are rationale for FDG7001, FDG7002 and the whole chapter. The Brumme and Richter annotations on unhandled exception filters (only applications with application-specific work should register one) have no icon and are not rules.
+- **7.1** (rationale): The definition of execution failure (a member cannot do what its name implies), the Cwalina annotation (exceptions communicate error conditions, not exceptional conditions), the narrative on the two usual excuses for error codes (syntax and performance, the latter answered in 7.5) and the Richter annotation on syntax are rationale for FDG7001 to FDG7011. The closing sentence of the section (it covered throwing; 7.2 covers the type to throw) follows FDG7011 and is kept in its body by the extractor; it states no guideline.
+- **7.2** (rationale): The classification of error conditions into usage errors, execution errors, program errors and system failures, with the File.Open and ArgumentNullException examples and footnote 1 (the CLR shuts the process down when the JIT compiler runs out of memory), is rationale for FDG7012 to FDG7018. The closing sentence (now focus on the message) follows FDG7018 and is kept in its body by the extractor.
+- **7.2.1** (background): The one-sentence introduction (these guidelines define best practices for exception message text) is background for FDG7019 to FDG7024.
+- **7.2.2** (rationale): The definitions of handling an exception (a catch of a specific type whose consequences are fully understood, such as falling back to a default configuration when the file is missing) and of swallowing one (a catch of a generic type that continues without understanding the failure) are rationale for FDG7025 to FDG7033.
+- **7.2.3** (rationale): The narrative on wrapping lower-layer exceptions that would be meaningless at a higher layer (the transaction management and TypeInitializationException examples) and the Clarke annotation (terminology in error messages must make sense where they are read) are rationale for FDG7034 to FDG7036.
+- **7.3** (background): The one-sentence introduction (the section covers the standard .NET exceptions and is not exhaustive) is background for FDG7037 to FDG7054.
+- **7.4** (background): The introduction (custom exceptions are needed when existing ones cannot be used, as 7.2 decides) is background for FDG7055 to FDG7060.
+- **7.5** (rationale): The introduction (throwing can be orders of magnitude slower, but good performance is possible without error codes through two patterns) is rationale for FDG7061 to FDG7070.
+- **7.5.1** (background): The ICollection&lt;T>.Add and IsReadOnly example and the definitions of tester and doer are background for FDG7062.
+- **7.5.2** (background): The description of the Try pattern with the DateTime.Parse and TryParse example, and the ConcurrentDictionary.TryAdd example of the pattern solving the race condition of Tester-Doer, are background for FDG7063 to FDG7070.
+- **Summary** (background): The chapter summary states no guideline.
+
+### Chapter 8: Usage Guidelines
+
+- **8** (background): The chapter introduction (how public APIs should use common types: direct use of built-in types such as Collection&lt;T> and the serialization attributes, implementing common interfaces, inheriting from common base classes, and overloading common operators in the last section) is background for the whole chapter.
+- **8.1** (background): The one-sentence introduction (the section covers arrays in publicly accessible APIs) is background for FDG8001 to FDG8004.
+- **8.2** (rationale): The introduction defines custom attributes (System.Attribute, the NameAttribute example), their properties, required arguments (set through constructor parameters, the ConditionalAttribute example) and optional arguments (set through property setters, the AttributeUsageAttribute example). These definitions are rationale for FDG8005 to FDG8012.
+- **8.3** (rationale): The definition of a collection (a type designed to manipulate a group of objects with a common characteristic, which in this section means a type implementing IEnumerable or IEnumerable&lt;T>) is rationale for FDG8013 to FDG8043.
+- **8.3.1** (background): The one-sentence introduction (the subsection covers collections used as parameters) is background for FDG8018 and FDG8019.
+- **8.3.2** (background): The one-sentence introduction (the subsection covers collections returned from methods and property getters) is background for FDG8020 to FDG8026.
+- **8.3.2.1** (rationale): The definitions of snapshot collections (a state at some point in time, such as the rows a database query returned) and live collections (always the current state, such as the items of a ComboBox) are rationale for FDG8027 and FDG8028.
+- **8.3.3** (background): The introduction (arrays and collections are used in very similar ways but differ in performance, usability and versioning) is background for FDG8029 to FDG8032.
+- **8.3.4** (background): The one-sentence introduction (follow these guidelines when implementing custom collections) is background for FDG8033 to FDG8037.
+- **8.3.4.1** (rationale): The two reasons for creating collections (a new data structure with its own operations, such as List&lt;T>, LinkedList&lt;T> or Stack&lt;T>, used mostly inside implementations; and a specialized collection for a specific set of items, such as StringCollection, exposed in APIs) are rationale for FDG8038 to FDG8043.
+- **8.4** (background): The introduction (DateTime stores a local or UTC time; DateTimeOffset adds the offset from UTC and so represents a point in time more precisely), the Moore annotation on naming DateTimeOffset (Date + Time + Offset) and the listing of the main properties of the two types are background for FDG8044 to FDG8049.
+- **8.5** (rationale): The description of ICloneable (a single Clone method), of deep and shallow copies, and the reason not to implement it (its contract does not say which copy it makes, so consumers cannot rely on it), with the Cwalina annotation (never ship an interface without both implementations and consumers; the framework had no consumer of ICloneable), are rationale for FDG8050 to FDG8052.
+- **8.6** (background): The introduction (IComparable&lt;T> defines an order, mostly for sorting; IEquatable&lt;T> defines equality, mostly for look-ups) with the two interface definitions is background for FDG8053 to FDG8058.
+- **8.7** (background): The section only says that IDisposable is the Dispose Pattern of section 9.3; it states no guideline.
+- **8.8** (background): The introduction (Nullable&lt;T> represents value types with null values; C# has aliases, lifted operators and the null-coalescing operator for it) with its two code examples is background for FDG8059 to FDG8062.
+- **8.9** (background): The one-sentence introduction (System.Object has several commonly overridden members, covered in the following subsections) is background for FDG8063 to FDG8085.
+- **8.9.1** (rationale): The definitions of value equality (the default Equals of value types, which compares all fields through reflection and is often unacceptably inefficient) and of reference equality (the default Equals of reference types, which some types such as String override with value equality) are rationale for FDG8063 to FDG8070.
+- **8.9.2** (rationale): The introduction (a hash code stands for an object's identity as the type's equality implementation defines it, and hashtables use hash codes) is rationale for FDG8071 to FDG8075.
+- **8.9.3** (rationale): The introduction (ToString is meant for general display and debugging; the default implementation returns the type name, is not very useful and should be overridden) is rationale for FDG8076 to FDG8085.
+- **8.10** (background): The introduction (serialization converts an object into a form that can be persisted or transported; .NET has many serialization technologies, and most of the serialization guidance of the second edition moved to Appendix B because formats change quickly) is background for FDG8086 to FDG8090.
+- **8.11** (background): The introduction (System.Uri represents URIs, which strings can also represent; the section helps choose between Uri and String) is background for FDG8091 to FDG8095.
+- **8.11.1** (background): The one-sentence introduction (the subsection helps implement code that uses System.Uri) is background for FDG8094 and FDG8095.
+- **8.12** (background): The one-sentence introduction (the section covers System.Xml types that can represent XML data) is background for FDG8096 to FDG8098.
+- **8.13** (background): The introduction (operator== and operator!= are called the equality operators) is background for FDG8099 to FDG8107. The closing sentence of the chapter (the next chapter covers design patterns) follows FDG8107 and is kept in its body by the extractor; it states no guideline.
+
+### Chapter 9: Common Design Patterns
+
+- **9** (background): The chapter introduction (guidelines and discussion for a few patterns that .NET APIs use often) is background for the whole chapter.
+- **9.1** (rationale): The definition of an aggregate component (a facade over lower-level factored types that supports component-oriented design and is the entry point for exploring its namespace), the It-Just-Works principle with its limit (do not open a file implicitly and then require an explicit close), the File.ReadAllLines example of a single call that does a whole task, the point that users should not have to implement interfaces or edit configuration files to get started (default implementations, optional settings with sensible defaults, tool support), support for the Visual Studio designers through IComponent or a UI element base class, and the Cwalina annotations (HttpClient and other examples; hide complexity completely or not at all; System.ServiceProcess would reach more developers with event handlers than with overrides) are rationale for FDG9001 to FDG9017.
+- **9.1.1** (rationale): The definition of component-oriented design and the Create-Set-Call Pattern (with the MessageQueue and PerformanceCounter examples), the advice to report invalid states with InvalidOperationException when an operation is performed rather than from the constructor or a setter, the Clarke and Nasarre annotations, and the list of additional requirements of aggregate components (a simple constructor, constructor parameters that initialize properties, properties with getters, setters and sensible defaults, options as properties, callbacks as events) are rationale for FDG9006 to FDG9010.
+- **9.1.2** (rationale): The definition of factored types (the richer types under an aggregate component, without modes and with clear lifetimes), the SerialPort.BaseStream example and the Haack annotation (factored types with an explicit lifetime could implement IDisposable) are rationale for FDG9014 and FDG9017.
+- **9.1.3** (background): The one-sentence introduction (it says the guidelines below are for aggregate component design) is background for FDG9001 to FDG9017.
+- **9.2** (background): The introduction (operations that feature I/O benefit from asynchronous APIs; .NET has three asynchronous API patterns: the Classic, Event-Based and Task-Based Async Patterns) is background for FDG9018 to FDG9050.
+- **9.2.1** (rationale): The history of the patterns (the Event-Based Async Pattern optimized for usability and designers, the Classic Async Pattern for power and small surface area) and the conclusion that both are now legacy patterns, not suitable for new types, are rationale for FDG9018 and FDG9019.
+- **9.2.2** (rationale): The definition of the Task-Based Async Pattern (a naming, signature and behavioral convention based on Task and Task&lt;TResult>), its elements (the -Async method, the returned task, an optional CancellationToken parameter, with the File.ReadAllBytesAsync example) and the Barton annotation (the async keyword is a good start but does not enforce naming, usage exceptions, parameter alignment or cancellation) are rationale for FDG9020 to FDG9029.
+- **9.2.3** (rationale): The four predefined task-like return types, footnote 1 (async void methods resemble the Event-Based Async Pattern more, and the book advises against them in public code; no guideline icon states it), footnote 2 (the versions that introduced Task&lt;TResult> and ValueTask&lt;TResult>), the motivation and usability costs of ValueTask&lt;TResult>, and the simple flow (no result: Task; commonly completes synchronously: ValueTask&lt;TResult>; otherwise Task&lt;TResult>) are rationale for FDG9030 to FDG9032.
+- **9.2.4** (background): The introduction (design reviews call the asynchronous version of a synchronous method its async overload; think of the two as overloads for their behavior but not their names) is background for FDG9033 to FDG9035.
+- **9.2.5** (background): The introduction (the section covers the parts of an implementation that callers can observe, such as returning a null Task, where the method should behave like the other methods of the Task-Based Async Pattern) is background for FDG9036 to FDG9044.
+- **9.2.5.1** (background): The introduction (the machinery that drives Task needs the Status value to match the state of the operation) is background for FDG9037 and FDG9038.
+- **9.2.7** (background): The section advises against the Classic Async Pattern for new APIs and says existing APIs should move to the Task-Based Async Pattern, which FDG9018 and FDG9019 state; its former guidelines moved to Appendix B (section B.9.2.2), and its code example is marked as deprecated.
+- **9.2.8** (background): The section advises against the Event-Based Async Pattern for new APIs and says existing APIs should move to the Task-Based Async Pattern, which FDG9018 and FDG9019 state, and that a new type may carry the new methods when mixing the patterns is confusing; its former guidelines moved to Appendix B (section B.9.2.4), and its code example is marked as deprecated.
+- **9.2.9** (background): The section only says that IAsyncDisposable is covered with the Dispose Pattern in section 9.4.4; it states no guideline.
+- **9.2.10** (background): The introduction (IAsyncEnumerable&lt;T> is mainly used to generate asynchronous iterators for the await foreach statement) is background for FDG9045 to FDG9048.
+- **9.3** (rationale): The definitions of a dependency property (a property whose value is kept in a property store rather than in a field) and of an attached dependency property (static Get and Set methods that describe a relationship between objects and their containers) are rationale for FDG9051 to FDG9061.
+- **9.3.1** (background): The one-sentence introduction (it says the guidelines below cover the details of designing dependency properties) is background for FDG9052 to FDG9058.
+- **9.3.2** (background): The description of attached dependency properties (defined on one type and set on objects of another, the Grid.Column example, accessors as static Get and Set methods registered with RegisterAttached) and the Nasarre annotation state no guideline of their own: attached dependency properties follow the same guidelines as other dependency properties.
+- **9.3.3** (rationale): The introduction (validation runs when a property value changes; the accessors of a dependency property cannot hold arbitrary validation code, so it is given at registration), with a validating setter of an ordinary property, is rationale for FDG9059.
+- **9.3.4** (rationale): The introduction (dependency property accessors should not raise change notifications, because XAML-generated code does not call them), with a notifying setter of an ordinary property, is rationale for FDG9060.
+- **9.3.5** (rationale): The definition of coercion (the setter modifies the value before the store is changed), with a coercing setter of an ordinary property, and the statement that dependency properties specify it at registration are rationale for FDG9061.
+- **9.4** (rationale): The introduction (managed memory is released by the GC, unmanaged resources must be released explicitly; finalizers run at an undetermined time and postpone collection, so IDisposable and GC.SuppressFinalize give a manual, earlier release; the Dispose Pattern standardizes finalizers and IDisposable) and the Pepin and Duffy annotations (call Dispose when ownership is obvious; neglecting it when ownership is shared does no harm) are rationale for FDG9062 to FDG9083.
+- **9.4.1** (rationale): The description of the Basic Dispose Pattern (IDisposable with a Dispose(bool) method that holds all cleanup logic shared with the optional finalizer), the DisposableResourceHolder example, the Sutter annotation on C++ destructors, the meaning of the disposing parameter (reference objects are accessed only when it is true), and the advice to override Dispose(bool) when a base class already implements the pattern are rationale for FDG9064 to FDG9072; no guideline icon states the last advice, which CA2215 checks and which is not mapped (FDG9064).
+- **9.4.2** (rationale): The definition of finalizable types (types that override the finalizer and provide a finalization code path in Dispose(bool)), the statement that the guidelines also apply to code called from a finalizer, the advice not to override Finalize again when the base class is finalizable, the Sutter annotation (finalizers make a type more expensive to use) and the ComplexResourceHolder example are rationale for FDG9073 to FDG9077.
+- **9.4.3** (rationale): The introduction (most operations are one-off, a few are inherently scoped, such as obtaining and releasing a lock, and IDisposable with the using statement can map them to lexical scopes) is rationale for FDG9078 and FDG9079.
+- **9.4.4** (background): The introduction (IAsyncDisposable permits the same cleanup as IDisposable with asynchronous methods when the work involves I/O) is background for FDG9080 to FDG9083.
+- **9.5** (rationale): The definition of factories (operations that abstract object creation), the two groups (factory methods such as File.Open and Activator.CreateInstance, and factory types with virtual instance factory methods, the StreamFactory example) are rationale for FDG9084 to FDG9092.
+- **9.6** (background): The introduction (LINQ makes it easier to interact with data sources; the following sections list guidelines for LINQ support, including the Query Pattern) is background for FDG9093 to FDG9107.
+- **9.6.1** (background): The overview of LINQ (its features: extension methods, lambda expressions, Func and Action, Expression, IQueryable&lt;T>, the Query Pattern and query expressions), the query example and the Mariani and Trofin annotations are background for FDG9093 to FDG9107.
+- **9.6.2** (background): The list of the three ways to support LINQ (implement IEnumerable&lt;T>, IQueryable&lt;T> or the Query Pattern) is background for the sections that follow, FDG9093 to FDG9107.
+- **9.6.5** (rationale): The definition of the Query Pattern (the methods of Figure 9-1 defined without implementing IQueryable&lt;T> or another LINQ interface), the notation of Figure 9-1 (S for a collection type, O&lt;T> for an ordered subtype, the this parameter for the source, member or extension methods, Expression&lt;Func&lt;...>> in place of Func&lt;...>) are rationale for FDG9099 to FDG9107; FDG9100, FDG9103 and FDG9106 take the method names of the figure.
+- **9.7** (rationale): The introduction (some implementations of an abstraction support a feature that others do not; a factored design with interfaces for optional features, the stream example, adds types and needs dynamic casts; the Optional Feature Pattern, as System.IO.Stream uses it, queries support through a property and calls the members directly) and the Cwalina annotation are rationale for FDG9108 to FDG9110.
+- **9.8** (rationale): The introduction (List&lt;string> cannot be cast to List&lt;object> because T is in both input and output positions; CountedReference&lt;T> has T only in output positions; the EnumeratorAdapter and ComparerAdapter examples of covariance and contravariance) and the Cwalina annotation are rationale for FDG9111 to FDG9123.
+- **9.8.1** (background): The statement that contravariance is indicated with the in keyword in C# and the In modifier in VB.NET, with the invariant and contravariant delegate example, is background for FDG9111 to FDG9114.
+- **9.8.2** (background): The statement that covariance is indicated with the out keyword in C# and the Out modifier in VB.NET, with the invariant and covariant delegate example, is background for FDG9115 to FDG9119.
+- **9.8.3** (rationale): The description of the Simulated Covariance Pattern (a root interface without members that use T in contravariant positions, implemented explicitly by the generic type, with the Foo&lt;T> and CountedReference&lt;T> examples) is rationale for FDG9120 to FDG9123.
+- **9.9** (rationale): The description of the Template Method Pattern (an algorithm outlined in nonvirtual, usually public, members that call protected virtual members, with the SetBounds example), its goal of controlling extensibility (one virtual overload keeps the overloads consistent; a public virtual member gives up control over what happens when it is called) and the convention that the protected virtual members take the name of the nonvirtual member with the suffix Core are rationale for FDG9124 to FDG9128; FDG6013 reports public virtual members.
+- **9.10** (background): The introduction (a timeout returns an operation before its completion when the time allocated to it elapses; the user specifies it as a method parameter or as a property, with an example of each) is background for FDG9129 to FDG9132.
+- **9.11** (background): The introduction (XAML is an XML format in which WPF and other technologies describe object graphs; the guidelines make types creatable by XAML readers) is background for FDG9133 to FDG9136.
+- **9.12** (rationale): The introduction (operations such as encoding, cryptography, serialization and escaping take an array and return a new array; the costs of copying part of an array or a string and of returning a precisely sized array; Span&lt;T>, ReadOnlySpan&lt;T>, Memory&lt;T> and ReadOnlyMemory&lt;T> as slices of arrays, stackalloc data, pointers and strings; the FromHexadecimal overload set) and the Barton annotation are rationale for FDG9137 to FDG9155; FDG9137 states the package requirement of the types.
+- **9.12.1** (rationale): The introduction (transformation operations take input as a parameter or from the instance and write output values; destination arrays avoid allocations at the cost of a complex signature; a Span slice keeps the signature simple; the three patterns of the following sections), the Kotas annotation, the double-and-retry caller and the OperationStatus loop are rationale for FDG9156 to FDG9159.
+- **9.12.2** (background): The introduction (the simplest buffer-writing method fits a fixed number of elements, as for a hash or a checksum, or one easily estimated from the input, as for Base64 text) and the Crc64 and TextTransforms examples are background for FDG9160.
+- **9.12.3** (rationale): The definition of the Try-Write Pattern (the prefix Try; a Boolean result that is false only if the destination is too small; optionally an input buffer; then the output buffer, and an out parameter that receives the count of elements written), the IPAddress and BrotliEncoder examples and the grow-and-retry callers are rationale for FDG9161 to FDG9169; FDG9162 and FDG9163 check the shape of the pattern.
+- **9.12.4** (rationale): The description of OperationStatus methods (like Try-Write methods, but with partial input, partial output and a non-throwing report of invalid input), the OperationStatus values, the ToHexadecimal and FromHexadecimal examples and the meaning of NeedsMoreData and InvalidData for the consumed count are rationale for FDG9170 to FDG9175; FDG9171 to FDG9174 check the shape of the signature.
+- **9.13** (background): The closing of the chapter and of the book (creating a great framework is demanding but fulfilling; the authors would like to hear about it) contains no guideline and is background only.
 
 ### Appendix A: C# Coding Style Conventions
 
-- **A** (rationale): The appendix introduction says that, unlike the framework design guidelines, these coding style conventions "are not required and should be treated as a set of suggestions", because they have no direct effect on most users of a framework. This is why every appendix A rule has style: true, is enabled by the profiles, and can be overridden.
+- **A** (rationale): The appendix introduction says that these coding style conventions, unlike the rest of the book's guidelines, are optional suggestions rather than requirements, because they hardly affect the users of a framework directly. This is why every appendix A rule has style: true, is enabled by the profiles, and can be overridden. The three principles (clarity wins over brevity, the form that reduces noise in a future diff is preferred, few rules with few exceptions) are rationale for FDGA004, FDGA006, FDGA038, FDGA039 and FDGA042; the Barton annotation and the note that the numbered chapters' code uses a compact paper-friendly style instead of these conventions are background.
+- **A.1.1** (background): The section introduction (the .NET BCL team braces in Allman style and requires braces in general, even where the language makes them optional, with the exceptions in the guidance) is background for FDGA001 to FDGA007.
+- **A.1.5** (rationale): The section introduction gives the BCL team's canonical modifier order, from the visibility modifiers through static, extern, the member slot modifiers, readonly, unsafe and volatile to async, which FDGA028 to FDGA037 express in detail and csharp_preferred_modifier_order follows. The list puts volatile after unsafe, but FDGA034 puts it immediately after static; the configuration follows FDGA034.
+- **A.2** (background): The section introduction (the Framework Design Guidelines govern identifier names, with additional conventions and exceptions for internal and private identifiers) is background for FDGA051 to FDGA058.
+- **A.3** (rationale): The section introduction (comments describe intent, algorithmic overview and logical flow; there is no minimum comment requirement, but most nontrivial routines should have comments that reflect the programmer's intent) is rationale for FDGA059 to FDGA063.
+
+### Appendix D: Breaking Changes
+
+- **D** (rationale): The appendix introduction says its content is "informative, not prescriptive": each kind of change gets the .NET BCL team's verdict (the check, cross and question icons, which become the strengths PERMITTED, NOT PERMITTED and CONTEXTUAL), and a library with a small audience may accept more breaking changes. It defines the four kinds of break (runtime, compilation, recompile, reflection) whose icons become each rule's context, and says the appendix covers public types and their public or protected members. This is why every appendix D rule is a judgment rule for the library profile only (application and test none).
+- **D.10** (background): The section introduction (simplification overloads add or drop parameters, alternative overloads change the type at a position; which breaks are possible depends on the kind) is background for FDGD035 and FDGD036.
+- **D.13** (background): A Final Note: the appendix is not exhaustive, and its general heuristic (changing an existing member probably breaks someone; adding new things probably does not) is background for FDGD001 to FDGD063.
+
+## Other parts of the book
+
+The parts of the book outside the chapters and appendices above, which carry no rules, and where their text went.
+
+### About This eBook
+
+- **About This eBook** (background): The publisher's note on reading the ebook: code listings also appear as images behind "Click here to view code image" links. The extractor drops those link paragraphs and keeps the code as text. No guideline is stated.
+
+### Dedication
+
+- **Dedication** (background): The authors' dedications. No technical content and no guideline.
+
+### Figures
+
+- **Figures** (background): The list of figures. The figures themselves are recorded with their chapters: Figures 2-1 and 2-2 in the non-guideline entry of section 2.1, Figure 4-1 in that of chapter 4, and Figure 9-1 in that of section 9.6.5. No guideline is stated.
+
+### Tables
+
+- **Tables** (background): The list of tables. Tables 3-1 to 3-5 and 5-1 are kept in the bodies of chapter 3, 5, 7 and 8 rules; Table 8-1 (the .NET serialization technologies) is part of the obsolete appendix B section B.8.10. No guideline is stated.
+
+### Foreword
+
+- **Foreword** (background): The foreword to the third edition: .NET's move from client-server applications to the cloud, and the guidelines this edition adds for it. No guideline is stated.
+
+### Foreword to the Second Edition
+
+- **Foreword to the Second Edition** (background): The foreword to the second edition: shared conventions make a framework, and an open-source project, easy to learn and to contribute to. No guideline is stated.
+
+### Foreword to the First Edition
+
+- **Foreword to the First Edition** (background): The foreword to the first edition: consistency as the key characteristic of a framework, and how the guidelines were agreed and kept as a living document. No guideline is stated.
+
+### Preface
+
+- **Preface** (background): The scope of the book: reusable libraries of every size, and only the design issues of their publicly accessible APIs (footnote 1: public types and their public, protected and explicitly implemented members), not implementation details; the annotations explain trade-offs and history. This scope is background for the profiles, where rules that matter only for a public API apply to the library profile alone.
+- **Guideline Presentation** (rationale): Defines the four strengths and the check and cross icons: a DO guideline should always be followed, a CONSIDER guideline generally followed but may be broken for a good reason, a DO NOT guideline almost never broken, and an AVOID guideline has known exceptions; a guideline may be followed by background, code samples and rationale. They become each rule's strength and text, and the text that follows a guideline becomes its body. The five sample guidelines repeat rules of the chapters.
+- **Language Choice and Code Examples** (background): The guidelines apply to every CLR language, but the code samples are written only in C#, as the language most readable to the broadest range of developers. No guideline is stated.
+- **About This Book** (background): A summary of each chapter and appendix (chapter 1 is the only chapter without guidelines, appendix B keeps obsolete guidance and appendix C is a sample API specification), and how to register the book with the publisher. No guideline is stated.
+
+### Acknowledgments
+
+- **Acknowledgments** (background): Thanks to the people who proposed and wrote the guidelines, the annotators, the reviewers and the editors. No technical content and no guideline.
+
+### About the Authors
+
+- **About the Authors** (background): Biographies of the three authors. No technical content and no guideline.
+
+### About the Annotators
+
+- **About the Annotators** (background): Biographies of the annotators, whose annotations are kept in the rule bodies as annotation blocks with the author's name. No guideline is stated.
+
+### Chapter 1: Introduction
+
+- **1** (background): The chapter introduction: guidelines give framework authors and their users a common language, and the history of APIs, frameworks and design conventions. The preface calls chapter 1 the only chapter without guidelines; it is background for the whole book.
+- **1.1** (background): Qualities of a Well-Designed Framework: frameworks are made of reusable APIs, which adds special considerations to the usual quality standards. Background for 1.1.1 to 1.1.7.
+- **1.1.1** (background): Well-Designed Frameworks Are Simple: cut a feature rather than ship a complex design, and the Sells annotation on client-first programming. Background for chapter 2, which covers the balance of power and simplicity.
+- **1.1.2** (background): Well-Designed Frameworks Are Expensive to Design: framework design is an explicit and distinct part of development, done by people with that responsibility, and the Toub and Barton annotations on API review. Background for the scenario-driven design and usability studies of section 2.2.1.
+- **1.1.3** (background): Well-Designed Frameworks Are Full of Trade-Offs: the practices are guidelines rather than rules because design manages trade-offs. Background for the strengths CONSIDER and AVOID and for the exceptions the rules state.
+- **1.1.4** (background): Well-Designed Frameworks Borrow from the Past: build on proven designs and innovate with caution (the Sells and Barton annotations). Background for the common design patterns of chapter 9.
+- **1.1.5** (background): Well-Designed Frameworks Are Designed to Evolve: weigh each trade-off against the ability to evolve the framework, and footnote 5 on backward compatibility as a basic of framework design. Background for appendix D.
+- **1.1.6** (background): Well-Designed Frameworks Are Integrated: frameworks must work with many tools, languages and application models. No guideline is stated.
+- **1.1.7** (background): Well-Designed Frameworks Are Consistent: consistency is the main theme of the book, and chapters 3 to 5 hold the core consistency guidelines. Background for the whole book.
+
+### Appendix B: Obsolete Guidance
+
+- **B** (background): The appendix introduction: it keeps guidance from earlier editions that no longer applies to new frameworks or new framework features, numbered by the section it last had (3.8 becomes B.3.8), and each section opens with a "Why this is Here" marker. Guidance that was only modified is not in it. The entries below record which current rule, if any, supersedes each section.
+- **B.3.8** (obsolete): Superseded by FDG3087. Naming Resources (PascalCasing resource keys, descriptive identifiers, no language keywords, only alphanumeric characters and underscores, exception message resources named after the exception type) assumed public resources; the marker says resources are rarely public and the third edition says not to expose localizable resources directly.
+- **B.4.1.1** (obsolete): Superseded by FDG4005. Standard Subnamespace Names: rarely used types belong in subnamespaces, so they do not clutter the main namespaces. The marker says the guidance does not contradict section 4.1; it is no longer generally applicable.
+- **B.4.1.1.1** (obsolete): Superseded by FDG4004. The .Design subnamespace for design-time types; the marker says it was replaced with a single sentence, which is in the body of FDG4004 (types used by code generators or IDE designers belong in different, but related, namespaces).
+- **B.4.1.1.2** (obsolete): No current rule replaces it. The .Permissions subnamespace held custom permission types; Code Access Security is deprecated.
+- **B.4.1.1.3** (obsolete): No current rule replaces it. The .Interop subnamespace for interop types and Primary Interop Assemblies, which the marker calls a rarity.
+- **B.5.4.1** (obsolete): Superseded by FDG5057. Custom event handler delegates (a void return, an object sender and an EventArgs e, at most two parameters) were needed before generics; new events use EventHandler&lt;T>. The marker says these guidelines still hold in the rare case a custom handler is needed for consistency with an existing feature area.
+- **B.7.4** (obsolete): No current rule replaces it. Reporting security-sensitive information through ToString only after a permission demand, and keeping it in private exception state for trusted code, relied on Code Access Security and partial trust, which are deprecated.
+- **B.8.10** (obsolete): Superseded by FDG8086. The section introduction, Table 8-1 (Data Contract, XML and Runtime Serialization) and the guideline to consider serialization when designing new types; the marker says a library should not tie itself to a serialization technology and should leave that choice to the application developer.
+- **B.8.10.1** (obsolete): Superseded by FDG8086. Choosing the serialization technologies a type supports: Data Contract for persistence and web services, XML for control over the XML, Runtime for .NET Remoting.
+- **B.8.10.2** (obsolete): Superseded by FDG8086 and FDG8087. Supporting Data Contract Serialization: public data members for partial trust, a getter and a setter on data members, serialization callbacks, KnownTypeAttribute and IExtensibleDataObject. Its guideline on backward and forward compatibility is kept, word for word, as FDG8087.
+- **B.8.10.3** (obsolete): Superseded by FDG8086. Supporting XML Serialization: avoid designing types for it unless the shape of the XML must be controlled, and IXmlSerializable for full control.
+- **B.8.10.4** (obsolete): Superseded by FDG8086, FDG8088, FDG8089 and FDG8090. Supporting Runtime Serialization for .NET Remoting, and the Runtime Serializable Pattern; its guidelines on the serialization constructor, explicit ISerializable members and the link demand are kept in section 8.10 as FDG8088 to FDG8090.
+- **B.9.2** (obsolete): Superseded by FDG9018 and FDG9019. The introduction to the Classic and Event-Based Async Patterns; the marker says the Task-Based Async Pattern, with language support such as async and await, has replaced both.
+- **B.9.2.1** (obsolete): Superseded by FDG9018 and FDG9019. Choosing between the Classic and the Event-Based Async Pattern (Event-Based for components with visual designers and higher-level APIs, Classic for wait handles and low-level APIs, never both on one type); section 9.2.1 now chooses the Task-Based Async Pattern.
+- **B.9.2.2** (obsolete): Superseded by FDG9018 and FDG9019. The Classic Async Pattern: Begin and End methods, IAsyncResult, the async callback and the state object. Section 9.2.7 says it is not recommended for new APIs and existing APIs should be upgraded.
+- **B.9.2.3** (obsolete): Superseded by FDG9018 and FDG9019. A basic implementation example of the Classic Async Pattern; it states no guideline of its own.
+- **B.9.2.4** (obsolete): Superseded by FDG9018 and FDG9019. The introduction to the Event-Based Async Pattern. Section 9.2.8 says it is not recommended for new APIs and existing APIs should be upgraded.
+- **B.9.2.4.1** (obsolete): Superseded by FDG9018 and FDG9019. Defining Event-Based asynchronous methods: MethodAsync with an optional userState, InvalidOperationException for an overlapping call without userState, completion events raised on the proper thread and always raised, AsyncCompletedEventArgs for void methods.
+- **B.9.2.5** (obsolete): Superseded by FDG9027 and FDG9034. Out and ref parameters of an Event-Based async method became properties of its event arguments; a Task-based Async method takes no ref or out parameters.
+- **B.9.2.6** (obsolete): Superseded by FDG9022 and FDG9038. Cancellation through CancelAsync and the Cancelled property of the event arguments; a Task-based Async method accepts a CancellationToken and throws OperationCanceledException when canceled.
+- **B.9.2.7** (obsolete): No current rule replaces it. Progress reporting through the ProgressChanged event of the Event-Based Async Pattern; FDG9018 and FDG9019 retire the pattern, but the current edition has no rule on how a Task-based Async method reports progress.
+- **B.9.2.8** (obsolete): No current rule replaces it. Incremental results through ProgressChanged events of the Event-Based Async Pattern; FDG9018 and FDG9019 retire the pattern, but the current edition has no rule on incremental results.
+- **B.9.4.2** (obsolete): Superseded by FDG9073, FDG9074, FDG9075 and FDG9076. The previous Finalizable Types section: the marker says AVOID making types finalizable became DO NOT make public types finalizable (FDG9073) and the section was rewritten around internal finalizable types. FDG9074 to FDG9076 keep its guidelines on the Basic Dispose Pattern, finalizable objects in the finalizer code path and exceptions from the finalizer; its guidelines on value types, on when to make a type finalizable and on a protected Finalize method have no current rule.
+
+### Appendix C: Sample API Specification
+
+- **C** (background): A sample API specification (Stopwatch): an introduction, scenarios with code samples, goals and non-goals, the API and its behavior, and questions and answers, with annotations on writing each part. It is the example FDG2004 refers to. fdg-review uses it as background when reviewing a library's public API, checking that the design specification has these parts. No guideline is stated.
+
+### Glossary
+
+- **Glossary** (background): Definitions of the terms the rules use, such as abstract type, application model, assembly and attached dependency property. Background for reading the rules. No guideline is stated.
+
+### Credits
+
+- **Credits** (background): Credits for two quotations in chapters 5 and 7 and for the icons of appendix D. No technical content and no guideline.
