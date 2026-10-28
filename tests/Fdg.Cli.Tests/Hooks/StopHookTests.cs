@@ -145,7 +145,10 @@ public sealed class StopHookTests : IDisposable
         HookFormatCall format = Assert.Single(_formatter.Calls);
         Assert.Equal(["Order.cs"], format.IncludeFiles);
         Assert.Contains("FDGA003", format.Diagnostics);
+        // IDE1006 is reported above but not fixed; neither are the autofix no diagnostics.
         Assert.DoesNotContain("IDE1006", format.Diagnostics);
+        Assert.DoesNotContain("CA1066", format.Diagnostics);
+        Assert.DoesNotContain("CA2007", format.Diagnostics);
         HookBuildCall build = Assert.Single(_builder.Calls);
         Assert.Equal(_project, build.ProjectPath);
         Assert.False(build.NoIncremental);

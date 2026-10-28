@@ -26,6 +26,7 @@ public static class RulesJsonEmitter
             ["rules"] = new JsonArray(input.Rules.Select(RuleEntry).ToArray<JsonNode?>()),
             ["registeredDiagnostics"] = Strings(DiagnosticMap.Registered(input.Rules)),
             ["breakingFixDiagnostics"] = Strings(DiagnosticMap.BreakingFix(input.Rules)),
+            ["fixDiagnostics"] = Strings(DiagnosticMap.Fix(input.Rules)),
         };
 
         return json.ToJsonString(Options) + "\n";

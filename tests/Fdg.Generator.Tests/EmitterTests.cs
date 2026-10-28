@@ -730,6 +730,28 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Fix_diagnostics_omit_breaking_and_autofix_no()
+    {
+        // FDG9007 is the only all-yes rule; CA1710 has both no and breaking; IDE1006 is all no.
+        GeneratorInput input = Input();
+
+        Assert.Equal(new[] { "FDG9007" }, Fixed(input));
+
+        // IDE1006 is mapped by FDG9003 and FDG9009: one yes rule is not enough, both must be yes.
+        GeneratorInput mixed = Edit(input, OnRule("FDG9003", m => m with { Autofix = AutofixKind.Yes }));
+        Assert.Equal(new[] { "FDG9007" }, Fixed(mixed));
+
+        GeneratorInput allYes = Edit(mixed, OnRule("FDG9009", m => m with { Autofix = AutofixKind.Yes }));
+        Assert.Equal(new[] { "FDG9007", "IDE1006" }, Fixed(allYes));
+
+        static IEnumerable<string> Fixed(GeneratorInput input)
+        {
+            JsonObject json = JsonNode.Parse(RulesJsonEmitter.Emit(input))!.AsObject();
+            return json["fixDiagnostics"]!.AsArray().Select(n => n!.GetValue<string>()).ToList();
+        }
+    }
+
+    [Fact]
     public void Rules_json_carries_naming_tags()
     {
         var tags = new NamingTags(new[] { "parameter", "local" }, new[] { "casing" });

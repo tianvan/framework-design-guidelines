@@ -2,7 +2,10 @@ using Fdg.Generator.Rules;
 
 namespace Fdg.Generator.Emit;
 
-/// <summary>What the rules say about each diagnostic id: its severity per profile and whether fixing it can break callers.</summary>
+/// <summary>
+/// What the rules say about each diagnostic id: its severity per profile, whether fixing it can break callers, and
+/// whether the tooling may fix it.
+/// </summary>
 internal static class DiagnosticMap
 {
     /// <summary>
@@ -44,6 +47,22 @@ internal static class DiagnosticMap
             .Where(r => r.Mapping.Autofix == AutofixKind.Breaking)
             .SelectMany(r => r.Mapping.Check.Diagnostics)
             .Distinct(StringComparer.Ordinal)
+            .OrderBy(id => id, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Diagnostics the tooling may fix automatically: those whose every mapping rule is autofix <c>yes</c>. A rule
+    /// with <c>no</c> or <c>breaking</c> is enough to keep a diagnostic out, for the same reason as in
+    /// <see cref="BreakingFix"/>.
+    /// </summary>
+    public static IReadOnlyList<string> Fix(IEnumerable<Rule> rules)
+    {
+        return rules
+            .SelectMany(r => r.Mapping.Check.Diagnostics.Select(id => (Id: id, r.Mapping.Autofix)))
+            .GroupBy(d => d.Id, StringComparer.Ordinal)
+            .Where(g => g.All(d => d.Autofix == AutofixKind.Yes))
+            .Select(g => g.Key)
             .OrderBy(id => id, StringComparer.Ordinal)
             .ToList();
     }

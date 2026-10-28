@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Fdg.Cli.Commands;
 
 namespace Fdg.Cli.Rules;
@@ -12,13 +13,23 @@ public sealed record RulesManifest(
     string Version,
     IReadOnlyList<RuleEntry> Rules,
     IReadOnlyList<string> RegisteredDiagnostics,
-    IReadOnlyList<string> BreakingFixDiagnostics)
+    IReadOnlyList<string> BreakingFixDiagnostics,
+    [property: JsonPropertyName("fixDiagnostics")] IReadOnlyList<string>? ListedFixDiagnostics = null)
 {
     private const string EmbeddedResourceName = "Fdg.Cli.Rules.rules.json";
 
-    /// <summary>The registered diagnostics whose fixes FDG applies: all but the breaking ones.</summary>
-    public IReadOnlyList<string> FixDiagnostics =>
-        RegisteredDiagnostics.Except(BreakingFixDiagnostics, StringComparer.OrdinalIgnoreCase).ToArray();
+    /// <summary>
+    /// The diagnostics whose fixes FDG applies: those whose every rule is autofix <c>yes</c>. A manifest from before
+    /// <c>fixDiagnostics</c> was written gets the same set computed from its rules.
+    /// </summary>
+    [JsonIgnore]
+    public IReadOnlyList<string> FixDiagnostics => ListedFixDiagnostics ?? Rules
+        .SelectMany(r => r.Diagnostics.Select(id => (Id: id, r.Autofix)))
+        .GroupBy(d => d.Id, StringComparer.OrdinalIgnoreCase)
+        .Where(g => g.All(d => string.Equals(d.Autofix, "yes", StringComparison.Ordinal)))
+        .Select(g => g.Key)
+        .Order(StringComparer.Ordinal)
+        .ToArray();
 
     private static readonly JsonSerializerOptions Options = new() { PropertyNameCaseInsensitive = true };
 
