@@ -16,8 +16,8 @@ It has three parts:
   - a review skill;
   - hooks that format and check the lines the agent changed before it ends its turn.
 
-> **Preview.** Version 0.x covers chapter 3 (Naming Guidelines) and appendix A (C# Coding Style Conventions):
-> 158 rules, every one checked against the book. The other chapters are in progress. See
+> **Preview.** Version 0.x covers the whole book, chapters 2 to 9 and appendices A and D: 830 rules, every one checked
+> against the book. See
 > [coverage](https://github.com/tianvan/framework-design-guidelines/blob/main/docs/coverage.md).
 
 This project is independent. It is not affiliated with, endorsed by or sponsored by the authors of the book,

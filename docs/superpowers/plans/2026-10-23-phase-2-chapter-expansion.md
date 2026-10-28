@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 让第 2、4–9 章和附录 D 的 670 条准则以 `verified` 状态进入规则数据，通过 SDK 规则、自写分析器和 fdg-write/fdg-review 的参考文件，让 AI 写 C# 时遵守全书准则。
+**Goal:** 让第 2、4–9 章和附录 D 的 672 条准则以 `verified` 状态进入规则数据，通过 SDK 规则、自写分析器和 fdg-write/fdg-review 的参考文件，让 AI 写 C# 时遵守全书准则。
 
 **Architecture:** 沿用第一期的链路：epub → 抽取器 → `rules/*.yaml` → 生成器 → 分析器包 / `rules.json` / skill 参考文件 / 文档。先修好抽取器和生成器的前置问题（Task 1–9），再搭噪音样本工具，并完成 Stop 的破坏性诊断处理（Task 10–12）。之后按书的顺序逐章完成映射、交叉核对、自写分析器和噪音记录（Task 13–24），最后登记非规则内容、重写 skill 并全书复核（Task 25–27）。
 
@@ -232,7 +232,7 @@ git commit -m "feat(rules): map chapter <N> <轮次范围> and verify it against
 
 | 章节 | 2 | 4 | 5 | 6 | 7 | 8 | 9 | D |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| 条目数 | 32 | 70 | 133 | 22 | 70 | 107 | 175 | 61 |
+| 条目数 | 32 | 70 | 133 | 22 | 70 | 107 | 175 | 63 |
 
 - [ ] **Step 7: 生成并提交**
 
@@ -487,7 +487,7 @@ git commit -am "feat(gen): validate per-chapter test profile defaults"
 - 规则数据（生成器侧）：
   - 新增可选的映射字段 `naming`，不放进 Schema 的 `required`。
   - `RuleMapping` 新增 `NamingTags? Naming`，其中 `public sealed record NamingTags(IReadOnlyList<string> Symbols, IReadOnlyList<string> Failures);`。
-  - `RuleYaml.Serialize` 在值为 null 时不写这个字段，因此 828 条规则中多数不受影响。
+  - `RuleYaml.Serialize` 在值为 null 时不写这个字段，因此 830 条规则中多数不受影响。
   - Schema 约束：
     - `symbols` 的元素取值：`namespace`、`type`、`typeParameter`、`method`、`property`、`event`、`visibleField`、`privateField`、`constField`、`parameter`、`local`、`constLocal`；
     - `failures` 的元素取值：`casing`、`prefix`；
@@ -995,7 +995,7 @@ references:
 ### Task 24: 附录 D Breaking Changes
 
 - R1 参数：token `"D"`，file `app04.xhtml`，rules `appD-breaking-changes.yaml`，title `Breaking Changes`，`testProfile: off`，不拆分。
-- 条目数：61（`FDGD001`–`FDGD061`）。
+- 条目数：63（`FDGD001`–`FDGD063`）。
 - 映射（§8a）：
   - 全部为 `judgment`；severity 为 library 按强度默认值，application 和 test 为 `none`；不映射 RS 诊断；
   - 每条规则的 notes 都以同一句结尾：`PublicApiAnalyzers (optional in /fdg-setup) can flag changes to the public API.`
@@ -1128,7 +1128,7 @@ git commit -am "feat(skills): route fdg-write and fdg-review to the reference fi
 用 `python -I` 统计 `rules/*.yaml`。
 
 预期：
-- 规则共 828 条，全部为 `verified`；
+- 规则共 830 条，全部为 `verified`；
 - 各章条目数与本期设计 §2 的表格一致。
 
 - [ ] **Step 3: 全量验证**
