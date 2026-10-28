@@ -1,7 +1,23 @@
 # Phase 2 spot-check list
 
 For each chapter, about ten mappings picked for the user to check against the book: the hardest calls, rules with
-exceptions, breaking rules and rules with new analyzers. Tick an entry when it has been checked.
+exceptions, breaking rules and rules with new analyzers.
+
+How to use it: check each entry against the book and its rule page (`docs/rules/<ID>.md`), then tick it (`- [x]`). When
+an entry is wrong, leave it unticked and write what is wrong on an indented line below it, so it can be fixed as a
+mapping change in phase 3.
+
+| Chapter | Rules | Entries |
+| --- | ---: | ---: |
+| 2 Framework Design Fundamentals | 32 | 10 |
+| 4 Type Design Guidelines | 70 | 10 |
+| 5 Member Design | 133 | 12 |
+| 6 Designing for Extensibility | 22 | 10 |
+| 7 Exceptions | 70 | 11 |
+| 8 Usage Guidelines | 107 | 11 |
+| 9 Common Design Patterns | 175 | 26 |
+| D Breaking Changes | 63 | 11 |
+| Total | 672 | 101 |
 
 ## Chapter 2: Framework Design Fundamentals
 
