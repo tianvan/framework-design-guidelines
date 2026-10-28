@@ -1624,7 +1624,7 @@
   minLanguage: "6"
   alternative: Before C# 6, use a string literal that matches the name exactly.
   analyzer: null
-  notes: "CA1507 reports string literals that match a parameter or property name. IDE0280 reports parameter names written as string literals in attribute arguments such as [NotNullIfNotNull(\"value\")] (C# 11 and later)."
+  notes: "CA1507 reports string literals that match a parameter or property name. IDE0280 reports parameter names written as string literals in attribute arguments such as [NotNullIfNotNull(\"value\")] (C# 11 and later). dotnet format applies IDE0280's fix only when its severity is set in an .editorconfig (see the phase 2 backlog)."
 - id: FDGA049
   strength: DO
   text: apply the `readonly` modifier to fields when possible.

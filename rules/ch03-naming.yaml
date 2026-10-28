@@ -305,7 +305,7 @@
   analyzer:
     message: 'Use ''{2}'' instead of ''{1}'' in the name ''{0}'''
     category: Naming
-  notes: FDG3006 reports, in the names that externally visible declarations choose (see FDG3003 for which names), a run of whole words that spells a form of the Not column of Table 3-2, such as FileName, CallBack or ID, and gives the Pascal form. The case of each word must match the table, except the first letter of a camel-cased name, so fileName is reported and Filename or filename is not. LogOut is not reported in a method name, where footnote 1 makes the verb two words; LogIn is reported in every name. Closed-form compound words outside the table are not checked, because the book gives no longer list. Renaming a public name changes the public API, so the fix is breaking; FDG3006 has no code fix.
+  notes: FDG3006 reports, in the names that externally visible declarations choose (see FDG3003 for which names), a run of whole words that spells a form of the Not column of Table 3-2, such as FileName, CallBack or ID, and gives the Pascal form. The case of each word must match the table, except the first letter of a camel-cased name, so fileName is reported and Filename or filename is not. LogOut and LogIn are reported in every name; in a method name, where footnote 1 makes the verb two words, the message gives LogOff and LogOn instead of Logoff and Logon. The last word of a form may carry a plural s or es, which the message keeps (FileNames gives Filenames, UserIDs gives UserIds), and an acronym plural such as IDEs or PIDs is one word. A form never spans a digit or underscore of the name, so File2Name is not reported and MAX_ID is. A form right after an interface's I prefix (IEMailService) is not reported. Closed-form compound words outside the table are not checked, because the book gives no longer list. Renaming a public name changes the public API, so the fix is breaking; FDG3006 has no code fix.
 - id: FDG3007
   strength: DO NOT
   text: assume that all programming languages are case sensitive. They are not. Names cannot differ by case alone.
@@ -1136,7 +1136,7 @@
   body:
     - kind: paragraph
       text: For example, do not add a type named `Page` to the `System.Web.UI.Adapters` namespace, because the `System.Web.UI` namespace already contains a type named `Page`.
-  status: verified
+  status: draft
   style: false
   check:
     kind: judgment
@@ -1151,7 +1151,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: Application model namespaces are groups rarely used with other application models, such as System.Windows* and System.Web.UI*.
+  notes: Application model namespaces are groups rarely used with other application models, such as `System.Windows*` and `System.Web.UI*`.
 - id: FDG3035
   strength: DO NOT
   text: give types names that would conflict with any type in the core namespaces.
@@ -1178,7 +1178,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: "Core namespaces are all System namespaces except application model namespaces and infrastructure namespaces (such as *.Design and *.Permissions), for example System, System.IO, System.Xml, and System.Net. CA1724 does not check this rule: it compares type names with namespace names, not with the types of the core namespaces (a type named Stream or EventLog is not reported; probe with SDK 10.0.402)."
+  notes: "Core namespaces are all System namespaces except application model namespaces and infrastructure namespaces (such as `*.Design` and `*.Permissions`), for example System, System.IO, System.Xml, and System.Net. CA1724 does not check this rule: it compares type names with namespace names, not with the types of the core namespaces (a type named Stream or EventLog is not reported; probe with SDK 10.0.402)."
 - id: FDG3036
   strength: DO NOT
   text: assign type names that would conflict with other types within a single technology.
@@ -1186,7 +1186,7 @@
   section: 3.4.1.4 Technology Namespace Groups
   anchor: sec3_4_1_4
   body: []
-  status: verified
+  status: draft
   style: false
   check:
     kind: judgment
@@ -1201,7 +1201,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: A technology namespace group is all namespaces with the same first two parts (<Company>.<Technology>*), such as Microsoft.Build.Utilities and Microsoft.Build.Tasks.
+  notes: A technology namespace group is all namespaces with the same first two parts (`<Company>.<Technology>*`), such as Microsoft.Build.Utilities and Microsoft.Build.Tasks.
 - id: FDG3037
   strength: DO NOT
   text: introduce type name conflicts between types in technology namespaces and an application model namespace (unless the technology is not expected to be used with the application model).
@@ -1211,7 +1211,7 @@
   body:
     - kind: paragraph
       text: For example, you should not add a type named `Binding` to the `Microsoft.VisualBasic` namespace because the `System.Windows.Forms` namespace already contains that type name.
-  status: verified
+  status: draft
   style: false
   check:
     kind: judgment
@@ -1226,7 +1226,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: A technology namespace group is all namespaces with the same first two parts (<Company>.<Technology>*), such as Microsoft.Build.Utilities and Microsoft.Build.Tasks. Application model namespaces are groups rarely used with other application models, such as System.Windows* and System.Web.UI*.
+  notes: A technology namespace group is all namespaces with the same first two parts (`<Company>.<Technology>*`), such as Microsoft.Build.Utilities and Microsoft.Build.Tasks. Application model namespaces are groups rarely used with other application models, such as `System.Windows*` and `System.Web.UI*`.
 - id: FDG3038
   strength: DO
   text: name classes and structs with nouns or noun phrases, using PascalCasing.
@@ -2650,7 +2650,7 @@
   analyzer:
     message: 'Do not use a numeric index in the operator parameter name ''{0}'''
     category: Naming
-  notes: FDG3086 reports a parameter of an externally visible user-defined operator or conversion operator whose name ends with a digit, such as d1 and d2. A name equal to its type's name apart from case, such as vector3 for Vector3, is not reported. Abbreviations are not checked, because they cannot be told from words. Renaming a public parameter changes the public API for callers that use named arguments, so the fix is breaking; FDG3086 has no code fix.
+  notes: FDG3086 reports a parameter of an externally visible user-defined operator or conversion operator whose name ends with a digit, such as d1 and d2. A name equal to its type's name apart from case, such as vector3 for Vector3, Vector3? or Vector3[], is not reported. Abbreviations are not checked, because they cannot be told from words. Renaming an operator parameter changes the parameter names in the public API's metadata, which languages that call the operator method by name can use, so the fix is treated as breaking, although C# cannot call an operator with named arguments (CS0571); FDG3086 has no code fix.
 - id: FDG3087
   strength: DO NOT
   text: directly expose localizable resources as public (or protected) members.

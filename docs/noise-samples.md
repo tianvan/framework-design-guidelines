@@ -161,15 +161,17 @@ checked (20 in all), because no diagnostic had more than 20.
 ### Phase 2 additions: FDG3006 and FDG3086
 
 Package 0.1.0 with the two analyzers added in the phase-2 re-check (Ruling 50), measured with
-`-Diagnostics FDG3006,FDG3086`. Every report was checked (18 in all).
+`-Diagnostics FDG3006,FDG3086`, and again after the Task 27 fix round, which made FDG3006 report plurals and
+never join words across a digit or underscore. Every report was checked (19 in all).
 
 | Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| FDG3006 | FDG3006 | 0 | 0 | 2 | 6 | 10 | 18 | 0 | 18 | None needed. |
+| FDG3006 | FDG3006 | 0 | 0 | 2 | 6 | 11 | 19 | 0 | 19 | None needed. |
 | FDG3086 | FDG3086 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | None needed. |
 
 - **FDG3006.** Every report is a form from the Not column of Table 3-2: `Whitespace` in two newtonsoft-json writer
-  methods; `FileName` or `fileName` (12), `UserName` or `userName` (3) and `UserID` (1) in the internal samples.
+  methods; `FileName`, `fileName` or the plural `fileNames` (13), `UserName` or `userName` (3) and `UserID` (1) in the
+  internal samples. The fix round added only the `fileNames` report.
 - **FDG3086.** No sample declares an operator with an indexed parameter name; the tests cover the positive cases.
 
 ## Chapter 2 mappings
