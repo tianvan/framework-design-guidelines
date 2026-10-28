@@ -19,16 +19,14 @@ public sealed record SetupFacts(
 
 /// <summary>
 /// Turns <see cref="SetupFacts"/> into one <c>FDG setup issue:</c> line per problem the user can act on (Ruling 51).
-/// Lines for what /fdg-setup cannot change (legacy projects, no git repository) do not point to it.
+/// Lines for what /fdg-setup cannot change (an old SDK, legacy projects, no git repository) do not point to it.
 /// </summary>
 public static class SelfCheck
 {
     public const string IssuePrefix = "FDG setup issue: ";
 
-    public const string MinimumSdkVersion = "8.0.100";
-
-    /// <summary>With an older SDK (still 8.0.100 or later) some rules do not run; SessionStart notes it.</summary>
-    public const string FullCoverageSdkVersion = "10.0.100";
+    /// <summary>The oldest SDK FDG supports: with an older one some rules do not run.</summary>
+    public const string MinimumSdkVersion = "10.0.100";
 
     private const string RunSetup = " Run /fdg-setup to fix.";
 
@@ -36,8 +34,6 @@ public static class SelfCheck
     private const int NamedProjects = 3;
 
     private static readonly Version MinimumSdk = Version.Parse(MinimumSdkVersion);
-
-    private static readonly Version FullCoverageSdk = Version.Parse(FullCoverageSdkVersion);
 
     public static IReadOnlyList<string> Issues(SetupFacts facts)
     {
@@ -48,14 +44,10 @@ public static class SelfCheck
         }
         else if (IsOlderThan(facts.DotnetVersion, MinimumSdk))
         {
-            issues.Add(IssuePrefix + $".NET SDK {facts.DotnetVersion} is older than {MinimumSdkVersion}." + RunSetup);
-        }
-        else if (IsOlderThan(facts.DotnetVersion, FullCoverageSdk))
-        {
             // Nothing to fix with /fdg-setup: the user may be unable to move to a newer SDK.
             issues.Add(IssuePrefix +
-                $".NET SDK {facts.DotnetVersion} is older than {FullCoverageSdkVersion}: " +
-                $"some rules need SDK {FullCoverageSdkVersion} or later.");
+                $".NET SDK {facts.DotnetVersion} is older than {MinimumSdkVersion}, the oldest SDK FDG supports; " +
+                "some rules do not run.");
         }
 
         if (facts.NoProfile.Count > 0)

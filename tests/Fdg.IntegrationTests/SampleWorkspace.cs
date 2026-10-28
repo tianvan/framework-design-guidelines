@@ -1,4 +1,5 @@
 using System.Security;
+using System.Text.Json;
 
 namespace Fdg.IntegrationTests;
 
@@ -7,8 +8,14 @@ namespace Fdg.IntegrationTests;
 /// empty Directory.Build/Packages files so nothing from parent directories leaks in. Its name contains a
 /// space and CJK characters, as real repositories do.
 /// </summary>
+/// <remarks>
+/// The workspace pins the SDK like the repository does. Set <c>FDG_TEST_SDK</c> to an installed SDK version to pin
+/// exactly that one instead, with no roll-forward; CI sets it to the minimum supported SDK.
+/// </remarks>
 public sealed class SampleWorkspace : IDisposable
 {
+    public const string TestSdkVariable = "FDG_TEST_SDK";
+
     private readonly PackageFixture _fixture;
 
     public SampleWorkspace(PackageFixture fixture, string name, string editorConfigSections = "")
@@ -17,7 +24,18 @@ public sealed class SampleWorkspace : IDisposable
         DirectoryPath = Path.Combine(fixture.Root, "cases", $"{name} 测试 {Guid.NewGuid().ToString("N")[..6]}");
         Directory.CreateDirectory(DirectoryPath);
 
-        File.Copy(Path.Combine(fixture.RepositoryRoot, "global.json"), Path.Combine(DirectoryPath, "global.json"));
+        string? testSdk = Environment.GetEnvironmentVariable(TestSdkVariable);
+        if (string.IsNullOrWhiteSpace(testSdk))
+        {
+            File.Copy(Path.Combine(fixture.RepositoryRoot, "global.json"), Path.Combine(DirectoryPath, "global.json"));
+        }
+        else
+        {
+            Write(
+                "global.json",
+                JsonSerializer.Serialize(new { sdk = new { version = testSdk.Trim(), rollForward = "disable" } }));
+        }
+
         Write("Directory.Build.props", "<Project />\n");
         Write("Directory.Build.targets", "<Project />\n");
         Write("Directory.Packages.props", "<Project />\n");

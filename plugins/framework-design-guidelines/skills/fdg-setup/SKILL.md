@@ -26,7 +26,8 @@ Onboard this repository's C# projects in four steps. Ground rules for every step
 2. A project is SDK-style when its root element is `<Project Sdk="...">`, or it contains `<Sdk Name="..." />` or
    `<Import ... Sdk="..." />`. Only SDK-style projects are supported. Name every other (legacy) project and tell the
    user it is not supported and will be left untouched.
-3. Run `dotnet --version`. FDG needs .NET SDK 8.0.100 or later; if it is older, say so and stop.
+3. Run `dotnet --version`. FDG supports .NET SDK 10.0.100 and later. If it is older, say so, explain that some rules
+   do not run on older SDKs, and ask the user whether to continue.
 4. Note what already exists: every `Directory.Build.props`, a `Directory.Packages.props` with
    `ManagePackageVersionsCentrally` set to `true` (central package management), and any project that already
    references `FrameworkDesignGuidelines.Analyzers` or sets `FrameworkDesignGuidelinesProfile`. Keep what is right.

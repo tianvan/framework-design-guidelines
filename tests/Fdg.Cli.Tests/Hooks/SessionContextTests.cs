@@ -307,42 +307,30 @@ public sealed class SessionContextTests : IDisposable
             Issues(Build()!));
     }
 
-    [Fact]
-    public void Old_or_missing_sdk_adds_setup_issue_line()
-    {
-        Project("src/A/A.csproj", "application");
-
-        _sdkVersion = "7.0.410";
-        Assert.Equal(
-            ["FDG setup issue: .NET SDK 7.0.410 is older than 8.0.100. Run /fdg-setup to fix."],
-            Issues(Build()!));
-
-        var failing = new FakeProcessRunner().Respond(
-            args => args is ["--version"],
-            new ToolResult(1, "A compatible .NET SDK was not found.", false));
-        Assert.Equal(
-            ["FDG setup issue: dotnet --version failed here; FDG needs .NET SDK 8.0.100 or later. Run /fdg-setup to fix."],
-            Issues(new SessionContext(failing).Build(_repo.Root)!));
-    }
-
     [Theory]
-    [InlineData("8.0.100")]
     [InlineData("9.0.300")]
-    public void Sdk_below_10_0_100_notes_missing_rules(string version)
+    [InlineData("8.0.100")]
+    [InlineData("7.0.410")]
+    [InlineData("9.0.100-rc.1.24452.12")]
+    public void Sdk_older_than_the_minimum_is_an_issue_without_a_setup_hint(string version)
     {
         Project("src/A/A.csproj", "application");
         _sdkVersion = version;
 
+        string[] issues = Issues(Build()!);
+
         Assert.Equal(
-            [$"FDG setup issue: .NET SDK {version} is older than 10.0.100: some rules need SDK 10.0.100 or later."],
-            Issues(Build()!));
+            [$"FDG setup issue: .NET SDK {version} is older than 10.0.100, the oldest SDK FDG supports; some rules do not run."],
+            issues);
+        Assert.DoesNotContain("/fdg-setup", issues[0]);
     }
 
     [Theory]
     [InlineData("10.0.100")]
     [InlineData("10.0.100-rc.2")]
     [InlineData("10.0.402")]
-    public void Sdk_10_0_100_or_later_has_no_note(string version)
+    [InlineData("11.0.100-preview.1")]
+    public void Supported_sdk_is_no_issue(string version)
     {
         Project("src/A/A.csproj", "application");
         _sdkVersion = version;
@@ -351,25 +339,16 @@ public sealed class SessionContextTests : IDisposable
     }
 
     [Fact]
-    public void Sdk_below_8_0_100_reports_only_the_minimum()
+    public void Failed_dotnet_version_names_the_new_minimum()
     {
         Project("src/A/A.csproj", "application");
-        _sdkVersion = "7.0.410";
+        var failing = new FakeProcessRunner().Respond(
+            args => args is ["--version"],
+            new ToolResult(1, "A compatible .NET SDK was not found.", false));
 
         Assert.Equal(
-            ["FDG setup issue: .NET SDK 7.0.410 is older than 8.0.100. Run /fdg-setup to fix."],
-            Issues(Build()!));
-    }
-
-    [Fact]
-    public void Prerelease_sdk_is_compared_by_its_numeric_part()
-    {
-        Project("src/A/A.csproj", "application");
-        _sdkVersion = "9.0.100-rc.1.24452.12";
-
-        Assert.Equal(
-            ["FDG setup issue: .NET SDK 9.0.100-rc.1.24452.12 is older than 10.0.100: some rules need SDK 10.0.100 or later."],
-            Issues(Build()!));
+            ["FDG setup issue: dotnet --version failed here; FDG needs .NET SDK 10.0.100 or later. Run /fdg-setup to fix."],
+            Issues(new SessionContext(failing).Build(_repo.Root)!));
     }
 
     [Fact]
@@ -446,7 +425,7 @@ public sealed class SessionContextTests : IDisposable
         Project("src/A/A.csproj", "application");
 
         Assert.Equal(
-            ["FDG setup issue: dotnet --version failed here; FDG needs .NET SDK 8.0.100 or later. Run /fdg-setup to fix."],
+            ["FDG setup issue: dotnet --version failed here; FDG needs .NET SDK 10.0.100 or later. Run /fdg-setup to fix."],
             Issues(new SessionContext(new UnstartableRunner()).Build(_repo.Root)!));
     }
 

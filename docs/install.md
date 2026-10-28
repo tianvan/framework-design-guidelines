@@ -5,8 +5,8 @@ the `dotnet-fdg` .NET tool that the hooks run. Both are needed.
 
 ## Requirements
 
-- .NET SDK 8.0.100 or later. That is the lowest version the session start check accepts, but it is untested: the
-  pilot and CI use 10.0.402. A `.slnx` solution needs SDK 9.0.200 or later.
+- .NET SDK 10.0.100 or later. CI runs the integration tests on 10.0.100, the minimum, and the whole suite on 10.0.402,
+  which the pilot also used. With an older SDK, some rules do not run, and the session start check says so.
 - Windows: Git for Windows (Claude Code runs the hooks in Git Bash) and, for Codex, PowerShell 7 (`pwsh`) on the
   PATH.
 
