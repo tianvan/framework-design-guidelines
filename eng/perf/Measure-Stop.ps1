@@ -17,8 +17,8 @@ file:
   fail the build.
 The root NuGet.config gets a package source for the directory that holds -Package (and a source mapping for the
 package when the file maps sources); a new NuGet.config is created when there is none. NUGET_PACKAGES is
-WorkRoot/perf/packages/<package file name without extension>, so that a package is never served from the cache of
-another package file.
+WorkRoot/perf/packages/<package file name without extension>. NuGet keeps an extracted package by id and version
+only, so before the first build a cached copy of this id and version whose SHA-512 differs from -Package is deleted.
 
 After one full build of every onboarded project, each round:
 1. runs `hook turn-start` with tests/fixtures/hooks/claude/user-prompt-submit.json, its cwd and session_id replaced;
@@ -26,7 +26,8 @@ After one full build of every onboarded project, each round:
    projects of the change set;
 3. times `hook turn-stop` with tests/fixtures/hooks/claude/stop.json, from process start to exit;
 4. restores the copy with `git checkout -- .` and `git clean -fd`.
-The first round is a warm-up and is not counted. With -Cold, `dotnet build-server shutdown` runs before every Stop.
+The first round is a warm-up and is not counted. With -Cold, `dotnet build-server shutdown` runs before every Stop;
+it stops the build servers of the whole machine, not only those of the sample.
 FDG_HOOK_TIMEOUT_SECONDS is 600 so that a slow Stop is measured instead of cut off; FDG_HOOK_BUILD and
 FDG_HOOK_MAX_BLOCKS are removed so that their defaults apply. A round fails when the Stop exits with an error, reports
 a hook error, a timeout, a skipped check, a failed tool or an unchecked project, leaves a changed file as written
@@ -41,8 +42,7 @@ The name of a sample in eng/noise/samples.json that has a change set in this scr
 (up to three projects).
 
 .PARAMETER Package
-The FrameworkDesignGuidelines.Analyzers .nupkg to measure. The cache is chosen by file name, so a changed package
-needs a version of its own.
+The FrameworkDesignGuidelines.Analyzers .nupkg to measure.
 
 .PARAMETER Cli
 The dotnet-fdg executable, or dotnet-fdg.dll, which is run with dotnet.
@@ -60,7 +60,8 @@ How many timed rounds follow the warm-up.
 How many projects each round changes, one file each: 1 to 3, at most the size of the sample's change set.
 
 .PARAMETER Cold
-Shut the build servers down before every Stop.
+Run `dotnet build-server shutdown` before every Stop. It stops the MSBuild nodes and compiler servers of the
+whole machine, so builds running elsewhere start cold too.
 #>
 [CmdletBinding()]
 param(
@@ -665,6 +666,20 @@ try
     Add-PackageSource $sampleRoot ([System.IO.Path]::GetDirectoryName($packagePath))
     Invoke-Git $sampleRoot @('add', '--all') | Out-Null
     Invoke-Git $sampleRoot @('-c', 'user.name=Measure-Stop', '-c', 'user.email=measure-stop@invalid', 'commit', '--quiet', '-m', "Onboard $PackageId $packageVersion") | Out-Null
+
+    # NuGet reuses a cached package of the same id and version; one from another package file would be measured instead.
+    $cachedPackage = Join-Path $env:NUGET_PACKAGES $PackageId.ToLowerInvariant() $packageVersion.ToLowerInvariant()
+    if (Test-Path -LiteralPath $cachedPackage)
+    {
+        $hash = [Convert]::ToBase64String([System.Security.Cryptography.SHA512]::HashData([System.IO.File]::ReadAllBytes($packagePath)))
+        $cachedHash = Get-ChildItem -LiteralPath $cachedPackage -File -Filter '*.nupkg.sha512' | Select-Object -First 1 |
+            ForEach-Object { (Get-Content -LiteralPath $_.FullName -Raw).Trim() }
+        if ($cachedHash -ne $hash)
+        {
+            Write-Host "== $cachedPackage was extracted from another package file; deleting it"
+            Remove-Item -LiteralPath $cachedPackage -Recurse -Force
+        }
+    }
 
     Write-Host "== full build"
     foreach ($entry in $changeSet)

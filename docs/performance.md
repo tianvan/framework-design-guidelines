@@ -24,7 +24,9 @@ run resets the copy to the pinned commit and onboards every project the script c
 
 The directory that holds the package is added as a package source to the copy's root `NuGet.config` (with a source
 mapping for the package in polly, which maps its sources). The onboarding is committed in the copy, so the hook sees
-only the turn's change. `NUGET_PACKAGES` is `<WorkRoot>/perf/packages/<package file name without extension>`.
+only the turn's change. `NUGET_PACKAGES` is `<WorkRoot>/perf/packages/<package file name without extension>`. NuGet
+keeps an extracted package by id and version only, so before the first build the script deletes a cached copy of the
+same id and version whose SHA-512 differs from the measured package file.
 
 After one full build of the onboarded projects, every round:
 
@@ -43,7 +45,8 @@ After one full build of the onboarded projects, every round:
 4. restores the copy with `git checkout -- .` and `git clean -fd`.
 
 The first round is a warm-up and is not counted. In the warm cases the build servers (MSBuild nodes and the compiler
-server) stay up between rounds; in the cold case `dotnet build-server shutdown` runs before every Stop. The CLI runs as
+server) stay up between rounds; in the cold case (`-Cold`) `dotnet build-server shutdown` runs before every Stop. That
+command stops the build servers of the whole machine, not only those of the sample. The CLI runs as
 `dotnet dotnet-fdg.dll`. `FDG_HOOK_TIMEOUT_SECONDS` is 600, so that a slow Stop is measured instead of cut off at the
 default 60 s; the other hook settings keep their defaults. A round fails, instead of being counted, when the Stop
 reports an error, a timeout or an unchecked project, leaves a changed file as written, or writes fewer SARIF logs than
@@ -92,6 +95,13 @@ which is the 0.2.0 release commit plus documents.
 | Cold, one project | serilog | 20.61 | 20.17, 21.09, 20.97 | **20.97 s** |
 | Warm, two projects | polly | 24.24 | 23.32, 21.79, 20.33 | **21.79 s** |
 
+The polly times were still falling from round to round (24.24 s warm-up, then 23.32, 21.79 and 20.33 s), so compare
+its median rather than single runs. Other interactive sessions were open on the machine during these runs; the CPU
+load was about 1% before the first set and 11% after the last.
+
+The sample copies build a single target framework (see Method), so the cold-start target of under 30 s is judged for a
+single-framework build; a project with many target frameworks takes longer.
+
 The commands, in PowerShell from the repository root:
 
 ```powershell
@@ -104,5 +114,4 @@ $p = "$b\FrameworkDesignGuidelines.Analyzers.0.2.0-perfbase.1.nupkg"; $c = "$b\c
 ./eng/perf/Measure-Stop.ps1 -Sample polly -Package $p -Cli $c -WorkRoot $w -Out $w\perf\baseline-polly-p2-warm.json -Projects 2 -Runs 3
 ```
 
-To measure another build, pack it with a version of its own (the NuGet cache is chosen by package file name) and pass
-the new package and CLI to the same commands.
+To measure another build, pack it with a version of its own and pass the new package and CLI to the same commands.
