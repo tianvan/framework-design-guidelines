@@ -66,10 +66,6 @@ public sealed class CompoundWordTests
 
                     public string Pipeline;
 
-                    public void LogOut()
-                    {
-                    }
-
                     public void Logon(string email)
                     {
                     }
@@ -89,23 +85,146 @@ public sealed class CompoundWordTests
     }
 
     [Fact]
-    public Task Log_out_is_a_verb_in_a_method_name_only()
+    public Task Log_off_and_log_on_are_two_words_in_a_method_name()
     {
-        return Verifier.VerifyAsync(
+        return Verifier.VerifyWithAsync(
             """
             public class Session
             {
-                public bool {|FDG3006:IsLogOut|} { get; set; }
+                public bool {|#0:IsLogOut|} { get; set; }
 
-                public void LogOut()
+                public void {|#1:LogOut|}()
                 {
                 }
 
-                public void {|FDG3006:LogInAsync|}()
+                public void {|#2:LogInAsync|}()
+                {
+                }
+
+                public string {|#3:LogIn|};
+            }
+            """,
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(0).WithArguments("IsLogOut", "LogOut", "Logoff"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(1).WithArguments("LogOut", "LogOut", "LogOff"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(2).WithArguments("LogInAsync", "LogIn", "LogOn"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(3).WithArguments("LogIn", "LogIn", "Logon"));
+    }
+
+    [Fact]
+    public Task Other_book_not_forms_are_reported()
+    {
+        return Verifier.VerifyWithAsync(
+            """
+            public class Directory
+            {
+                public int {|#0:UserID|};
+
+                public void {|#1:SignOn|}()
+                {
+                }
+
+                public void {|#2:SignOff|}()
+                {
+                }
+
+                public const double {|#3:PI|} = 3.14;
+
+                public int[] {|#4:Indices|};
+
+                public int {|#5:Bitflag|};
+
+                public bool {|#6:ShowGridLine|};
+
+                public string {|#7:PlaceHolder|};
+            }
+            """,
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(0).WithArguments("UserID", "ID", "Id"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(1).WithArguments("SignOn", "SignOn", "SignIn"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(2).WithArguments("SignOff", "SignOff", "SignOut"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(3).WithArguments("PI", "PI", "Pi"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(4).WithArguments("Indices", "Indices", "Indexes"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(5).WithArguments("Bitflag", "Bitflag", "BitFlag"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(6)
+                .WithArguments("ShowGridLine", "GridLine", "Gridline"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(7)
+                .WithArguments("PlaceHolder", "PlaceHolder", "Placeholder"));
+    }
+
+    [Fact]
+    public Task Plurals_of_not_forms_are_reported_with_the_plural_book_form()
+    {
+        return Verifier.VerifyWithAsync(
+            """
+            public class Catalog
+            {
+                public string[] {|#0:FileNames|};
+
+                public string[] {|#1:userNames|};
+
+                public long[] {|#2:TimeStamps|};
+
+                public string[] {|#3:EndPoints|};
+
+                public int[] {|#4:UserIDs|};
+
+                public int[] {|#5:IDs|};
+
+                public string[] {|#6:HashTablesByName|};
+            }
+            """,
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(0)
+                .WithArguments("FileNames", "FileNames", "Filenames"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(1)
+                .WithArguments("userNames", "userNames", "usernames"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(2)
+                .WithArguments("TimeStamps", "TimeStamps", "Timestamps"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(3)
+                .WithArguments("EndPoints", "EndPoints", "Endpoints"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(4).WithArguments("UserIDs", "IDs", "Ids"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(5).WithArguments("IDs", "IDs", "Ids"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(6)
+                .WithArguments("HashTablesByName", "HashTables", "Hashtables"));
+    }
+
+    [Fact]
+    public Task Acronym_plurals_and_words_split_by_digits_or_underscores_are_not_reported()
+    {
+        return Verifier.VerifyAsync(
+            """
+            public class Settings
+            {
+                public string[] IDEs;
+
+                public int[] PIDs;
+
+                public string[] OKRs;
+
+                public string[] SupportedIDPs;
+
+                public string File2Name;
+
+                public string File_Name;
+
+                public string Time_Stamp;
+
+                public interface IEMailService
                 {
                 }
             }
             """);
+    }
+
+    [Fact]
+    public Task A_not_form_that_is_a_whole_word_between_underscores_is_reported()
+    {
+        return Verifier.VerifyWithAsync(
+            """
+            public class Limits
+            {
+                public const int {|#0:MAX_ID|} = 10;
+            }
+            """,
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(0).WithArguments("MAX_ID", "ID", "Id"));
     }
 
     [Fact]

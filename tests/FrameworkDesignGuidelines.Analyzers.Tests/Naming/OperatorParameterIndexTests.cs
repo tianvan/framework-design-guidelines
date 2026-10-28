@@ -72,6 +72,16 @@ public sealed class OperatorParameterIndexTests
                     return left;
                 }
 
+                public static Money operator /(Money left, Vector3? vector3)
+                {
+                    return left;
+                }
+
+                public static Money operator %(Money left, Vector3[] vector3)
+                {
+                    return left;
+                }
+
                 public static implicit operator Money(int value)
                 {
                     return default(Money);
@@ -106,6 +116,27 @@ public sealed class OperatorParameterIndexTests
                     {
                         return x1;
                     }
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Static_abstract_operators_are_reported_and_their_implementations_are_not()
+    {
+        return Verifier.VerifyLatestAsync(
+            """
+            public interface IAddable<TSelf>
+                where TSelf : IAddable<TSelf>
+            {
+                static abstract TSelf operator +(TSelf {|FDG3086:a1|}, TSelf {|FDG3086:a2|});
+            }
+
+            public sealed class Number : IAddable<Number>
+            {
+                public static Number operator +(Number a1, Number a2)
+                {
+                    return a1;
                 }
             }
             """);
