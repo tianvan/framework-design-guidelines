@@ -588,6 +588,40 @@ public sealed class EmitterTests : IDisposable
         Assert.DoesNotContain("IComparable<T>", page);
     }
 
+    /// <summary>
+    /// Book text can hold a literal <c>&lt;</c> or <c>_</c> that GitHub would read as an HTML tag or as emphasis, such
+    /// as <c>&lt;project root&gt;</c> or the quoted prefixes <c>“_”</c> and <c>“s_”</c>. The rule page escapes them outside
+    /// code spans and code blocks, and keeps the extractor's own <c>&lt;br&gt;</c> and <c>&lt;sup&gt;</c> markup.
+    /// </summary>
+    [Fact]
+    public void Rule_page_escapes_literal_angle_brackets_and_underscores_outside_code()
+    {
+        GeneratorInput input = Edit(Input(), r => r.Id == "FDG9001"
+            ? Map(r with
+            {
+                Text = "use a prefix “_” (underscore) for instance fields, “s_” for static fields, and `t_x` in code.",
+                Body = new[]
+                {
+                    new Block(BlockKind.Paragraph, "It is found at <project root>\\Simd.cs, near `List<T>`, *here*<br>and<sup>1</sup>, [s_](https://example.com/_x_)."),
+                    new Block(BlockKind.Code, "if (a < b) _c = d_;"),
+                    new Block(BlockKind.Annotation, "Use a_b or _y_ here.\n\n```\nif (a < b) _c();\n```", "Author"),
+                },
+            }, m => m with { Notes = "CA1710 skips List<T> and _z." })
+            : r);
+
+        string page = RuleDocEmitter.Emit(input).Single(f => f.Path == "docs/rules/FDG9001.md").Content;
+        string reference = ReferenceMain(input);
+
+        Assert.Contains("> DO use a prefix “\\_” (underscore) for instance fields, “s\\_” for static fields, and `t_x` in code.\n", page);
+        Assert.Contains("It is found at &lt;project root>\\Simd.cs, near `List<T>`, *here*<br>and<sup>1</sup>, [s\\_](https://example.com/_x_).", page);
+        Assert.Contains("```csharp\nif (a < b) _c = d_;\n```", page);
+        Assert.Contains("> **Author:** Use a_b or \\_y\\_ here.\n>\n> ```\n> if (a < b) _c();\n> ```", page);
+        Assert.Contains("\nCA1710 skips List&lt;T> and \\_z.\n", page);
+        Assert.Contains("use a prefix “_” (underscore)", reference);
+        Assert.DoesNotContain("\\_", reference);
+        Assert.DoesNotContain("&lt;", reference);
+    }
+
     [Fact]
     public void Skill_reference_groups_rules_by_section_and_links_examples()
     {

@@ -2,7 +2,7 @@
 
 # FDGA055
 
-> DO use a prefix “_” (underscore) for private and internal instance fields, “s_” for private and internal static fields, and “t_” for private and internal thread-static fields.
+> DO use a prefix “\_” (underscore) for private and internal instance fields, “s\_” for private and internal static fields, and “t\_” for private and internal thread-static fields.
 
 Framework Design Guidelines, 3rd edition, section A.2 Naming Conventions.
 
@@ -16,7 +16,7 @@ This is a coding style convention. The book treats the appendix A conventions as
 - Severity: library warning, application warning, test suggestion
 - Status: verified
 
-Naming rules cannot select [ThreadStatic] fields, so IDE1006 reports 't_' fields; suppress it there. The fix renames private and internal fields only; check reflection or serialization that uses field names.
+Naming rules cannot select [ThreadStatic] fields, so IDE1006 reports 't\_' fields; suppress it there. The fix renames private and internal fields only; check reflection or serialization that uses field names.
 
 ## Options
 
