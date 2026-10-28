@@ -723,14 +723,14 @@
           // use reflection to serialize all public properties
            ...
         }
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1040
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: suggestion
     application: suggestion
@@ -739,7 +739,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: "CA1040 reports externally visible interfaces with no members that do not extend another interface. The body allows a marker interface when the marker must be checked at compile time (the ITextSerializable example); such reports are not violations. CA1040 has no code fix. Noise: lowered to suggestion. On the noise samples the one CA1040 report was an empty interface used as the type of a property and a variable, which the body's compile-time marker exception allows (1 false positive of 1)."
+  notes: "CA1040 reports externally visible interfaces with no members that do not extend another interface. The body allows a marker interface when the marker must be checked at compile time (the ITextSerializable example); such reports are not violations. Removing a public marker interface changes the public API, so the fix is breaking; CA1040 has no code fix. Noise: lowered to suggestion. On the noise samples the one CA1040 report was an empty interface used as the type of a property and a variable, which the body's compile-time marker exception allows (1 false positive of 1)."
 - id: FDG4023
   strength: DO
   text: provide at least one type that is an implementation of an interface.
@@ -826,14 +826,14 @@
   body:
     - kind: paragraph
       text: Many CLR languages do not allow developers to define default constructors on value types. Users of these languages are often surprised to learn that `default(SomeStruct)` and `new SomeStruct()` don’t necessarily produce the same value. Even if your language does allow defining a default constructor on a value type, it probably isn’t worth the confusion it would cause if you did it.
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG4026
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -844,7 +844,7 @@
   analyzer:
     message: Remove the parameterless constructor of the struct '{0}'
     category: Types
-  notes: FDG4026 reports an explicit parameterless instance constructor declared on a struct or record struct (allowed from C# 10, including a parameterless primary constructor). Removing it changes what new S() returns, so there is no code fix.
+  notes: FDG4026 reports an explicit parameterless instance constructor declared on a struct or record struct (allowed from C# 10, including a parameterless primary constructor). Removing it is a binary breaking change for callers compiled against the constructor and changes what new S() does, so the fix is breaking; FDG4026 has no code fix.
 - id: FDG4027
   strength: DO NOT
   text: define mutable value types.
@@ -870,14 +870,14 @@
            public int FiveDigitCode { get; } // get-only properties
            public int PlusFourExtension { get; }
         }
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG4027
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -888,7 +888,7 @@
   analyzer:
     message: The value type '{0}' can be changed through '{1}'
     category: Types
-  notes: FDG4027 reports, on an externally visible struct that is not readonly, each externally visible instance field that is not readonly and each externally visible instance property or indexer with a set accessor (init accessors are allowed); the book's bad design uses get/set properties. Public methods that change the instance are not detected, and ref structs are left to FDG4031. Removing a setter changes the public API, so there is no code fix.
+  notes: FDG4027 reports, on an externally visible struct that is not readonly, each externally visible instance field that is not readonly and each externally visible instance property or indexer with a set accessor (init accessors are allowed); the book's bad design uses get/set properties. Public methods that change the instance are not detected, and ref structs are left to FDG4031. Removing a setter or making a field readonly changes the public API, so the fix is breaking; FDG4027 has no code fix.
 - id: FDG4028
   strength: DO
   text: declare immutable value types with the `readonly` modifier.
@@ -1318,14 +1318,14 @@
                                   FileMode.Open)
         ```
       author: Brad Abrams
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG4038
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: none
@@ -1336,7 +1336,7 @@
   analyzer:
     message: The enum '{0}' has only one value
     category: Types
-  notes: 'Library only: the text is about publicly exposed enums. FDG4038 reports an externally visible enum with exactly one member. The Morrison and Barton annotations prefer a type-safe handle in some cases (Barton as a custom struct); the text states no exception. Removing the enum changes the public API, so there is no code fix.'
+  notes: "Library only: the text is about publicly exposed enums. FDG4038 reports an externally visible enum with exactly one member. The Morrison and Barton annotations prefer a type-safe handle in some cases (Barton as a custom struct); the text states no exception. Removing or replacing the enum changes the public API, so the fix is breaking; FDG4038 has no code fix."
 - id: FDG4039
   strength: DO NOT
   text: include sentinel values in enums.
@@ -1375,14 +1375,14 @@
     - kind: annotation
       text: 'You can get yourself into a lot of trouble by trying to be too clever with enums. Sentinel values are a great example of this: People write code like the example shown, but they use the sentinel value `LastValue` instead of `Rectangular`, as recommended. When a new value comes along and `LastValue` is updated, their program “automatically” does the right thing and accepts the new input value without giving an `ArgumentOutOfRangeException`. That sounds grand except for all that we didn’t show—the part that’s doing the actual work and that might not yet expect or even handle the new value. By avoiding sentinel values you will be forced to revisit all the right places to ensure that the new value really is going to work. The few minutes you spend visiting those call sites will be more than repaid in time you save avoiding bugs.'
       author: Rico Mariani
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1069
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: warning
@@ -1391,7 +1391,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1069 reports an enum member whose literal value duplicates another member's, which catches a sentinel that repeats the last real value (LastValue = 3 in the book's example). Sentinels with their own value are not detected. CA1069 has no code fix.
+  notes: CA1069 reports an enum member whose literal value duplicates another member's, which catches a sentinel that repeats the last real value (LastValue = 3 in the book's example). Sentinels with their own value are not detected. Removing a public sentinel value changes the public API, so the fix is breaking; CA1069 has no code fix.
 - id: FDG4040
   strength: DO
   text: provide a value of zero on simple enums.
@@ -1928,14 +1928,14 @@
     - kind: annotation
       text: The main scenario where we expose nested types in the Base Class Libraries is for struct-based enumerators (which also violate the guideline of not making mutable structs). We feel that these are generally OK because (a) they help with performance by avoiding heap-based allocation and interface dispatch and (b) they’re almost always used in a foreach statement and most callers aren’t aware that a struct enumerator was involved.
       author: Jeremy Barton
-  status: verified
+  status: draft
   style: false
   check:
     kind: sdk
     diagnostics:
       - CA1034
     coverage: partial
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: none
@@ -1944,7 +1944,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: 'Library only: the text is about publicly exposed nested types. CA1034 reports externally visible nested types; nested enums are not reported. The exception (types whose variables are declared only in rare scenarios such as subclassing, and the struct enumerators of the Cwalina and Barton annotations) cannot be detected; such reports are not violations. CA1034 has no code fix.'
+  notes: "Library only: the text is about publicly exposed nested types. CA1034 reports externally visible nested types; nested enums are not reported. The exception (types whose variables are declared only in rare scenarios such as subclassing, and the struct enumerators of the Cwalina and Barton annotations) cannot be detected; such reports are not violations. Moving a public nested type out of its enclosing type changes its full name, which changes the public API, so the fix is breaking; CA1034 has no code fix."
 - id: FDG4054
   strength: DO NOT
   text: use nested types if the type is likely to be referenced outside of the containing type.
@@ -2006,14 +2006,14 @@
   body:
     - kind: paragraph
       text: In general, use nested types sparingly, and avoid their exposure as public types.
-  status: verified
+  status: draft
   style: false
   check:
     kind: fdg
     diagnostics:
       - FDG4056
     coverage: full
-  autofix: no
+  autofix: breaking
   severity:
     library: warning
     application: none
@@ -2024,7 +2024,7 @@
   analyzer:
     message: Move the type '{0}' out of the interface '{1}'
     category: Types
-  notes: "Library only: the reason is the many languages that cannot consume such a construct; an application's interfaces are used from one language. FDG4056 reports an externally visible type declared inside an interface (allowed from C# 8). Moving the type changes the public API, so there is no code fix."
+  notes: "Library only: the reason is the many languages that cannot consume such a construct; an application's interfaces are used from one language. FDG4056 reports an externally visible type declared inside an interface (allowed from C# 8). Moving the type out of the interface changes its full name, which changes the public API, so the fix is breaking; FDG4056 has no code fix."
 - id: FDG4057
   strength: DO
   text: apply the `CLSCompliant(true)` attribute to assemblies with public types.
