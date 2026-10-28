@@ -17,7 +17,9 @@ public static class SkillReferenceEmitter
     /// <summary>Marks a <c>references</c> section that matches only itself, without its subsections.</summary>
     public const string ExactMarker = "=";
 
-    /// <summary>Follows the rule text of a rule that <see cref="IsLibraryOnly"/>.</summary>
+    /// <summary>
+    /// Written after the rule text of a rule that is on in the library profile only (<see cref="IsLibraryOnly"/>).
+    /// </summary>
     public const string LibraryOnlyMarker = "(library only)";
 
     private const string ReferencesDirectory = "plugins/framework-design-guidelines/skills/fdg-write/references/";

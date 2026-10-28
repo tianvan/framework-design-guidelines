@@ -93,8 +93,8 @@ Return only the findings, one per rule and line, ordered by file and line, in ex
   <one sentence: why the line breaks the rule and what would follow it>
 ```
 
-Copy the strength and rule text verbatim from the reference, without the version tag, `(alt: ...)` or `examples:`
-link. For example:
+Copy the strength and rule text verbatim from the reference, without `(library only)`, `(context: ...)` or
+`(can cause: ...)`, the version tag, `(alt: ...)` or the `examples:` link. For example:
 
 ```
 src/Orders/OrderMgr.cs:12 — FDG3014 DO NOT use abbreviations or contractions as part of identifier names.

@@ -273,6 +273,26 @@ public sealed class BufferSignatureTests
             """);
     }
 
+    /// <summary>
+    /// Beside a string source, an ArraySegment&lt;byte&gt; is an output buffer, as a byte[] is; a params byte[] is a
+    /// list of arguments, not a buffer (Ruling 40).
+    /// </summary>
+    [Fact]
+    public Task Array_segment_output_counts_and_params_array_does_not()
+    {
+        return BufferReferences.VerifyAsync<BufferSignatureAnalyzer>(
+            """
+            using System;
+
+            public static class Packets
+            {
+                public static int Fill(int count, string {|FDG9156:source|}, ArraySegment<byte> output) => 0;
+
+                public static void Append(int count, string source, params byte[] parts) { }
+            }
+            """);
+    }
+
     [Fact]
     public Task Overloads_are_reported_once_against_the_first_match()
     {
