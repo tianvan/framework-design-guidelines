@@ -7,16 +7,16 @@ Rules per chapter, by how they are checked. `sdk` rules map to SDK analyzers, `f
 | Chapter | Rules | sdk | fdg | judgment | none | verified |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 2 Framework Design Fundamentals | 32 | 0 | 0 | 32 | 0 | 32 |
-| 3 Naming Guidelines | 87 | 33 | 10 | 44 | 0 | 54 |
-| 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 61 |
+| 3 Naming Guidelines | 87 | 33 | 10 | 44 | 0 | 87 |
+| 4 Type Design Guidelines | 70 | 18 | 9 | 43 | 0 | 70 |
 | 5 Member Design | 133 | 20 | 39 | 74 | 0 | 133 |
 | 6 Designing for Extensibility | 22 | 0 | 2 | 20 | 0 | 22 |
 | 7 Exceptions | 70 | 20 | 10 | 40 | 0 | 70 |
 | 8 Usage Guidelines | 107 | 28 | 21 | 58 | 0 | 107 |
 | 9 Common Design Patterns | 175 | 15 | 50 | 110 | 0 | 175 |
-| A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 65 |
+| A C# Coding Style Conventions | 71 | 42 | 3 | 26 | 0 | 71 |
 | D Breaking Changes | 63 | 0 | 0 | 63 | 0 | 63 |
-| Total | 830 | 176 | 144 | 510 | 0 | 782 |
+| Total | 830 | 176 | 144 | 510 | 0 | 830 |
 
 ## Non-guideline content
 

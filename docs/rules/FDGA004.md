@@ -14,7 +14,7 @@ This is a coding style convention. The book treats the appendix A conventions as
 - Diagnostics: FDGA004
 - Automatic fix: yes
 - Severity: library warning, application warning, test warning
-- Status: draft
+- Status: verified
 
 Message: Enclose the embedded statement in braces
 

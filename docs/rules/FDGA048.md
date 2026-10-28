@@ -15,7 +15,7 @@ This is a coding style convention. The book treats the appendix A conventions as
 - Automatic fix: yes
 - Severity: library warning, application warning, test warning
 - Language: [C# 6+] (before that: Before C# 6, use a string literal that matches the name exactly.)
-- Status: draft
+- Status: verified
 
 CA1507 reports string literals that match a parameter or property name. IDE0280 reports parameter names written as string literals in attribute arguments such as [NotNullIfNotNull("value")] (C# 11 and later). dotnet format applies IDE0280's fix only when its severity is set in an .editorconfig (see the phase 2 backlog).
 

@@ -180,7 +180,7 @@
     - kind: annotation
       text: Namespaces are a language thing. The CLR doesn’t know anything about them, really. As far as the CLR is concerned, the name of the class really is something like `MyNameSpace.MyOtherNameSpace.MyAmazingType`. The compilers give you syntax (e.g., “using”) so that you don’t have to type those long class names all the time. So the CLR is never confused about class names because everything is always fully qualified.
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -723,7 +723,7 @@
           // use reflection to serialize all public properties
            ...
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -826,7 +826,7 @@
   body:
     - kind: paragraph
       text: Many CLR languages do not allow developers to define default constructors on value types. Users of these languages are often surprised to learn that `default(SomeStruct)` and `new SomeStruct()` don’t necessarily produce the same value. Even if your language does allow defining a default constructor on a value type, it probably isn’t worth the confusion it would cause if you did it.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -870,7 +870,7 @@
            public int FiveDigitCode { get; } // get-only properties
            public int PlusFourExtension { get; }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1252,7 +1252,7 @@
           ReservedForFutureUse1,
           ReservedForFutureUse2,
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1318,7 +1318,7 @@
                                   FileMode.Open)
         ```
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1375,7 +1375,7 @@
     - kind: annotation
       text: 'You can get yourself into a lot of trouble by trying to be too clever with enums. Sentinel values are a great example of this: People write code like the example shown, but they use the sentinel value `LastValue` instead of `Rectangular`, as recommended. When a new value comes along and `LastValue` is updated, their program “automatically” does the right thing and accepts the new input value without giving an `ArgumentOutOfRangeException`. That sounds grand except for all that we didn’t show—the part that’s doing the actual work and that might not yet expect or even handle the new value. By avoiding sentinel values you will be forced to revisit all the right places to ensure that the new value really is going to work. The few minutes you spend visiting those call sites will be more than repaid in time you save avoiding bugs.'
       author: Rico Mariani
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1928,7 +1928,7 @@
     - kind: annotation
       text: The main scenario where we expose nested types in the Base Class Libraries is for struct-based enumerators (which also violate the guideline of not making mutable structs). We feel that these are generally OK because (a) they help with performance by avoiding heap-based allocation and interface dispatch and (b) they’re almost always used in a foreach statement and most callers aren’t aware that a struct enumerator was involved.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2006,7 +2006,7 @@
   body:
     - kind: paragraph
       text: In general, use nested types sparingly, and avoid their exposure as public types.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg

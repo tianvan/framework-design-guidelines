@@ -11,7 +11,7 @@
         {
             DoSomething();
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -80,7 +80,7 @@
         {
             ...
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: fdg
@@ -127,7 +127,7 @@
         case 0:
            DoSomething();
            break;
-  status: draft
+  status: verified
   style: true
   check:
     kind: fdg
@@ -1544,7 +1544,7 @@
             internal long HitCount { get; private set; }
             internal long MissCount { get; private set; }
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -1607,7 +1607,7 @@
       text: |-
         Right: throw new ArgumentNullException(nameof(target));
         Wrong: throw new ArgumentNullException("target");
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk
@@ -2329,7 +2329,7 @@
         {
             ...
         }
-  status: draft
+  status: verified
   style: true
   check:
     kind: sdk

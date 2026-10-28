@@ -14,7 +14,7 @@ This is a coding style convention. The book treats the appendix A conventions as
 - Diagnostics: IDE0055
 - Automatic fix: yes
 - Severity: library warning, application warning, test warning
-- Status: draft
+- Status: verified
 
 IDE0055 keeps blocks that open and close on one line (csharp_preserve_single_line_blocks = true, for FDGA008); FDGA003 reports those of statements and member bodies.
 

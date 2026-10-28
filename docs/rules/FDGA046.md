@@ -14,7 +14,7 @@ This is a coding style convention. The book treats the appendix A conventions as
 - Diagnostics: IDE0032
 - Automatic fix: yes
 - Severity: library warning, application warning, test warning
-- Status: draft
+- Status: verified
 
 With C# 14 and later, IDE0032 also reports a property whose accessors have logic around one backing field, such as validation in the setter or a call after the assignment, and its fix turns it into a property that uses the field keyword (probe with SDK 10.0.402 and the default language version of net10.0); that is not an auto-implemented property.
 

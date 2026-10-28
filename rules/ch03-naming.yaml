@@ -99,7 +99,7 @@
         System.IO
         System.Threading.IOCompletionCallback
         public void StartIO(Stream ioStream)
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -130,7 +130,7 @@
         System.Xml
         System.Xml.XmlNode
         public void ProcessHtmlTag(string htmlTag)
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -200,7 +200,7 @@
     - kind: annotation
       text: No matter how hard we try to follow all of these guidelines, sometimes we make mistakes. For example, `System.Text.UTF8Encoding` should really have been `System.Text.Utf8Encoding`. Now when we introduce new UTF8-related functionality, what do we do? Do we continue to use “UTF8” for consistency, or do we use “Utf8” for adherence to the guidelines? In general, we choose to not repeat the mistakes of the past, and newer types have used “Utf8”—for example, `System.Buffers.Text.Utf8Formatter`.
       author: Stephen Toub
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -287,7 +287,7 @@
 
         That doesn’t mean you should immediately change all of your existing names. However, in types that don’t interact with the older forms, you are free (and encouraged) to accept the evolving nature of language when it comes to these terms.
       author: Jeremy Barton
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -313,7 +313,7 @@
   section: 3.1.4 Case Sensitivity
   anchor: sec3_1_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -451,7 +451,7 @@
     - kind: annotation
       text: When I was porting my *Applied Microsoft .NET Framework Programming* book from C# to Visual Basic, I ran into this situation a lot. For example, the class library has `Delegate`, `Module`, and `Assembly` classes, and Visual Basic uses these same terms for keywords. This problem is exacerbated by the fact that VB is a case-insensitive language. Visual Basic, like C#, has a way to escape the keywords to disambiguate the situation to the compiler (using square brackets), but I was surprised that the VB team selected keywords that conflict with so many class library names.
       author: Jeffrey Richter
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -492,7 +492,7 @@
         | `Naïve` | `Naive` |
         | `Résumé` | `Resume` |
         | `Röntgen` | `Roentgen` |
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -575,7 +575,7 @@
   body:
     - kind: paragraph
       text: For example, `GetLength` is a better name than `GetInt`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -621,7 +621,7 @@
         | `char` | `Char` | `wchar_t` | `Char` |
         | `string` | `String` | `String` | `String` |
         | `object` | `Object` | `Object` | `Object` |
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -651,7 +651,7 @@
         void Write(double value);
         void Write(float value);
         void Write(short value);
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -815,7 +815,7 @@
         public class CarNew     { ... } // the wrong way
         public class Car2       { ... } // an acceptable way
         public class Automobile { ... } // a better way
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1074,7 +1074,7 @@
       text: For example, do not use `Debug` as a namespace name and then also provide a class named `Debug` in the same namespace. Several compilers require such types to be fully qualified.
     - kind: paragraph
       text: These guidelines cover general namespace naming guidelines, but the next section provides specific guidelines for certain special subnamespaces.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1108,7 +1108,7 @@
         - Infrastructure namespaces
         - Core namespaces
         - Technology namespace groups
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1136,7 +1136,7 @@
   body:
     - kind: paragraph
       text: For example, do not add a type named `Page` to the `System.Web.UI.Adapters` namespace, because the `System.Web.UI` namespace already contains a type named `Page`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1163,7 +1163,7 @@
       text: For example, never use `Stream` as a type name. It would conflict with `System.IO.Stream`, a very commonly used type.
     - kind: paragraph
       text: By the same token, do not add a type named `EventLog` to the `System.Diagnostics.Events` namespace, because the `System.Diagnostics` namespace already contains a type named `EventLog`.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1186,7 +1186,7 @@
   section: 3.4.1.4 Technology Namespace Groups
   anchor: sec3_4_1_4
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1211,7 +1211,7 @@
   body:
     - kind: paragraph
       text: For example, you should not add a type named `Binding` to the `Microsoft.VisualBasic` namespace because the `System.Windows.Forms` namespace already contains that type name.
-  status: draft
+  status: verified
   style: false
   check:
     kind: judgment
@@ -1350,7 +1350,7 @@
   body:
     - kind: paragraph
       text: For example, `IComponent` (descriptive noun), `ICustomAttributeProvider` (noun phrase), and `IPersistable` (adjective) are appropriate interface names. As with other type names, avoid abbreviations.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1523,7 +1523,7 @@
       text: |-
         public class ElementStream : Object { ... }
         public class WindowsAttribute : Control { ... }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1548,7 +1548,7 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1596,7 +1596,7 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -1646,7 +1646,7 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1717,7 +1717,7 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1765,7 +1765,7 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1789,7 +1789,7 @@
   section: 3.5.2 Names of Common Types
   anchor: sec3_5_2
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -1961,7 +1961,7 @@
     - kind: annotation
       text: Notice that this guideline is the exact opposite of common usage in C++ programming. It is important in C++ to fully qualify each enum member because they can be accessed outside of the scope of the enum name. However, in the managed world, enum members are only accessed through the scope of the enum name.
       author: Brad Abrams
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2049,7 +2049,7 @@
         public string GetTextWriter(int value) { ... }
     - kind: paragraph
       text: This pattern typically indicates that the property should really be a method. See section 5.1.3 for additional information.
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2082,7 +2082,7 @@
           // bad naming
           public ItemCollection ItemCollection { get; }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2237,7 +2237,7 @@
   section: 3.6.3 Names of Events
   anchor: sec3_6_3
   body: []
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2303,7 +2303,7 @@
       text: |-
         public delegate void <EventName>EventHandler(object sender,
                                                      <EventName>EventArgs e);
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2341,7 +2341,7 @@
           public int X { get { return x; } }
           public int Y { get { return y; } }
         }
-  status: draft
+  status: verified
   style: false
   check:
     kind: sdk
@@ -2632,7 +2632,7 @@
         // incorrect parameter naming
         public static bool operator ==(DateTimeOffset d1,
                                        DateTimeOffset d2);
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
@@ -2662,7 +2662,7 @@
       text: The types and members automatically generated by a resource editor should use the `internal` access modifier.
     - kind: paragraph
       text: When it does make sense to expose a resource via public API, use intentional type and member design.
-  status: draft
+  status: verified
   style: false
   check:
     kind: fdg
