@@ -13,8 +13,9 @@ namespace FrameworkDesignGuidelines.Analyzers.Naming;
 /// A form matches a run of whole words (see <see cref="NamingSymbols.Words"/>) inside one part of a name between
 /// digits or underscores, with the case of each word as the table writes it, except the first letter of a name's
 /// first word, so <c>fileName</c> matches as the table's <c>metaData</c> does. The last word of a run may end with
-/// a plural <c>s</c> or <c>es</c>, which the message keeps; an acronym plural such as <c>IDs</c> or <c>IDEs</c>,
-/// which the splitter cuts before its last capital, is joined again first. <c>Don't</c> cannot be an identifier.
+/// a plural <c>s</c> (no form takes <c>es</c>), which the message keeps; an acronym plural such as <c>IDs</c> or
+/// <c>IDEs</c>, which the splitter cuts before its last capital, is joined again first, unless the capital and
+/// <c>s</c> are the word <c>As</c>, <c>Is</c> or <c>Us</c>. <c>Don't</c> cannot be an identifier.
 /// Footnote 1 makes the verb of <c>Logoff</c> and <c>Logon</c> two words and footnote 2 says <c>LogIn</c> is never
 /// used, so <c>LogOut</c> and <c>LogIn</c> are reported in every name, and in a method name the message gives
 /// <c>LogOff</c> and <c>LogOn</c>.
@@ -55,7 +56,7 @@ public sealed class CompoundWordAnalyzer : DiagnosticAnalyzer
         Form("Writeable", "Writable"),
     ];
 
-    private static readonly string[] _pluralSuffixes = ["", "s", "es"];
+    private static readonly string[] _pluralSuffixes = ["", "s"];
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
         ImmutableArray.Create(FdgDescriptors.FDG3006);
@@ -130,7 +131,13 @@ public sealed class CompoundWordAnalyzer : DiagnosticAnalyzer
         for (int i = words.Count - 2; i >= 0; i--)
         {
             string next = words[i + 1];
-            if (next.Length == 2 && char.IsUpper(next[0]) && next[1] == 's' && words[i].All(char.IsUpper))
+
+            // As, Is and Us are English words after an acronym, as in UserIDIsValid or GetIDAsString, not a plural.
+            if (next.Length == 2
+                && char.IsUpper(next[0])
+                && next[1] == 's'
+                && next is not ("As" or "Is" or "Us")
+                && words[i].All(char.IsUpper))
             {
                 words[i] += next;
                 words.RemoveAt(i + 1);

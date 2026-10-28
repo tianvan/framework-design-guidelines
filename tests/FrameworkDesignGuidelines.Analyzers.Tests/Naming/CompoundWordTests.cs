@@ -228,6 +228,31 @@ public sealed class CompoundWordTests
     }
 
     [Fact]
+    public Task An_acronym_before_the_words_as_is_or_us_is_not_a_plural()
+    {
+        return Verifier.VerifyWithAsync(
+            """
+            public class User
+            {
+                public bool {|#0:UserIDIsValid|};
+
+                public string {|#1:UserIDAsText|};
+
+                public string {|#2:GetIDAsString|}()
+                {
+                    return string.Empty;
+                }
+
+                public bool {|#3:IDUsLocal|};
+            }
+            """,
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(0).WithArguments("UserIDIsValid", "ID", "Id"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(1).WithArguments("UserIDAsText", "ID", "Id"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(2).WithArguments("GetIDAsString", "ID", "Id"),
+            new DiagnosticResult(FdgDescriptors.FDG3006).WithLocation(3).WithArguments("IDUsLocal", "ID", "Id"));
+    }
+
+    [Fact]
     public Task Names_that_are_not_externally_visible_or_are_inherited_are_not_reported()
     {
         return Verifier.VerifyAsync(

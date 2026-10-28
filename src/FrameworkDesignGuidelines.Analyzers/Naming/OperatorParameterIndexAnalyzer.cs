@@ -10,8 +10,8 @@ namespace FrameworkDesignGuidelines.Analyzers.Naming;
 /// </summary>
 /// <remarks>
 /// A name that is the name of its parameter's type, such as <c>vector3</c> for <c>Vector3</c>, <c>Vector3?</c> or
-/// <c>Vector3[]</c>, ends with a digit of the type name rather than an index and is not reported. Abbreviations, the rule's other subject, cannot be told
-/// from words and are not checked.
+/// <c>Vector3[]</c>, ends with a digit of the type name rather than an index and is not reported. Abbreviations, the
+/// rule's other subject, cannot be told from words and are not checked.
 /// </remarks>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class OperatorParameterIndexAnalyzer : DiagnosticAnalyzer
@@ -39,7 +39,10 @@ public sealed class OperatorParameterIndexAnalyzer : DiagnosticAnalyzer
             if (symbol is IParameterSymbol parameter
                 && parameter.Name.Length > 0
                 && char.IsDigit(parameter.Name[parameter.Name.Length - 1])
-                && !string.Equals(parameter.Name, UnderlyingType(parameter.Type).Name, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(
+                    parameter.Name,
+                    UnderlyingType(parameter.Type).Name,
+                    StringComparison.OrdinalIgnoreCase)
                 && NamingSymbols.SourceLocation(parameter) is { } location)
             {
                 context.ReportDiagnostic(Diagnostic.Create(FdgDescriptors.FDG3086, location, parameter.Name));
@@ -47,7 +50,9 @@ public sealed class OperatorParameterIndexAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    /// <summary>The element type of an array and the type argument of <see cref="Nullable{T}"/>, else the type.</summary>
+    /// <summary>
+    /// The element type of an array and the type argument of <see cref="Nullable{T}"/>, else the type.
+    /// </summary>
     private static ITypeSymbol UnderlyingType(ITypeSymbol type)
     {
         while (true)
