@@ -220,7 +220,7 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
         Assert.Empty(Check());
     }
 
-    private void SetNotes(string nonGuidelineNote, string otherEntries)
+    private void SetNotes(string nonGuidelineNote, string otherEntries, string otherSource = "app02.xhtml")
     {
         File.WriteAllText(
             Path.Combine(_rulesDir, "meta.yaml"),
@@ -233,7 +233,7 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
             "    nonGuideline:\n" +
             $"      - {{ section: \"9.1\", disposition: background, note: \"{nonGuidelineNote}\" }}\n" +
             "otherContent:\n" +
-            "  - source: app02.xhtml\n" +
+            $"  - source: {otherSource}\n" +
             "    title: Obsolete Guidance\n" +
             "    entries:\n" +
             otherEntries);
@@ -714,6 +714,45 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
         Assert.Equal(1, result.ExitCode);
         Assert.Contains($"{RulesFileName}:FDG9001: ", result.Error);
         Assert.Contains($"{RulesFileName}:FDG9002: ", result.Error);
+    }
+
+    /// <summary>
+    /// With <c>--book</c>, no <c>meta.yaml</c> note may share 8 consecutive words with the xhtml file it describes;
+    /// words are compared case-insensitively, without their punctuation.
+    /// </summary>
+    [Fact]
+    public void Check_command_with_book_reports_notes_that_copy_eight_words_of_the_book()
+    {
+        SetNotes(
+            "The book: THIS introduction, comes before any guideline and belongs to no rule.",
+            "      - { section: \"8\", disposition: background, note: \"It says this introduction comes before any guideline and belongs.\" }\n",
+            "ch08.xhtml");
+
+        var result = Run("check", "--rules", _rulesDir, "--sdk", _sdk.Directory, "--book", _bookDir);
+
+        Assert.Equal(1, result.ExitCode);
+        Assert.Contains(
+            "meta.yaml:-: the nonGuideline note of chapter 9, section 9.1, shares 8 consecutive words with " +
+            "sample.xhtml: \"this introduction comes before any guideline and belongs\".",
+            result.Error);
+        Assert.Contains(
+            "meta.yaml:-: the otherContent note of ch08.xhtml, section 8, shares 8 consecutive words with " +
+            "ch08.xhtml: \"this introduction comes before any guideline and belongs\".",
+            result.Error);
+    }
+
+    [Fact]
+    public void Check_command_with_book_accepts_notes_that_share_seven_words_with_the_book()
+    {
+        SetNotes(
+            "Section text that precedes the first guideline, then ours.",
+            "      - { section: \"8\", disposition: background, note: \"This introduction comes before any guideline; it is ours.\" }\n",
+            "ch08.xhtml");
+
+        var result = Run("check", "--rules", _rulesDir, "--sdk", _sdk.Directory, "--book", _bookDir);
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains("No meta.yaml note shares 8 consecutive words with the book.", result.Output);
     }
 
     [Fact]

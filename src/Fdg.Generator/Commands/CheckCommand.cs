@@ -1,3 +1,4 @@
+using Fdg.Generator.Book;
 using Fdg.Generator.Plugin;
 using Fdg.Generator.Rules;
 using Fdg.Generator.Sdk;
@@ -9,7 +10,8 @@ namespace Fdg.Generator.Commands;
 /// <c>check [--book &lt;OEBPS dir&gt;]</c>: validates every rule file against the schema and the mapping
 /// conventions, every referenced CA/IDE diagnostic against the installed SDK, and every rule id cited in a
 /// <c>meta.yaml</c> note against the rules. With <c>--book</c> it also
-/// runs <c>verify-source</c>. It also checks that the plugin manifests carry the version of
+/// runs <c>verify-source</c> and checks that no <c>meta.yaml</c> note copies the book (<see cref="NoteCopyValidator"/>).
+/// It also checks that the plugin manifests carry the version of
 /// <c>Directory.Build.props</c> in the parent of the rules directory.
 /// </summary>
 public static class CheckCommand
@@ -62,9 +64,41 @@ public static class CheckCommand
         if (bookDir is not null)
         {
             exitCode = Math.Max(exitCode, VerifySourceCommand.Run(new[] { "--book", bookDir, "--rules", rulesDir }, output, error));
+            exitCode = Math.Max(exitCode, CheckNoteCopies(rulesDir, bookDir, output, error));
         }
 
         return exitCode;
+    }
+
+    /// <summary>
+    /// Reports the <c>meta.yaml</c> notes that copy the book (<see cref="NoteCopyValidator"/>). A <c>meta.yaml</c> that
+    /// does not load was already reported by <see cref="Check"/>.
+    /// </summary>
+    private static int CheckNoteCopies(string rulesDir, string bookDir, TextWriter output, TextWriter error)
+    {
+        MetaFile meta;
+        try
+        {
+            meta = RuleLoader.LoadMeta(rulesDir);
+        }
+        catch (Exception exception) when (exception is YamlException or FormatException)
+        {
+            return 1;
+        }
+
+        IReadOnlyList<CheckError> copies = NoteCopyValidator.Validate(meta, bookDir);
+        foreach (CheckError copy in copies)
+        {
+            error.WriteLine(copy);
+        }
+
+        if (copies.Count > 0)
+        {
+            return 1;
+        }
+
+        output.WriteLine($"No meta.yaml note shares {NoteCopyValidator.CopiedRunLength} consecutive words with the book.");
+        return 0;
     }
 
     /// <summary>
