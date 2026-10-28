@@ -1,6 +1,6 @@
 {
   "name": "framework-design-guidelines",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Keeps the C# that the AI writes in line with the Framework Design Guidelines: writing and review skills, and hooks that format and check the changed lines with dotnet fdg.",
   "author": {
     "name": "tianvan"

@@ -13,8 +13,6 @@ The design calls for full coverage of the book before version 1.0. Until then, r
   - Codex SessionStart after compaction;
   - re-approving Codex hooks after a plugin update;
   - the interactive confirmation path of `/fdg-setup`.
-- Bump the version before the next release, in `Directory.Build.props`, both `plugin.json` files and
-  `.claude-plugin/marketplace.json` (`check` fails when they differ).
 - `ExistingApi` judges a diagnostic only by its location: when `IDisposable` and a faulty `Dispose` are added to an
   existing type, CA1063 is reported on the type's name and counted as existing API, so Stop does not send it back. For
   a diagnostic on a type declaration, also compare the base type list with the baseline.

@@ -119,7 +119,7 @@ The package works without the plugin. Add it to a `Directory.Build.props`:
     <FrameworkDesignGuidelinesProfile>library</FrameworkDesignGuidelinesProfile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FrameworkDesignGuidelines.Analyzers" Version="0.1.0" PrivateAssets="all" />
+    <PackageReference Include="FrameworkDesignGuidelines.Analyzers" Version="0.2.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
