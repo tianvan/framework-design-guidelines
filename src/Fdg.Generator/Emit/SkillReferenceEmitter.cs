@@ -37,6 +37,12 @@ public static class SkillReferenceEmitter
         {
             foreach (ReferencePart part in Parts(file))
             {
+                if (part.Stem != part.Stem.ToLowerInvariant())
+                {
+                    throw new GenerationException(
+                        $"{RuleText.ChapterLabel(file.Chapter)}: reference file name '{part.Stem}' must be lowercase.");
+                }
+
                 if (!stems.TryAdd(part.Stem, RuleText.ChapterLabel(file.Chapter)))
                 {
                     throw new GenerationException(

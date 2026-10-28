@@ -48,7 +48,7 @@ A public name cannot change later without breaking callers, so choose names care
 | Design an operation on buffers, a data transformation or a fixed-size write | [references/ch09-patterns-buffers.md](references/ch09-patterns-buffers.md) |
 | Write a value to a buffer with the Try-Write Pattern, or report partial writes with `OperationStatus` | [references/ch09-patterns-buffers-try-write.md](references/ch09-patterns-buffers-try-write.md) |
 | Change an already shipped public API | [references/appd-breaking-changes-d-1-to-d-8.md](references/appd-breaking-changes-d-1-to-d-8.md), [references/appd-breaking-changes-d-9-on.md](references/appd-breaking-changes-d-9-on.md) |
-| Organize a source file, order members, sort using directives, or write comments | [references/appA-coding-style.md](references/appA-coding-style.md) |
+| Organize a source file, order members, sort using directives, or write comments | [references/appa-coding-style.md](references/appa-coding-style.md) |
 
 Each reference lists, by section, every rule of its chapter that tools do not enforce. When a rule's wording is not
 enough, follow the `examples:` link at the end of its line to the book's explanation and code.

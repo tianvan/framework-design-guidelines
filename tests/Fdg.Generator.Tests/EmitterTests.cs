@@ -555,6 +555,67 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Reference_stems_are_lowercase()
+    {
+        GeneratorInput input = Input();
+        input = input with { Files = input.Files.Select(f => f with { RulesFile = "appA-coding-style.yaml" }).ToList() };
+
+        IReadOnlyList<GeneratedFile> files = SkillReferenceEmitter.Emit(input);
+
+        Assert.Equal(
+            new[]
+            {
+                "plugins/framework-design-guidelines/skills/fdg-write/references/appa-coding-style.md",
+                "plugins/framework-design-guidelines/skills/fdg-write/references/examples/appa-coding-style.md",
+            },
+            files.Select(f => f.Path).ToArray());
+        Assert.Contains("examples/appa-coding-style.md#fdg9001", files[0].Content);
+    }
+
+    [Fact]
+    public void Uppercase_reference_split_name_is_an_error()
+    {
+        GeneratorInput input = Split(_ => true, Part("ch09-Patterns", "9.1", "9.2", "9.3"));
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Equal("Chapter 9: reference file name 'ch09-Patterns' must be lowercase.", exception.Message);
+    }
+
+    [Fact]
+    public void Uppercase_reference_name_in_meta_yaml_is_an_error()
+    {
+        FormatException exception = Assert.Throws<FormatException>(
+            () => LoadMetaWith("    references: [{ file: ch09-Patterns, sections: [\"9.1\"] }]\n"));
+
+        Assert.Contains("reference file name 'ch09-Patterns' must be lowercase", exception.Message);
+    }
+
+    [Fact]
+    public void Generate_command_rejects_an_uppercase_reference_name()
+    {
+        string rules = TempDir();
+        foreach (string path in Directory.GetFiles(_fixtureRules))
+        {
+            File.Copy(path, Path.Combine(rules, Path.GetFileName(path)));
+        }
+
+        string meta = Path.Combine(rules, "meta.yaml");
+        File.WriteAllText(
+            meta,
+            File.ReadAllText(meta) + "    references: [{ file: ch09-Patterns, sections: [\"9.1\", \"9.2\", \"9.3\"] }]\n");
+        var error = new StringWriter();
+
+        int exitCode = GeneratorCli.Run(
+            new[] { "generate", "--rules", rules, "--out", TempDir(), "--version", "0.1.0" },
+            new StringWriter(),
+            error);
+
+        Assert.NotEqual(0, exitCode);
+        Assert.Contains("reference file name 'ch09-Patterns' must be lowercase", error.ToString());
+    }
+
+    [Fact]
     public void Split_matching_no_rule_fails_generation()
     {
         GeneratorInput input = Split(_ => true, Part("ch09-a", "9.1", "9.2", "9.3"), Part("ch09-empty", "9.4"));
@@ -1001,6 +1062,32 @@ public sealed class EmitterTests : IDisposable
         Assert.All(stale, path => Assert.False(File.Exists(path), path));
         Assert.All(kept, path => Assert.True(File.Exists(path), path));
         Assert.Equal(2, changes);
+    }
+
+    /// <summary>
+    /// A case-insensitive file system treats <c>X.md</c> as the file <c>x.md</c>, so a file whose content is right but
+    /// whose name has the wrong case must still be rewritten under the generated name.
+    /// </summary>
+    [Fact]
+    public void Write_fixes_the_case_of_an_existing_file()
+    {
+        string root = TempDir();
+        IReadOnlyList<GeneratedFile> files = GeneratedFiles.Create(Input());
+        GeneratedFiles.Write(root, files);
+        string references = Path.Combine(root, "plugins", "framework-design-guidelines", "skills", "fdg-write", "references");
+        string lower = Path.Combine(references, "ch09-sample.md");
+        string wrongCase = Path.Combine(references, "Ch09-Sample.md");
+        byte[] content = File.ReadAllBytes(lower);
+        File.Delete(lower);
+        File.WriteAllBytes(wrongCase, content);
+
+        int changes = GeneratedFiles.Write(root, files);
+
+        string[] names = Directory.GetFiles(references, "*.md").Select(f => Path.GetFileName(f)).Order(StringComparer.Ordinal).ToArray();
+        Assert.Equal(new[] { "ch09-sample.md" }, names);
+        Assert.Equal(content, File.ReadAllBytes(lower));
+        Assert.True(changes > 0, "the file under the wrong case was not rewritten");
+        Assert.Equal(0, GeneratedFiles.Write(root, files));
     }
 
     [Fact]

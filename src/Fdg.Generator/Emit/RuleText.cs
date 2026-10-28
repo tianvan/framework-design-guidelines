@@ -50,12 +50,17 @@ internal static class RuleText
         return char.IsDigit(token[0]) ? $"Chapter {token}" : $"Appendix {token}";
     }
 
-    /// <summary>The file stem shared by a chapter's skill reference files, such as <c>ch03-naming</c>.</summary>
+    /// <summary>
+    /// The file stem shared by a chapter's skill reference files, such as <c>ch03-naming</c>. It is lowercase, though
+    /// the rule file keeps the case of an appendix letter (<c>appA-coding-style.yaml</c> gives <c>appa-coding-style</c>),
+    /// because the AI follows links by exact name and Linux file systems tell <c>A</c> from <c>a</c>.
+    /// </summary>
     public static string FileStem(RuleFile file)
     {
-        return file.RulesFile.Length > 0
+        string stem = file.RulesFile.Length > 0
             ? Path.GetFileNameWithoutExtension(file.RulesFile)
             : "ch" + file.Chapter;
+        return stem.ToLowerInvariant();
     }
 
     /// <summary>The section number, the first word of a rule's <c>Section</c>, such as <c>5.2.1</c>.</summary>

@@ -36,7 +36,7 @@ This is a review: give findings and change no files.
    project file or a `Directory.Build.props` above it, or `profile` in the project's `obj/fdg/marker.json`).
 3. Read the rule references for the topics the code in scope touches. Read
    [ch03-naming.md](../fdg-write/references/ch03-naming.md) for every review outside `test` projects and
-   [appA-coding-style.md](../fdg-write/references/appA-coding-style.md) for every review; add the others by topic:
+   [appa-coding-style.md](../fdg-write/references/appa-coding-style.md) for every review; add the others by topic:
 
    | When the code in scope | Read |
    |---|---|

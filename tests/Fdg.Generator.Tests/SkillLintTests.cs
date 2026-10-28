@@ -158,6 +158,45 @@ public sealed class SkillLintTests
         }
     }
 
+    /// <summary>
+    /// Windows and macOS find <c>references/appA-coding-style.md</c> under the name <c>appa-coding-style.md</c>, Linux
+    /// does not, so every link must name its file with the exact case. The check compares the link with the directory
+    /// listing; <see cref="File.Exists(string)"/> would hide a mismatch.
+    /// </summary>
+    [Fact]
+    public void References_are_linked_with_exact_case()
+    {
+        foreach (string name in SkillNames)
+        {
+            string skillDirectory = Path.GetDirectoryName(SkillPath(name))!;
+            foreach (string path in ReferencePaths(Read(SkillPath(name)).Body))
+            {
+                AssertExactCase(skillDirectory, path, $"{name}/SKILL.md");
+            }
+        }
+
+        string fdgWriteDirectory = Path.GetDirectoryName(SkillPath("fdg-write"))!;
+        foreach (string path in ReferencePaths(Read(AgentPath).Body))
+        {
+            AssertExactCase(fdgWriteDirectory, "references/" + Path.GetFileName(path), "fdg-reviewer.md");
+        }
+    }
+
+    [Fact]
+    public void Reference_file_names_are_lowercase()
+    {
+        string[] files = Directory.GetFiles(FdgWriteReferences, "*", SearchOption.AllDirectories);
+
+        Assert.NotEmpty(files);
+        foreach (string file in files)
+        {
+            string name = Path.GetFileName(file);
+            Assert.True(
+                name == name.ToLowerInvariant(),
+                $"{Relative(file)} must have a lowercase name.");
+        }
+    }
+
     /// <summary>A second guard besides the generator: the checked-in references stay small enough to load.</summary>
     [Fact]
     public void Every_reference_file_is_at_most_32_KB()
@@ -507,6 +546,28 @@ public sealed class SkillLintTests
 
     private static IEnumerable<string> ReferencePaths(string text) =>
         ReferencePath.Matches(text).Select(m => m.Groups["path"].Value).Distinct();
+
+    /// <summary>
+    /// Asserts that every segment of <paramref name="link"/>, relative to <paramref name="baseDirectory"/>, is the exact
+    /// name of an entry in its directory.
+    /// </summary>
+    private static void AssertExactCase(string baseDirectory, string link, string owner)
+    {
+        string directory = baseDirectory;
+        foreach (string segment in link.Split('/'))
+        {
+            if (segment == "..")
+            {
+                directory = Path.GetFullPath(Path.Combine(directory, ".."));
+                continue;
+            }
+
+            bool exact = Directory.EnumerateFileSystemEntries(directory)
+                .Any(entry => string.Equals(Path.GetFileName(entry), segment, StringComparison.Ordinal));
+            Assert.True(exact, $"{owner} links {link}, but {Relative(directory)} has no entry named exactly '{segment}'.");
+            directory = Path.Combine(directory, segment);
+        }
+    }
 
     private static string Relative(string path) => Path.GetRelativePath(Root.Value, path).Replace('\\', '/');
 

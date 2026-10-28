@@ -49,9 +49,17 @@ public static class GeneratedFiles
         {
             string path = Path.Combine(root, file.Path);
             byte[] content = Utf8.GetBytes(file.Content);
-            if (File.Exists(path) && File.ReadAllBytes(path).AsSpan().SequenceEqual(content))
+            bool exists = File.Exists(path);
+            bool sameName = exists && HasExactName(path);
+            if (sameName && File.ReadAllBytes(path).AsSpan().SequenceEqual(content))
             {
                 continue;
+            }
+
+            if (exists && !sameName)
+            {
+                // A case-insensitive file system finds X.md under the name x.md and would keep the old name.
+                File.Delete(path);
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -61,10 +69,21 @@ public static class GeneratedFiles
 
         var expected = files
             .Select(f => Path.GetFullPath(Path.Combine(root, f.Path)))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            .ToHashSet(StringComparer.Ordinal);
         removed = RemoveStale(root, RuleDocsDirectory, "FDG*.md", recurse: false, expected)
             + RemoveStale(root, ReferencesDirectory, "*.md", recurse: true, expected);
         return changes + removed;
+    }
+
+    /// <summary>
+    /// Whether the file's name on disk is exactly the name in <paramref name="path"/>; <see cref="File.Exists(string)"/>
+    /// is also true for a name that differs in case on a case-insensitive file system.
+    /// </summary>
+    private static bool HasExactName(string path)
+    {
+        string name = Path.GetFileName(path);
+        return Directory.EnumerateFiles(Path.GetDirectoryName(path)!, name)
+            .Any(found => string.Equals(Path.GetFileName(found), name, StringComparison.Ordinal));
     }
 
     /// <summary>

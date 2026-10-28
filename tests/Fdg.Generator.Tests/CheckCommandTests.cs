@@ -170,7 +170,7 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
         Assert.Contains("testProfile of chapter 9 must be on or off", error);
     }
 
-    private void SetChapterReferenceSections(string sections)
+    private void SetChapterReferenceSections(string sections, string file = "ch09-sample")
     {
         File.WriteAllText(
             Path.Combine(_rulesDir, "meta.yaml"),
@@ -181,7 +181,17 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
             "    rules: ch09-sample.yaml\n" +
             "    title: Sample Chapter\n" +
             "    references:\n" +
-            $"      - {{ file: ch09-sample, sections: [{sections}] }}\n");
+            $"      - {{ file: {file}, sections: [{sections}] }}\n");
+    }
+
+    [Fact]
+    public void Reference_file_name_must_be_lowercase()
+    {
+        SetChapterReferenceSections("\"9.1\"", file: "ch09-Sample");
+
+        string error = Assert.Single(Check());
+        Assert.StartsWith("meta.yaml:", error);
+        Assert.Contains("reference file name 'ch09-Sample' must be lowercase", error);
     }
 
     [Theory]

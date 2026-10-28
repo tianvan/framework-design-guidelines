@@ -32,7 +32,7 @@ If you cannot find them, say so and stop. Never review from memory: every findin
 2. Find each file's profile: the `FrameworkDesignGuidelinesProfile` of the project that contains it (in the project
    file or a `Directory.Build.props` above it, or `profile` in the project's `obj/fdg/marker.json`).
 3. Read the rule references for the topics the code in scope touches, from the references directory:
-   `references/ch03-naming.md` for every `library` or `application` file, `references/appA-coding-style.md` always,
+   `references/ch03-naming.md` for every `library` or `application` file, `references/appa-coding-style.md` always,
    and the others by topic:
    - public API scenarios, entry points, layers, documentation: `references/ch02-fundamentals.md`;
    - classes, structs, interfaces, abstract classes, namespaces: `references/ch04-types-4-1-to-4-4.md`;

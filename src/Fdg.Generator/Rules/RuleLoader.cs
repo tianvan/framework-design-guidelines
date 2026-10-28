@@ -153,6 +153,11 @@ public static class RuleLoader
             throw new FormatException($"meta.yaml: a references entry of chapter {chapter} needs a file and at least one section.");
         }
 
+        if (dto.File.Any(char.IsAsciiLetterUpper))
+        {
+            throw new FormatException($"meta.yaml: reference file name '{dto.File}' must be lowercase (chapter {chapter}).");
+        }
+
         if (!SplitStem.IsMatch(dto.File))
         {
             throw new FormatException(
