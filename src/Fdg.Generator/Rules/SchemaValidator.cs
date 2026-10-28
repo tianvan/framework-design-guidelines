@@ -36,7 +36,10 @@ public sealed class SchemaValidator
         }
         catch (YamlException exception)
         {
-            return new[] { new CheckError(fileName, CheckError.NoRule, $"invalid YAML: {exception.Message}") };
+            return new[]
+            {
+                new CheckError(fileName, CheckError.NoRule, $"invalid YAML at {YamlErrors.Position(exception)}: {exception.Message}"),
+            };
         }
 
         EvaluationResults results = _schema.Evaluate(JsonSerializer.SerializeToElement(json), Options);

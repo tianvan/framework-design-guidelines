@@ -365,7 +365,8 @@ internal static class FdgDescriptors
         category: "FrameworkDesignGuidelines.Members",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: false,
-        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5077.md");
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG5077.md",
+        customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });
 
     public static readonly DiagnosticDescriptor FDG5094 = new DiagnosticDescriptor(
         id: "FDG5094",
@@ -545,7 +546,8 @@ internal static class FdgDescriptors
         category: "FrameworkDesignGuidelines.Extensibility",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: false,
-        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG6019.md");
+        helpLinkUri: "https://github.com/tianvan/framework-design-guidelines/blob/main/docs/rules/FDG6019.md",
+        customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });
 
     public static readonly DiagnosticDescriptor FDG7007 = new DiagnosticDescriptor(
         id: "FDG7007",

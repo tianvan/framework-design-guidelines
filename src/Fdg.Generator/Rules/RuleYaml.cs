@@ -153,7 +153,12 @@ public static class RuleYaml
                 Alternative = mapping.Alternative,
                 Analyzer = mapping.Analyzer is null
                     ? null
-                    : new AnalyzerDto { Message = mapping.Analyzer.Message, Category = mapping.Analyzer.Category },
+                    : new AnalyzerDto
+                    {
+                        Message = mapping.Analyzer.Message,
+                        Category = mapping.Analyzer.Category,
+                        CompilationEnd = mapping.Analyzer.CompilationEnd,
+                    },
                 Notes = mapping.Notes,
                 Naming = mapping.Naming is null
                     ? null
@@ -178,7 +183,7 @@ public static class RuleYaml
                 Config,
                 MinLanguage,
                 Alternative,
-                Analyzer is null ? null : new AnalyzerInfo(Analyzer.Message, Analyzer.Category),
+                Analyzer is null ? null : new AnalyzerInfo(Analyzer.Message, Analyzer.Category, Analyzer.CompilationEnd),
                 Notes,
                 Naming is null ? null : new NamingTags(Naming.Symbols, Naming.Failures));
 
@@ -227,6 +232,10 @@ public static class RuleYaml
         public string Message { get; set; } = string.Empty;
 
         public string Category { get; set; } = string.Empty;
+
+        /// <summary>Written only when true, so that the rules without it keep their form.</summary>
+        [YamlMember(DefaultValuesHandling = DefaultValuesHandling.OmitDefaults)]
+        public bool CompilationEnd { get; set; }
     }
 
     internal sealed class NamingDto

@@ -8,22 +8,35 @@ namespace Fdg.Generator.Commands;
 
 /// <summary>
 /// <c>check [--book &lt;OEBPS dir&gt;]</c>: validates every rule file against the schema and the mapping
-/// conventions, every referenced CA/IDE diagnostic against the installed SDK, and every rule id cited in a
-/// <c>meta.yaml</c> note against the rules. With <c>--book</c> it also
-/// runs <c>verify-source</c> and checks that no <c>meta.yaml</c> note copies the book (<see cref="NoteCopyValidator"/>).
-/// It also checks that the plugin manifests carry the version of
+/// conventions, every referenced CA/IDE diagnostic against the SDK that <c>global.json</c> selects for the current
+/// directory (or the one in <c>--sdk</c>), and every rule id cited in a <c>meta.yaml</c> note against the rules.
+/// With <c>--book</c> it also runs <c>verify-source</c> and checks that no <c>meta.yaml</c> note copies the book
+/// (<see cref="NoteCopyValidator"/>). It also checks that the plugin manifests carry the version of
 /// <c>Directory.Build.props</c> in the parent of the rules directory.
 /// </summary>
 public static class CheckCommand
 {
     private static readonly string[] AllowedOptions = { "book", "rules", "sdk" };
 
-    public static int Run(IReadOnlyList<string> args, TextWriter output, TextWriter error)
+    internal static int Run(IReadOnlyList<string> args, TextWriter output, TextWriter error, Func<string, string> findSdkDirectory)
     {
-        return ToolErrors.Run("check", error, () => Execute(args, output, error));
+        return ToolErrors.Run("check", error, () => Execute(args, output, error, findSdkDirectory));
     }
 
-    private static int Execute(IReadOnlyList<string> args, TextWriter output, TextWriter error)
+    public static int Run(IReadOnlyList<string> args, TextWriter output, TextWriter error)
+    {
+        return Run(args, output, error, SdkLocator.FindSdkDirectory);
+    }
+
+    /// <summary>
+    /// <paramref name="findSdkDirectory"/> finds the SDK for a working directory; <c>check</c> hands it the current
+    /// directory, so that the SDK is the one <c>global.json</c> selects there, as for <c>dotnet build</c>.
+    /// </summary>
+    private static int Execute(
+        IReadOnlyList<string> args,
+        TextWriter output,
+        TextWriter error,
+        Func<string, string> findSdkDirectory)
     {
         if (!CommandOptions.TryParse(args, AllowedOptions, out CommandOptions options, out string message)
             || !RulesDirectory.TryResolve(options.Get("rules"), out string rulesDir, out message))
@@ -35,7 +48,7 @@ public static class CheckCommand
         IReadOnlyDictionary<string, SdkDiagnostic> catalog;
         try
         {
-            string sdkDir = options.Get("sdk") ?? SdkLocator.FindSdkDirectory(Path.GetDirectoryName(rulesDir)!);
+            string sdkDir = options.Get("sdk") ?? findSdkDirectory(Directory.GetCurrentDirectory());
             catalog = SdkDiagnosticCatalog.Load(sdkDir);
         }
         catch (Exception exception) when (exception is InvalidOperationException or IOException)

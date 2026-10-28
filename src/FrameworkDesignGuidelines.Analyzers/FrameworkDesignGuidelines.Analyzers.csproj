@@ -11,6 +11,8 @@
   <ItemGroup>
     <!-- Analyzers run inside the compiler: no Workspaces reference. -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+    <!-- Roslyn's own analyzer rules (RS*) for this project; the version carries RS1037. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

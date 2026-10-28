@@ -21,34 +21,38 @@ public static class SdkDiagnosticCatalog
         string sdk = Path.Combine(sdkDirectory, "Sdks", "Microsoft.NET.Sdk");
         string analyzers = Path.Combine(sdk, "analyzers");
         string codeStyle = Path.Combine(sdk, "codestyle", "cs");
-        if (!Directory.Exists(codeStyle))
-        {
-            throw new DirectoryNotFoundException($"{codeStyle} does not exist; is {sdkDirectory} an SDK directory?");
-        }
-
+        string format = Path.Combine(sdkDirectory, "DotnetTools", "dotnet-format");
         var paths = new List<string>
         {
             Path.Combine(analyzers, "Microsoft.CodeAnalysis.NetAnalyzers.dll"),
             Path.Combine(analyzers, "Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll"),
         };
-        paths.AddRange(Directory.GetFiles(codeStyle, "*.dll").Order(StringComparer.Ordinal));
-
-        string format = Path.Combine(sdkDirectory, "DotnetTools", "dotnet-format");
         string[] features =
         {
             Path.Combine(format, "Microsoft.CodeAnalysis.Features.dll"),
             Path.Combine(format, "Microsoft.CodeAnalysis.CSharp.Features.dll"),
         };
 
+        // The layout is not a contract of the SDK: say which path was expected instead of failing on the first read.
+        string[] missing = new[] { analyzers, codeStyle, format }.Where(p => !Directory.Exists(p)).ToArray();
+        if (missing.Length == 0)
+        {
+            missing = paths.Concat(features).Where(p => !File.Exists(p)).ToArray();
+        }
+
+        if (missing.Length > 0)
+        {
+            throw new IOException(
+                $"{sdkDirectory} is not an SDK directory with the layout fdg-gen reads; expected {string.Join(", ", missing)}. " +
+                "Pass the directory of an SDK that has them with --sdk <dir>.");
+        }
+
+        paths.AddRange(Directory.GetFiles(codeStyle, "*.dll").Order(StringComparer.Ordinal));
+
         var loader = new SdkAnalyzerAssemblyLoader(new[] { analyzers, codeStyle, format });
         var descriptors = new Dictionary<string, DiagnosticDescriptor>(StringComparer.Ordinal);
         var fixable = new HashSet<string>(StringComparer.Ordinal);
         var failures = new List<string>();
-        foreach (string path in paths.Concat(features).Where(p => !File.Exists(p)))
-        {
-            throw new FileNotFoundException($"{path} does not exist.", path);
-        }
-
         foreach (string path in paths)
         {
             var reference = new AnalyzerFileReference(path, loader);

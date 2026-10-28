@@ -96,6 +96,48 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Conflicting_globalconfig_values_fail_with_both_rule_ids()
+    {
+        // The same option, but the diagnostics each rule maps give it different severity suffixes in the library profile.
+        GeneratorInput input = Edit(Input(), OnRule("FDG9010", m => m with
+        {
+            Check = m.Check with { Diagnostics = new[] { "IDE0011" } },
+            Config = new[] { "csharp_prefer_braces = true" },
+        }));
+        input = Edit(input, OnRule("FDG9001", m => m with
+        {
+            Check = m.Check with { Diagnostics = new[] { "IDE0012" } },
+            Severity = m.Severity with { Library = SeverityLevel.Suggestion },
+            Config = new[] { "csharp_prefer_braces = true" },
+        }));
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => GlobalConfigEmitter.Emit(input, "library"));
+
+        Assert.Contains("csharp_prefer_braces", exception.Message);
+        Assert.Contains("FDG9001", exception.Message);
+        Assert.Contains("FDG9010", exception.Message);
+    }
+
+    [Fact]
+    public void Equal_globalconfig_values_after_the_severity_suffix_are_written_once()
+    {
+        GeneratorInput input = Edit(Input(), OnRule("FDG9010", m => m with
+        {
+            Check = m.Check with { Diagnostics = new[] { "IDE0011" } },
+            Config = new[] { "csharp_prefer_braces = true" },
+        }));
+        input = Edit(input, OnRule("FDG9001", m => m with
+        {
+            Check = m.Check with { Diagnostics = new[] { "IDE0012" } },
+            Config = new[] { "csharp_prefer_braces = true" },
+        }));
+
+        string[] lines = Lines(GlobalConfigEmitter.Emit(input, "library"));
+
+        Assert.Single(lines, "csharp_prefer_braces = true:warning");
+    }
+
+    [Fact]
     public void Equal_config_values_are_written_once()
     {
         GeneratorInput input = Edit(Input(), OnRule("FDG9001", m => m with { Config = new[] { "indent_size = 4" } }));
@@ -757,6 +799,40 @@ public sealed class EmitterTests : IDisposable
         Assert.Contains("isEnabledByDefault: false", source);
         Assert.Contains("internal static class FdgDescriptors", source);
         Assert.DoesNotContain("FDG9002", source);
+    }
+
+    [Fact]
+    public void Compilation_end_rule_descriptor_has_the_custom_tag()
+    {
+        string path = Path.Combine(
+            InstalledSdkFixture.RepositoryRoot(),
+            "src",
+            "FrameworkDesignGuidelines.Analyzers",
+            "Generated",
+            "FdgDescriptors.g.cs");
+        string[] descriptors = File.ReadAllText(path).Split("public static readonly DiagnosticDescriptor ")[1..];
+
+        string[] tagged = descriptors
+            .Where(d => d.Contains("customTags: new[] { WellKnownDiagnosticTags.CompilationEnd }", StringComparison.Ordinal))
+            .Select(d => d[..d.IndexOf(' ', StringComparison.Ordinal)])
+            .ToArray();
+
+        // The analyzers of FDG5077 and FDG6019 report from a compilation end action.
+        Assert.Equal(new[] { "FDG5077", "FDG6019" }, tagged);
+    }
+
+    [Fact]
+    public void Descriptor_gets_the_custom_tag_only_for_a_compilation_end_rule()
+    {
+        GeneratorInput input = Edit(Input(), OnRule("FDG9007", m => m with { Analyzer = m.Analyzer! with { CompilationEnd = true } }));
+
+        string source = DescriptorEmitter.Emit(input);
+
+        Assert.Contains(
+            "helpLinkUri: \"https://example.test/repo/blob/main/docs/rules/FDG9007.md\",\n" +
+            "        customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });",
+            source);
+        Assert.DoesNotContain("customTags", DescriptorEmitter.Emit(Input()));
     }
 
     [Fact]

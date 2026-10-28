@@ -450,6 +450,19 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
     }
 
     [Fact]
+    public void Analyzer_compilation_end_is_accepted_and_must_be_a_boolean()
+    {
+        Map("FDG9001", m => Fdg(m, new AnalyzerInfo("Expand the block", "Layout", CompilationEnd: true), "FDG9001"));
+        Assert.Empty(Check());
+
+        EditRules(yaml => yaml.Replace("compilationEnd: true", "compilationEnd: \"yes\""));
+
+        string error = Assert.Single(Check());
+        Assert.StartsWith($"{RulesFileName}:FDG9001: ", error);
+        Assert.Contains("compilationEnd", error);
+    }
+
+    [Fact]
     public void Duplicate_rule_id_is_reported()
     {
         EditRules(yaml => yaml.Replace("id: FDG9002", "id: FDG9001"));

@@ -32,11 +32,11 @@ public static class GlobalConfigEmitter
         text.Append(Header.GlobalConfig).Append('\n');
 
         IReadOnlyDictionary<string, SeverityLevel> severities = DiagnosticMap.Severities(input.Rules, profile);
-        var written = new HashSet<string>(StringComparer.Ordinal);
+        var written = new Dictionary<string, (string Value, string Owner)>(StringComparer.Ordinal);
         text.Append("\n# Profile options\n");
         foreach (ConfigLine line in baseLines)
         {
-            AppendNew(text, written, line);
+            AppendNew(text, written, line, ProfileFile.FileName);
         }
 
         foreach (Rule rule in input.Rules.Where(r => RuleText.Severity(r, profile) != SeverityLevel.None))
@@ -44,7 +44,7 @@ public static class GlobalConfigEmitter
             var block = new StringBuilder();
             foreach (ConfigLine line in optionLines[rule.Id])
             {
-                AppendNew(block, written, WithSeverity(line, rule, severities));
+                AppendNew(block, written, WithSeverity(line, rule, severities), rule.Id);
             }
 
             if (block.Length > 0)
@@ -123,12 +123,33 @@ public static class GlobalConfigEmitter
             : throw new GenerationException($"{owner}: '{text}' is not a 'key = value' option line.");
     }
 
-    private static void AppendNew(StringBuilder text, HashSet<string> written, ConfigLine line)
+    /// <summary>
+    /// Appends <paramref name="line"/> of <paramref name="owner"/> (a rule id or <c>profiles.yaml</c>) unless its key was
+    /// written already. The same value is skipped; another value is a conflict, which options that are equal in the data
+    /// can still have once <see cref="WithSeverity"/> added the severity suffix of the diagnostics their rules map.
+    /// </summary>
+    private static void AppendNew(
+        StringBuilder text,
+        Dictionary<string, (string Value, string Owner)> written,
+        ConfigLine line,
+        string owner)
     {
-        if (written.Add(line.Key.ToLowerInvariant()))
+        string key = line.Key.ToLowerInvariant();
+        if (!written.TryGetValue(key, out (string Value, string Owner) earlier))
         {
+            written.Add(key, (line.Value, owner));
             text.Append(line).Append('\n');
         }
+        else if (earlier.Value != line.Value)
+        {
+            throw Conflict(line.Key, earlier, (line.Value, owner));
+        }
+    }
+
+    private static GenerationException Conflict(string key, (string Value, string Owner) earlier, (string Value, string Owner) later)
+    {
+        return new GenerationException(
+            $"Conflicting values for '{key}': '{earlier.Value}' set by {earlier.Owner}, '{later.Value}' set by {later.Owner}.");
     }
 
     private static void CheckConflicts(
@@ -147,8 +168,7 @@ public static class GlobalConfigEmitter
             }
             else if (earlier.Value != line.Value)
             {
-                throw new GenerationException(
-                    $"Conflicting values for '{line.Key}': '{earlier.Value}' set by {earlier.Owner}, '{line.Value}' set by {owner}.");
+                throw Conflict(line.Key, earlier, (line.Value, owner));
             }
         }
 

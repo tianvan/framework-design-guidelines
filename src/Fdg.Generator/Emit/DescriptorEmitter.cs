@@ -25,6 +25,11 @@ public static class DescriptorEmitter
     private static string Descriptor(Rule rule, string helpLinkBase)
     {
         AnalyzerInfo analyzer = rule.Mapping.Analyzer!;
+
+        // RS1037: an analyzer that reports at the end of the compilation says so in its descriptor.
+        string tags = analyzer.CompilationEnd
+            ? ",\n        customTags: new[] { WellKnownDiagnosticTags.CompilationEnd }"
+            : string.Empty;
         return
             $"    public static readonly DiagnosticDescriptor {rule.Id} = new DiagnosticDescriptor(\n" +
             $"        id: {Literal(rule.Id)},\n" +
@@ -33,7 +38,7 @@ public static class DescriptorEmitter
             $"        category: {Literal("FrameworkDesignGuidelines." + analyzer.Category)},\n" +
             "        defaultSeverity: DiagnosticSeverity.Warning,\n" +
             "        isEnabledByDefault: false,\n" +
-            $"        helpLinkUri: {Literal(helpLinkBase + rule.Id + ".md")});\n";
+            $"        helpLinkUri: {Literal(helpLinkBase + rule.Id + ".md")}{tags});\n";
     }
 
     private static string Literal(string value)
