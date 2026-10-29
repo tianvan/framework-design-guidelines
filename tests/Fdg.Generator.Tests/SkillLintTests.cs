@@ -229,10 +229,11 @@ public sealed class SkillLintTests
 
     /// <summary>
     /// The format of a rule line, the same as the generated references without their examples link:
-    /// <c>**&lt;id&gt;** &lt;STRENGTH&gt; &lt;text&gt;[ (library only) | (not in test projects)][ (context: &lt;context&gt;)][ [C# N+]]</c>
+    /// <c>**&lt;id&gt;** &lt;STRENGTH&gt; &lt;text&gt;[ (partly checked)][ (library only) | (not in test projects)][ (context: &lt;context&gt;)][ [C# N+]]</c>
     /// <c>[ (alt: &lt;alt&gt;)]</c>,
     /// with <c>(can cause: &lt;context&gt;)</c> instead of <c>(context: &lt;context&gt;)</c> for an appendix D verdict.
-    /// The bracketed parts are required exactly when the rule is on in <c>library</c> and off in <c>application</c>
+    /// The bracketed parts are required exactly when an analyzer checks the rule only in part, the rule is on in
+    /// <c>library</c> and off in <c>application</c>
     /// (or on in <c>application</c> and off in <c>test</c>), has a context, a minimum language version or an
     /// alternative, so the AI always sees the profile, the version
     /// tag and the fallback. The review output form
@@ -462,6 +463,34 @@ public sealed class SkillLintTests
     }
 
     /// <summary>
+    /// The skills and the reviewer agent explain <see cref="SkillReferenceEmitter.PartlyCheckedMarker"/>: tools check
+    /// only part of such a rule. The review output leaves the marker out like the profile markers.
+    /// </summary>
+    [Fact]
+    public void Skills_explain_the_partly_checked_marker()
+    {
+        const string Omitted = "`(partly checked)`";
+
+        Assert.Contains(SkillReferenceEmitter.PartlyCheckedMarker, Joined(SkillPath("fdg-write")));
+        foreach (string path in new[] { SkillPath("fdg-review"), AgentPath })
+        {
+            string text = Joined(path);
+            Assert.Contains("\"" + SkillReferenceEmitter.PartlyCheckedMarker + "\"", text);
+            Assert.Contains("without `(library only)`, `(not in test projects)`, " + Omitted, text);
+        }
+
+        int partlyCheckedInReferences = Directory.GetFiles(FdgWriteReferences, "*.md")
+            .SelectMany(f => File.ReadLines(f))
+            .Count(l => l.Contains(" " + SkillReferenceEmitter.PartlyCheckedMarker));
+        int partlyCheckedInData = Rules.Value.Values.Count(r =>
+            SkillReferenceEmitter.IsListed(r) && r.Mapping.Check.Coverage == CoverageLevel.Partial);
+        Assert.NotEqual(0, partlyCheckedInData);
+        Assert.Equal(partlyCheckedInData, partlyCheckedInReferences);
+
+        static string Joined(string path) => string.Join(" ", Read(path).Lines.Select(l => l.Trim()));
+    }
+
+    /// <summary>
     /// fdg-fix builds with the marker's <c>projectPath</c>, the exact string the package compares with
     /// <c>FdgSarifProject</c>, and never treats a project without a SARIF log as clean.
     /// </summary>
@@ -551,6 +580,11 @@ public sealed class SkillLintTests
     private static string QuotedLine(Rule rule)
     {
         string line = Statement(rule);
+        if (rule.Mapping.Check.Kind is CheckKind.Sdk or CheckKind.Fdg && rule.Mapping.Check.Coverage == CoverageLevel.Partial)
+        {
+            line += " (partly checked)";
+        }
+
         ProfileSeverity severity = rule.Mapping.Severity;
         if (severity.Library != SeverityLevel.None && severity.Application == SeverityLevel.None)
         {

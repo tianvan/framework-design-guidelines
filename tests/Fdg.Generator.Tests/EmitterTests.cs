@@ -255,13 +255,12 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
-    public void Skill_reference_excludes_tool_checked_do_rules()
+    public void Skill_reference_excludes_fully_tool_checked_rules()
     {
         string main = ReferenceMain(Input());
 
         Assert.Contains("**FDG9001**", main);
         Assert.DoesNotContain("**FDG9002**", main);
-        Assert.DoesNotContain("**FDG9003**", main);
         Assert.DoesNotContain("**FDG9007**", main);
         Assert.DoesNotContain("**FDG9009**", main);
         Assert.DoesNotContain("**FDG9010**", main);
@@ -1003,6 +1002,64 @@ public sealed class EmitterTests : IDisposable
             "- **FDG9001** DO prefer records for immutable data carriers. (library only) " +
             "(context: public types) [C# 9+]",
             line);
+    }
+
+    /// <summary>
+    /// A DO, DO NOT or AVOID rule that an analyzer checks only in part is listed, so the AI applies the part tools
+    /// cannot check; the marker comes right after the rule text, ahead of the profile marker. A partly checked CONSIDER
+    /// rule carries it too, and so does a rule that a custom analyzer checks in part.
+    /// </summary>
+    [Fact]
+    public void Partial_sdk_rule_is_listed_with_the_partly_checked_marker()
+    {
+        GeneratorInput input = Edit(Input(), rule => rule.Id switch
+        {
+            "FDG9003" => rule with { Body = new[] { new Block(BlockKind.Paragraph, "Handlers end with EventHandler.") } },
+            "FDG9006" => Map(rule, m => m with { Check = m.Check with { Coverage = CoverageLevel.Partial } }),
+            "FDG9007" => Map(rule, m => m with { Check = m.Check with { Coverage = CoverageLevel.Partial } }),
+            _ => rule,
+        });
+
+        IReadOnlyList<GeneratedFile> files = SkillReferenceEmitter.Emit(input);
+
+        string main = files.Single(f => f.Path.EndsWith("references/ch09-sample.md", StringComparison.Ordinal)).Content;
+        string examples = files.Single(f => f.Path.EndsWith("references/examples/ch09-sample.md", StringComparison.Ordinal)).Content;
+        Assert.Contains(
+            "- **FDG9003** DO name event handlers consistently. " + SkillReferenceEmitter.PartlyCheckedMarker +
+            " (not in test projects) — examples: examples/ch09-sample.md#fdg9003\n",
+            main);
+        Assert.Contains("- **FDG9004** AVOID suffixing a type with a base type name that it does not derive from. (partly checked)", main);
+        Assert.Contains("- **FDG9006** CONSIDER making types sealed. (partly checked) (not in test projects) (context: System.Object)", main);
+        Assert.Contains("- **FDG9007** DO put each statement on its own line. (partly checked)\n", main);
+        Assert.Contains("## FDG9003\n\nDO name event handlers consistently.\n\nHandlers end with EventHandler.", examples);
+    }
+
+    [Fact]
+    public void Full_sdk_rule_is_not_listed()
+    {
+        // FDG9002 is a full sdk DO NOT rule; FDG9003, partial in the sample, is made full here.
+        GeneratorInput input = Edit(Input(), rule => rule.Id switch
+        {
+            "FDG9002" => rule with { Body = new[] { new Block(BlockKind.Paragraph, "Keywords break other languages.") } },
+            "FDG9003" => Map(rule, m => m with { Check = m.Check with { Coverage = CoverageLevel.Full } }),
+            _ => rule,
+        });
+
+        IReadOnlyList<GeneratedFile> files = SkillReferenceEmitter.Emit(input);
+
+        Assert.All(files, f => Assert.DoesNotContain("FDG9002", f.Content));
+        Assert.All(files, f => Assert.DoesNotContain("FDG9003", f.Content));
+        Assert.Contains("**FDG9004**", ReferenceMain(input));
+        Assert.Contains(SkillReferenceEmitter.PartlyCheckedMarker, ReferenceMain(input));
+    }
+
+    [Fact]
+    public void Consider_full_sdk_rule_is_listed_without_the_marker()
+    {
+        string line = Lines(ReferenceMain(Input())).Single(l => l.StartsWith("- **FDG9006** ", StringComparison.Ordinal));
+
+        Assert.Equal("- **FDG9006** CONSIDER making types sealed. (not in test projects) (context: System.Object)", line);
+        Assert.DoesNotContain(SkillReferenceEmitter.PartlyCheckedMarker, line);
     }
 
     [Fact]

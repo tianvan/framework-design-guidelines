@@ -2,7 +2,7 @@
 
 # Chapter 5: Member Design — 5.2–5.3
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 ## 5.2 Property Design
 
@@ -10,11 +10,13 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG5028** DO provide sensible default values for all properties, ensuring that the defaults do not result in a security hole or terribly inefficient code. (not in test projects)
 - **FDG5029** DO allow properties to be set in any order, even if this results in a temporary invalid state of the object. (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5029
 - **FDG5030** DO preserve the previous value if a property setter throws an exception. (not in test projects)
+- **FDG5031** AVOID throwing exceptions from property getters. (partly checked) (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5031
 
 ## 5.2.1 Indexed Property Design
 
 - **FDG5032** CONSIDER using indexers to provide access to data stored in an internal array. (not in test projects)
 - **FDG5033** CONSIDER providing indexers on types representing collections of items. (not in test projects)
+- **FDG5035** AVOID indexers with parameter types other than `System.Int32`, `System.Int64`, `System.String`, `System.Range`, `System.Index`, or an enum, except on dictionary-like types. (partly checked) (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5035
 - **FDG5036** DO use the name `Item` for indexed properties unless there is an obviously better name (e.g., see the `Chars` property on `System.String`). (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5036
 - **FDG5037** DO NOT provide both an indexer and methods that are semantically equivalent. (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5037
 - **FDG5038** DO NOT provide more than one family of overloaded indexers in one type. (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5038
@@ -30,13 +32,16 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG5043** CONSIDER providing simple, ideally default, constructors. (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5043
 - **FDG5044** CONSIDER using a static factory method instead of a constructor if the semantics of the desired operation do not map directly to the construction of a new instance, or if following the constructor design guidelines feels unnatural. (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5044
 - **FDG5045** DO use constructor parameters as shortcuts for setting main properties. (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5045
+- **FDG5046** DO use the same name for constructor parameters and a property if the constructor parameters are used just to set the property. (partly checked) (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5046
 - **FDG5047** CONSIDER adding a property for each parameter in a constructor. (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5047
 - **FDG5048** DO minimal work in the constructor. (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5048
 - **FDG5049** DO throw exceptions from instance constructors, if appropriate. (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5049
 - **FDG5050** DO explicitly declare the public default constructor in classes, if such a constructor is required. (library only) — examples: examples/ch05-members-properties-constructors.md#fdg5050
 - **FDG5051** AVOID explicitly defining default constructors on structs. (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5051
+- **FDG5052** AVOID calling virtual members on an object inside its constructor. (partly checked) (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5052
 
 ## 5.3.1 Type Constructor Guidelines
 
 - **FDG5053** DO make static constructors private. (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5053
-- **FDG5055** CONSIDER initializing static fields inline rather than explicitly using static constructors, because the runtime is able to optimize the performance of types that don’t have an explicitly defined static constructor. (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5055
+- **FDG5054** DO NOT throw exceptions from static constructors. (partly checked) (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5054
+- **FDG5055** CONSIDER initializing static fields inline rather than explicitly using static constructors, because the runtime is able to optimize the performance of types that don’t have an explicitly defined static constructor. (partly checked) (not in test projects) — examples: examples/ch05-members-properties-constructors.md#fdg5055

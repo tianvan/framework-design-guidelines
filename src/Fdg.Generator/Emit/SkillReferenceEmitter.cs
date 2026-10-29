@@ -5,7 +5,7 @@ namespace Fdg.Generator.Emit;
 
 /// <summary>
 /// Writes the <c>fdg-write</c> skill's reference files: per chapter, a one-line-per-rule index of what tools cannot
-/// check, and a second file with the book's explanations and examples for those rules. A chapter can be split by
+/// check in full, and a second file with the book's explanations and examples for those rules. A chapter can be split by
 /// section into several such pairs (<c>references</c> in <c>meta.yaml</c>); no file may exceed
 /// <see cref="MaxReferenceBytes"/>.
 /// </summary>
@@ -26,6 +26,12 @@ public static class SkillReferenceEmitter
     /// Written after the rule text of a rule that is off in test projects only (<see cref="IsNotInTestProjects"/>).
     /// </summary>
     public const string NotInTestProjectsMarker = "(not in test projects)";
+
+    /// <summary>
+    /// Written right after the rule text of an sdk or fdg rule that tools check only in part
+    /// (<see cref="IsPartlyChecked"/>), ahead of the profile markers.
+    /// </summary>
+    public const string PartlyCheckedMarker = "(partly checked)";
 
     private const string ReferencesDirectory = "plugins/framework-design-guidelines/skills/fdg-write/references/";
 
@@ -167,15 +173,24 @@ public static class SkillReferenceEmitter
     }
 
     /// <summary>
-    /// Whether the AI must be told about the rule: tools cannot check it, or they only suggest (a CONSIDER rule is
-    /// <c>suggestion</c> by default and Stop does not act on suggestions).
+    /// Whether the AI must be told about the rule: tools cannot check it, they only suggest (a CONSIDER rule is
+    /// <c>suggestion</c> by default and Stop does not act on suggestions), or they check only part of it
+    /// (<see cref="IsPartlyChecked"/>).
     /// </summary>
     public static bool IsListed(Rule rule)
     {
         CheckKind kind = rule.Mapping.Check.Kind;
         return kind == CheckKind.Judgment
-            || (rule.Strength == Strength.Consider && kind is CheckKind.Sdk or CheckKind.Fdg);
+            || (rule.Strength == Strength.Consider && kind is CheckKind.Sdk or CheckKind.Fdg)
+            || IsPartlyChecked(rule);
     }
+
+    /// <summary>
+    /// Whether an SDK or custom analyzer checks only part of the rule. Its reference line carries
+    /// <see cref="PartlyCheckedMarker"/>.
+    /// </summary>
+    public static bool IsPartlyChecked(Rule rule) =>
+        rule.Mapping.Check.Kind is CheckKind.Sdk or CheckKind.Fdg && rule.Mapping.Check.Coverage == CoverageLevel.Partial;
 
     /// <summary>
     /// Whether the rule is about a library's public surface: on in the <c>library</c> profile and off in
@@ -196,7 +211,8 @@ public static class SkillReferenceEmitter
         var text = new StringBuilder();
         text.Append(Header.Markdown).Append("\n\n");
         text.Append($"# {Title(file, part)}\n\n");
-        text.Append("Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. ");
+        text.Append("Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that ");
+        text.Append($"analyzers check only in part, marked \"{PartlyCheckedMarker}\". ");
         text.Append("Open the examples file for the explanation and code the book gives with each rule.\n");
         if (part.Rules.Any(r => r.Mapping.Style))
         {
@@ -218,6 +234,11 @@ public static class SkillReferenceEmitter
     private static string Line(Rule rule, string stem)
     {
         var line = new StringBuilder($"- **{rule.Id}** {RuleText.Statement(rule)}");
+        if (IsPartlyChecked(rule))
+        {
+            line.Append(' ').Append(PartlyCheckedMarker);
+        }
+
         if (IsLibraryOnly(rule))
         {
             line.Append(' ').Append(LibraryOnlyMarker);

@@ -20,6 +20,24 @@ It is common for two or more properties to be interrelated to a point where some
 
 > **Jeremy Barton:** One place where order-dependent property setting comes up is when assigning property A changes property B. You generally want to avoid doing that, since the confusion it costs is probably worse than the potential error state it was avoiding.
 
+## FDG5031
+
+AVOID throwing exceptions from property getters.
+
+Property getters should be simple operations and should not have any preconditions. If a getter can throw an exception, it should probably be redesigned to be a method. Notice that this rule does not apply to indexers, where we do expect exceptions as a result of validating the arguments.
+
+> **Patrick Dussud:** Notice that this guideline only applies to property getters. It is OK to throw an exception in a property setter. It is very much like setting an array element, which can throw as well (and not just when checking the index bound, but also when checking for a type mismatch between the value and the array element type).
+
+> **Jason Clark:** Patrick’s guidance speaks to one of the key reasons that exceptions and object-oriented programming environments go hand in hand. Object-oriented environments impose many circumstances in which the developer of a method has limited or no control of the methods signature. Properties, events, constructors, virtual overrides, and operator overloads are examples of this. What exceptions do is take the error response of a method call out of band of the signature or return type. This introduces the necessary flexibility to both reflect and react to failure in any method regardless of the syntax sugar that restricts signature decisions.
+
+> **Joe Duffy:** Another pattern to avoid is blocking the thread inside of a property, because of either I/O or some synchronization operation. This is the extreme example of “doing too much work” inside of a property. In the worst case (deadlock), the property may never actually return to the caller. If the property accesses shared state, it may be necessary to acquire a lock to access it safely, but anything more complicated (like waiting on a `WaitHandle`) is an indication that a method is a better design choice.
+
+## FDG5035
+
+AVOID indexers with parameter types other than `System.Int32`, `System.Int64`, `System.String`, `System.Range`, `System.Index`, or an enum, except on dictionary-like types.
+
+If the design requires other types of parameters, strongly reevaluate whether the API really represents an accessor to a logical collection. If it does not, use a method. Consider starting the method name with `Get` or `Set`.
+
 ## FDG5036
 
 DO use the name `Item` for indexed properties unless there is an obviously better name (e.g., see the `Chars` property on `System.String`).
@@ -118,6 +136,24 @@ applicationLog.MachineName = "BillingServer";
 
 //3
 var applicationLog = new EventLog("Application", "BillingServer");
+```
+
+## FDG5046
+
+DO use the same name for constructor parameters and a property if the constructor parameters are used just to set the property.
+
+The only difference between such parameters and the properties should be casing.
+
+```csharp
+public class EventLog {
+  public EventLog(string logName){
+    this.LogName = logName;
+  }
+  public string LogName {
+    get { ... }
+    set { ... }
+  }
+}
 ```
 
 ## FDG5047
@@ -223,6 +259,47 @@ The runtime will initialize all of the fields of the struct to their default val
 
 > **Jan Kotas:** The default constructors on structs were enabled for C# 6 previews. We kept discovering cases where parameterless struct constructors caused inconsistent behaviors and decided to pull them out. It is not clear whether they will ever come back.
 
+## FDG5052
+
+AVOID calling virtual members on an object inside its constructor.
+
+Calling a virtual member will cause the most derived override to be called, even if the constructor of the most derived type has not been fully run yet.
+
+Consider the following example, which prints out “What is wrong?” when a new instance of `Derived` is created. The implementer of the derived class assumes that the value will be set before anyone can call `Method`. However, that is not true: The `Base` constructor is called before the `Derived` constructor finishes, so any calls it makes to `Method` might operate on data that is not yet initialized.
+
+```csharp
+public abstract class Base {
+  public Base() {
+     Method();
+  }
+  public abstract void Method();
+}
+
+public class Derived: Base {
+  private int value;
+  public Derived() {
+    value = 1;
+  }
+
+  public override void Method() {
+    if (value == 1){
+       Console.WriteLine("All is good");
+    }
+    else {
+        Console.WriteLine("What is wrong?");
+    }
+  }
+}
+```
+
+Occasionally, the benefits associated with calling virtual members from a constructor might outweigh the risks. An example is a helper constructor that initializes virtual properties using parameters passed to the constructor. It’s acceptable to call virtual members from constructors, given that all the risks are carefully analyzed and you document the virtual members that you call for the users overriding the virtual members.
+
+> **Christopher Brumme:** In unmanaged C++, the vtable is updated during the construction so that a call to a virtual function during construction only calls to the level of the object hierarchy that has been constructed.
+>
+> It’s been my experience that many programmers are as confused by the C++ behavior as they are about the managed behavior. The fact is that most programmers don’t think about the semantics of virtual calls during construction and destruction until they have just finished debugging a failure related to this.
+>
+> Either behavior is appropriate for some programs and inappropriate for others. Both behaviors can be logically defended. For the CLR, the decision is ultimately based on our desire to support extremely fast object creation.
+
 ## FDG5053
 
 DO make static constructors private.
@@ -230,6 +307,36 @@ DO make static constructors private.
 A static constructor, also called a class constructor, is used to initialize a type. The CLR calls the static constructor before the first instance of the type is created or any static members of that type are called. The user has no control over when the static constructor is called. If a static constructor is not private, it can be called by code other than the CLR. Depending on the operations performed in the constructor, this can cause unexpected behavior.
 
 The C# compiler forces static constructors to be private.
+
+## FDG5054
+
+DO NOT throw exceptions from static constructors.
+
+If an exception is thrown from a type constructor, the type is not usable in the current application domain.
+
+> **Christopher Brumme:** The only time it’s OK to throw from a static constructor is if the type must never again be used in this application domain. You are basically making the type off-limits in the application domain where you throw, so you’d better have a good reason—such as if some important invariant is broken and your application would not be secure if such usage were permitted.
+
+> **Vance Morrison:** To be clear on this rule, it does not apply to just explicitly throwing, but to any exception. This implies that if the body of the class constructor has the potential to make method calls (and this is very likely the case), you need a “try-catch” around the body of your class constructor.
+
+> **Stephen Toub:** In addition to not throwing exceptions from static constructors, it’s also a good idea to avoid locking in static constructors, or employing any other form of cross-thread dependency. A static constructor on a type is only invoked once, which means if multiple threads are trying to initialize a type concurrently, the runtime may need to lock to provide this guarantee. If the runtime locks while invoking the static constructor, and then the code in the static constructor also locks, it’s possible to end up with lock inversion that leads to deadlock. For example, this seemingly simple app will deadlock and never complete (at least on current implementations of .NET):
+>
+> ```
+> using System.Threading;
+>
+> class Test
+> {
+>    static void Main() { }
+>
+>    static Test()
+>    {
+>       var t = new Thread(ThreadStart);
+>       t.Start();
+>       t.Join();
+>    }
+>
+>    static void ThreadStart() { }
+> }
+> ```
 
 ## FDG5055
 

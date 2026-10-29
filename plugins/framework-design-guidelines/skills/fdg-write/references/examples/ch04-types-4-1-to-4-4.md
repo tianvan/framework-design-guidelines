@@ -48,6 +48,26 @@ This makes it easier to understand the basics of the framework and to use the fr
 
 > **Jeffrey Richter:** I agree with this guideline, but I’d like to further add that the more advanced classes should be in a namespace that is under the namespace that contains the simple types. For example, the simple types might be in `System.Mail`, and the more advanced types should be in `System.Mail.Advanced`.
 
+## FDG4006
+
+DO NOT define types without specifying their namespaces.
+
+This practice organizes related types in a hierarchy and can help resolve potential type name collisions. Of course, the fact that namespaces can help resolve name collisions does *not* mean that such collisions should be introduced. See section 3.4.1 for details.
+
+> **Brad Abrams:** It is important to realize that namespaces cannot actually prevent naming collisions; however, they can significantly reduce them. I could define a class called `MyNamespace.MyType` in an assembly called `MyAssembly` and define a class with precisely the same name in another assembly. I could then build an application that uses both of these assemblies and types. The CLR would not get confused because the type identity in the CLR is based on the strong name (which includes the fully qualified assembly name) rather than just the namespace and type name. This fact can be seen by looking at the C# and ILASM of code creating an instance of `MyType`.
+>
+> ```
+> C#:
+> new MyType();
+>
+> IL:
+> IL_0000: newobj instance void [MyAssembly]MyNamespace.MyType::.ctor()
+> ```
+>
+> Notice that the C# compiler adds a reference to the assembly that defines the type, of the form `[MyAssembly]`, so the runtime always has a disambiguated, fully qualified name to work with.
+
+> **Rico Mariani:** Namespaces are a language thing. The CLR doesn’t know anything about them, really. As far as the CLR is concerned, the name of the class really is something like `MyNameSpace.MyOtherNameSpace.MyAmazingType`. The compilers give you syntax (e.g., “using”) so that you don’t have to type those long class names all the time. So the CLR is never confused about class names because everything is always fully qualified.
+
 ## FDG4008
 
 AVOID defining a struct unless the type has all of the following characteristics:
@@ -125,6 +145,32 @@ public class Image : MarshalByRefObject, IDisposable, ICloneable {
 > **Jeremy Barton:** One hint that Jeffrey’s “can-do” paradigm is being followed is when the interface ends in the suffix “able.” For example, `IDisposable` can be loosely rewritten “a thing that can do `Dispose`.”
 >
 > If we compare this to `ICryptoTransform`, that interface isn’t describing a capability; it’s instead defining a set of related actions. When we added `System.Span<T>` in .NET Core 2.0, we found that we couldn’t add Span support to symmetric cryptography because we used an interface instead of an abstract base class. It may have taken 15 years to realize that it was a mistake to have that type as an interface, but it *was* nonetheless a mistake.
+
+## FDG4014
+
+DO define a protected or an internal constructor in abstract classes.
+
+A protected constructor is more common and simply allows the base class to do its own initialization when subtypes are created.
+
+```csharp
+public abstract class Claim {
+  protected Claim() {
+    ...
+  }
+}
+```
+
+An internal constructor can be used to limit concrete implementations of the abstract class to the assembly defining the class.
+
+```csharp
+public abstract class Claim {
+  internal Claim() {
+    ...
+  }
+}
+```
+
+> **Brad Abrams:** Many languages (such as C#) will insert a protected constructor if you do not. It is a good practice to define the constructor explicitly in the source so that it can be more easily documented and maintained over time.
 
 ## FDG4015
 

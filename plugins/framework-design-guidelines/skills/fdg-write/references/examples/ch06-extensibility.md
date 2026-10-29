@@ -191,6 +191,26 @@ CONSIDER making base classes abstract even if they don’t contain any abstract 
 
 > **Jeremy Barton:** My interpretation of this guideline is that it’s OK to declare the class abstract even if there are no abstract members, but you still need a reason why. If the class works fine on its own, it should probably be instantiable.
 
+## FDG6019
+
+AVOID naming base classes with a “Base” suffix if the class is intended for use in public APIs.
+
+For example, despite the fact that `Collection<T>` is designed to be inherited from, many frameworks expose APIs typed as the base class, not as its subclasses, mainly because of the cost associated with a new public type.
+
+```csharp
+public Directory {
+  public Collection<string> GetFilenames(){
+     return new FilenameCollection(this);
+     }
+
+  private class FilenameCollection : Collection<string> {
+     ...
+  }
+}
+```
+
+The fact that `Collection<T>` is a base class is irrelevant for the user of the `GetFilename` method, so the “Base” suffix would simply create an unnecessary distraction for the user of the method.
+
 ## FDG6020
 
 DO NOT seal classes without having a good reason to do so.

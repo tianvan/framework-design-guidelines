@@ -2,7 +2,7 @@
 
 # Chapter 9: Common Design Patterns — 9.7–9.8
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 ## 9.7 Optional Feature Pattern
 
@@ -12,11 +12,16 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 9.8.1 Contravariance
 
+- **FDG9111** DO mark generic type parameters on generic delegates as contravariant when the type parameter is used as input, but not output, and your language supports creating contravariant types. (partly checked) (library only)
+- **FDG9112** DO mark generic type parameters on generic interfaces as contravariant when the type parameter is only ever used as an input parameter to methods on the interface. (partly checked) (library only) — examples: examples/ch09-patterns-optional-variance.md#fdg9112
 - **FDG9113** DO NOT change generic type parameters from contravariant to invariant in newer versions of your library. (library only) — examples: examples/ch09-patterns-optional-variance.md#fdg9113
 - **FDG9114** CONSIDER making a sub-interface of a new generic interface if removing members would allow a generic type parameter to be contravariant and the remaining members provide a coherent interface. (library only) — examples: examples/ch09-patterns-optional-variance.md#fdg9114
 
 ## 9.8.2 Covariance
 
+- **FDG9115** DO mark generic type parameters on generic delegates as covariant when the type parameter is used as output, but not input, and your language supports creating covariant types. (partly checked) (library only)
+- **FDG9116** DO mark generic type parameters on generic interfaces as covariant when the type parameter is only ever used in output roles for members on the interface. (partly checked) (library only) — examples: examples/ch09-patterns-optional-variance.md#fdg9116
+- **FDG9117** DO NOT declare a generic type parameter covariant on an interface that returns an array based on the type parameter. (partly checked) (not in test projects) — examples: examples/ch09-patterns-optional-variance.md#fdg9117
 - **FDG9118** DO NOT change generic type parameters from covariant to invariant in newer versions of your library. (library only) — examples: examples/ch09-patterns-optional-variance.md#fdg9118
 - **FDG9119** CONSIDER making a sub-interface of a new generic interface if removing members would allow a generic type parameter to be covariant and the remaining members provide a coherent interface. (library only) — examples: examples/ch09-patterns-optional-variance.md#fdg9119
 

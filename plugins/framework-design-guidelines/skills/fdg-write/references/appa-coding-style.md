@@ -2,12 +2,15 @@
 
 # Appendix A: C# Coding Style Conventions
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 These are coding style conventions. The book calls them suggestions, not requirements.
 
 ## A.1.1 Brace Usage
 
+- **FDGA001** DO place the opening brace on the next line, indented to the same level as the block statement. (partly checked) — examples: examples/appa-coding-style.md#fdga001
+- **FDGA003** DO place the closing brace on its own line, except the end of a `do`..`while` statement. (partly checked) — examples: examples/appa-coding-style.md#fdga003
+- **FDGA004** AVOID omitting braces, even if the language allows it. (partly checked) — examples: examples/appa-coding-style.md#fdga004
 - **FDGA005** CONSIDER omitting braces in an argument validation preamble. — examples: examples/appa-coding-style.md#fdga005
 - **FDGA006** DO NOT use the braceless variant of the `using` (dispose) statement. — examples: examples/appa-coding-style.md#fdga006
 - **FDGA007** AVOID using the braceless variant of the `await using` statement, except to simulate stacked `await using` statements with `ConfigureAwait`. [C# 8+] (alt: Before C# 8.0 there is no 'await using'; dispose in a finally block with 'await resource.DisposeAsync().ConfigureAwait(false)'.) — examples: examples/appa-coding-style.md#fdga007
@@ -15,11 +18,17 @@ These are coding style conventions. The book calls them suggestions, not require
 ## A.1.3 Indent Usage
 
 - **FDGA022** DO indent all continued lines of a single statement one indentation level. — examples: examples/appa-coding-style.md#fdga022
+- **FDGA023** DO chop before the first argument or parameter, indent one indentation level, and include one argument or parameter per line when a method declaration or method invocation is exceedingly long. (partly checked) — examples: examples/appa-coding-style.md#fdga023
 
 ## A.1.4 Vertical Whitespace
 
 - **FDGA024** DO add a blank line before control flow statements.
+- **FDGA025** DO add a blank line after a closing brace, unless the next line is also a closing brace. (partly checked) — examples: examples/appa-coding-style.md#fdga025
 - **FDGA026** DO add a blank line after “paragraphs” of code where it enhances readability. — examples: examples/appa-coding-style.md#fdga026
+
+## A.1.5 Member Modifiers
+
+- **FDGA027** DO always explicitly specify visibility modifiers. (partly checked) — examples: examples/appa-coding-style.md#fdga027
 
 ## A.1.6 Other
 
@@ -27,13 +36,25 @@ These are coding style conventions. The book calls them suggestions, not require
 - **FDGA039** DO add the optional trailing comma after a property assignment from an object initializer, or addition via a collection initializer, when the initializer spans multiple lines. — examples: examples/appa-coding-style.md#fdga039
 - **FDGA040** DO NOT use `this.` unless absolutely necessary. — examples: examples/appa-coding-style.md#fdga040
 - **FDGA041** DO use language keywords (`string`, `int`, `double`, …) instead of BCL type names (`String`, `Int32`, `Double`, …), for both variable declarations and method invocation. — examples: examples/appa-coding-style.md#fdga041
+- **FDGA042** DO NOT use the `var` keyword except to save the result of a `new`, `as`-cast or “hard” cast. (partly checked) — examples: examples/appa-coding-style.md#fdga042
+- **FDGA043** DO use object initializers where possible. (partly checked) — examples: examples/appa-coding-style.md#fdga043
+- **FDGA044** DO use collection initializers where possible. (partly checked) — examples: examples/appa-coding-style.md#fdga044
 - **FDGA045** CONSIDER using expression-bodied members when the implementation of a property or method is unlikely to change. [C# 6+] (alt: Use a block body. Expression-bodied accessors and constructors, and throw expressions, need C# 7.0.) — examples: examples/appa-coding-style.md#fdga045
+- **FDGA046** DO use auto-implemented properties when the implementation is unlikely to change. (partly checked) — examples: examples/appa-coding-style.md#fdga046
 - **FDGA047** DO restrict code to ASCII characters, and use Unicode escape sequences (`\uXXXX`) when needed for non-ASCII values. — examples: examples/appa-coding-style.md#fdga047
+- **FDGA048** DO use the `nameof(...)` syntax, instead of a literal string, when referring to the name of a type, member, or parameter. (partly checked) [C# 6+] (alt: Before C# 6, use a string literal that matches the name exactly.) — examples: examples/appa-coding-style.md#fdga048
+- **FDGA049** DO apply the `readonly` modifier to fields when possible. (partly checked) — examples: examples/appa-coding-style.md#fdga049
 - **FDGA050** DO use `if`…`throw` instead of assignment–expression–throw for argument validation. — examples: examples/appa-coding-style.md#fdga050
 
 ## A.2 Naming Conventions
 
 - **FDGA051** DO follow the Framework Design Guidelines for naming identifiers, except for naming private and internal fields.
+- **FDGA052** DO use PascalCasing for namespace, type, and member names, except for internal and private fields. (partly checked) — examples: examples/appa-coding-style.md#fdga052
+- **FDGA053** DO use PascalCasing for const locals and const fields except for interop code, where it should match the name from the called code exactly. (partly checked) — examples: examples/appa-coding-style.md#fdga053
+- **FDGA054** DO use camelCasing for private and internal fields. (partly checked)
+- **FDGA055** DO use a prefix “_” (underscore) for private and internal instance fields, “s_” for private and internal static fields, and “t_” for private and internal thread-static fields. (partly checked) — examples: examples/appa-coding-style.md#fdga055
+- **FDGA056** DO use camelCasing for local variables. (partly checked)
+- **FDGA057** DO use camelCasing for parameters. (partly checked)
 - **FDGA058** DO NOT use Hungarian notation (i.e., do not encode the type of a variable in its name).
 
 ## A.3 Comments
@@ -49,6 +70,7 @@ These are coding style conventions. The book calls them suggestions, not require
 - **FDGA064** DO NOT have more than one public type in a source file, unless they differ only in the number of generic parameters or one is nested in the other. — examples: examples/appa-coding-style.md#fdga064
 - **FDGA065** DO name the source file with the name of the public type it contains. — examples: examples/appa-coding-style.md#fdga065
 - **FDGA066** DO name the source file for a `partial` type with the name of the primary file and a logical description of the contents of the file separated by a “.” (period), such as “JsonDocument.Parse.cs”.
+- **FDGA067** DO organize the directory hierarchy just like the namespace hierarchy. (partly checked) — examples: examples/appa-coding-style.md#fdga067
 - **FDGA068** DO group members into the following sections in the specified order: — examples: examples/appa-coding-style.md#fdga068
 - **FDGA069** CONSIDER grouping the remaining members into the following sections in the specified order: — examples: examples/appa-coding-style.md#fdga069
 - **FDGA071** DO sort the using directives alphabetically, but place all System namespaces first. — examples: examples/appa-coding-style.md#fdga071

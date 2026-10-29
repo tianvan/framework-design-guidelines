@@ -2,7 +2,7 @@
 
 # Chapter 8: Usage Guidelines — 8.4–8.13
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 ## 8.4 DateTime and DateTimeOffset
 
@@ -15,13 +15,15 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 8.5 ICloneable
 
+- **FDG8051** DO NOT use `ICloneable` in public APIs. (partly checked) (library only)
 - **FDG8052** CONSIDER defining the `Clone` method on types that need a cloning mechanism. Ensure that the documentation clearly states whether it is a deep-copy or a shallow-copy. — examples: examples/ch08-usage-types.md#fdg8052
 
 ## 8.6 IComparable&lt;T> and IEquatable&lt;T>
 
+- **FDG8053** DO implement `IEquatable<T>` on value types. (partly checked) — examples: examples/ch08-usage-types.md#fdg8053
 - **FDG8054** DO follow the same guidelines as for overriding `Object.Equals` when implementing `IEquatable<T>.Equals`. — examples: examples/ch08-usage-types.md#fdg8054
 - **FDG8056** CONSIDER overloading `operator==` and `operator!=` whenever implementing `IEquatable<T>`. — examples: examples/ch08-usage-types.md#fdg8056
-- **FDG8058** CONSIDER overloading comparison operators (<, >,<=, >=) whenever you implement `IComparable<T>`. — examples: examples/ch08-usage-types.md#fdg8058
+- **FDG8058** CONSIDER overloading comparison operators (<, >,<=, >=) whenever you implement `IComparable<T>`. (partly checked) — examples: examples/ch08-usage-types.md#fdg8058
 
 ## 8.8 Nullable&lt;T>
 
@@ -34,11 +36,18 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 - **FDG8063** DO comply with the contract defined for `Object.Equals` when overriding the method. — examples: examples/ch08-usage-types.md#fdg8063
 - **FDG8064** DO override `GetHashCode` whenever you override `Equals`. — examples: examples/ch08-usage-types.md#fdg8064
-- **FDG8065** CONSIDER implementing `IEquatable<T>` whenever overriding `Object.Equals`.
+- **FDG8065** CONSIDER implementing `IEquatable<T>` whenever overriding `Object.Equals`. (partly checked)
+- **FDG8066** DO NOT throw exceptions from `Equals`. (partly checked) (not in test projects) — examples: examples/ch08-usage-types.md#fdg8066
+
+## 8.9.1.1 Equals on Value Types
+
+- **FDG8067** DO override `Equals` on value types. (partly checked) — examples: examples/ch08-usage-types.md#fdg8067
+- **FDG8068** DO provide an overload of `Equals` taking the value type parameter by implementing `IEquatable<T>`. (partly checked) — examples: examples/ch08-usage-types.md#fdg8068
 
 ## 8.9.1.2 Equals on Reference Types
 
 - **FDG8069** CONSIDER overriding `Equals` to provide value equality if a reference type represents a value. For example, you might want to override `Equals` in reference types representing numbers or other mathematical entities.
+- **FDG8070** DO NOT implement value equality on mutable reference types. (partly checked) — examples: examples/ch08-usage-types.md#fdg8070
 
 ## 8.9.2 Object.GetHashCode
 
@@ -46,6 +55,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG8072** DO ensure that if the `Object.Equals` method returns true for any two objects, `GetHashCode` returns the same value for these objects. — examples: examples/ch08-usage-types.md#fdg8072
 - **FDG8073** DO make every effort to ensure that `GetHashCode` generates a uniform distribution of numbers for all objects of a type. — examples: examples/ch08-usage-types.md#fdg8073
 - **FDG8074** DO ensure that `GetHashCode` returns exactly the same value regardless of any changes that are made to the object. — examples: examples/ch08-usage-types.md#fdg8074
+- **FDG8075** AVOID throwing exceptions from `GetHashCode`. (partly checked) (not in test projects)
 
 ## 8.9.3 Object.ToString
 
@@ -55,6 +65,8 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG8079** DO prefer a friendly name over a unique but not readable ID.
 - **FDG8080** DO format the output of `ToString()` based on the current thread culture when returning culture-dependent information. — examples: examples/ch08-usage-types.md#fdg8080
 - **FDG8081** DO overload `ToString(string format)`, or implement `IFormattable`, if the string returned from `ToString()` is culture-sensitive or there are various ways to format the string. For example, `DateTime` provides the overload and implements `IFormattable`.
+- **FDG8082** DO NOT return an empty string or null from `ToString`. (partly checked)
+- **FDG8083** AVOID throwing exceptions from `ToString`. (partly checked) (not in test projects)
 - **FDG8084** DO ensure that `ToString` has no observable side effects. — examples: examples/ch08-usage-types.md#fdg8084
 - **FDG8085** CONSIDER having the output of `ToString` be a valid input for any parsing methods on this type. — examples: examples/ch08-usage-types.md#fdg8085
 
@@ -62,25 +74,38 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 - **FDG8086** AVOID using serialization attributes or interfaces on public types in a general-purpose library, except for types that need to support serialization across AppDomains—such as Exception types. (library only) — examples: examples/ch08-usage-types.md#fdg8086
 - **FDG8087** DO consider backward and forward compatibility when creating or changing serializable types. — examples: examples/ch08-usage-types.md#fdg8087
+- **FDG8089** DO implement the `ISerializable` members explicitly. (partly checked) — examples: examples/ch08-usage-types.md#fdg8089
 - **FDG8090** DO apply a link demand to `ISerializable.GetObjectData` implementation. This ensures that only fully trusted assemblies and the Runtime Serializer have access to the member. — examples: examples/ch08-usage-types.md#fdg8090
 
 ## 8.11 Uri
 
+- **FDG8091** DO use `System.Uri` to represent URI and URL data. (partly checked) (not in test projects) — examples: examples/ch08-usage-types.md#fdg8091
 - **FDG8092** CONSIDER providing string-based overloads for the most commonly used members with `System.Uri` parameters. (not in test projects) — examples: examples/ch08-usage-types.md#fdg8092
 - **FDG8093** DO NOT automatically overload all `Uri`-based members with a version that accepts a string. (not in test projects) — examples: examples/ch08-usage-types.md#fdg8093
 
 ## 8.11.1 System.Uri Implementation Guidelines
 
+- **FDG8094** DO call the `Uri`-based overloads, if available. (partly checked)
 - **FDG8095** DO NOT store URI/URL data in a string. — examples: examples/ch08-usage-types.md#fdg8095
 
 ## 8.12 System.Xml Usage
 
+- **FDG8096** DO NOT use `XmlNode` or `XmlDocument` to represent XML data. Instead, favor using instances of `IXPathNavigable`, `XmlReader`, `XmlWriter`, or subtypes of `XNode`. `XmlNode` and `XmlDocument` are not designed for exposing in public APIs. (partly checked) (library only) — examples: examples/ch08-usage-types.md#fdg8096
 - **FDG8097** DO use `XmlReader`, `IXPathNavigable`, or subtypes of `XNode` as input or output of members that accept or return XML. (not in test projects) — examples: examples/ch08-usage-types.md#fdg8097
 
 ## 8.13 Equality Operators
 
 - **FDG8099** DO NOT overload one of the equality operators and not the other. — examples: examples/ch08-usage-types.md#fdg8099
+- **FDG8100** DO ensure that `Object.Equals` and the equality operators have exactly the same semantics and similar performance characteristics. (partly checked) — examples: examples/ch08-usage-types.md#fdg8100
+- **FDG8101** DO NOT throw exceptions from equality operators. (partly checked) (not in test projects) — examples: examples/ch08-usage-types.md#fdg8101
+- **FDG8102** DO implement `IEquatable<T>`, with the same behavior as the operator, on any type that defines `operator==`. (partly checked) — examples: examples/ch08-usage-types.md#fdg8102
+- **FDG8103** DO implement `operator==` with the mathematical reflexive and transitive properties. (partly checked) — examples: examples/ch08-usage-types.md#fdg8103
+
+## 8.13.1 Equality Operators on Value Types
+
+- **FDG8105** DO overload the equality operators on value types, if equality is meaningful. (partly checked) — examples: examples/ch08-usage-types.md#fdg8105
 
 ## 8.13.2 Equality Operators on Reference Types
 
+- **FDG8106** AVOID overloading equality operators on mutable reference types. (partly checked) — examples: examples/ch08-usage-types.md#fdg8106
 - **FDG8107** AVOID overloading equality operators on reference types if the implementation would be significantly slower than that of reference equality. — examples: examples/ch08-usage-types.md#fdg8107

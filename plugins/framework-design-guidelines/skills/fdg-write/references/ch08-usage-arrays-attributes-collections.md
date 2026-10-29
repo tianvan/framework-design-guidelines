@@ -2,20 +2,27 @@
 
 # Chapter 8: Usage Guidelines — 8.1–8.3
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 ## 8.1 Arrays
 
 - **FDG8001** DO prefer using collections over arrays in public APIs. Section 8.3.3 provides details about how to choose between collections and arrays. (library only) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8001
+- **FDG8002** DO remember that arrays are mutable types—even arrays of immutable types. (partly checked) (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8002
+- **FDG8003** AVOID array properties. (partly checked) (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8003
 - **FDG8004** CONSIDER using jagged arrays instead of multidimensional arrays. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8004
 
 ## 8.2 Attributes
 
 - **FDG8007** DO provide settable properties for optional arguments. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8007
+- **FDG8009** DO provide constructor parameters to initialize properties corresponding to required arguments. Each parameter should have the same name (although with different casing) as the corresponding property. (partly checked) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8009
+- **FDG8010** DO NOT provide constructor parameters to initialize properties corresponding to the optional arguments. (partly checked) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8010
 
 ## 8.3 Collections
 
 - **FDG8013** DO NOT use weakly typed collections in public APIs. (library only) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8013
+- **FDG8014** DO NOT use `ArrayList` or `List<T>` in public APIs. (partly checked) (library only) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8014
+- **FDG8015** DO NOT use `Hashtable` or `Dictionary<TKey,TValue>` in public APIs. (partly checked) (library only) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8015
+- **FDG8016** DO NOT use `IEnumerator<T>`, `IEnumerator`, or any other type that implements either of these interfaces, except as the return type of a `GetEnumerator` method. (partly checked) (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8016
 
 ## 8.3.1 Collection Parameters
 
@@ -24,11 +31,13 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 8.3.2 Collection Properties and Return Values
 
+- **FDG8020** DO NOT provide settable collection properties. (partly checked) (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8020
 - **FDG8021** DO use `Collection<T>` or a subclass of `Collection<T>` for properties or return values representing read/write collections. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8021
 - **FDG8022** DO use `ReadOnlyCollection<T>`, a subclass of `ReadOnlyCollection<T>`, or in rare cases `IEnumerable<T>` for properties or return values representing read-only collections. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8022
 - **FDG8023** CONSIDER using subclasses of generic base collections instead of using the collections directly. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8023
 - **FDG8024** CONSIDER returning a subclass of `Collection<T>` or `ReadOnlyCollection<T>` from very commonly used methods and properties. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8024
 - **FDG8025** CONSIDER using a keyed collection if the items stored in the collection have unique keys (e.g., names, IDs). Keyed collections are collections that can be indexed by both an integer and a key, and they are usually implemented by inheriting from `KeyedCollection<TKey,TItem>`. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8025
+- **FDG8026** DO NOT return null values from collection properties or from methods returning collections. Return an empty collection or an empty array instead. (partly checked) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8026
 
 ## 8.3.2.1 Snapshots Versus Live Collections
 
@@ -39,15 +48,21 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 - **FDG8029** DO prefer collections over arrays. (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8029
 - **FDG8030** CONSIDER using arrays in low-level APIs to minimize memory consumption and maximize performance. (not in test projects)
+- **FDG8031** DO use byte arrays instead of collections of bytes. (partly checked) (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8031
+- **FDG8032** DO NOT use arrays for properties if the property would have to return a new array (e.g., a copy of an internal array) every time the property getter is called. (partly checked) (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8032
 
 ## 8.3.4 Implementing Custom Collections
 
 - **FDG8033** CONSIDER inheriting from `Collection<T>`, `ReadOnlyCollection<T>`, or `KeyedCollection<TKey,TItem>` when designing new collections. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8033
+- **FDG8034** DO implement `IEnumerable<T>` when designing new collections. Consider implementing `ICollection<T>`, `IReadOnlyList<T>`, or even `IList<T>` where it makes sense. (partly checked) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8034
 - **FDG8035** CONSIDER implementing non-generic collection interfaces (`IList` and `ICollection`) if the collection will often be passed to APIs taking these interfaces as input. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8035
 - **FDG8036** AVOID implementing collection interfaces on types with complex APIs unrelated to the concept of a collection. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8036
+- **FDG8037** DO NOT inherit from non-generic base collections such as `CollectionBase`. Use `Collection<T>`, `ReadOnlyCollection<T>`, and `KeyedCollection<TKey,TItem>` instead. (partly checked)
 
 ## 8.3.4.1 Naming Custom Collections
 
+- **FDG8038** DO use the “Dictionary” suffix in names of abstractions implementing `IDictionary` or `IDictionary<TKey,TValue>`. (partly checked) (not in test projects)
+- **FDG8039** DO use the “Collection” suffix in names of types implementing `IEnumerable` (or any of its descendants) and representing a list of items. (partly checked) (not in test projects) — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8039
 - **FDG8040** DO use the appropriate data structure name for custom data structures. — examples: examples/ch08-usage-arrays-attributes-collections.md#fdg8040
 - **FDG8041** AVOID using any suffixes implying a particular implementation, such as “LinkedList” or “Hashtable,” in names of collection abstractions.
 - **FDG8042** CONSIDER prefixing collection names with the name of the item type. For example, a collection storing items of type `Address` (implementing `IEnumerable<Address>`) should be named `AddressCollection`. If the item type is an interface, the “I” prefix of the item type can be omitted. Thus, a collection of `IDisposable` items can be called `DisposableCollection`.

@@ -2,7 +2,7 @@
 
 # Appendix D: Breaking Changes — D.9–D.12
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 ## D.9.1 Removing a Finalizer from an Unsealed Type
 
