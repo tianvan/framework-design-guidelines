@@ -183,6 +183,24 @@ never join words across a digit or underscore. Every report was checked (19 in a
   internal samples. The fix round added only the `fileNames` report.
 - **FDG3086.** No sample declares an operator with an indexed parameter name; the tests cover the positive cases.
 
+### Phase 3: CA1710 on indirect base types
+
+Two packages, measured with `-Diagnostics CA1710` (library profile for the open-source samples, application for the
+internal ones): 0.3.0-p3t9a with CA1710's default `exclude_indirect_base_types = true`, and 0.3.0-p3t9b, the same
+source with `dotnet_code_quality.CA1710.exclude_indirect_base_types = false` added, which makes CA1710 check every base
+type and interface of a type, not only its direct base. Without the option every count was 0, as in the chapter 7
+and chapter 8 rows. The table gives the counts with it. Every new report was checked (2 in all); none vanished.
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| CA1710 | FDG3048 to FDG3050, FDG3053, FDG3056 to FDG3059, FDG3074, FDG3076, FDG7057, FDG8005, FDG8038, FDG8039 | 0 | 0 | 0 | 0 | 2 | 2 | 0 | 2 | Option set to `false` (FDG3048), since 0 of 2 is within 1 in 20. FDG3049, FDG3053, FDG3056, FDG3059, FDG3076 and FDG8005 are now coverage full. |
+
+- **CA1710.** internal-b's 2 are public classes derived from `ObservableCollection<T>` that add no members, each a
+  list of one kind of item, named with a `List` suffix. Neither is a reusable, specialized data structure, so FDG3058
+  and FDG8039 ask for the `Collection` suffix: both true. With the default, CA1710 does not report them, because they
+  get the collection interfaces only through their base class. polly's 0 is measured with its own configuration, which
+  sets CA1710 to silent in some of its projects (see the chapter 7 notes).
+
 ## Chapter 2 mappings
 
 Chapter 2 (Framework Design Fundamentals, FDG2001 to FDG2032) maps no SDK diagnostic and adds no analyzer: all 32

@@ -1536,11 +1536,12 @@
     library: warning
     application: warning
     test: none
-  config: []
+  config:
+    - dotnet_code_quality.CA1710.exclude_indirect_base_types = false
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: By default (dotnet_code_quality.CA1710.exclude_indirect_base_types = true) CA1710 checks only the direct base type, so a type derived from a subclass, such as an exception derived from ArgumentException or a class derived from Dictionary<TKey, TValue>, is not reported (probe with SDK 10.0.402). Renaming a public type changes the public API, so the fix is breaking; CA1710 and CA1711 have no code fix.
+  notes: 'The package sets dotnet_code_quality.CA1710.exclude_indirect_base_types = false, so CA1710 checks every base type and interface of a type, not only its direct base: an exception derived from ArgumentException or a class derived from Dictionary<TKey, TValue> is reported (probe with SDK 10.0.403). A noise run with and without the option found 2 more CA1710 reports with it, both true (docs/noise-samples.md). Coverage stays partial because some rows of Table 3-5 are checked only in part (FDG3050, FDG3057, FDG3058). Renaming a public type changes the public API, so the fix is breaking; CA1710 and CA1711 have no code fix.'
 - id: FDG3049
   strength: DO
   text: add the suffix “Attribute” to names of custom attribute classes.
@@ -1554,7 +1555,7 @@
     kind: sdk
     diagnostics:
       - CA1710
-    coverage: partial
+    coverage: full
   autofix: breaking
   severity:
     library: warning
@@ -1564,7 +1565,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1710 reports a class derived directly from System.Attribute whose name does not end with Attribute; with its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report an attribute derived from another attribute class (probe with SDK 10.0.402), although the body of FDG3048 applies the suffixes to the whole hierarchy, so coverage is partial. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 reports a class derived from System.Attribute, directly or through another attribute class, whose name does not end with Attribute. It checks the whole hierarchy because the package sets dotnet_code_quality.CA1710.exclude_indirect_base_types = false (see FDG3048; probe with SDK 10.0.403). On the noise samples the option added 2 CA1710 reports, both true and neither for this suffix (docs/noise-samples.md). Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3050
   strength: DO
   text: add the suffix “EventHandler” to names of delegates that are used in events.
@@ -1652,7 +1653,7 @@
     kind: sdk
     diagnostics:
       - CA1710
-    coverage: partial
+    coverage: full
   autofix: breaking
   severity:
     library: warning
@@ -1662,7 +1663,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1710 reports a class derived directly from System.EventArgs whose name does not end with EventArgs; with its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report a class derived from another EventArgs class, such as CancelEventArgs (probe with SDK 10.0.402), so coverage is partial. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 reports a class derived from System.EventArgs, directly or through another class such as CancelEventArgs, whose name does not end with EventArgs. It checks the whole hierarchy because the package sets dotnet_code_quality.CA1710.exclude_indirect_base_types = false (see FDG3048; probe with SDK 10.0.403). On the noise samples the option added 2 CA1710 reports, both true and neither for this suffix (docs/noise-samples.md). Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3054
   strength: DO NOT
   text: derive from this class; use the keyword supported by your language instead; for example, in C#, use the `enum` keyword.
@@ -1723,7 +1724,7 @@
     kind: sdk
     diagnostics:
       - CA1710
-    coverage: partial
+    coverage: full
   autofix: breaking
   severity:
     library: warning
@@ -1733,7 +1734,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1710 reports a class derived directly from System.Exception whose name does not end with Exception; with its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report a class derived from another exception class, such as ArgumentException (probe with SDK 10.0.402), so coverage is partial. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 reports a class derived from System.Exception, directly or through another class such as ArgumentException, whose name does not end with Exception. It checks the whole hierarchy because the package sets dotnet_code_quality.CA1710.exclude_indirect_base_types = false (see FDG3048; probe with SDK 10.0.403). On the noise samples the option added 2 CA1710 reports, both true and neither for this suffix (docs/noise-samples.md). Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3057
   strength: DO
   text: add the suffix “Dictionary.” Note that `IDictionary` is a specific type of collection, but this guideline takes precedence over the more general collections guideline that follows.
@@ -1757,7 +1758,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1710 does not report every dictionary type, such as a class derived from Dictionary<TKey, TValue>. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 reports a type that implements IDictionary<TKey, TValue> or IDictionary, also through a base class such as Dictionary<TKey, TValue> because the package sets dotnet_code_quality.CA1710.exclude_indirect_base_types = false (see FDG3048; probe with SDK 10.0.403), when its name ends with neither Dictionary nor Collection. It also accepts Collection for a dictionary, although the book puts the Dictionary suffix first for such types, so coverage is partial. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3058
   strength: DO
   text: add the suffix “Collection,” except for reusable, specialized data types such as “Queue” and “HashSet.”
@@ -1781,7 +1782,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1710 does not know the exception for reusable, specialized data structures. With its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report a type derived from List<T> or Collection<T>, nor a type that implements only IEnumerable<T> (probe with SDK 10.0.402). Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 does not know the exception for reusable, specialized data structures, so coverage is partial; a report on such a type is not a violation and can be suppressed. Because the package sets dotnet_code_quality.CA1710.exclude_indirect_base_types = false (see FDG3048), CA1710 also reports a type derived from List<T>, Collection<T> or ObservableCollection<T> and a type that implements only IEnumerable<T> (probe with SDK 10.0.403). On the noise samples the option added 2 reports, both classes derived from ObservableCollection<T> that hold a list of items and end in List; both are true warnings (docs/noise-samples.md). Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3059
   strength: DO
   text: add the suffix “Stream.”
@@ -1795,7 +1796,7 @@
     kind: sdk
     diagnostics:
       - CA1710
-    coverage: partial
+    coverage: full
   autofix: breaking
   severity:
     library: warning
@@ -1805,7 +1806,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1710 reports a class derived directly from System.IO.Stream whose name does not end with Stream; with its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report a class derived from another stream class, such as MemoryStream (probe with SDK 10.0.402), so coverage is partial. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 reports a class derived from System.IO.Stream, directly or through another class such as MemoryStream, whose name does not end with Stream. It checks the whole hierarchy because the package sets dotnet_code_quality.CA1710.exclude_indirect_base_types = false (see FDG3048; probe with SDK 10.0.403). On the noise samples the option added 2 CA1710 reports, both true and neither for this suffix (docs/noise-samples.md). Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3060
   strength: DO
   text: use a singular type name for an enumeration unless its values are bit fields.
@@ -2347,7 +2348,7 @@
     kind: sdk
     diagnostics:
       - CA1710
-    coverage: partial
+    coverage: full
   autofix: breaking
   severity:
     library: warning
@@ -2357,7 +2358,7 @@
   minLanguage: null
   alternative: null
   analyzer: null
-  notes: CA1710 reports a class derived directly from System.EventArgs whose name does not end with EventArgs; with its default dotnet_code_quality.CA1710.exclude_indirect_base_types = true it does not report a class derived from another EventArgs class, such as CancelEventArgs (probe with SDK 10.0.402), so coverage is partial. Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
+  notes: CA1710 reports a class derived from System.EventArgs, directly or through another class such as CancelEventArgs, whose name does not end with EventArgs. It checks the whole hierarchy because the package sets dotnet_code_quality.CA1710.exclude_indirect_base_types = false (see FDG3048; probe with SDK 10.0.403). On the noise samples the option added 2 CA1710 reports, both true and neither for this suffix (docs/noise-samples.md). Renaming a public type changes the public API, so the fix is breaking; CA1710 has no code fix.
 - id: FDG3077
   strength: DO
   text: use PascalCasing in field names.
