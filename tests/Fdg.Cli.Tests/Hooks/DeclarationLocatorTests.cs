@@ -17,7 +17,6 @@ public sealed class DeclarationLocatorTests
     [InlineData("class C { public static int count; }", 1, 29, NamingSymbolKind.VisibleField)]
     [InlineData("class C { protected internal int count; }", 1, 34, NamingSymbolKind.VisibleField)]
     [InlineData("class C { private protected int count; }", 1, 33, NamingSymbolKind.PrivateField)]
-    [InlineData("class C { public const int max = 1; }", 1, 28, NamingSymbolKind.ConstField)]
     [InlineData("class C { void m() { } }", 1, 16, NamingSymbolKind.Method)]
     [InlineData("class C { int count { get; } }", 1, 15, NamingSymbolKind.Property)]
     [InlineData("class C { event System.EventHandler changed; }", 1, 37, NamingSymbolKind.Event)]
@@ -35,15 +34,32 @@ public sealed class DeclarationLocatorTests
     [InlineData("class C { void M() { System.Action<int> a = X => { }; } }", 1, 45, NamingSymbolKind.Parameter)]
     public void Finds_the_kind_of_the_declared_name(string source, int line, int column, NamingSymbolKind expected)
     {
-        Assert.Equal(expected, DeclarationLocator.NamingKindAt(source, line, column));
+        Assert.Equal([expected], DeclarationLocator.NamingKindsAt(source, line, column));
+    }
+
+    [Theory]
+    [InlineData("class C { public const int minValue = 0; }", 1, 28)]
+    [InlineData("class C { protected const int minValue = 0; }", 1, 31)]
+    [InlineData("class C { protected internal const int minValue = 0; }", 1, 40)]
+    public void Visible_const_has_both_kinds(string source, int line, int column)
+    {
+        Assert.Equal([NamingSymbolKind.ConstField, NamingSymbolKind.VisibleField], DeclarationLocator.NamingKindsAt(source, line, column));
+    }
+
+    [Fact]
+    public void Private_const_is_only_const_field()
+    {
+        Assert.Equal([NamingSymbolKind.ConstField], DeclarationLocator.NamingKindsAt("class C { private const int x = 0; }", 1, 29));
+        Assert.Equal([NamingSymbolKind.ConstField], DeclarationLocator.NamingKindsAt("class C { const int x = 0; }", 1, 21));
+        Assert.Equal([NamingSymbolKind.ConstField], DeclarationLocator.NamingKindsAt("class C { private protected const int x = 0; }", 1, 39));
     }
 
     [Fact]
     public void Field_without_modifier_in_an_interface_is_visible()
     {
-        Assert.Equal(NamingSymbolKind.VisibleField, DeclarationLocator.NamingKindAt("interface I { static int count; }", 1, 26));
-        Assert.Equal(NamingSymbolKind.PrivateField, DeclarationLocator.NamingKindAt("interface I { private static int count; }", 1, 34));
-        Assert.Equal(NamingSymbolKind.PrivateField, DeclarationLocator.NamingKindAt("struct S { int count; }", 1, 16));
+        Assert.Equal([NamingSymbolKind.VisibleField], DeclarationLocator.NamingKindsAt("interface I { static int count; }", 1, 26));
+        Assert.Equal([NamingSymbolKind.PrivateField], DeclarationLocator.NamingKindsAt("interface I { private static int count; }", 1, 34));
+        Assert.Equal([NamingSymbolKind.PrivateField], DeclarationLocator.NamingKindsAt("struct S { int count; }", 1, 16));
     }
 
     [Fact]
@@ -51,8 +67,8 @@ public sealed class DeclarationLocatorTests
     {
         const string source = "namespace N\n{\n    class C\n    {\n        private int count;\n    }\n}\n";
 
-        Assert.Equal(NamingSymbolKind.PrivateField, DeclarationLocator.NamingKindAt(source, 5, 21));
-        Assert.Equal(NamingSymbolKind.PrivateField, DeclarationLocator.NamingKindAt(source.Replace("\n", "\r\n"), 5, 21));
+        Assert.Equal([NamingSymbolKind.PrivateField], DeclarationLocator.NamingKindsAt(source, 5, 21));
+        Assert.Equal([NamingSymbolKind.PrivateField], DeclarationLocator.NamingKindsAt(source.Replace("\n", "\r\n"), 5, 21));
     }
 
     [Fact]
@@ -61,18 +77,18 @@ public sealed class DeclarationLocatorTests
         // The columns are on the space before the name, on the type and the modifiers, past the end of the line, and
         // on identifiers that are expressions or types in a method body.
         const string field = "class C { private int Count; }";
-        Assert.Null(DeclarationLocator.NamingKindAt(field, 1, 22));
-        Assert.Null(DeclarationLocator.NamingKindAt(field, 1, 11));
-        Assert.Null(DeclarationLocator.NamingKindAt(field, 1, 19));
-        Assert.Null(DeclarationLocator.NamingKindAt(field, 1, 28));
-        Assert.Null(DeclarationLocator.NamingKindAt(field, 1, 0));
-        Assert.Null(DeclarationLocator.NamingKindAt(field, 1, 99));
+        Assert.Null(DeclarationLocator.NamingKindsAt(field, 1, 22));
+        Assert.Null(DeclarationLocator.NamingKindsAt(field, 1, 11));
+        Assert.Null(DeclarationLocator.NamingKindsAt(field, 1, 19));
+        Assert.Null(DeclarationLocator.NamingKindsAt(field, 1, 28));
+        Assert.Null(DeclarationLocator.NamingKindsAt(field, 1, 0));
+        Assert.Null(DeclarationLocator.NamingKindsAt(field, 1, 99));
 
         const string body = "class C { void M(Foo p) { int y = Bar + 1; Baz(y); } }";
-        Assert.Null(DeclarationLocator.NamingKindAt(body, 1, 18));
-        Assert.Null(DeclarationLocator.NamingKindAt(body, 1, 35));
-        Assert.Null(DeclarationLocator.NamingKindAt(body, 1, 44));
-        Assert.Null(DeclarationLocator.NamingKindAt(body, 1, 48));
+        Assert.Null(DeclarationLocator.NamingKindsAt(body, 1, 18));
+        Assert.Null(DeclarationLocator.NamingKindsAt(body, 1, 35));
+        Assert.Null(DeclarationLocator.NamingKindsAt(body, 1, 44));
+        Assert.Null(DeclarationLocator.NamingKindsAt(body, 1, 48));
     }
 
     [Fact]
@@ -80,33 +96,33 @@ public sealed class DeclarationLocatorTests
     {
         const string source = "class C { private int Count; }";
 
-        Assert.Null(DeclarationLocator.NamingKindAt(source, 0, 23));
-        Assert.Null(DeclarationLocator.NamingKindAt(source, 2, 23));
-        Assert.Null(DeclarationLocator.NamingKindAt(string.Empty, 1, 1));
+        Assert.Null(DeclarationLocator.NamingKindsAt(source, 0, 23));
+        Assert.Null(DeclarationLocator.NamingKindsAt(source, 2, 23));
+        Assert.Null(DeclarationLocator.NamingKindsAt(string.Empty, 1, 1));
     }
 
     [Fact]
     public void Unparsable_source_still_gives_null_not_an_exception()
     {
-        Assert.Null(DeclarationLocator.NamingKindAt("class C { private int Count", 1, 23));
-        Assert.Null(DeclarationLocator.NamingKindAt("class C { private int Count; ", 1, 23));
-        Assert.Null(DeclarationLocator.NamingKindAt("public static string describe_failure(", 1, 24));
-        Assert.Null(DeclarationLocator.NamingKindAt("\0\u0001 {{{ ??? \"", 1, 3));
+        Assert.Null(DeclarationLocator.NamingKindsAt("class C { private int Count", 1, 23));
+        Assert.Null(DeclarationLocator.NamingKindsAt("class C { private int Count; ", 1, 23));
+        Assert.Null(DeclarationLocator.NamingKindsAt("public static string describe_failure(", 1, 24));
+        Assert.Null(DeclarationLocator.NamingKindsAt("\0\u0001 {{{ ??? \"", 1, 3));
     }
 
     [Fact]
     public void Members_outside_a_type_and_top_level_statements_give_null()
     {
-        Assert.Null(DeclarationLocator.NamingKindAt("private int Count;", 1, 13));
-        Assert.Null(DeclarationLocator.NamingKindAt("int X = 0;", 1, 5));
-        Assert.Null(DeclarationLocator.NamingKindAt("System.Console.WriteLine(1);\nint X = 0;\nclass C { }\n", 2, 5));
+        Assert.Null(DeclarationLocator.NamingKindsAt("private int Count;", 1, 13));
+        Assert.Null(DeclarationLocator.NamingKindsAt("int X = 0;", 1, 5));
+        Assert.Null(DeclarationLocator.NamingKindsAt("System.Console.WriteLine(1);\nint X = 0;\nclass C { }\n", 2, 5));
     }
 
     [Fact]
     public void Symbols_without_a_naming_kind_give_null()
     {
-        Assert.Null(DeclarationLocator.NamingKindAt("enum E { a }", 1, 10));
-        Assert.Null(DeclarationLocator.NamingKindAt("class C { void M() { void local() { } } }", 1, 27));
+        Assert.Null(DeclarationLocator.NamingKindsAt("enum E { a }", 1, 10));
+        Assert.Null(DeclarationLocator.NamingKindsAt("class C { void M() { void local() { } } }", 1, 27));
     }
 
     [Theory]

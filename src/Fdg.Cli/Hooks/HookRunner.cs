@@ -538,7 +538,7 @@ public sealed partial class HookRunner
             }
 
             string? source = diagnostic.Line >= 1 && diagnostic.Line <= lines.Length ? lines[diagnostic.Line - 1].Trim() : null;
-            (NamingSymbolKind, NamingFailure)? naming = diagnostic.RuleId == DeclarationLocator.NamingDiagnosticId
+            (IReadOnlyList<NamingSymbolKind>, NamingFailure)? naming = diagnostic.RuleId == DeclarationLocator.NamingDiagnosticId
                 ? NamingOf(diagnostic, trees)
                 : null;
             bool existingApi = project.Manifest.BreakingFixDiagnostics.Contains(diagnostic.RuleId, StringComparer.OrdinalIgnoreCase) &&
@@ -609,8 +609,8 @@ public sealed partial class HookRunner
         return tree;
     }
 
-    /// <summary>What IDE1006 flagged: the kind of the declared symbol and how its name fails; null if either is unknown.</summary>
-    private static (NamingSymbolKind, NamingFailure)? NamingOf(SarifDiagnostic diagnostic, Dictionary<string, SyntaxTree> trees)
+    /// <summary>What IDE1006 flagged: the kinds of the declared symbol and how its name fails; null if either is unknown.</summary>
+    private static (IReadOnlyList<NamingSymbolKind>, NamingFailure)? NamingOf(SarifDiagnostic diagnostic, Dictionary<string, SyntaxTree> trees)
     {
         NamingFailure? failure = DeclarationLocator.ClassifyNamingFailure(diagnostic.Message);
         if (failure is null)
@@ -618,8 +618,8 @@ public sealed partial class HookRunner
             return null;
         }
 
-        NamingSymbolKind? kind = DeclarationLocator.NamingKindAt(TreeOf(diagnostic.FilePath, trees), diagnostic.Line, diagnostic.Column);
-        return kind is null ? null : (kind.Value, failure.Value);
+        IReadOnlyList<NamingSymbolKind>? kinds = DeclarationLocator.NamingKindsAt(TreeOf(diagnostic.FilePath, trees), diagnostic.Line, diagnostic.Column);
+        return kinds is null ? null : (kinds, failure.Value);
     }
 
     /// <summary>

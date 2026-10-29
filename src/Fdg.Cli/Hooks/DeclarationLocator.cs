@@ -62,20 +62,24 @@ public static class DeclarationLocator
     /// <summary>The diagnostic whose rules the symbol kind and failure of the flagged name select.</summary>
     public const string NamingDiagnosticId = "IDE1006";
 
-    /// <summary>Parses <paramref name="source"/> for <see cref="NamingKindAt(SyntaxTree, int, int)"/>, which callers can repeat on one tree.</summary>
+    /// <summary>Parses <paramref name="source"/> for <see cref="NamingKindsAt(SyntaxTree, int, int)"/>, which callers can repeat on one tree.</summary>
     public static SyntaxTree Parse(string source) =>
         CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview));
 
-    /// <summary>The kind of the symbol declared at the 1-based line and column, or null when no declaration name is there.</summary>
+    /// <summary>
+    /// The kinds of the symbol declared at the 1-based line and column, or null when no declaration name is there.
+    /// One kind, except for a const field that is visible outside its assembly, which is both a
+    /// <see cref="NamingSymbolKind.ConstField"/> and a <see cref="NamingSymbolKind.VisibleField"/>.
+    /// </summary>
     /// <remarks>
     /// Also null when the source has syntax errors (it may not be the code that was built), for declarations that are
     /// not members of a type, for top-level statements, and for symbols without a kind (enum members, local functions).
     /// </remarks>
-    public static NamingSymbolKind? NamingKindAt(string source, int line, int column) =>
-        NamingKindAt(Parse(source), line, column);
+    public static IReadOnlyList<NamingSymbolKind>? NamingKindsAt(string source, int line, int column) =>
+        NamingKindsAt(Parse(source), line, column);
 
-    /// <inheritdoc cref="NamingKindAt(string, int, int)"/>
-    public static NamingSymbolKind? NamingKindAt(SyntaxTree tree, int line, int column)
+    /// <inheritdoc cref="NamingKindsAt(string, int, int)"/>
+    public static IReadOnlyList<NamingSymbolKind>? NamingKindsAt(SyntaxTree tree, int line, int column)
     {
         if (PositionOf(tree, line, column) is not int position)
         {
@@ -95,7 +99,15 @@ public static class DeclarationLocator
             return null;
         }
 
-        return KindOf(token);
+        if (KindOf(token) is not { } kind)
+        {
+            return null;
+        }
+
+        return kind == NamingSymbolKind.ConstField && token.Parent is VariableDeclaratorSyntax { Parent.Parent: FieldDeclarationSyntax field } &&
+            IsVisible(field)
+            ? [NamingSymbolKind.ConstField, NamingSymbolKind.VisibleField]
+            : [kind];
     }
 
     /// <summary>
@@ -432,21 +444,29 @@ public static class DeclarationLocator
     }
 
     /// <summary>
-    /// Const wins over visibility; a field without an accessibility modifier is private, except in an interface,
-    /// where it is public.
+    /// A const is a <see cref="NamingSymbolKind.ConstField"/> whatever its visibility; the visibility of a const is
+    /// told by <see cref="IsVisible"/>.
     /// </summary>
     private static NamingSymbolKind FieldKind(FieldDeclarationSyntax field)
     {
-        SyntaxTokenList modifiers = field.Modifiers;
-        if (modifiers.Any(SyntaxKind.ConstKeyword))
+        if (field.Modifiers.Any(SyntaxKind.ConstKeyword))
         {
             return NamingSymbolKind.ConstField;
         }
 
-        bool visible = modifiers.Any(SyntaxKind.PublicKeyword) ||
+        return IsVisible(field) ? NamingSymbolKind.VisibleField : NamingSymbolKind.PrivateField;
+    }
+
+    /// <summary>
+    /// Whether the field is visible outside its assembly; a field without an accessibility modifier is private,
+    /// except in an interface, where it is public.
+    /// </summary>
+    private static bool IsVisible(FieldDeclarationSyntax field)
+    {
+        SyntaxTokenList modifiers = field.Modifiers;
+        return modifiers.Any(SyntaxKind.PublicKeyword) ||
             (modifiers.Any(SyntaxKind.ProtectedKeyword) && !modifiers.Any(SyntaxKind.PrivateKeyword)) ||
             (field.Parent is InterfaceDeclarationSyntax && !modifiers.Any(SyntaxKind.PrivateKeyword) &&
                 !modifiers.Any(SyntaxKind.InternalKeyword));
-        return visible ? NamingSymbolKind.VisibleField : NamingSymbolKind.PrivateField;
     }
 }
