@@ -12,7 +12,8 @@ namespace FrameworkDesignGuidelines.CodeFixes.Layout;
 /// <summary>
 /// Fixes FDGA023: chops the list before its first item, one item per line indented one level past the line of
 /// the opening parenthesis, with the closing parenthesis after the last item. Item text is kept as written;
-/// a long list inside an item is left for the next run.
+/// a long list inside an item is left for the next run. A block comment before an item, as in <c>/* name */ value</c>,
+/// stays before it.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(LongListWrappingCodeFix)), Shared]
 public sealed class LongListWrappingCodeFix : CodeFixProvider
@@ -69,7 +70,7 @@ public sealed class LongListWrappingCodeFix : CodeFixProvider
         {
             SyntaxToken first = item.GetFirstToken();
             SyntaxToken last = item.GetLastToken();
-            edits.ForceBreakBetween(previous, first, itemIndentation);
+            edits.ForceBreakBeforeComments(previous, first, itemIndentation);
 
             // The lines of a multi-line item (an initializer, a lambda body) move with its first line.
             int originalWidth = LayoutText.GetWidth(LayoutText.GetLineIndentation(text, first.SpanStart));

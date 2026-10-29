@@ -61,6 +61,55 @@ internal sealed class TokenEdits
     }
 
     /// <summary>
+    /// Like <see cref="ForceBreakBetween"/>, but block comments between the two tokens on one line move to the new
+    /// line, before <paramref name="next"/>: a comment written before an item stays before it.
+    /// </summary>
+    public void ForceBreakBeforeComments(SyntaxToken previous, SyntaxToken next, string indentation)
+    {
+        SyntaxTriviaList comments = GetMovableComments(previous);
+        if (comments.Count == 0)
+        {
+            ForceBreakBetween(previous, next, indentation);
+            return;
+        }
+
+        SyntaxTriviaList moved = comments.Add(SyntaxFactory.Space);
+        Update(previous, token => token.WithTrailingTrivia(_endOfLine), annotate: false);
+        Update(
+            next,
+            token => token.WithLeadingTrivia(Indent(moved.AddRange(TrimStart(token.LeadingTrivia)), indentation)),
+            annotate: true);
+    }
+
+    /// <summary>
+    /// Like <see cref="ForceBreakBetween"/>, but block comments between the two tokens on one line get a line of
+    /// their own between them, indented by <paramref name="commentIndentation"/>: a comment after an opening brace
+    /// stays inside the block.
+    /// </summary>
+    public void ForceBreakAroundComments(
+        SyntaxToken previous,
+        SyntaxToken next,
+        string commentIndentation,
+        string indentation)
+    {
+        SyntaxTriviaList comments = GetMovableComments(previous);
+        if (comments.Count == 0)
+        {
+            ForceBreakBetween(previous, next, indentation);
+            return;
+        }
+
+        SyntaxTriviaList moved = SyntaxFactory.TriviaList(SyntaxFactory.Whitespace(commentIndentation))
+            .AddRange(comments)
+            .Add(_endOfLine);
+        Update(previous, token => token.WithTrailingTrivia(_endOfLine), annotate: false);
+        Update(
+            next,
+            token => token.WithLeadingTrivia(moved.AddRange(Indent(token.LeadingTrivia, indentation))),
+            annotate: true);
+    }
+
+    /// <summary>
     /// Removes the whitespace and line breaks between two tokens, keeping any comments. When a single-line
     /// comment ends the gap, its line break stays and <paramref name="next"/> is indented by
     /// <paramref name="indentationAfterComment"/>.
@@ -162,6 +211,11 @@ internal sealed class TokenEdits
         return trivia.Count > 0 && IsLineTrivia(trivia[trivia.Count - 1]);
     }
 
+    private static bool IsBlockComment(SyntaxTrivia trivia)
+    {
+        return trivia.IsKind(SyntaxKind.MultiLineCommentTrivia);
+    }
+
     private static SyntaxTriviaList TrimEnd(SyntaxTriviaList trivia)
     {
         int count = trivia.Count;
@@ -249,16 +303,34 @@ internal sealed class TokenEdits
         }
     }
 
+    /// <summary>
+    /// Returns the block comments that follow <paramref name="token"/> when only whitespace surrounds them up to the
+    /// next token, so that they share a line with both tokens; otherwise an empty list. A line comment or a line break
+    /// keeps comments on the line of <paramref name="token"/>.
+    /// </summary>
+    private SyntaxTriviaList GetMovableComments(SyntaxToken token)
+    {
+        SyntaxTriviaList trailing = GetCurrent(token).TrailingTrivia;
+        bool movable = trailing.Any(SyntaxKind.MultiLineCommentTrivia)
+            && trailing.All(trivia => trivia.IsKind(SyntaxKind.WhitespaceTrivia) || IsBlockComment(trivia));
+        return movable ? TrimStart(TrimEnd(trailing)) : default;
+    }
+
     private bool AreOnDifferentLines(SyntaxToken previous, SyntaxToken next)
     {
         return _text.Lines.GetLineFromPosition(previous.Span.End).LineNumber
             != _text.Lines.GetLineFromPosition(next.SpanStart).LineNumber;
     }
 
+    /// <summary>Returns <paramref name="original"/> with the edits made to it so far.</summary>
+    private SyntaxToken GetCurrent(SyntaxToken original)
+    {
+        return _replacements.TryGetValue(original, out SyntaxToken replaced) ? replaced : original;
+    }
+
     private void Update(SyntaxToken original, Func<SyntaxToken, SyntaxToken> edit, bool annotate)
     {
-        SyntaxToken current = _replacements.TryGetValue(original, out SyntaxToken replaced) ? replaced : original;
-        SyntaxToken edited = edit(current);
+        SyntaxToken edited = edit(GetCurrent(original));
         _replacements[original] = annotate && !edited.HasAnnotation(GapAnnotation)
             ? edited.WithAdditionalAnnotations(GapAnnotation)
             : edited;

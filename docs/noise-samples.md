@@ -90,6 +90,15 @@ counts. FDGA004 replaces IDE0011 (see the notes).
   newtonsoft-json reports are lists that are chopped one item per line but whose closing parenthesis is on its own
   line. The rule text does not say where the parenthesis goes, but the rule's example keeps it on the last item's
   line, so these are counted as true warnings; they are debatable.
+- **FDGA003 and FDGA023, phase 3 rerun.** The FDGA003 code fix now moves a block comment after the opening brace into
+  the block (`catch { /* ignore */ }`) and expands every block of a switch section in one pass. The FDGA023 code fix
+  keeps a block comment before an item on the item's line. FDGA023 now counts a tab as reaching the next tab stop of
+  `tab_width` (4 when not set) when it compares a line with `max_line_length`. Both rules were measured again with the
+  same samples and profiles, with packages built from the code before and after the change. The counts did not
+  change: FDGA003 is serilog 0, polly 0, newtonsoft-json 0, internal-a 1 and internal-b 9, and FDGA023 is 141, 89,
+  986, 20 and 84. The per-location lists are identical, so there were no new or vanished locations to spot-check, and
+  the table does not change. In the open-source samples, no line crosses 120 columns only because of its tabs (only
+  newtonsoft-json has tabs: 53 lines, none at the start of a line), and no reported line has a block comment.
 - **FDGA004 (was IDE0011).** IDE0011 first counted serilog 123, polly 0, newtonsoft-json 0, internal-a 28 and
   internal-b 98, and 5 of 20 spot-checked reports were false positives: all an argument validation preamble
   (`if (x == null) throw ...;`), which FDGA005 allows without braces. Lowering IDE0011 to `suggestion` (R7) would have

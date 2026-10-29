@@ -215,6 +215,70 @@ public sealed class SingleLineCatchFinallyTests
     }
 
     [Fact]
+    public Task Comment_in_an_empty_catch_moves_into_the_block()
+    {
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M()
+                {
+                    try
+                    {
+                        M();
+                    }
+                    {|FDGA003:catch|} { /* ignore */ }
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M()
+                {
+                    try
+                    {
+                        M();
+                    }
+                    catch
+                    {
+                        /* ignore */
+                    }
+                }
+            }
+            """);
+    }
+
+    [Fact]
+    public Task Comment_before_the_first_statement_moves_into_the_block()
+    {
+        // On its own line: the formatter would split a block comment from a statement that follows it on its line.
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M(bool condition)
+                {
+                    {|FDGA003:if|} (condition) { /* again */ M(false); /* done */ }
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M(bool condition)
+                {
+                    if (condition)
+                    {
+                        /* again */
+                        M(false); /* done */
+                    }
+                }
+            }
+            """);
+    }
+
+    [Fact]
     public Task Crlf_line_endings_are_kept()
     {
         return Verifier.VerifyAsync(
@@ -441,6 +505,48 @@ public sealed class SingleLineCatchFinallyTests
                 }
             }
             """);
+    }
+
+    [Fact]
+    public Task Switch_section_with_two_blocks_is_fixed_in_one_pass()
+    {
+        // Both blocks are reported on the section's case keyword; fixing either diagnostic expands the whole section.
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M(int value)
+                {
+                    switch (value)
+                    {
+                        {|FDGA003:{|FDGA003:case|}|} 1: { M(2); } { break; }
+                        default:
+                            break;
+                    }
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M(int value)
+                {
+                    switch (value)
+                    {
+                        case 1:
+                            {
+                                M(2);
+                            }
+                            {
+                                break;
+                            }
+                        default:
+                            break;
+                    }
+                }
+            }
+            """,
+            fixAllIterations: 1);
     }
 
     [Fact]

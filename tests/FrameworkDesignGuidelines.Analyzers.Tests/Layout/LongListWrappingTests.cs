@@ -157,6 +157,159 @@ public sealed class LongListWrappingTests
     }
 
     [Fact]
+    public Task Comment_before_a_list_item_stays_before_that_item()
+    {
+        // With end_of_line set: the formatter rewrites the line break before a line that starts with a block comment,
+        // using the platform's newline when end_of_line is not set.
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M()
+                {
+                    Register{|FDGA023:(|}/* name */ "the first registration", /* isRequired */ true, /* timeout */ 30);
+                }
+
+                static void Register(string name, bool isRequired, int timeout)
+                {
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M()
+                {
+                    Register(
+                        /* name */ "the first registration",
+                        /* isRequired */ true,
+                        /* timeout */ 30);
+                }
+
+                static void Register(string name, bool isRequired, int timeout)
+                {
+                }
+            }
+            """,
+            extraEditorConfig: "max_line_length = 80\nend_of_line = lf\n");
+    }
+
+    [Fact]
+    public Task Comment_at_the_end_of_a_wrapped_line_stays_there()
+    {
+        // A block comment that ends its line belongs to that line, like a line comment.
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M()
+                {
+                    Register{|FDGA023:(|}"the first registration", /* required */
+                        true, 30);
+                }
+
+                static void Register(string name, bool isRequired, int timeout)
+                {
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M()
+                {
+                    Register(
+                        "the first registration", /* required */
+                        true,
+                        30);
+                }
+
+                static void Register(string name, bool isRequired, int timeout)
+                {
+                }
+            }
+            """);
+    }
+
+    [Theory]
+    [InlineData(null, 45)]
+    [InlineData("tab_width = 8\nindent_size = 8\n", 53)]
+    public Task Tab_counts_as_tab_width_columns_in_the_line_length(string? tabWidth, int maxLineLength)
+    {
+        // The call's line has 40 characters; with tab stops every 4 columns (the default) it is 46 columns wide, with
+        // tab stops every 8 columns it is 54. The other lines are at most 40 or 44 columns wide. indent_size follows
+        // tab_width so that the formatter check indents one tab per level.
+        return Verifier.VerifyAsync(
+            Tabs(
+                """
+                class C
+                {
+                    void M(string a, string b, string c)
+                    {
+                        Report{|FDGA023:(|}a, b, c, "a message argument");
+                    }
+
+                    static void Report(
+                        string a,
+                        string b,
+                        string c,
+                        string d)
+                    {
+                    }
+                }
+                """),
+            Tabs(
+                """
+                class C
+                {
+                    void M(string a, string b, string c)
+                    {
+                        Report(
+                            a,
+                            b,
+                            c,
+                            "a message argument");
+                    }
+
+                    static void Report(
+                        string a,
+                        string b,
+                        string c,
+                        string d)
+                    {
+                    }
+                }
+                """),
+            extraEditorConfig: $"indent_style = tab\n{tabWidth}max_line_length = {maxLineLength}\n");
+    }
+
+    [Fact]
+    public Task Tab_indented_line_within_the_limit_is_not_reported()
+    {
+        // 46 columns with the default tab width of 4: at the limit, not over it.
+        return Verifier.VerifyNoDiagnosticsAsync(
+            Tabs(
+                """
+                class C
+                {
+                    void M(string a, string b, string c)
+                    {
+                        Report(a, b, c, "a message argument");
+                    }
+
+                    static void Report(
+                        string a,
+                        string b,
+                        string c,
+                        string d)
+                    {
+                    }
+                }
+                """),
+            extraEditorConfig: "indent_style = tab\nmax_line_length = 46\n");
+    }
+
+    [Fact]
     public Task Crlf_line_endings_are_kept()
     {
         return Verifier.VerifyAsync(
@@ -1325,5 +1478,10 @@ public sealed class LongListWrappingTests
     private static void AssertHasLineLongerThan(int length, string source)
     {
         Assert.Contains(source.Split('\n'), line => line.TrimEnd('\r').Length > length);
+    }
+
+    private static string Tabs(string text)
+    {
+        return text.Replace("    ", "\t");
     }
 }

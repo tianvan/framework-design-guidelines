@@ -11,8 +11,9 @@ namespace FrameworkDesignGuidelines.Analyzers.Layout;
 /// FDGA023: a parameter or argument list that is exceedingly long must be chopped: a line break after the
 /// opening parenthesis, one item per line indented one level from the line of the opening parenthesis, and the
 /// closing parenthesis right after the last item. A list is exceedingly long when its line is longer than
-/// <c>max_line_length</c>, or when the author wrapped it over several lines. A line that is long only because a
-/// conditional, <c>||</c>, <c>&amp;&amp;</c> or <c>??</c> expression joins short calls does not make their lists long.
+/// <c>max_line_length</c>, with a tab reaching the next tab stop of <c>tab_width</c> (4 when not set), or when the
+/// author wrapped it over several lines. A line that is long only because a conditional, <c>||</c>,
+/// <c>&amp;&amp;</c> or <c>??</c> expression joins short calls does not make their lists long.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
@@ -61,9 +62,9 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
 
     /// <summary>
     /// True when the list is already chopped: the first item starts on a line after the opening parenthesis,
-    /// every item starts its own line at one indentation level past the opening parenthesis's line, and the
-    /// closing parenthesis is on the line where the last item ends, or on the next line when a line comment
-    /// ends the last item's line.
+    /// every item starts its own line at one indentation level past the opening parenthesis's line (after any block
+    /// comments, as in <c>/* name */ value</c>), and the closing parenthesis is on the line where the last item ends,
+    /// or on the next line when a line comment ends the last item's line.
     /// </summary>
     internal static bool IsChopped(SourceText text, ListShape shape)
     {
@@ -80,7 +81,8 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
 
             TextLine line = text.Lines.GetLineFromPosition(start);
             string indentation = LayoutText.GetLineIndentation(text, start);
-            if (line.Start + indentation.Length != start || LayoutText.GetWidth(indentation) != expectedWidth)
+            if (!HasOnlyBlockCommentsBefore(item.GetFirstToken(), line)
+                || LayoutText.GetWidth(indentation) != expectedWidth)
             {
                 return false;
             }
@@ -91,6 +93,25 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
         SyntaxToken last = shape.Items[shape.Items.Count - 1].GetLastToken();
         return LayoutText.GetLineNumber(text, last.Span.End) == LayoutText.GetLineNumber(text, shape.Close.SpanStart)
             || last.TrailingTrivia.Any(SyntaxKind.SingleLineCommentTrivia);
+    }
+
+    /// <summary>
+    /// True when nothing but whitespace and block comments precedes <paramref name="token"/> on
+    /// <paramref name="line"/>, given that the token before it ends on an earlier line.
+    /// </summary>
+    private static bool HasOnlyBlockCommentsBefore(SyntaxToken token, TextLine line)
+    {
+        foreach (SyntaxTrivia trivia in token.LeadingTrivia)
+        {
+            if (trivia.SpanStart >= line.Start
+                && !trivia.IsKind(SyntaxKind.WhitespaceTrivia)
+                && !trivia.IsKind(SyntaxKind.MultiLineCommentTrivia))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -121,11 +142,13 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
         SyntaxTree tree = context.Node.SyntaxTree;
         SourceText text = tree.GetText(context.CancellationToken);
         TextLine line = text.Lines.GetLineFromPosition(shape.Open.SpanStart);
-        int maxLength = LineLength.Get(context.Options.AnalyzerConfigOptionsProvider.GetOptions(tree));
-        if ((line.Span.Length <= maxLength && !IsWrapped(text, shape))
+        AnalyzerConfigOptions options = context.Options.AnalyzerConfigOptionsProvider.GetOptions(tree);
+        int maxLength = LineLength.Get(options);
+        int tabWidth = LineLength.GetTabWidth(options);
+        if ((LineLength.GetWidth(text, line.Span, tabWidth) <= maxLength && !IsWrapped(text, shape))
             || IsChopped(text, shape)
-            || IsExemptThroughOperator(text, context.Node, line, maxLength)
-            || HasEarlierListOnLine(tree.GetRoot(context.CancellationToken), text, shape, line, maxLength))
+            || IsExemptThroughOperator(text, context.Node, line, maxLength, tabWidth)
+            || HasEarlierListOnLine(tree.GetRoot(context.CancellationToken), text, shape, line, maxLength, tabWidth))
         {
             return;
         }
@@ -137,9 +160,15 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
     /// True when the list is not wrapped and its line is within <paramref name="maxLength"/> once the outermost
     /// enclosing conditional, <c>||</c>, <c>&amp;&amp;</c> or <c>??</c> expression on the line is reduced to the
     /// list's own invocation, including the fluent chain it is part of. The operator then makes the line long, not
-    /// the invocation.
+    /// the invocation. Widths count a tab up to the next multiple of <paramref name="tabWidth"/>.
     /// </summary>
-    private static bool IsLongOnlyThroughOperator(SourceText text, SyntaxNode list, ListShape shape, TextLine line, int maxLength)
+    private static bool IsLongOnlyThroughOperator(
+        SourceText text,
+        SyntaxNode list,
+        ListShape shape,
+        TextLine line,
+        int maxLength,
+        int tabWidth)
     {
         if (list is not ArgumentListSyntax || list.Parent is not ExpressionSyntax || IsWrapped(text, shape))
         {
@@ -167,21 +196,44 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
         }
 
         return operatorExpression is not null
-            && line.Span.Length - LengthOnLine(operatorExpression, line) + LengthOnLine(chain, line) <= maxLength;
+            && GetReducedWidth(text, line, operatorExpression, chain, tabWidth) <= maxLength;
+    }
+
+    /// <summary>
+    /// Returns the width of <paramref name="line"/> once the part of <paramref name="operatorExpression"/> on it is
+    /// replaced by the part of <paramref name="chain"/>, which the expression contains.
+    /// </summary>
+    private static int GetReducedWidth(
+        SourceText text,
+        TextLine line,
+        SyntaxNode operatorExpression,
+        SyntaxNode chain,
+        int tabWidth)
+    {
+        TextSpan operatorPart = line.Span.Intersection(operatorExpression.Span) ?? new TextSpan(line.End, 0);
+        TextSpan chainPart = line.Span.Intersection(chain.Span) ?? new TextSpan(operatorPart.Start, 0);
+        int column = LineLength.Advance(text, TextSpan.FromBounds(line.Start, operatorPart.Start), 0, tabWidth);
+        column = LineLength.Advance(text, chainPart, column, tabWidth);
+        return LineLength.Advance(text, TextSpan.FromBounds(operatorPart.End, line.End), column, tabWidth);
     }
 
     /// <summary>
     /// True when <paramref name="list"/>, or a list enclosing it that opens on the same line, is long only through an
     /// operator: a list nested in the arguments of such a call is no longer than the call itself.
     /// </summary>
-    private static bool IsExemptThroughOperator(SourceText text, SyntaxNode list, TextLine line, int maxLength)
+    private static bool IsExemptThroughOperator(
+        SourceText text,
+        SyntaxNode list,
+        TextLine line,
+        int maxLength,
+        int tabWidth)
     {
         for (SyntaxNode? node = list; node is not null && node.SpanStart >= line.Start; node = node.Parent)
         {
             if (node is ArgumentListSyntax
                 && TryGetList(node, out ListShape shape)
                 && shape.Open.SpanStart >= line.Start
-                && IsLongOnlyThroughOperator(text, node, shape, line, maxLength))
+                && IsLongOnlyThroughOperator(text, node, shape, line, maxLength, tabWidth))
             {
                 return true;
             }
@@ -204,17 +256,18 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
         };
     }
 
-    private static int LengthOnLine(SyntaxNode node, TextLine line)
-    {
-        return line.Span.Intersection(node.Span) is TextSpan overlap ? overlap.Length : 0;
-    }
-
     /// <summary>
     /// Only the leftmost list opening on a line is reported: the one enclosing the others, or the first link of a
     /// fluent chain. The rest are left for the next run, which then indents them from their new line. A list that
     /// is long only through an operator does not hide the lists after it.
     /// </summary>
-    private static bool HasEarlierListOnLine(SyntaxNode root, SourceText text, ListShape shape, TextLine line, int maxLength)
+    private static bool HasEarlierListOnLine(
+        SyntaxNode root,
+        SourceText text,
+        ListShape shape,
+        TextLine line,
+        int maxLength,
+        int tabWidth)
     {
         for (SyntaxToken token = root.FindToken(line.Start);
             token.SpanStart < shape.Open.SpanStart && !token.IsKind(SyntaxKind.None);
@@ -225,7 +278,7 @@ public sealed class LongListWrappingAnalyzer : DiagnosticAnalyzer
                 && token.Parent is SyntaxNode list
                 && TryGetList(list, out ListShape earlier)
                 && earlier.Open == token
-                && !IsExemptThroughOperator(text, list, line, maxLength))
+                && !IsExemptThroughOperator(text, list, line, maxLength, tabWidth))
             {
                 return true;
             }
