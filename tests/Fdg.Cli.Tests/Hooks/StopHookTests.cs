@@ -746,6 +746,27 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Naming_diagnostic_on_an_existing_type_that_gained_a_base_type_does_not_block()
+    {
+        CommitOrder("public class Order {\n    void Ship() { }\n}\n");
+        await TurnStartAsync();
+        string order = _repo.Write(
+            "src/中文 App/Order.cs",
+            "public class Order : System.Exception {\n    void Ship() { }\n}\n");
+        _builder.Sarif = _ => [new SarifResult("CA1710", "warning", "Rename Order to end in 'Exception'", order, 1) { Column = 14 }];
+
+        string output = await TurnStopAsync();
+
+        Assert.Null(Json(output, "decision"));
+        Assert.StartsWith(
+            "FDG: 1 issue(s) on existing API in lines you changed; not blocking. Tell the user instead of changing the API.\n" +
+            "Existing API: do not change it to fix this; tell the user.\n" +
+            "src/中文 App/Order.cs:1 CA1710 Rename Order to end in 'Exception'\n",
+            Json(output, "systemMessage"));
+        Assert.Equal(0, (await StateAsync()).ReadBlocks());
+    }
+
+    [Fact]
     public async Task Breaking_diagnostic_in_a_file_created_this_turn_blocks()
     {
         await TurnStartAsync();

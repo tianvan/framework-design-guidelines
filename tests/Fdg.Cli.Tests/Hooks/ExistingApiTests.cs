@@ -337,6 +337,15 @@ public sealed class ExistingApiTests
         Assert.True(ExistingApi.IsExisting(current, baseline, 1, 7, compareBaseList: ExistingApi.ComparesBaseList("CA1710")));
     }
 
+    [Fact]
+    public void Base_suffix_diagnostic_on_an_existing_type_with_a_new_base_stays_existing()
+    {
+        string baseline = "public abstract class WidgetBase { }";
+        string current = "public abstract class WidgetBase : System.IDisposable { public void Dispose() { } }";
+
+        Assert.True(ExistingApi.IsExisting(current, baseline, 1, 23, compareBaseList: ExistingApi.ComparesBaseList("FDG6019")));
+    }
+
     [Theory]
     [InlineData("IDE1006", false)]
     [InlineData("CA1700", false)]
@@ -344,6 +353,17 @@ public sealed class ExistingApiTests
     [InlineData("CA1727", false)]
     [InlineData("FDG3003", false)]
     [InlineData("FDG3087", false)]
+    [InlineData("CA1034", false)]
+    [InlineData("CA1050", false)]
+    [InlineData("FDG4056", false)]
+    [InlineData("FDG5075", false)]
+    [InlineData("FDG6019", false)]
+    [InlineData("fdg6019", false)]
+    [InlineData("IDE0130", false)]
+    [InlineData("CA1028", true)]
+    [InlineData("CA1058", true)]
+    [InlineData("CA1813", true)]
+    [InlineData("FDG8017", true)]
     [InlineData("CA1063", true)]
     [InlineData("CA1699", true)]
     [InlineData("CA1728", true)]
@@ -351,8 +371,7 @@ public sealed class ExistingApiTests
     [InlineData("CA17100", true)]
     [InlineData("FDG4013", true)]
     [InlineData("FDG30", true)]
-    [InlineData("IDE0130", true)]
-    public void Naming_rules_do_not_compare_the_base_list(string ruleId, bool compares)
+    public void Rules_whose_fix_renames_or_moves_a_type_do_not_compare_the_base_list(string ruleId, bool compares)
     {
         Assert.Equal(compares, ExistingApi.ComparesBaseList(ruleId));
     }

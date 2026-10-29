@@ -53,14 +53,32 @@ public static class ExistingApi
     }
 
     /// <summary>
+    /// The diagnostics, other than the naming rules, whose fix renames a type or changes its fully qualified name, so a
+    /// fix on an existing type breaks its callers whatever the turn added to its base list: CA1034 and FDG4056 (un-nest
+    /// it), CA1050 (move it into a namespace), FDG5075 (rename an extensions class), FDG6019 (rename a class with a Base
+    /// suffix) and IDE0130 (move it to the namespace of its folder).
+    /// </summary>
+    private static readonly HashSet<string> RenamesOrMovesType = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "CA1034",
+        "CA1050",
+        "FDG4056",
+        "FDG5075",
+        "FDG6019",
+        "IDE0130",
+    };
+
+    /// <summary>
     /// Whether a diagnostic of <paramref name="ruleId"/> on an existing type is new when the turn changed the type's
-    /// base list. False for the naming rules (IDE1006, CA1700 to CA1727, FDG3xxx): renaming the type to fix them would
-    /// break its callers, whatever the turn added to it.
+    /// base list. False for the diagnostics whose fix renames the type or changes its fully qualified name (rename,
+    /// move to another namespace, un-nest): the naming rules (IDE1006, CA1700 to CA1727, FDG3xxx) and the ones listed
+    /// in <see cref="RenamesOrMovesType"/>. Such a fix breaks the type's callers, whatever the turn added to it.
     /// </summary>
     public static bool ComparesBaseList(string ruleId) =>
         !(string.Equals(ruleId, DeclarationLocator.NamingDiagnosticId, StringComparison.OrdinalIgnoreCase) ||
             IsNumbered(ruleId, "CA", 1700, 1727) ||
-            IsNumbered(ruleId, "FDG", 3000, 3999));
+            IsNumbered(ruleId, "FDG", 3000, 3999) ||
+            RenamesOrMovesType.Contains(ruleId));
 
     /// <summary>Whether <paramref name="ruleId"/> is <paramref name="prefix"/> followed by four digits in the range.</summary>
     private static bool IsNumbered(string ruleId, string prefix, int first, int last) =>
