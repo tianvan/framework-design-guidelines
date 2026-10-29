@@ -477,6 +477,46 @@ public sealed class SkillLintTests
         Assert.Contains("system temporary directory", body);
     }
 
+    /// <summary>
+    /// dotnet format applies the fixes of IDE0280, IDE0250 and IDE0251 only when an <c>.editorconfig</c> sets their
+    /// severity, so fdg-setup offers those entries, writes them only after the user confirms, never overwrites an
+    /// existing one, and takes each profile's value from a table that matches the rule data.
+    /// </summary>
+    [Fact]
+    public void Fdg_setup_offers_editorconfig_severities_for_option_less_ide_fixes()
+    {
+        string[] diagnostics = ["IDE0280", "IDE0250", "IDE0251"];
+        MarkdownFile skill = Read(SkillPath("fdg-setup"));
+        string body = string.Join(" ", skill.Body.Split('\n').Select(l => l.Trim()));
+
+        Assert.Contains("root `.editorconfig`", body);
+        Assert.Contains("`[*.cs]` section", body);
+        Assert.Contains("`[<project directory>/**.cs]` section", body);
+        Assert.Contains("write them only after the user confirms", body);
+        Assert.Contains("Never overwrite or remove an existing entry", body);
+        foreach (string diagnostic in diagnostics)
+        {
+            Assert.Contains($"dotnet_diagnostic.{diagnostic}.severity", body);
+        }
+
+        Regex row = new(
+            @"^\s*\| (?<diagnostic>IDE\d{4}) \| (?<rule>FDG[1-9A-Z]\d{3}) \| " +
+            @"(?<library>\w+) \| (?<application>\w+) \| (?<test>\w+) \|$");
+        Match[] rows = skill.Lines.Select(l => row.Match(l)).Where(m => m.Success).ToArray();
+        Assert.Equal(diagnostics, rows.Select(m => m.Groups["diagnostic"].Value));
+        foreach (Match match in rows)
+        {
+            Rule rule = Rules.Value[match.Groups["rule"].Value];
+            Assert.Contains(match.Groups["diagnostic"].Value, rule.Mapping.Check.Diagnostics);
+            ProfileSeverity severity = rule.Mapping.Severity;
+            Assert.Equal(Text(severity.Library), match.Groups["library"].Value);
+            Assert.Equal(Text(severity.Application), match.Groups["application"].Value);
+            Assert.Equal(Text(severity.Test), match.Groups["test"].Value);
+        }
+
+        static string Text(SeverityLevel level) => level.ToString().ToLowerInvariant();
+    }
+
     [Fact]
     public void Command_skill_descriptions_name_codex_invocation()
     {

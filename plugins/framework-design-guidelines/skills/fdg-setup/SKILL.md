@@ -16,7 +16,8 @@ Onboard this repository's C# projects in four steps. Ground rules for every step
   create a branch. The user reviews the result with `git diff` and commits it.
 - Before you edit anything, list every file you will create or change, with what you will put in it, and wait for
   the user to confirm. Edit nothing until they do.
-- Add no plugin-specific files at the repository root. Settings go into the project's own MSBuild files.
+- Add no plugin-specific files at the repository root. Settings go into the project's own MSBuild files; the only
+  exception is the three severities that step 3 offers for the root `.editorconfig`.
 - Never put the package id in comments: the hooks would read a commented-out reference as onboarding.
 
 ## Step 1: Find the projects
@@ -117,6 +118,44 @@ First show the user the list of files you will change, then wait for confirmatio
    `PublicAPI.Unshipped.txt` next to each library project. The package picks these files up itself; do not add them
    as `AdditionalFiles`. Tell the user that RS0016 now reports every public API not yet recorded, and that its code
    fix adds them to `PublicAPI.Unshipped.txt`.
+5. Offer the `.editorconfig` severities. `dotnet format`, which `/fdg-fix` and the end-of-turn check run, applies the
+   fixes of IDE0280, IDE0250 and IDE0251 only when their severity is set in an `.editorconfig`; the severity the
+   package sets is not enough for these three, because they have no option that carries it. Without the entries, the
+   checks still report these diagnostics but never fix them. The value for each profile, from the rule data:
+
+   | Diagnostic | Rule | library | application | test |
+   |---|---|---|---|---|
+   | IDE0280 | FDGA048 | warning | warning | warning |
+   | IDE0250 | FDG4028 | warning | warning | none |
+   | IDE0251 | FDG4029 | warning | warning | none |
+
+   Put the proposed entries in the list of changes the user confirms, and write them only after the user confirms:
+   1. First search every `.editorconfig` in the repository for `dotnet_diagnostic.IDE0280.severity`,
+      `dotnet_diagnostic.IDE0250.severity` and `dotnet_diagnostic.IDE0251.severity`. Never overwrite or remove an
+      existing entry. Leave each one already set out of the proposal, and instead show the user the file, the section,
+      the existing value and the value from the table, and let the user decide; change it only if the user asks.
+   2. For each remaining diagnostic, look up the value of every onboarded project's profile. The value that most
+      projects use goes into the `[*.cs]` section of the `.editorconfig` at the repository root; on a tie, use
+      `warning`. Leave out a diagnostic whose value is `none` for every project.
+   3. Each project whose value differs gets its own `[<project directory>/**.cs]` section in the same file, after the
+      `[*.cs]` section (a later section wins). Write the directory relative to the repository root with forward
+      slashes, and put a `\` before any `*`, `?`, `[`, `]`, `{`, `}` or `,` in it. For example, with two
+      `application` projects and the test project `tests/App.Tests`:
+
+      ```ini
+      [*.cs]
+      dotnet_diagnostic.IDE0280.severity = warning
+      dotnet_diagnostic.IDE0250.severity = warning
+      dotnet_diagnostic.IDE0251.severity = warning
+
+      [tests/App.Tests/**.cs]
+      dotnet_diagnostic.IDE0250.severity = none
+      dotnet_diagnostic.IDE0251.severity = none
+      ```
+
+   4. Add to an existing root `.editorconfig` and keep its content; append to its `[*.cs]` section if it has one. If
+      there is none, propose a new `.editorconfig` with only these sections, without `root = true`.
+   5. If the user declines, write nothing and tell them that these three are then reported but not fixed.
 
 ## Step 4: Build and confirm
 

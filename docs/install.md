@@ -61,6 +61,11 @@ In the repository, run the setup skill:
 It adds the `FrameworkDesignGuidelines.Analyzers` package, gives each project a profile (`library`, `application`
 or `test`) and builds once. It changes only working-tree files; review them with `git diff` and commit them yourself.
 
+It also offers to set the severities of IDE0280, IDE0250 and IDE0251 in the root `.editorconfig`, and writes them
+only if you agree. `dotnet format`, which `/fdg-fix` and the Stop check run, applies the fixes of these three only
+when an `.editorconfig` sets their severity; the package's own settings are not enough. Without the entries, the
+three are reported but not fixed.
+
 ## Known limitations
 
 - **Two AI sessions in one repository at the same time** see each other's edits as their own, so a Stop can format
