@@ -44,6 +44,15 @@ public enum NamingFailure
 /// </param>
 public sealed record DeclarationKey(string Container, string Name, string Kind, string Signature = "", string Part = "");
 
+/// <summary>A baseline file's declarations, and the base list of each type declaration in it.</summary>
+/// <param name="Keys">The file's <see cref="DeclarationLocator.DeclaredKeys"/>.</param>
+/// <param name="BaseLists">
+/// For the key of each type declared in the file (a class, struct, interface, record or enum), its base types in the
+/// file: each one's text without whitespace, ordinal-sorted and joined with commas; empty when it has none. The
+/// declarations of a partial type in the file are taken together.
+/// </param>
+public sealed record BaselineDeclarations(IReadOnlySet<DeclarationKey> Keys, IReadOnlyDictionary<DeclarationKey, string> BaseLists);
+
 /// <summary>
 /// Tells what an IDE1006 diagnostic is about: the kind of symbol declared at its position and how its name fails.
 /// Both are read from the source and the message, so a rule is quoted only when both are certain.
@@ -184,6 +193,20 @@ public static class DeclarationLocator
     }
 
     /// <summary>
+    /// <see cref="DeclaredKeys"/> of <paramref name="tree"/> and the base list of each type it declares. Null when the
+    /// tree has syntax errors. Callers that ask about several positions of one file can compute it once.
+    /// </summary>
+    public static BaselineDeclarations? Baseline(SyntaxTree tree) =>
+        DeclaredKeys(tree) is IReadOnlySet<DeclarationKey> keys ? new BaselineDeclarations(keys, BaseLists(tree)) : null;
+
+    /// <summary>
+    /// The base list of the type <paramref name="key"/> in <paramref name="tree"/>, in the form of
+    /// <see cref="BaselineDeclarations.BaseLists"/>; null when the tree declares no type with that key.
+    /// </summary>
+    internal static string? BaseListOf(SyntaxTree tree, DeclarationKey key) =>
+        BaseLists(tree).GetValueOrDefault(key);
+
+    /// <summary>
     /// Roslyn's IDE1006 messages: "Missing prefix: '_'" and "Prefix '_' is not expected" → Prefix; the messages
     /// "These words must begin with upper case characters", "These non-leading words must begin with an upper case
     /// letter" and "The first word, 'X', must begin with a lower case character" → Casing; everything else
@@ -221,6 +244,30 @@ public static class DeclarationLocator
         (bool)SyntaxErrors.GetValue(
             tree,
             t => t.GetRoot().GetDiagnostics().Any(d => d.Severity == DiagnosticSeverity.Error));
+
+    /// <summary>The base list of each type declared in <paramref name="tree"/>, by key; see <see cref="BaselineDeclarations.BaseLists"/>.</summary>
+    private static Dictionary<DeclarationKey, string> BaseLists(SyntaxTree tree)
+    {
+        // The declarations of a partial type share a key; their base types are one set, so moving a base type from
+        // one of them to another does not change it.
+        var baseTypes = new Dictionary<DeclarationKey, SortedSet<string>>();
+        IEnumerable<BaseTypeDeclarationSyntax> types = tree.GetRoot()
+            .DescendantNodes(n => n is not (BlockSyntax or ArrowExpressionClauseSyntax))
+            .OfType<BaseTypeDeclarationSyntax>();
+        foreach (BaseTypeDeclarationSyntax type in types)
+        {
+            DeclarationKey key = KeyOf(type)!;
+            if (!baseTypes.TryGetValue(key, out SortedSet<string>? names))
+            {
+                names = new SortedSet<string>(StringComparer.Ordinal);
+                baseTypes.Add(key, names);
+            }
+
+            names.UnionWith((type.BaseList?.Types ?? []).Select(t => Compact(t.Type)));
+        }
+
+        return baseTypes.ToDictionary(p => p.Key, p => string.Join(',', p.Value));
+    }
 
     /// <summary>The parameters and type parameters a declaration declares, as <see cref="DeclarationKey.Part"/> values.</summary>
     private static IEnumerable<string> PartsOf(SyntaxNode node)

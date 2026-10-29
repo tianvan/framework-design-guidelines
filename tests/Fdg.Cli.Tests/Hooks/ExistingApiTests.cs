@@ -176,7 +176,7 @@ public sealed class ExistingApiTests
         Assert.Equal(new DeclarationKey("", "C", "ClassDeclaration"), DeclarationLocator.DeclarationAt(source, 1, 27));
         Assert.True(ExistingApi.IsExisting(source, source, 1, 27));
         Assert.True(ExistingApi.IsExisting(source, source, 1, 56));
-        // The base list is not part of the key: a type that gains a base type is still the existing type.
+        // The base list is not part of the key: unless asked to compare it, a type that gains a base type is still the existing type.
         Assert.True(ExistingApi.IsExisting("interface I { } class C : I { }", "interface I { } class C { }", 1, 27));
     }
 
@@ -195,13 +195,13 @@ public sealed class ExistingApiTests
     public void Declared_keys_are_computed_once_per_file_and_reused()
     {
         var current = DeclarationLocator.Parse("class C { void M(int Bad) { } void N() { } }");
-        var keys = DeclarationLocator.DeclaredKeys(DeclarationLocator.Parse("class C { void M(int x) { } }"));
+        var baseline = DeclarationLocator.Baseline(DeclarationLocator.Parse("class C { void M(int x) { } }"));
 
-        Assert.NotNull(keys);
-        Assert.False(ExistingApi.IsExisting(current, keys, 1, 22));
-        Assert.True(ExistingApi.IsExisting(current, keys, 1, 16));
-        Assert.False(ExistingApi.IsExisting(current, keys, 1, 36));
-        Assert.False(ExistingApi.IsExisting(current, (IReadOnlySet<DeclarationKey>?)null, 1, 16));
+        Assert.NotNull(baseline);
+        Assert.False(ExistingApi.IsExisting(current, baseline, 1, 22, compareBaseList: false));
+        Assert.True(ExistingApi.IsExisting(current, baseline, 1, 16, compareBaseList: false));
+        Assert.False(ExistingApi.IsExisting(current, baseline, 1, 36, compareBaseList: false));
+        Assert.False(ExistingApi.IsExisting(current, (BaselineDeclarations?)null, 1, 16, compareBaseList: false));
         Assert.Null(DeclarationLocator.DeclaredKeys(DeclarationLocator.Parse("class C {")));
     }
 
@@ -297,5 +297,109 @@ public sealed class ExistingApiTests
 
         Assert.True(ExistingApi.IsExisting(current, baseline, 1, 16));
         Assert.True(ExistingApi.IsExisting(current, baseline, 1, 34));
+    }
+
+    [Fact]
+    public void New_IDisposable_on_an_existing_type_makes_CA1063_new()
+    {
+        string baseline = "class Foo { }";
+        string current = "class Foo : System.IDisposable { public void Dispose() { } }";
+
+        Assert.False(ExistingApi.IsExisting(current, baseline, 1, 7, compareBaseList: ExistingApi.ComparesBaseList("CA1063")));
+        // Without the comparison the type is still the existing one.
+        Assert.True(ExistingApi.IsExisting(current, baseline, 1, 7));
+    }
+
+    [Fact]
+    public void Unchanged_base_list_keeps_CA1063_existing()
+    {
+        string baseline = "class Foo : System.IDisposable { public void Dispose() { } }";
+        string current = "class Foo :  System . IDisposable\n{\n    public void Dispose() { }\n}\n";
+
+        Assert.True(ExistingApi.IsExisting(current, baseline, 1, 7, compareBaseList: ExistingApi.ComparesBaseList("CA1063")));
+    }
+
+    [Fact]
+    public void Reordered_base_list_is_unchanged()
+    {
+        string baseline = "interface IA { } interface IB { } class C : IA, IB { }";
+        string current = "interface IA { } interface IB { } class C : IB, IA { }";
+
+        Assert.True(ExistingApi.IsExisting(current, baseline, 1, 41, compareBaseList: true));
+    }
+
+    [Fact]
+    public void Naming_diagnostic_on_an_existing_type_with_a_new_base_stays_existing()
+    {
+        string baseline = "class Foo { }";
+        string current = "class Foo : System.Exception { }";
+
+        Assert.True(ExistingApi.IsExisting(current, baseline, 1, 7, compareBaseList: ExistingApi.ComparesBaseList("CA1710")));
+    }
+
+    [Theory]
+    [InlineData("IDE1006", false)]
+    [InlineData("CA1700", false)]
+    [InlineData("CA1710", false)]
+    [InlineData("CA1727", false)]
+    [InlineData("FDG3003", false)]
+    [InlineData("FDG3087", false)]
+    [InlineData("CA1063", true)]
+    [InlineData("CA1699", true)]
+    [InlineData("CA1728", true)]
+    [InlineData("CA17", true)]
+    [InlineData("CA17100", true)]
+    [InlineData("FDG4013", true)]
+    [InlineData("FDG30", true)]
+    [InlineData("IDE0130", true)]
+    public void Naming_rules_do_not_compare_the_base_list(string ruleId, bool compares)
+    {
+        Assert.Equal(compares, ExistingApi.ComparesBaseList(ruleId));
+    }
+
+    [Fact]
+    public void Member_diagnostic_ignores_the_base_list()
+    {
+        string baseline = "class C { void M() { } }";
+        string current = "class C : System.IDisposable { void M() { } public void Dispose() { } }";
+
+        Assert.True(ExistingApi.IsExisting(current, baseline, 1, 37, compareBaseList: true));
+        Assert.False(ExistingApi.IsExisting(current, baseline, 1, 57, compareBaseList: true));
+    }
+
+    [Fact]
+    public void Partial_type_compares_the_base_types_of_all_its_declarations_in_the_file()
+    {
+        string baseline = "interface IA { } interface IB { }\npartial class C : IA { }\npartial class C { }";
+
+        // A base type moved to another declaration of the type in the same file is unchanged.
+        Assert.True(ExistingApi.IsExisting(
+            "interface IA { } interface IB { }\npartial class C { }\npartial class C : IA { }",
+            baseline,
+            2,
+            15,
+            compareBaseList: true));
+        // A base type added on another declaration in the same file changes the type at either declaration.
+        Assert.False(ExistingApi.IsExisting(
+            "interface IA { } interface IB { }\npartial class C : IA { }\npartial class C : IB { }",
+            baseline,
+            2,
+            15,
+            compareBaseList: true));
+    }
+
+    [Fact]
+    public void Baseline_records_the_canonical_base_list_of_each_type()
+    {
+        BaselineDeclarations? baseline = DeclarationLocator.Baseline(DeclarationLocator.Parse(
+            "interface IB { } interface IA<T> { } class C : IB, IA< int > { void M() { } } enum E : byte { } class D { }"));
+
+        Assert.NotNull(baseline);
+        Assert.Equal("IA<int>,IB", baseline.BaseLists[new DeclarationKey("", "C", "ClassDeclaration")]);
+        Assert.Equal("byte", baseline.BaseLists[new DeclarationKey("", "E", "EnumDeclaration")]);
+        Assert.Equal(string.Empty, baseline.BaseLists[new DeclarationKey("", "D", "ClassDeclaration")]);
+        Assert.False(baseline.BaseLists.ContainsKey(new DeclarationKey("C", "M", "MethodDeclaration", "()")));
+        Assert.Contains(new DeclarationKey("C", "M", "MethodDeclaration", "()"), baseline.Keys);
+        Assert.Null(DeclarationLocator.Baseline(DeclarationLocator.Parse("class C {")));
     }
 }

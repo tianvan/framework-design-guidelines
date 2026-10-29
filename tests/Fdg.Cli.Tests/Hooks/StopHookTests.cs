@@ -721,6 +721,31 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Stop_blocks_CA1063_after_IDisposable_is_added_to_an_existing_type()
+    {
+        CommitOrder("class Order {\n    void Ship() { }\n}\n");
+        await TurnStartAsync();
+        string order = _repo.Write(
+            "src/中文 App/Order.cs",
+            "class Order : System.IDisposable {\n    void Ship() { }\n    public void Dispose() { }\n}\n");
+        _builder.Sarif = _ => [
+            new SarifResult(
+                "CA1063",
+                "warning",
+                "Provide an overridable implementation of Dispose(bool) on 'Order' or mark the type as sealed",
+                order,
+                1) { Column = 7 },
+        ];
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal("block", Json(output, "decision"));
+        string reason = Json(output, "reason")!;
+        Assert.Contains("src/中文 App/Order.cs:1 CA1063", reason);
+        Assert.DoesNotContain("Existing API", reason);
+    }
+
+    [Fact]
     public async Task Breaking_diagnostic_in_a_file_created_this_turn_blocks()
     {
         await TurnStartAsync();

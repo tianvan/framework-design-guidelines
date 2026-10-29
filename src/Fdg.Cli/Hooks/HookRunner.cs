@@ -514,7 +514,7 @@ public sealed partial class HookRunner
     {
         var sourceLines = new Dictionary<string, string[]>(ProjectFiles.PathComparer);
         var trees = new Dictionary<string, SyntaxTree>(ProjectFiles.PathComparer);
-        var baselineKeys = new Dictionary<string, IReadOnlySet<DeclarationKey>?>(ProjectFiles.PathComparer);
+        var baselines = new Dictionary<string, BaselineDeclarations?>(ProjectFiles.PathComparer);
         var seen = new HashSet<(string, int, string, string)>();
         var issues = new List<ReportedIssue>();
         foreach ((ProjectWork project, SarifDiagnostic diagnostic) in diagnostics)
@@ -542,7 +542,7 @@ public sealed partial class HookRunner
                 ? NamingOf(diagnostic, trees)
                 : null;
             bool existingApi = project.Manifest.BreakingFixDiagnostics.Contains(diagnostic.RuleId, StringComparer.OrdinalIgnoreCase) &&
-                await IsExistingApiAsync(git, state, snapshot, moveSources, path, diagnostic, trees, baselineKeys, cancellationToken).ConfigureAwait(false);
+                await IsExistingApiAsync(git, state, snapshot, moveSources, path, diagnostic, trees, baselines, cancellationToken).ConfigureAwait(false);
             issues.Add(new ReportedIssue(
                 path,
                 diagnostic.Line,
@@ -558,7 +558,8 @@ public sealed partial class HookRunner
 
     /// <summary>
     /// Whether the diagnostic is about a declaration the file already had at the start of the turn. False when the
-    /// baseline cannot be read or parsed, so the issue is reported as before.
+    /// baseline cannot be read or parsed, so the issue is reported as before, and for a diagnostic on a type whose
+    /// base list the turn changed, unless it is a naming one (<see cref="ExistingApi.ComparesBaseList"/>).
     /// </summary>
     private static async Task<bool> IsExistingApiAsync(
         GitRepository git,
@@ -568,27 +569,32 @@ public sealed partial class HookRunner
         string path,
         SarifDiagnostic diagnostic,
         Dictionary<string, SyntaxTree> trees,
-        Dictionary<string, IReadOnlySet<DeclarationKey>?> baselineKeys,
+        Dictionary<string, BaselineDeclarations?> baselines,
         CancellationToken cancellationToken)
     {
-        if (!baselineKeys.TryGetValue(diagnostic.FilePath, out IReadOnlySet<DeclarationKey>? keys))
+        if (!baselines.TryGetValue(diagnostic.FilePath, out BaselineDeclarations? declarations))
         {
             try
             {
                 string baselinePath = await Snapshot.WriteBaselineAsync(git, state, snapshot, path, moveSources, cancellationToken)
                     .ConfigureAwait(false);
                 SyntaxTree baseline = DeclarationLocator.Parse(await File.ReadAllTextAsync(baselinePath, cancellationToken).ConfigureAwait(false));
-                keys = DeclarationLocator.DeclaredKeys(baseline);
+                declarations = DeclarationLocator.Baseline(baseline);
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException)
             {
-                keys = null;
+                declarations = null;
             }
 
-            baselineKeys.Add(diagnostic.FilePath, keys);
+            baselines.Add(diagnostic.FilePath, declarations);
         }
 
-        return ExistingApi.IsExisting(TreeOf(diagnostic.FilePath, trees), keys, diagnostic.Line, diagnostic.Column);
+        return ExistingApi.IsExisting(
+            TreeOf(diagnostic.FilePath, trees),
+            declarations,
+            diagnostic.Line,
+            diagnostic.Column,
+            compareBaseList: ExistingApi.ComparesBaseList(diagnostic.RuleId));
     }
 
     /// <summary>The file's current text, parsed once; from the text rather than its lines, since Roslyn counts line breaks that ReadAllLines does not.</summary>
