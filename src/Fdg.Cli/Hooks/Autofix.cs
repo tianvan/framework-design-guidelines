@@ -19,7 +19,8 @@ public sealed record AutofixRecord(int Turn, IReadOnlyList<AutofixFile> Files)
 
     /// <summary>
     /// The record after another Stop in the same turn: the files of both, by path, with their ranges joined and the
-    /// overlapping or adjacent ones made one. A record of another turn is replaced.
+    /// overlapping or adjacent ones made one. A record of another turn is replaced. Ranges from an earlier Stop are
+    /// not shifted by later edits, so they can be slightly off.
     /// </summary>
     public static AutofixRecord Merge(AutofixRecord? previous, AutofixRecord current)
     {

@@ -1078,6 +1078,37 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Second_stop_that_formats_nothing_keeps_the_record_of_the_turn()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (8, "int y;")));
+        _formatter.OnFormat = _ => File.WriteAllText(order, Lines(10, (8, "private int y;")));
+        await TurnStopAsync();
+
+        // Order.cs is already formatted, so this Stop changes nothing.
+        _formatter.OnFormat = _ => { };
+        await TurnStopAsync();
+        string next = await TurnStartAsync(HostKind.Codex);
+
+        Assert.Equal(
+            "FDG auto-formatted at the end of the last turn: src/中文 App/Order.cs (line 8). Re-read those regions before editing them.",
+            JsonDocument.Parse(next).RootElement.GetProperty("hookSpecificOutput").GetProperty("additionalContext").GetString());
+    }
+
+    [Fact]
+    public async Task Autofix_record_stores_the_line_count_of_the_formatted_file()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (8, "int y;")));
+        _formatter.OnFormat = _ => File.WriteAllText(order, Lines(12, (8, "private int y;")));
+
+        await TurnStopAsync();
+
+        AutofixFile file = Assert.Single((await StateAsync()).ReadAutofix()!.Files);
+        Assert.Equal(12, file.LineCount);
+    }
+
+    [Fact]
     public async Task Stop_in_a_new_turn_replaces_the_record()
     {
         await TurnStartAsync();

@@ -148,6 +148,7 @@ public sealed partial class HookRunner
         IReadOnlyList<ProjectWork> projects = GroupByProject(git, changes.Changed, notes);
         if (projects.Count == 0)
         {
+            // Nothing in scope is left changed (the changes were reverted), so there is nothing to re-read.
             state.WriteAutofix(null);
             state.WriteAiLines(new Dictionary<string, int[]>());
             return Finish(notes, []);
