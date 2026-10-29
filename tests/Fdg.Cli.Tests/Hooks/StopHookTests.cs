@@ -1056,6 +1056,45 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Second_stop_in_a_turn_merges_the_autofix_record()
+    {
+        string other = _repo.Write("src/中文 App/Other.cs", Lines(10));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (8, "int y;")));
+        _formatter.OnFormat = _ => File.WriteAllText(order, Lines(10, (8, "private int y;")));
+        await TurnStopAsync();
+
+        // The second Stop finds Order.cs already formatted, and only fixes Other.cs.
+        File.WriteAllText(other, Lines(10, (3, "int z;")));
+        _formatter.OnFormat = _ => File.WriteAllText(other, Lines(10, (3, "private int z;")));
+        await TurnStopAsync();
+        string next = await TurnStartAsync(HostKind.Codex);
+
+        Assert.Equal(
+            "FDG auto-formatted at the end of the last turn: src/中文 App/Order.cs (line 8); " +
+            "src/中文 App/Other.cs (line 3). Re-read those regions before editing them.",
+            JsonDocument.Parse(next).RootElement.GetProperty("hookSpecificOutput").GetProperty("additionalContext").GetString());
+    }
+
+    [Fact]
+    public async Task Stop_in_a_new_turn_replaces_the_record()
+    {
+        await TurnStartAsync();
+        StateStore state = await StateAsync();
+        state.WriteAutofix(new AutofixRecord(
+            state.ReadSnapshot()!.Turn - 1,
+            [new AutofixFile("src/中文 App/Old.cs", [new LineRange(1, 2)])]));
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (8, "int y;")));
+        _formatter.OnFormat = _ => File.WriteAllText(order, Lines(10, (8, "private int y;")));
+
+        await TurnStopAsync();
+
+        AutofixFile file = Assert.Single(state.ReadAutofix()!.Files);
+        Assert.Equal("src/中文 App/Order.cs", file.Path);
+    }
+
+    [Fact]
     public async Task Claude_turn_start_does_not_repeat_autofix_summary()
     {
         await TurnStartAsync();

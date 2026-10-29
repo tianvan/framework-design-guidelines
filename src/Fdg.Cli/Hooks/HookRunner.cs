@@ -665,7 +665,10 @@ public sealed partial class HookRunner
             $"{Display(git, first.FilePath)}:{first.Line} {first.RuleId} {first.Message}";
     }
 
-    /// <summary>Diffs the AI's version of each file with the formatted one and stores the changed ranges.</summary>
+    /// <summary>
+    /// Diffs the AI's version of each file with the formatted one and stores the changed ranges, joined with what
+    /// earlier Stops of the same turn recorded: a file they formatted is found already formatted by this one.
+    /// </summary>
     private static async Task<AutofixRecord?> RecordAutofixAsync(
         GitRepository git,
         StateStore state,
@@ -684,11 +687,15 @@ public sealed partial class HookRunner
             IReadOnlyList<LineRange> ranges = ChangedLines.ParseHunks(diff);
             if (ranges.Count > 0)
             {
-                files.Add(new AutofixFile(path, ranges));
+                int lineCount = File.ReadLines(Snapshot.FullPath(git, path)).Count();
+                files.Add(new AutofixFile(path, ranges, lineCount));
             }
         }
 
-        AutofixRecord? record = files.Count == 0 ? null : new AutofixRecord(turn, files);
+        AutofixRecord? previous = state.ReadAutofix();
+        AutofixRecord? record = files.Count == 0
+            ? previous is not null && previous.Turn == turn ? previous : null
+            : AutofixRecord.Merge(previous, new AutofixRecord(turn, files));
         state.WriteAutofix(record);
         return record;
     }
