@@ -480,7 +480,8 @@ public sealed class SkillLintTests
     /// <summary>
     /// dotnet format applies the fixes of IDE0280, IDE0250 and IDE0251 only when an <c>.editorconfig</c> sets their
     /// severity, so fdg-setup offers those entries, writes them only after the user confirms, never overwrites an
-    /// existing one, and takes each profile's value from a table that matches the rule data.
+    /// existing one (an existing entry settles only the files it applies to), handles a nested root
+    /// <c>.editorconfig</c>, and takes each profile's value from a table that matches the rule data.
     /// </summary>
     [Fact]
     public void Fdg_setup_offers_editorconfig_severities_for_option_less_ide_fixes()
@@ -494,6 +495,9 @@ public sealed class SkillLintTests
         Assert.Contains("`[<project directory>/**.cs]` section", body);
         Assert.Contains("write them only after the user confirms", body);
         Assert.Contains("Never overwrite or remove an existing entry", body);
+        Assert.Contains("only for the files it applies to", body);
+        Assert.Contains("nested `.editorconfig` with `root = true`", body);
+        Assert.Contains("`,`, `#` or `;`", body);
         foreach (string diagnostic in diagnostics)
         {
             Assert.Contains($"dotnet_diagnostic.{diagnostic}.severity", body);

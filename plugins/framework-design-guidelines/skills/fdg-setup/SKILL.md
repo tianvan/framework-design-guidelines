@@ -132,14 +132,24 @@ First show the user the list of files you will change, then wait for confirmatio
    Put the proposed entries in the list of changes the user confirms, and write them only after the user confirms:
    1. First search every `.editorconfig` in the repository for `dotnet_diagnostic.IDE0280.severity`,
       `dotnet_diagnostic.IDE0250.severity` and `dotnet_diagnostic.IDE0251.severity`. Never overwrite or remove an
-      existing entry. Leave each one already set out of the proposal, and instead show the user the file, the section,
-      the existing value and the value from the table, and let the user decide; change it only if the user asks.
-   2. For each remaining diagnostic, look up the value of every onboarded project's profile. The value that most
+      existing entry. An existing entry settles its diagnostic only for the files it applies to: the files under its
+      file's directory that its section matches. Leave the diagnostic out of the proposal for the projects whose files
+      it covers, and propose it as usual for every other project. For example, if `tests/.editorconfig` sets
+      `dotnet_diagnostic.IDE0251.severity = none`, the projects under `tests/` get no IDE0251 entry, but the
+      `library` projects still get `warning`. For each existing entry, show the user the file, the section, the
+      existing value and the value from the table for the profile of the projects it covers, and let the user decide;
+      change it only if the user asks.
+   2. A project under a nested `.editorconfig` with `root = true` (in its own directory or one between it and the
+      repository root) never reads the root `.editorconfig`. Propose that project's entries in that nested file
+      instead, by the same rules: shown to the user first, written only after the user confirms, and never
+      overwriting an existing entry; its sections are relative to that file's directory. If the user declines, tell
+      them that these fixes will not be applied in that project. Leave such projects out of the next two steps.
+   3. For each diagnostic, look up the value of every remaining onboarded project's profile. The value that most
       projects use goes into the `[*.cs]` section of the `.editorconfig` at the repository root; on a tie, use
       `warning`. Leave out a diagnostic whose value is `none` for every project.
-   3. Each project whose value differs gets its own `[<project directory>/**.cs]` section in the same file, after the
+   4. Each project whose value differs gets its own `[<project directory>/**.cs]` section in the same file, after the
       `[*.cs]` section (a later section wins). Write the directory relative to the repository root with forward
-      slashes, and put a `\` before any `*`, `?`, `[`, `]`, `{`, `}` or `,` in it. For example, with two
+      slashes, and put a `\` before any `*`, `?`, `[`, `]`, `{`, `}`, `,`, `#` or `;` in it. For example, with two
       `application` projects and the test project `tests/App.Tests`:
 
       ```ini
@@ -153,9 +163,12 @@ First show the user the list of files you will change, then wait for confirmatio
       dotnet_diagnostic.IDE0251.severity = none
       ```
 
-   4. Add to an existing root `.editorconfig` and keep its content; append to its `[*.cs]` section if it has one. If
-      there is none, propose a new `.editorconfig` with only these sections, without `root = true`.
-   5. If the user declines, write nothing and tell them that these three are then reported but not fixed.
+   5. Add to an existing root `.editorconfig` and keep its content: append to its `[*.cs]` section, or add a
+      `[*.cs]` section if it has none. If there is no root `.editorconfig`, propose a new one with only these
+      sections, without `root = true`. Within a file a later section wins, so a new entry must not come after an
+      existing entry for the same diagnostic that matches the same files; where it would, propose
+      `[<project directory>/**.cs]` sections for the projects that need the value instead.
+   6. If the user declines, write nothing and tell them that these three are then reported but not fixed.
 
 ## Step 4: Build and confirm
 
