@@ -355,6 +355,22 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Formatting_keeps_the_line_ending_of_a_changed_file()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (5, "int x;")));
+        // dotnet format writes the platform newline before a line that starts with a block comment.
+        _formatter.OnFormat = _ => File.WriteAllText(
+            order,
+            File.ReadAllText(order).Replace("\nint x;\n", "\n/* c */ int x;\r\n", StringComparison.Ordinal));
+
+        await TurnStopAsync();
+
+        Assert.NotEmpty(_formatter.Calls);
+        Assert.Equal(Lines(10, (5, "/* c */ int x;")), File.ReadAllText(order));
+    }
+
+    [Fact]
     public async Task Later_stop_does_not_count_earlier_formatting_as_the_AIs_lines()
     {
         _repo.Write("src/中文 App/Order.cs", Lines(10, (5, "if (x) return;")));

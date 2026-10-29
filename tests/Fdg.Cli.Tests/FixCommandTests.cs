@@ -1,3 +1,4 @@
+using System.Text;
 using Fdg.Cli.Commands;
 using Fdg.Cli.Projects;
 using Fdg.Cli.Tooling;
@@ -258,6 +259,86 @@ public sealed class FixCommandTests : IDisposable
     }
 
     [Fact]
+    public async Task Format_keeps_the_line_ending_of_LF_files_and_their_BOM()
+    {
+        // dotnet format writes the platform newline before a line that starts with a block comment.
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string plain = WriteBytes("A/Plain.cs", "class A\n{\n}\n");
+        string bom = WriteBytes("A/Bom.cs", "class B\n{\n}\n", Utf8Bom);
+        _formatter.OnCall = _ =>
+        {
+            WriteBytes("A/Plain.cs", "class A\r\n{\n    /* c */ int x;\r\n}\n");
+            WriteBytes("A/Bom.cs", "class B\r\n{\n    /* c */ int y;\r\n}\n", Utf8Bom);
+        };
+
+        Assert.Equal(0, await RunAsync());
+        Assert.Equal(Encode("class A\n{\n    /* c */ int x;\n}\n"), File.ReadAllBytes(plain));
+        Assert.Equal(Encode("class B\n{\n    /* c */ int y;\n}\n", Utf8Bom), File.ReadAllBytes(bom));
+    }
+
+    [Fact]
+    public async Task Format_keeps_the_line_ending_of_included_CRLF_and_UTF16_files()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string crlf = WriteBytes("A/Crlf.cs", "class A\r\n{\r\n}\r\n");
+        string utf16 = _tree.Path("A/Utf16.cs");
+        File.WriteAllText(utf16, "class B\n{\n}\n", Encoding.Unicode);
+        _formatter.OnCall = _ =>
+        {
+            WriteBytes("A/Crlf.cs", "class A\r\n{\n    /* c */ int x;\r\n}\r\n");
+            File.WriteAllText(utf16, "class B\r\n{\n    /* c */ int y;\r\n}\n", Encoding.Unicode);
+        };
+
+        Assert.Equal(0, await RunAsync("A/Crlf.cs", "A/Utf16.cs"));
+        Assert.Equal(Encode("class A\r\n{\r\n    /* c */ int x;\r\n}\r\n"), File.ReadAllBytes(crlf));
+        Assert.Equal(
+            [.. Encoding.Unicode.GetPreamble(), .. Encoding.Unicode.GetBytes("class B\n{\n    /* c */ int y;\n}\n")],
+            File.ReadAllBytes(utf16));
+    }
+
+    [Fact]
+    public async Task Format_leaves_files_that_were_mixed_or_had_no_line_break_as_written()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string mixed = WriteBytes("A/Mixed.cs", "class A\r\n{\n}\n");
+        string single = WriteBytes("A/Single.cs", "class B { }");
+        _formatter.OnCall = _ =>
+        {
+            WriteBytes("A/Mixed.cs", "class A\r\n{\r\n    int x;\n}\n");
+            WriteBytes("A/Single.cs", "class B\r\n{\n}");
+        };
+
+        Assert.Equal(0, await RunAsync());
+        Assert.Equal(Encode("class A\r\n{\r\n    int x;\n}\n"), File.ReadAllBytes(mixed));
+        Assert.Equal(Encode("class B\r\n{\n}"), File.ReadAllBytes(single));
+    }
+
+    [Fact]
+    public async Task Format_stops_once_a_pass_only_changes_line_endings()
+    {
+        // Restored to its line ending, the file equals the one before the pass, so no second pass runs.
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string file = WriteBytes("A/Code.cs", "class A\n{\n}\n");
+        _formatter.OnCall = _ => WriteBytes("A/Code.cs", "class A\r\n{\n}\n");
+
+        Assert.Equal(0, await RunAsync());
+        Assert.Single(_formatter.Calls);
+        Assert.Equal(Encode("class A\n{\n}\n"), File.ReadAllBytes(file));
+    }
+
+    [Fact]
+    public async Task Failed_format_still_restores_the_line_endings()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string file = WriteBytes("A/Code.cs", "class A\n{\n}\n");
+        _formatter.OnCall = _ => WriteBytes("A/Code.cs", "class A\r\n{\n}\n");
+        _formatter.Result = _ => new ToolResult(1, "boom", false);
+
+        Assert.Equal(1, await RunAsync());
+        Assert.Equal(Encode("class A\n{\n}\n"), File.ReadAllBytes(file));
+    }
+
+    [Fact]
     public async Task Unrestored_project_is_restored_then_formatted()
     {
         string project = AddProject("A/A.csproj", ProjectState.NotRestored, ProjectState.InScope);
@@ -305,6 +386,22 @@ public sealed class FixCommandTests : IDisposable
     }
 
     private string Output => _output.ToString().ReplaceLineEndings("\n");
+
+    private static byte[] Utf8Bom => [0xEF, 0xBB, 0xBF];
+
+    private static byte[] Encode(string text, byte[]? preamble = null)
+    {
+        return [.. preamble ?? [], .. Encoding.UTF8.GetBytes(text)];
+    }
+
+    /// <summary>Writes the exact bytes of <paramref name="text"/>, so that its line endings stay as given.</summary>
+    private string WriteBytes(string relativePath, string text, byte[]? preamble = null)
+    {
+        string path = _tree.Path(relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllBytes(path, Encode(text, preamble));
+        return path;
+    }
 
     private string AddProject(
         string relativePath,

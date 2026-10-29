@@ -130,8 +130,16 @@ public sealed class FixCommand
         IReadOnlyList<string>? includes = target.IncludeFiles is null
             ? null
             : FormatIncludes.ToProjectRelative(target.ProjectPath, target.IncludeFiles);
+        string[] sources = SourceFiles(target);
         ToolResult format = await FormatPasses
-            .RunAsync(_formatter, target.ProjectPath, includes, diagnostics, () => HashSources(target), cancellationToken)
+            .RunAsync(
+                _formatter,
+                target.ProjectPath,
+                includes,
+                diagnostics,
+                sources,
+                () => HashSources(sources),
+                cancellationToken)
             .ConfigureAwait(false);
         if (!format.Succeeded)
         {
@@ -160,13 +168,19 @@ public sealed class FixCommand
     private static string DisplayPath(string path, string cwd) => Path.GetRelativePath(cwd, path).Replace('\\', '/');
 
     /// <summary>A hash over the paths and contents of the C# files a format pass may change.</summary>
-    private static string HashSources(FixTarget target)
+    /// <summary>The files a format pass may change: the included files, or the project's C# files.</summary>
+    private static string[] SourceFiles(FixTarget target)
     {
         IEnumerable<string> roots = target.IncludeFiles ?? [Path.GetDirectoryName(target.ProjectPath)!];
-        IEnumerable<string> files = roots
+        return roots
             .SelectMany(root => Directory.Exists(root) ? ProjectFiles.Enumerate(root, "*.cs") : [root])
             .Where(File.Exists)
-            .Distinct(ProjectFiles.PathComparer);
+            .Distinct(ProjectFiles.PathComparer)
+            .ToArray();
+    }
+
+    private static string HashSources(IEnumerable<string> files)
+    {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (string file in files)
         {

@@ -159,8 +159,8 @@ public sealed class LongListWrappingTests
     [Fact]
     public Task Comment_before_a_list_item_stays_before_that_item()
     {
-        // With end_of_line set: the formatter rewrites the line break before a line that starts with a block comment,
-        // using the platform's newline when end_of_line is not set.
+        // end_of_line = lf: the whitespace formatter uses the platform newline before a line that starts with a block
+        // comment, and the CLI restores the file's line ending after formatting (Fdg.Cli LineEndings).
         return Verifier.VerifyAsync(
             """
             class C
@@ -192,6 +192,46 @@ public sealed class LongListWrappingTests
             }
             """,
             extraEditorConfig: "max_line_length = 80\nend_of_line = lf\n");
+    }
+
+    [Fact]
+    public Task Comment_before_a_wrongly_indented_item_does_not_hide_the_wrap()
+    {
+        // The item after the comment starts 2 columns in, not at the items' indentation.
+        return Verifier.VerifyAsync(
+            """
+            class C
+            {
+                void M(int x, int y)
+                {
+                    Register{|FDGA023:(|}
+                        x,
+              /* b */ y,
+                        3);
+                }
+
+                static void Register(int a, int b, int c)
+                {
+                }
+            }
+            """,
+            """
+            class C
+            {
+                void M(int x, int y)
+                {
+                    Register(
+                        x,
+                        /* b */ y,
+                        3);
+                }
+
+                static void Register(int a, int b, int c)
+                {
+                }
+            }
+            """,
+            extraEditorConfig: "end_of_line = lf\n");
     }
 
     [Fact]
