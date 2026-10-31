@@ -1,8 +1,8 @@
 namespace Fdg.Cli.Tooling;
 
 /// <summary>
-/// Runs dotnet format until the files stop changing. A FixAll pass cannot fix nested occurrences, such as
-/// single-line blocks inside each other, so one run is not always enough. After each run, every source file
+/// Runs dotnet format until the files stop changing, at most a given number of times. A FixAll pass cannot fix nested
+/// occurrences, such as single-line blocks inside each other, so one run is not always enough. After each run, every source file
 /// gets back the line ending it had before the first run (see <see cref="LineEndings"/>), also when the run fails
 /// or throws.
 /// </summary>
@@ -12,6 +12,10 @@ public static class FormatPasses
 
     /// <param name="sourceFiles">The full paths of the files a pass may change.</param>
     /// <param name="hashSources">A hash over the files a pass may change; equal hashes end the loop.</param>
+    /// <param name="maxPasses">
+    /// The most runs; at most <see cref="MaxPasses"/>. The Stop hook runs one and lets the build tell whether another
+    /// is needed.
+    /// </param>
     /// <returns>The first failed run, or the last run when all succeeded.</returns>
     public static async Task<ToolResult> RunAsync(
         IFormatRunner formatter,
@@ -21,12 +25,15 @@ public static class FormatPasses
         IReadOnlyList<string> diagnostics,
         IReadOnlyList<string> sourceFiles,
         Func<string> hashSources,
+        int maxPasses,
         CancellationToken cancellationToken)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxPasses, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(maxPasses, MaxPasses);
         IReadOnlyDictionary<string, string> endings = LineEndings.Capture(sourceFiles);
         string before = hashSources();
         ToolResult result = new(0, string.Empty, false);
-        for (int pass = 1; pass <= MaxPasses; pass++)
+        for (int pass = 1; pass <= maxPasses; pass++)
         {
             try
             {

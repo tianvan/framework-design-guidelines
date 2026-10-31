@@ -14,7 +14,7 @@ public sealed class DotnetBuildRunnerTests
         var runner = new FakeProcessRunner().Respond(_ => true, new ToolResult(0, string.Empty, false));
 
         await new DotnetBuildRunner(runner, TimeSpan.FromMinutes(1))
-            .BuildAsync(Project, SarifDirectory, noIncremental: false, CancellationToken.None);
+            .BuildAsync(Project, SarifDirectory, noIncremental: false, noDependencies: false, CancellationToken.None);
 
         Assert.Equal(
             [
@@ -30,9 +30,33 @@ public sealed class DotnetBuildRunnerTests
         var runner = new FakeProcessRunner().Respond(_ => true, new ToolResult(0, string.Empty, false));
 
         await new DotnetBuildRunner(runner, TimeSpan.FromMinutes(1))
-            .BuildAsync(Project, SarifDirectory, noIncremental: true, CancellationToken.None);
+            .BuildAsync(Project, SarifDirectory, noIncremental: true, noDependencies: false, CancellationToken.None);
 
         Assert.Equal(["--no-incremental", "--no-dependencies"], Assert.Single(runner.Calls).TakeLast(2));
+    }
+
+    [Fact]
+    public async Task No_dependencies_build_skips_only_the_referenced_projects()
+    {
+        var runner = new FakeProcessRunner().Respond(_ => true, new ToolResult(0, string.Empty, false));
+
+        await new DotnetBuildRunner(runner, TimeSpan.FromMinutes(1))
+            .BuildAsync(Project, SarifDirectory, noIncremental: false, noDependencies: true, CancellationToken.None);
+
+        IReadOnlyList<string> arguments = Assert.Single(runner.Calls);
+        Assert.Equal("--no-dependencies", arguments[^1]);
+        Assert.DoesNotContain("--no-incremental", arguments);
+    }
+
+    [Fact]
+    public async Task Forced_rebuild_without_dependencies_passes_the_switch_once()
+    {
+        var runner = new FakeProcessRunner().Respond(_ => true, new ToolResult(0, string.Empty, false));
+
+        await new DotnetBuildRunner(runner, TimeSpan.FromMinutes(1))
+            .BuildAsync(Project, SarifDirectory, noIncremental: true, noDependencies: true, CancellationToken.None);
+
+        Assert.Single(Assert.Single(runner.Calls), a => a == "--no-dependencies");
     }
 
     [Fact]
@@ -46,7 +70,7 @@ public sealed class DotnetBuildRunnerTests
         var runner = new FakeProcessRunner().Respond(_ => true, new ToolResult(0, string.Empty, false));
 
         await new DotnetBuildRunner(runner, TimeSpan.FromMinutes(1))
-            .BuildAsync(project, sarifDirectory, noIncremental: false, CancellationToken.None);
+            .BuildAsync(project, sarifDirectory, noIncremental: false, noDependencies: false, CancellationToken.None);
 
         string escapedRoot = Path.Combine(Path.GetTempPath(), "repo%3Bwith%2Codd%25chars");
         IReadOnlyList<string> arguments = Assert.Single(runner.Calls);

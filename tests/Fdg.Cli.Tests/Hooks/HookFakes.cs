@@ -79,7 +79,7 @@ public sealed class FakeHookFormatter : IFormatRunner
     }
 }
 
-public sealed record HookBuildCall(string ProjectPath, string SarifDirectory, bool NoIncremental);
+public sealed record HookBuildCall(string ProjectPath, string SarifDirectory, bool NoIncremental, bool NoDependencies);
 
 /// <summary>Stands in for dotnet build: writes the SARIF log <see cref="Sarif"/> returns for the call, if any.</summary>
 public sealed class FakeHookBuilder : IBuildRunner
@@ -96,15 +96,19 @@ public sealed class FakeHookBuilder : IBuildRunner
 
     public ToolResult Result { get; set; } = new(0, string.Empty, false);
 
+    /// <summary>The result of a call; <see langword="null"/> returns <see cref="Result"/> for every call.</summary>
+    public Func<HookBuildCall, ToolResult>? ResultOf { get; set; }
+
     public TimeSpan Delay { get; set; } = TimeSpan.Zero;
 
     public async Task<ToolResult> BuildAsync(
         string projectPath,
         string sarifDirectory,
         bool noIncremental,
+        bool noDependencies,
         CancellationToken cancellationToken)
     {
-        var call = new HookBuildCall(projectPath, sarifDirectory, noIncremental);
+        var call = new HookBuildCall(projectPath, sarifDirectory, noIncremental, noDependencies);
         lock (Calls)
         {
             Calls.Add(call);
@@ -133,7 +137,7 @@ public sealed class FakeHookBuilder : IBuildRunner
             File.WriteAllText(Path.Combine(sarifDirectory, "netstandard2.0.sarif"), SarifResult.Log(results));
         }
 
-        return Result;
+        return ResultOf?.Invoke(call) ?? Result;
     }
 }
 

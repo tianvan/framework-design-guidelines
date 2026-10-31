@@ -168,6 +168,7 @@ public sealed class FixCommand
                 diagnostics,
                 sources,
                 () => HashSources(sources),
+                FormatPasses.MaxPasses,
                 cancellationToken)
             .ConfigureAwait(false);
         if (!format.Succeeded)

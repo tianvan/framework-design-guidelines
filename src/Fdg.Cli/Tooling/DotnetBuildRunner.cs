@@ -6,7 +6,8 @@ namespace Fdg.Cli.Tooling;
 /// which project writes the log. <c>-p:CopyRetryCount=0</c>: while the app is running, its files in <c>bin/</c> are
 /// locked, and the default 10 retries of the copy cost about 10 seconds per Stop for the same failure (measured with
 /// SDK 10.0.402). A forced rebuild adds <c>--no-incremental --no-dependencies</c>, so only the project itself is
-/// recompiled.
+/// recompiled; a build without dependencies adds <c>--no-dependencies</c> only, so referenced projects are neither
+/// checked nor built and their existing output is used.
 /// </summary>
 /// <remarks>
 /// MSBuild splits a <c>-p:</c> value on <c>;</c> and <c>,</c> and unescapes <c>%XX</c>, so both paths are escaped
@@ -28,6 +29,7 @@ public sealed class DotnetBuildRunner : IBuildRunner
         string projectPath,
         string sarifDirectory,
         bool noIncremental,
+        bool noDependencies,
         CancellationToken cancellationToken)
     {
         List<string> arguments =
@@ -42,6 +44,10 @@ public sealed class DotnetBuildRunner : IBuildRunner
         if (noIncremental)
         {
             arguments.Add("--no-incremental");
+        }
+
+        if (noIncremental || noDependencies)
+        {
             arguments.Add("--no-dependencies");
         }
 

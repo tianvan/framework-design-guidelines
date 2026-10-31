@@ -1054,6 +1054,119 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Second_format_pass_is_skipped_when_no_fixable_diagnostic_remains()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;"), (8, "int y;")));
+        // A second pass would find nothing left to change, but it is only run for what the build still finds.
+        _formatter.OnFormat = _ => File.WriteAllText(order, Lines(10, (4, "int x;"), (8, "private int y;")));
+        _builder.Sarif = _ => [new SarifResult("CA1031", "warning", "Do not catch general exception types", order, 4)];
+
+        await TurnStopAsync();
+
+        Assert.Single(_formatter.Calls);
+        Assert.Single(_builder.Calls);
+    }
+
+    [Fact]
+    public async Task Second_format_pass_runs_when_a_fixable_diagnostic_remains()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "try { } catch { }"), (8, "int y;")));
+        // The first pass fixes line 8; what it left is fixed by the next one, which changes line 2, and then the
+        // file stops changing. FDGA003 on line 4 is still there after both.
+        string[] passes =
+        [
+            Lines(10, (4, "try { } catch { }"), (8, "private int y;")),
+            Lines(10, (2, "// line 2 fixed"), (4, "try { } catch { }"), (8, "private int y;")),
+        ];
+        _formatter.OnFormat = _ => File.WriteAllText(order, passes[Math.Min(_formatter.Calls.Count, passes.Length) - 1]);
+        _builder.Sarif = _ => [new SarifResult("FDGA003", "warning", "Put the block on its own lines", order, 4)];
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal(3, _formatter.Calls.Count);
+        Assert.All(_formatter.Calls, c => Assert.Equal(["Order.cs"], c.IncludeFiles));
+        Assert.Equal(2, _builder.Calls.Count);
+        Assert.Contains("Order.cs:4 FDGA003", Json(output, "reason")!);
+        // What the second format changed is recorded too.
+        AutofixFile file = Assert.Single((await StateAsync()).ReadAutofix()!.Files);
+        Assert.Equal([new LineRange(2, 2), new LineRange(8, 8)], file.Ranges);
+    }
+
+    [Fact]
+    public async Task Fixable_diagnostic_that_formatting_cannot_fix_is_reported_without_a_rebuild()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "try { } catch { }")));
+        _builder.Sarif = _ => [new SarifResult("FDGA003", "warning", "Put the block on its own lines", order, 4)];
+
+        string output = await TurnStopAsync();
+
+        // The second format changed nothing, so the first build's log still holds.
+        Assert.Equal(2, _formatter.Calls.Count);
+        Assert.Single(_builder.Calls);
+        Assert.Contains("Order.cs:4 FDGA003", Json(output, "reason")!);
+    }
+
+    [Fact]
+    public async Task Build_uses_no_dependencies_when_no_referenced_project_changed()
+    {
+        ReferenceLib();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+
+        await TurnStopAsync();
+
+        HookBuildCall build = Assert.Single(_builder.Calls);
+        Assert.True(build.NoDependencies);
+        Assert.False(build.NoIncremental);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Build_keeps_dependencies_when_a_referenced_project_changed(bool delete)
+    {
+        string libFile = ReferenceLib();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        // Lib is not onboarded, so none of its files are checked, but App compiles against them.
+        if (delete)
+        {
+            File.Delete(libFile);
+        }
+        else
+        {
+            File.WriteAllText(libFile, Lines(5, (2, "int changed;")));
+        }
+
+        await TurnStopAsync();
+
+        Assert.Equal([(_project, false)], _builder.Calls.Select(c => (c.ProjectPath, c.NoDependencies)));
+    }
+
+    [Fact]
+    public async Task No_dependencies_build_failure_falls_back_to_a_full_build()
+    {
+        ReferenceLib();
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int Bad_Name;")));
+        // Lib's output is out of date, so App does not compile against it without building it first.
+        _builder.ResultOf = call => call.NoDependencies ? new ToolResult(1, "error CS0117: 'Lib' has no member 'M'\n", false) : _builder.Result;
+        _builder.Sarif = call => call.NoDependencies
+            ? [new SarifResult("CS0117", "error", "'Lib' has no member 'M'", order, 9)]
+            : [new SarifResult("CA1707", "warning", "Remove the underscores", order, 4)];
+
+        string reason = Json(await TurnStopAsync(), "reason")!;
+
+        Assert.Equal([true, false], _builder.Calls.Select(c => c.NoDependencies));
+        Assert.Contains("Order.cs:4 CA1707", reason);
+        Assert.DoesNotContain("CS0117", reason);
+        Assert.DoesNotContain("failed", reason);
+    }
+
+    [Fact]
     public async Task Sarif_uri_percent_encoding_is_decoded()
     {
         await TurnStartAsync();
@@ -1111,7 +1224,9 @@ public sealed class StopHookTests : IDisposable
         Assert.Equal(
             "FDG: dotnet build failed for src/中文 App/App.csproj (exit code 1): error MSB4018: The task failed unexpectedly.",
             Json(output, "systemMessage")!);
-        Assert.Single(_builder.Calls);
+        // App references no project, so it is built without dependencies first, and the failure is tried once more
+        // with them.
+        Assert.Equal([(false, true), (false, false)], _builder.Calls.Select(c => (c.NoIncremental, c.NoDependencies)));
     }
 
     [Fact]
@@ -1442,6 +1557,21 @@ public sealed class StopHookTests : IDisposable
 
         Assert.Equal(1, exitCode);
         Assert.StartsWith("FDG hook error: hook input is not JSON", stderr.ToString());
+    }
+
+    /// <summary>Makes App reference a new project, Lib, not onboarded; returns the full path of Lib's one file.</summary>
+    private string ReferenceLib()
+    {
+        _repo.Write("src/Lib/Lib.csproj", Project);
+        string libFile = _repo.Write("src/Lib/L.cs", Lines(5));
+        _repo.Write(
+            "src/中文 App/App.csproj",
+            OnboardedProject.Replace(
+                "  </ItemGroup>\n",
+                "    <ProjectReference Include=\"..\\Lib\\Lib.csproj\" />\n  </ItemGroup>\n",
+                StringComparison.Ordinal));
+        _repo.CommitAll();
+        return libFile;
     }
 
     private void CommitOrder(string content)
