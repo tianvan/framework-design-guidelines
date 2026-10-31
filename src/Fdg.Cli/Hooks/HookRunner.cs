@@ -172,16 +172,20 @@ public sealed partial class HookRunner
             AtomicFile.Copy(Snapshot.FullPath(git, path), aiVersion);
         }
 
-        // 2. Per project, a few at a time: format. One pass when building, since the build tells whether another is
-        // needed (step 3); without a build nothing would.
-        int formatPasses = settings.Build ? 1 : FormatPasses.MaxPasses;
+        // 2. Per project, a few at a time: format. One pass when the build can write a SARIF log, since the log tells
+        // whether another is needed (step 3); without a build or a log nothing would, so all passes run at once.
+        int[] formatPasses = projects
+            .Select(p => settings.Build && DotnetBuildRunner.CanWriteLog(
+                p.Info.ProjectPath,
+                state.SarifDirectory(snapshot.Turn, p.Info.ProjectPath)) ? 1 : FormatPasses.MaxPasses)
+            .ToArray();
         var formatNotes = new ConcurrentDictionary<int, string>();
         await Parallel.ForEachAsync(
             projects.Select((project, index) => (Project: project, Index: index)),
             new ParallelOptions { MaxDegreeOfParallelism = MaxParallelFormats, CancellationToken = cancellationToken },
             async (item, token) =>
             {
-                if (await FormatProjectAsync(git, item.Project, formatPasses, token).ConfigureAwait(false) is string note)
+                if (await FormatProjectAsync(git, item.Project, formatPasses[item.Index], token).ConfigureAwait(false) is string note)
                 {
                     formatNotes[item.Index] = note;
                 }
@@ -189,8 +193,9 @@ public sealed partial class HookRunner
 
         // 3-4. One project at a time, since builds of projects that reference each other would compile the shared
         // ones at once: build, format again if the build still finds something formatting fixes, read the SARIF logs.
-        // A referenced project changed this turn, onboarded or not, is built with the project that uses it.
-        string[] turnFiles = changes.Changed.Concat(changes.Deleted).Select(f => Snapshot.FullPath(git, f)).ToArray();
+        // A referenced project with any change, onboarded or not and of any file kind, is built with the project that
+        // uses it.
+        string[] turnFiles = changes.Touched.Concat(changes.Deleted).Select(f => Snapshot.FullPath(git, f)).ToArray();
         var diagnostics = new List<(ProjectWork Project, SarifDiagnostic Diagnostic)>();
         var failedBuilds = new List<(ProjectWork Project, ToolResult Build, bool LogsRead)>();
         for (int i = 0; i < projects.Count; i++)
@@ -199,7 +204,14 @@ public sealed partial class HookRunner
             if (settings.Build)
             {
                 (ToolResult build, bool hasLogs, string? buildNote, string? formatNote) = await BuildProjectAsync(
-                    git, state, snapshot.Turn, projects[i], turnFiles, formatted: note is null, diagnostics, cancellationToken)
+                    git,
+                    state,
+                    snapshot.Turn,
+                    projects[i],
+                    turnFiles,
+                    passesLeft: note is null ? FormatPasses.MaxPasses - formatPasses[i] : 0,
+                    diagnostics,
+                    cancellationToken)
                     .ConfigureAwait(false);
                 if (!build.Succeeded && hasLogs)
                 {
@@ -427,13 +439,16 @@ public sealed partial class HookRunner
     }
 
     /// <summary>
-    /// Builds the project, without its dependencies when the turn changed none of them (<see cref="CanSkipDependencies"/>).
-    /// When the build still finds a diagnostic that formatting fixes in a file of the project changed this turn, formats
-    /// the project's files again with the passes left (<see cref="FormatPasses.MaxPasses"/> - 1) and, if that changed
-    /// them, builds again and uses that build: one pass cannot fix nested occurrences, and what formatting cannot fix is
-    /// reported from the build like anything else.
+    /// Builds the project, without its dependencies when nothing under them may have changed
+    /// (<see cref="CanSkipDependencies"/>). When the build still finds a diagnostic that formatting fixes in a file of
+    /// the project changed this turn, formats the project's files again with the passes left and, if that changed them,
+    /// builds again and uses that build: one pass cannot fix nested occurrences, and what formatting cannot fix is
+    /// reported from the build like anything else. When the build wrote no log, nothing tells whether another pass is
+    /// needed, so the passes left run without a second build.
     /// </summary>
-    /// <param name="formatted">Whether the first format succeeded; a failed one is not run again.</param>
+    /// <param name="passesLeft">
+    /// The format passes left for this Stop: 0 when the first format failed (it is not run again) or already ran all.
+    /// </param>
     /// <returns>
     /// The build result, whether it wrote SARIF logs, a one-line note when the project's diagnostics could not be read,
     /// and a one-line note when the second format failed.
@@ -444,7 +459,7 @@ public sealed partial class HookRunner
         int turn,
         ProjectWork project,
         IReadOnlyList<string> turnFiles,
-        bool formatted,
+        int passesLeft,
         List<(ProjectWork, SarifDiagnostic)> diagnostics,
         CancellationToken cancellationToken)
     {
@@ -455,11 +470,15 @@ public sealed partial class HookRunner
             projectPath, sarifDirectory, CanSkipDependencies(projectPath, turnFiles), canWriteLog, cancellationToken).ConfigureAwait(false);
 
         string? formatNote = null;
-        if (formatted && HasFixableDiagnostic(git, project, result.Diagnostics))
+        if (passesLeft > 0 && result.Logs.Count == 0)
+        {
+            formatNote = await FormatProjectAsync(git, project, passesLeft, cancellationToken).ConfigureAwait(false);
+        }
+        else if (passesLeft > 0 && HasFixableDiagnostic(git, project, result.Diagnostics))
         {
             string[] files = project.Files.Select(f => Snapshot.FullPath(git, f)).ToArray();
             string before = HashFiles(files);
-            formatNote = await FormatProjectAsync(git, project, FormatPasses.MaxPasses - 1, cancellationToken).ConfigureAwait(false);
+            formatNote = await FormatProjectAsync(git, project, passesLeft, cancellationToken).ConfigureAwait(false);
 
             // Unchanged files compile to the same diagnostics, so the logs already read still hold.
             if (HashFiles(files) != before)
@@ -491,8 +510,10 @@ public sealed partial class HookRunner
 
     /// <summary>
     /// Whether the project can be built against the existing output of the projects it references: their closure is
-    /// known (<see cref="ProjectReferences.Closure"/>) and no file the turn changed or deleted, in scope or not, is
-    /// under one of their directories.
+    /// known (<see cref="ProjectReferences.Closure"/>) and no path that may have changed (<see cref="TurnChanges.Touched"/>,
+    /// of any file kind, in scope or not, dirty since before the turn included) or that was deleted is under one of
+    /// their directories. Files outside those directories, such as an explicitly imported props file or a shared file
+    /// linked into a referenced project, are not considered.
     /// </summary>
     private static bool CanSkipDependencies(string projectPath, IReadOnlyList<string> turnFiles)
     {

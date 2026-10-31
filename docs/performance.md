@@ -126,11 +126,15 @@ the Stop does differently:
   three runs, the last one usually a run that only verifies). A second run, with the passes left, follows only when the
   build's SARIF log still has a warning of a diagnostic that formatting fixes (`fixDiagnostics` in `rules.json`) in one
   of the project's changed files; if that run changes the files, the project is built again and that build is reported.
-  What formatting cannot fix is reported from the build as before. With `FDG_HOOK_BUILD=0` there is no build to tell,
-  so the Stop still formats until the files stop changing.
+  What formatting cannot fix is reported from the build as before. With `FDG_HOOK_BUILD=0`, or for a project whose
+  build cannot write a SARIF log (a comma in the path of the git directory), nothing would tell, so the Stop still
+  formats until the files stop changing; after a build that wrote no log, the passes left run without another build.
 - **No dependencies when none changed.** A project is built with `--no-dependencies` when its referenced projects,
   read statically from the `ProjectReference` items of the project and of the projects it references, are known and no
-  file the turn changed or deleted is under one of their directories. An `Include` with an MSBuild property other than
+  path that `git status` lists or a commit of the turn changed, of any file kind (outside `bin/`, `obj/` and
+  `artifacts/`), is under one of their directories; a file dirty since before the turn counts too. Files outside those
+  directories, such as a props file imported with an explicit `<Import>` or a shared file linked into a referenced
+  project, are not considered. An `Include` with an MSBuild property other than
   the project's own directory, an unreadable project file, or a `ProjectReference` in the nearest
   `Directory.Build.props` or `Directory.Build.targets` keeps the dependencies. A build without dependencies that fails
   (other than in copying its output) or writes no log is done once more with them.
@@ -174,8 +178,8 @@ The warm medians pool the runs of all sets of a build. Within each pair of neigh
 
 - *Warm, one file: at least 30% below the 0.2.0 baseline.* Met against 0.2.0 measured in the same window, on the same
   sample copy and machine: −34.5% on the pooled medians, and −27.0% to −37.3% pair by pair. Against the 2026-10-28
-  figure, the pooled median is 29.0% lower, 0.17 s short of 30%; that figure was taken with SDK 10.0.402 and before the
-  machine got slower, which the same-window re-measure shows.
+  figure, the pooled median is 29.0% lower, 0.17 s short of 30%. The 0.2.0 re-measure ran slower than that figure;
+  it used the CLI republished with SDK 10.0.403, and the state of the machine may differ between the two days.
 - *Cold: under 30 s.* Met: 17.53 s.
 
 Where the remaining time goes, measured by hand in the serilog copy with the same arguments as the hook: the one

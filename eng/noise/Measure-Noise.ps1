@@ -42,9 +42,11 @@ timing build passes UseArtifactsOutput=true, ArtifactsPath and OutputPath under 
 timing build, the script evaluates the project and, recursively, the projects it references (an evaluation writes
 nothing) and checks that their intermediate, project extensions, output and documentation paths are all under it. A
 sample where one is not, for example because its own files set it, is not timed and gets { "skipped": "<reason>" }.
-For a local sample, the files of the sample (without .git) are also listed before and after the timing builds; the
-number of files that appeared or changed is written as outsideWorkRoot (0 when none), and their paths go to
-WorkRoot/logs/<sample>-timing-outside.txt.
+For a local sample, the check also covers PackageOutputPath when GeneratePackageOnBuild is true,
+CompilerGeneratedFilesOutputPath when EmitCompilerGeneratedFiles is true, and the NuGet lock file that restore writes
+when RestorePackagesWithLockFile is true or updates when it exists. The files of a local sample (without .git) are
+also listed before and after the timing builds; the number of files that appeared, changed or are gone is written as
+outsideWorkRoot (0 when none), and their paths go to WorkRoot/logs/<sample>-timing-outside.txt.
 #>
 [CmdletBinding()]
 param(
@@ -361,12 +363,20 @@ function Get-OutputProperties([string] $Artifacts)
 
 # Evaluates the project and the projects it references, recursively, with the timing build's output properties;
 # returns a reason why a timing build could write outside $Artifacts, or $null when every path checked is under it.
-function Test-OutputUnder([string] $ProjectPath, [string] $Artifacts, [string] $Framework)
+# With -Strict (a local sample), also the package a build may pack, the source generators' files it may emit, and a
+# NuGet lock file that restore would write or update must stay under $Artifacts.
+function Test-OutputUnder([string] $ProjectPath, [string] $Artifacts, [string] $Framework, [switch] $Strict)
 {
     $names = @(
         'BaseIntermediateOutputPath', 'IntermediateOutputPath', 'MSBuildProjectExtensionsPath', 'BaseOutputPath', 'OutputPath',
         'OutDir', 'DocumentationFile'
     )
+    # Each path is written only when its switch is true.
+    $switched = [ordered]@{
+        PackageOutputPath = 'GeneratePackageOnBuild'
+        CompilerGeneratedFilesOutputPath = 'EmitCompilerGeneratedFiles'
+    }
+    $queried = $names + @($switched.Keys) + @($switched.Values) + @('RestorePackagesWithLockFile', 'NuGetLockFilePath')
     $pending = [System.Collections.Generic.Stack[object]]::new()
     $pending.Push([pscustomobject]@{ Project = $ProjectPath; Framework = $Framework })
     $seen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -379,7 +389,7 @@ function Test-OutputUnder([string] $ProjectPath, [string] $Artifacts, [string] $
         }
 
         $arguments = @('msbuild', $item.Project, '-nologo', '-getItem:ProjectReference') +
-            @($names | ForEach-Object { "-getProperty:$_" }) + (Get-OutputProperties $Artifacts)
+            @($queried | ForEach-Object { "-getProperty:$_" }) + (Get-OutputProperties $Artifacts)
         if ($item.Framework)
         {
             $arguments += "-p:TargetFramework=$($item.Framework)"
@@ -401,6 +411,28 @@ function Test-OutputUnder([string] $ProjectPath, [string] $Artifacts, [string] $
             if ($value -and -not (Test-IsUnder (Resolve-MSBuildPath $directory $value) $Artifacts))
             {
                 return "$name of $which is not under the timing output directory."
+            }
+        }
+
+        if ($Strict)
+        {
+            foreach ($name in $switched.Keys)
+            {
+                $value = [string](Get-Property $json.Properties $name)
+                $on = [string](Get-Property $json.Properties $switched[$name]) -eq 'true'
+                if ($on -and $value -and -not (Test-IsUnder (Resolve-MSBuildPath $directory $value) $Artifacts))
+                {
+                    return "$($switched[$name]) is true and $name of $which is not under the timing output directory."
+                }
+            }
+
+            # Restore writes a lock file when asked to, and updates one that exists.
+            $lockFile = [string](Get-Property $json.Properties 'NuGetLockFilePath')
+            $lockPath = Resolve-MSBuildPath $directory $(if ($lockFile) { $lockFile } else { 'packages.lock.json' })
+            $withLockFile = [string](Get-Property $json.Properties 'RestorePackagesWithLockFile') -eq 'true'
+            if (($withLockFile -or (Test-Path -LiteralPath $lockPath)) -and -not (Test-IsUnder $lockPath $Artifacts))
+            {
+                return "Restore of $which would write or update a NuGet lock file outside the timing output directory."
             }
         }
 
@@ -508,7 +540,7 @@ function Measure-SampleBuildTime([object] $Sample, [string] $SampleRoot, [string
 {
     $name = [string]$Sample.name
     $artifacts = Join-Path $TimingRoot 'artifacts'
-    $reason = Test-OutputUnder $ProjectPath $artifacts $Sample.framework
+    $reason = Test-OutputUnder $ProjectPath $artifacts $Sample.framework -Strict:$IsLocal
     if ($reason)
     {
         return [ordered]@{ skipped = $reason }
@@ -556,7 +588,11 @@ function Measure-SampleBuildTime([object] $Sample, [string] $SampleRoot, [string
     if ($IsLocal)
     {
         $after = Get-FileListing $SampleRoot
-        $outside = @($after | Where-Object { -not $before.Contains($_) } | ForEach-Object { $_.Split("`t")[0] } | Sort-Object -Unique)
+        # Files that appeared or changed, and files that are gone.
+        $outside = @(
+            @($after | Where-Object { -not $before.Contains($_) }) + @($before | Where-Object { -not $after.Contains($_) }) |
+                ForEach-Object { $_.Split("`t")[0] } |
+                Sort-Object -Unique)
         Set-Content -LiteralPath (Join-Path $logsDirectory "$name-timing-outside.txt") -Value $outside
         $entry['outsideWorkRoot'] = $outside.Count
     }

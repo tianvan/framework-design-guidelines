@@ -966,17 +966,7 @@ public sealed class StopHookTests : IDisposable
         // The package passes ErrorLog relative to the project, but a git directory elsewhere keeps its comma, so
         // the package requests no log; the forced rebuild would not write one either.
         using var tree = new TempTree();
-        string root = tree.Directory("work");
-        string gitDirectory = tree.Path("git,dir");
-        Run(root, "git", "init", "-q", "-b", "main", "--separate-git-dir", gitDirectory);
-        Run(root, "git", "config", "user.name", "FDG Test");
-        Run(root, "git", "config", "user.email", "fdg@example.invalid");
-        string project = tree.Write("work/App/App.csproj", OnboardedProject);
-        _projects.Add(project, ProjectState.InScope);
-        tree.Write("work/App/Order.cs", Lines(10));
-        Run(root, "git", "add", "-A");
-        Run(root, "git", "commit", "-q", "-m", "init");
-        await CreateRunner().TurnStartAsync(new HookInput(HostKind.Claude, Session, root, "UserPromptSubmit"), CancellationToken.None);
+        string root = await StartTurnWithACommaInTheGitDirectoryAsync(tree);
         tree.Write("work/App/Order.cs", Lines(10, (4, "int changed;")));
         _builder.Sarif = _ => null;
 
@@ -988,7 +978,41 @@ public sealed class StopHookTests : IDisposable
             "FDG: the path of the git directory or worktree has a comma, so dotnet build cannot write a SARIF log for " +
             "App/App.csproj; its diagnostics were not checked.",
             Json(output, "systemMessage"));
-        Assert.Equal([false], _builder.Calls.Select(c => c.NoIncremental));
+        // No log can come back, so neither a forced rebuild nor one with dependencies would tell more.
+        Assert.Equal([(false, true)], _builder.Calls.Select(c => (c.NoIncremental, c.NoDependencies)));
+    }
+
+    [Fact]
+    public async Task Project_that_cannot_get_a_log_is_formatted_until_its_files_stop_changing()
+    {
+        using var tree = new TempTree();
+        string root = await StartTurnWithACommaInTheGitDirectoryAsync(tree);
+        string order = tree.Write("work/App/Order.cs", Lines(10, (4, "int changed;")));
+        _formatter.OnFormat = _ => File.AppendAllText(order, "// formatted\n");
+        _builder.Sarif = _ => null;
+
+        await CreateRunner().TurnStopAsync(
+            new HookInput(HostKind.Claude, Session, root, "Stop") { StopHookActive = false },
+            CancellationToken.None);
+
+        Assert.Equal(FormatPasses.MaxPasses, _formatter.Calls.Count);
+        Assert.Single(_builder.Calls);
+    }
+
+    private async Task<string> StartTurnWithACommaInTheGitDirectoryAsync(TempTree tree)
+    {
+        string root = tree.Directory("work");
+        string gitDirectory = tree.Path("git,dir");
+        Run(root, "git", "init", "-q", "-b", "main", "--separate-git-dir", gitDirectory);
+        Run(root, "git", "config", "user.name", "FDG Test");
+        Run(root, "git", "config", "user.email", "fdg@example.invalid");
+        string project = tree.Write("work/App/App.csproj", OnboardedProject);
+        _projects.Add(project, ProjectState.InScope);
+        tree.Write("work/App/Order.cs", Lines(10));
+        Run(root, "git", "add", "-A");
+        Run(root, "git", "commit", "-q", "-m", "init");
+        await CreateRunner().TurnStartAsync(new HookInput(HostKind.Claude, Session, root, "UserPromptSubmit"), CancellationToken.None);
+        return root;
     }
 
     [Fact]
@@ -1144,6 +1168,71 @@ public sealed class StopHookTests : IDisposable
         await TurnStopAsync();
 
         Assert.Equal([(_project, false)], _builder.Calls.Select(c => (c.ProjectPath, c.NoDependencies)));
+    }
+
+    [Theory]
+    [InlineData("src/Lib/Lib.csproj")]
+    [InlineData("src/Lib/Strings.resx")]
+    [InlineData("src/Lib/Directory.Build.props")]
+    public async Task Build_keeps_dependencies_when_only_a_non_source_file_of_a_referenced_project_changed(string path)
+    {
+        ReferenceLib();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        _repo.Write(path, "<Project />\n");
+
+        await TurnStopAsync();
+
+        Assert.Equal([false], _builder.Calls.Select(c => c.NoDependencies));
+    }
+
+    [Fact]
+    public async Task Build_output_of_a_referenced_project_does_not_keep_dependencies()
+    {
+        ReferenceLib();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        _repo.Write("src/Lib/obj/project.assets.json", "{}\n");
+        _repo.Write("src/Lib/bin/Debug/Lib.xml", "<doc />\n");
+        _repo.Write("src/Lib/artifacts/Lib.dll", "x\n");
+
+        await TurnStopAsync();
+
+        Assert.Equal([true], _builder.Calls.Select(c => c.NoDependencies));
+    }
+
+    [Fact]
+    public async Task No_dependencies_build_that_writes_no_log_falls_back_to_a_full_build()
+    {
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        _builder.Sarif = _ => null;
+
+        string output = await TurnStopAsync();
+
+        // Each build without a log is forced once; then the one without dependencies is done again with them.
+        Assert.Equal(
+            [(false, true), (true, true), (false, false), (true, false)],
+            _builder.Calls.Select(c => (c.NoIncremental, c.NoDependencies)));
+        Assert.Equal(
+            "FDG: dotnet build wrote no SARIF log for src/中文 App/App.csproj; its diagnostics were not checked.",
+            Json(output, "systemMessage"));
+    }
+
+    [Fact]
+    public async Task Failed_build_without_a_log_still_gets_the_format_passes_left()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        _formatter.OnFormat = _ => File.AppendAllText(order, "// formatted\n");
+        _builder.Result = new ToolResult(1, "error MSB4018: The task failed unexpectedly.\n", false);
+        _builder.Sarif = _ => null;
+
+        await TurnStopAsync();
+
+        Assert.Equal(FormatPasses.MaxPasses, _formatter.Calls.Count);
+        // Without and then with dependencies; the second format does not build again.
+        Assert.Equal(2, _builder.Calls.Count);
     }
 
     [Fact]
