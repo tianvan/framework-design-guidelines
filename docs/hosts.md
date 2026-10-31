@@ -93,9 +93,9 @@ Consequences for the plugin (Task 8/10): after installing, and again after any p
 `hooks.json`, the user must approve the hooks in Codex (`/hooks` in the TUI) or they silently do nothing. The
 install documentation has to say so; SessionStart cannot warn about it, since it is itself a hook.
 
-**Upgrading from 0.2.0**: phase 3 changes every `commandWindows` line in `hooks.codex.json` once (see "The
-`commandWindows` line" below), so after updating the plugin Codex lists the three hooks as `Modified` and the user
-has to approve them once more in `/hooks`. The `command` lines for macOS and Linux are unchanged.
+**Upgrading from 0.2.0**: phase 3 changes every `command` and `commandWindows` line in `hooks.codex.json`, in one
+release (see "The `command` line" and "The `commandWindows` line" below), so after updating the plugin Codex lists
+the three hooks as `Modified` and the user has to approve them once more in `/hooks`, on every OS.
 
 ## Plugin layout for both hosts (Task 10)
 
@@ -127,15 +127,17 @@ Codex runs a hook command through the session shell, which is PowerShell on Wind
   the Agent Plugins schema (`find_plugin_manifest_path` in `codex-rs/utils/plugins/src/plugin_namespace.rs`).
 - **The plugin root is substituted in the command text.** For plugin hooks Codex sets `PLUGIN_ROOT`,
   `CLAUDE_PLUGIN_ROOT`, `PLUGIN_DATA` and `CLAUDE_PLUGIN_DATA`, and replaces every `${NAME}` of them in the command
-  string before running it (`codex-rs/hooks/src/engine/discovery.rs`). So `"${PLUGIN_ROOT}/hooks/fdg-hook.ps1"`
-  becomes a literal path, also under PowerShell, where `${PLUGIN_ROOT}` alone would be an undefined variable.
+  string before running it (`codex-rs/hooks/src/engine/discovery.rs`: lines 262-270 put the variables into the
+  hook's environment, lines 569-570 replace only the braced form `${KEY}`). So `"${PLUGIN_ROOT}/hooks/fdg-hook.ps1"`
+  would become a literal path, also under PowerShell, where `${PLUGIN_ROOT}` alone would be an undefined variable.
+  The plugin no longer relies on this substitution (see below): a substituted path is parsed by the shell.
 - **`commandWindows` replaces `command` on Windows** (same file: `command_windows.unwrap_or(command)` under
   `cfg!(windows)`; the field is `commandWindows`, alias `command_windows`, in `codex-rs/config/src/hook_config.rs`).
 
 Claude Code reads only `.claude-plugin/plugin.json` and `hooks/hooks.json`, so it never sees `hooks.codex.json`.
 Option (a) of the Task 10 ruling therefore applies: `.codex-plugin/plugin.json` sets
 `"hooks": "./hooks/hooks.codex.json"`, whose entries have `command` set to
-`bash "${PLUGIN_ROOT}/hooks/fdg-hook.sh" <event>` and `commandWindows` set to the line below. Option (b),
+`bash "$PLUGIN_ROOT/hooks/fdg-hook.sh" <event>` and `commandWindows` set to the line below. Option (b),
 `commandWindows` in the shared `hooks.json`, would also pass `claude plugin validate --strict`; it was not needed.
 
 ### The `commandWindows` line
@@ -159,9 +161,24 @@ reaches the tool and its stdout comes back byte for byte.
 PowerShell 7 (`pwsh`) on the PATH. Under `-Command` a script's `exit N` leaves `pwsh` with exit code 1, so
 `fdg-hook.ps1` ends with `[Environment]::Exit`, which keeps the tool's exit code (2 still blocks).
 
-The `command` line for macOS and Linux still has the substituted path inside double quotes, where `$SHELL -lc`
-expands `$`, backticks and `\`, and a `"` ends the string. Such characters in the plugin path are rare there; the
-line was left alone so that macOS and Linux users do not have to approve the hooks again.
+### The `command` line
+
+```
+bash "$PLUGIN_ROOT/hooks/fdg-hook.sh" <event>
+```
+
+Up to 0.2.0 it was `bash "${PLUGIN_ROOT}/hooks/fdg-hook.sh" <event>`. Codex replaced `${PLUGIN_ROOT}` in the text,
+and `$SHELL -lc` then parsed the path inside the double quotes: `$name` expanded (`a$c` became `a`), a backtick
+started a command substitution, `\` escaped and a `"` ended the string. A root containing `` $c`d"e `` failed
+with a syntax error and exit 2, which Codex treats as blocking. Codex replaces only the braced `${KEY}` and also puts
+`PLUGIN_ROOT` into the hook's environment (`discovery.rs`, above), so the unbraced `$PLUGIN_ROOT` reaches the shell
+untouched and the shell expands it from the environment. A value expanded inside double quotes is not parsed again.
+`HookShellTests.Codex_unix_command_survives_special_characters` applies Codex's substitution to each event's
+`command`, runs it with `sh -c` and `bash -c` with a plugin root containing a space, `$`, a backtick, `'`, CJK
+characters and (except on Windows, whose file names cannot hold it) `"`, and checks that the payload reaches the
+tool and its stdout comes back byte for byte.
+
+Claude's `hooks.json` still uses `bash "${CLAUDE_PLUGIN_ROOT}/hooks/fdg-hook.sh" <event>`, unchanged.
 
 ### The wrappers
 
@@ -266,8 +283,8 @@ untouched), with Codex CLI 0.163.0:
 ## Still to confirm (pilot, Task 12)
 
 - **Codex hooks from the plugin**: that Codex loads `hooks.codex.json` through the `hooks` field of
-  `.codex-plugin/plugin.json`, and that it substitutes `${PLUGIN_ROOT}` in those commands. Both are known from the
-  source only, since `-c` hooks are not plugin hooks.
+  `.codex-plugin/plugin.json`, and that it sets `PLUGIN_ROOT` in the environment of those commands, which both
+  command lines now read. Both are known from the source only, since `-c` hooks are not plugin hooks.
 - **Codex `/hooks` approval** of the plugin's hooks, after install and after an update that changes them. Not done
   here, because it writes the user's hook trust state.
 - **Codex skill mention form**: whether `$fdg-setup` resolves, or only the qualified

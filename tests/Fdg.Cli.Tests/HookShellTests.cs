@@ -243,6 +243,36 @@ public sealed class HookShellTests : IDisposable
         }
     }
 
+    [BashFact]
+    public void Codex_unix_command_survives_special_characters()
+    {
+        // Codex substitutes only `${KEY}` in the command text and puts PLUGIN_ROOT into the hook's environment, so
+        // `$PLUGIN_ROOT` reaches the shell, which expands it inside the double quotes without parsing the value.
+        // Windows file names cannot contain a double quote.
+        string pluginRoot = OperatingSystem.IsWindows() ? "a b$c`d'e 中文" : "a b$c`d\"f'e 中文";
+        string wrapper = _tree.Path(Path.Combine(pluginRoot, "hooks", "fdg-hook.sh"));
+        Directory.CreateDirectory(Path.GetDirectoryName(wrapper)!);
+        File.Copy(Path.Combine(HooksDir, "fdg-hook.sh"), wrapper);
+        string path = BashPath(WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Echo, forPwsh: false));
+        var environment = new Dictionary<string, string> { ["PLUGIN_ROOT"] = _tree.Path(pluginRoot) };
+        string bashDir = Path.GetDirectoryName(Shells.Bash)!;
+        string sh = Path.Combine(bashDir, OperatingSystem.IsWindows() ? "sh.exe" : "sh");
+
+        foreach ((string hookEvent, string argument) in new[]
+        {
+            ("SessionStart", "session-start"), ("UserPromptSubmit", "turn-start"), ("Stop", "turn-stop"),
+        })
+        {
+            // What Codex does to the text before it runs it (discovery.rs): replace each braced `${KEY}`.
+            string command = SingleHook(ReadHooks("hooks.codex.json"), hookEvent)["command"]!.GetValue<string>()
+                .Replace("${PLUGIN_ROOT}", environment["PLUGIN_ROOT"], StringComparison.Ordinal);
+            foreach (string shell in File.Exists(sh) ? new[] { sh, Shells.Bash! } : new[] { Shells.Bash! })
+            {
+                AssertForwarded(Run(shell, new[] { "-c", command }, path, environment: environment), "hook " + argument);
+            }
+        }
+    }
+
     [Fact]
     public void Hooks_run_the_wrapper_for_each_event_with_its_timeout()
     {
@@ -268,8 +298,9 @@ public sealed class HookShellTests : IDisposable
 
             JsonObject codexHook = SingleHook(codex, hookEvent);
             Assert.Equal(timeout, codexHook["timeout"]!.GetValue<int>());
+            // Not `${PLUGIN_ROOT}`, which Codex would substitute into the text for the shell to parse.
             Assert.Equal(
-                $"bash \"${{PLUGIN_ROOT}}/hooks/fdg-hook.sh\" {argument}",
+                $"bash \"$PLUGIN_ROOT/hooks/fdg-hook.sh\" {argument}",
                 codexHook["command"]!.GetValue<string>());
 
             // The plugin root comes from the environment, so no shell parses it: the text has no `$` or backtick.
