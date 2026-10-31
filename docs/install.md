@@ -7,6 +7,8 @@ the `dotnet-fdg` .NET tool that the hooks run. Both are needed.
 
 - .NET SDK 10.0.100 or later. CI runs the integration tests on 10.0.100, the minimum, and the whole suite on 10.0.402,
   which the pilot also used. With an older SDK, some rules do not run, and the session start check says so.
+- Codex: Codex CLI 0.163.0 or later. The hooks need the plugin root that Codex puts in the hook environment
+  (`PLUGIN_ROOT`), as 0.163.0 does; see [hosts.md](hosts.md).
 - Windows: Git for Windows (Claude Code runs the hooks in Git Bash) and, for Codex, PowerShell 7 (`pwsh`) on the
   PATH.
 

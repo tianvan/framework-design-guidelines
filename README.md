@@ -31,8 +31,10 @@ Microsoft or Pearson. See [NOTICE](https://github.com/tianvan/framework-design-g
   so.
 - SDK-style C# projects. Projects can still target .NET Framework or .NET Standard and use C# 7.3: the SDK version
   is independent of the target framework.
-- For the plugin: Claude Code or Codex, and git. On Windows, Git for Windows (Claude Code runs the hooks in Git
-  Bash). For Codex on Windows, also PowerShell 7 (`pwsh`) on the PATH.
+- For the plugin: Claude Code or Codex CLI 0.163.0 or later, and git. The Codex hooks need the plugin root that
+  Codex puts in the hook environment (`PLUGIN_ROOT`), as 0.163.0 does; see [docs/hosts.md](docs/hosts.md). On
+  Windows, Git for Windows (Claude Code runs the hooks in Git Bash). For Codex on Windows, also PowerShell 7 (`pwsh`)
+  on the PATH.
 
 ## Quick start with Claude Code or Codex
 
