@@ -16,17 +16,19 @@ It has three parts:
   - a review skill;
   - hooks that format and check the lines the agent changed before it ends its turn.
 
-> **Preview.** Version 0.x covers the whole book, chapters 2 to 9 and appendices A and D: 830 rules, every one checked
-> against the book. See
-> [coverage](https://github.com/tianvan/framework-design-guidelines/blob/main/docs/coverage.md).
+It covers the whole book, chapters 2 to 9 and appendices A and D: 830 rules, every one checked against the book. 320
+of them map to analyzers (176 to SDK analyzers, 144 to this project's own), some of them only in part; the other 510
+are judgment rules, which the skills give to the agent and the reviewer. See
+[coverage](https://github.com/tianvan/framework-design-guidelines/blob/main/docs/coverage.md).
 
 This project is independent. It is not affiliated with, endorsed by or sponsored by the authors of the book,
 Microsoft or Pearson. See [NOTICE](https://github.com/tianvan/framework-design-guidelines/blob/main/NOTICE).
 
 ## Requirements
 
-- .NET SDK 10.0.100 or later. CI tests both 10.0.100, the minimum, and 10.0.402, which the pilot also used. With an
-  older SDK, some rules do not run, and the session start message says so.
+- .NET SDK 10.0.100 or later. CI runs the integration tests on 10.0.100, the minimum, and the whole suite on
+  10.0.402, which the pilot also used. With an older SDK, some rules do not run, and the session start message says
+  so.
 - SDK-style C# projects. Projects can still target .NET Framework or .NET Standard and use C# 7.3: the SDK version
   is independent of the target framework.
 - For the plugin: Claude Code or Codex, and git. On Windows, Git for Windows (Claude Code runs the hooks in Git
@@ -57,7 +59,11 @@ Microsoft or Pearson. See [NOTICE](https://github.com/tianvan/framework-design-g
    ```
 
    Then start Codex, open `/hooks` and approve the three FDG hooks. **Codex silently skips hooks that are not
-   approved.** Approve them again after a plugin update that changes them.
+   approved.** Approve them again after a plugin update that changes them, which includes the update from 0.2.0 to
+   1.0.
+
+   The hooks run `dotnet build` and `dotnet format` in the repository, so use the plugin only in repositories you
+   trust.
 
 3. In each repository, run the setup skill: `/framework-design-guidelines:fdg-setup` in Claude Code (or `/fdg-setup`
    when no other command has that name), `framework-design-guidelines:fdg-setup` in Codex.
@@ -84,6 +90,70 @@ and the known limitations.
 
   The hook checks only the lines changed in this turn, so existing code with many warnings does not flood the agent.
   It gives up after 60 seconds (`FDG_HOOK_TIMEOUT_SECONDS`).
+
+## Example
+
+In a project with the `library` profile, the agent adds this class in a turn:
+
+```csharp
+using System.Collections.ObjectModel;
+
+namespace Shipping;
+
+/// <summary>The orders that leave on one truck.</summary>
+public class OrderBatch : Collection<Order> {
+    /// <summary>Gets the total weight of the orders in kilograms.</summary>
+    public decimal GetTotalWeight() {
+        decimal total = 0;
+        foreach (Order order in this) { total += order.Weight; }
+        return total;
+    }
+}
+```
+
+When the agent ends its turn, the Stop hook moves the braces to their own lines and expands the one-line block. One
+diagnostic is left that it does not fix, because the fix renames a public type, so it sends the agent back with
+this report (the output of a real run, with SDK 10.0.403):
+
+```
+FDG found 1 issue(s) in lines you changed this turn. Fix them before finishing.
+src/Shipping/OrderBatch.cs:6 CA1710 Rename Shipping.OrderBatch to end in either 'Collection' or 'Dictionary', 'Set', 'Stack', 'Queue'
+    public class OrderBatch : Collection<Order>
+    FDG3058 DO add the suffix “Collection,” except for reusable, specialized data types such as “Queue” and “HashSet.”
+    FDG3057 DO add the suffix “Dictionary.” Note that `IDictionary` is a specific type of collection, but this guideline takes precedence over the more general collections guideline that follows.
+```
+
+The agent renames the class and its file, and the next Stop has nothing to report. The file is now:
+
+```csharp
+using System.Collections.ObjectModel;
+
+namespace Shipping;
+
+/// <summary>The orders that leave on one truck.</summary>
+public class OrderCollection : Collection<Order>
+{
+    /// <summary>Gets the total weight of the orders in kilograms.</summary>
+    public decimal GetTotalWeight()
+    {
+        decimal total = 0;
+        foreach (Order order in this)
+        {
+            total += order.Weight;
+        }
+
+        return total;
+    }
+}
+```
+
+What no analyzer checks is left to `fdg-write` while the agent writes and to `/fdg-review` afterwards. An example
+of a review finding for this file:
+
+```
+src/Shipping/OrderCollection.cs:9 — FDG5023 CONSIDER using a property if the member represents a logical attribute of the type.
+  The total weight is an attribute of the collection, computed in memory; a `TotalWeight` property would follow the rule.
+```
 
 ## Skills
 
@@ -162,7 +232,16 @@ codex plugin marketplace upgrade framework-design-guidelines      # Codex
 ```
 
 Update the `FrameworkDesignGuidelines.Analyzers` version in your projects to match the tool. In Codex, approve the
-hooks again in `/hooks` if the update changed them.
+hooks again in `/hooks` if the update changed them. **The update from 0.2.0 to 1.0 changes all three**, so Codex
+users approve them once more after it.
+
+A repository that pins `dotnet-fdg` in its local tool manifest (`.config/dotnet-tools.json`) gets that version in the
+hooks; update it there with `dotnet tool update --local dotnet-fdg`.
+
+[CHANGELOG.md](https://github.com/tianvan/framework-design-guidelines/blob/main/CHANGELOG.md) lists the changes of
+each release, with the ones that can fail a `TreatWarningsAsErrors` build in a section of their own.
+[docs/releasing.md](https://github.com/tianvan/framework-design-guidelines/blob/main/docs/releasing.md#versioning-and-compatibility)
+says what each kind of version number can change.
 
 ## Building from source
 

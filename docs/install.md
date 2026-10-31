@@ -10,6 +10,10 @@ the `dotnet-fdg` .NET tool that the hooks run. Both are needed.
 - Windows: Git for Windows (Claude Code runs the hooks in Git Bash) and, for Codex, PowerShell 7 (`pwsh`) on the
   PATH.
 
+The hooks run `dotnet build` and `dotnet format` in the repository at the end of every turn, and `/fdg-setup` and
+`/fdg-fix` run them too. A build runs the repository's own MSBuild files, so use the plugin only in repositories
+you trust, as you would before running `dotnet build` yourself.
+
 To try an unreleased build, run `dotnet pack -c Release -o artifacts/packages` in a clone, use `artifacts/packages`
 as the NuGet source of both packages, and add the marketplace from the local clone.
 
@@ -26,8 +30,12 @@ as `dotnet fdg`), which needs it on the PATH.
 Update it with `dotnet tool update -g dotnet-fdg`. Without the tool, every hook shows
 `FDG: dotnet-fdg is not installed. Run: dotnet tool install -g dotnet-fdg`; when it is installed but does not
 start or fails without output (for example a tool older than the plugin), they show `FDG: dotnet-fdg failed: ...`
-with the first line of its error. A repository whose local tool manifest (`.config/dotnet-tools.json`) lists
-`dotnet-fdg` gets that pinned version in the hooks, through `dotnet tool run`.
+with the first line of its error.
+
+A repository whose local tool manifest (`.config/dotnet-tools.json` or `dotnet-tools.json`, in the repository or
+above it) lists `dotnet-fdg` gets that pinned version in the hooks, through `dotnet tool run`, instead of the global
+tool. Update the pinned version with `dotnet tool update --local dotnet-fdg`. It has to be at least as new as the
+analyzer package; see [Versioning and compatibility](releasing.md#versioning-and-compatibility).
 
 ## 2. Install the plugin
 
@@ -51,6 +59,10 @@ codex plugin add framework-design-guidelines@framework-design-guidelines
 Then start Codex, open `/hooks` and approve the three FDG hooks (SessionStart, UserPromptSubmit, Stop).
 **Codex skips hooks that are not approved, silently.** Approve them again after every plugin update that changes
 them; until then the old approval does not apply and the hooks do nothing.
+
+**Upgrading from 0.2.0:** 1.0 changes the command line of all three Codex hooks (they now read the plugin root from
+the environment, so a path with `$` or a backtick works), so Codex lists them as modified after the update. Open
+`/hooks` and approve them once more, on every OS. Claude Code needs nothing.
 
 ## 3. Set up each repository
 
@@ -83,9 +95,17 @@ three are reported but not fixed.
   file, so it is formatted and checked as new code.
 - **An explicit `ArtifactsPath` or a custom `BaseIntermediateOutputPath`**: SessionStart looks for the build marker
   in the project's `obj/fdg/` and where `UseArtifactsOutput` puts it by default (`artifacts/obj/<project>/fdg/`
-  beside `Directory.Build.props`), so it reports such a project as never built. The hooks read the restore's
-  `project.assets.json` from the same two places to tell whether a project uses the package; elsewhere they go by
-  the declared package references only.
+  beside `Directory.Build.props`), so it reports such a project as never built. When both places have a marker,
+  the newer one counts, so switching `UseArtifactsOutput` on or off takes effect with the next build. The hooks
+  read the restore's `project.assets.json` from the same two places to tell whether a project uses the package;
+  elsewhere they go by the declared package references only.
+- **A `nuget.config` in a directory whose path contains `;`**: NuGet restore fails there (measured with SDK
+  10.0.403), so such a repository cannot restore or build at all, with or without FDG. Move or rename the directory.
+- **A comma in the SARIF log path**: the compiler splits its log option on commas. When the Stop's state directory
+  has a comma in its path, the build gets the path relative to the project instead, which drops a comma in the
+  repository's own name. When the relative path still has one (a git directory or a worktree path with a comma, or
+  a git directory on another drive), no SARIF log is written for that project: Stop says so and skips its
+  diagnostics check, while formatting still runs.
 - **A `global.json` that pins an SDK that is not installed** breaks the checks: the builds that Stop and setup run
   fail before any analyzer runs. Install that SDK or relax the pin (`rollForward`).
 - **Stop time grows with the number of projects touched** in the turn, since each is built in turn; the Stop check

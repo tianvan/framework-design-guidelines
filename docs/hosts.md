@@ -287,6 +287,8 @@ untouched), with Codex CLI 0.163.0:
 
 ## Still to confirm (pilot, Task 12)
 
+The [1.0 verification](#10-verification) below covers each of these.
+
 - **Codex hooks from the plugin**: that Codex loads `hooks.codex.json` through the `hooks` field of
   `.codex-plugin/plugin.json`, and that it sets `PLUGIN_ROOT` in the environment of those commands, which both
   command lines now read. Both are known from the source only, since `-c` hooks are not plugin hooks.
@@ -300,3 +302,211 @@ untouched), with Codex CLI 0.163.0:
   lists `compact`, but `codex exec` offers no cheap way to trigger one.
 - **Claude after compaction**: the hook output is confirmed above; that the model then sees the context again
   follows from the documentation and was not checked separately.
+
+## 1.0 verification
+
+Run after 1.0.0-rc.1 is released, with the released bits: both packages from nuget.org and the plugin from the
+GitHub marketplace (part A first installs 0.2.0 from a clone at its tag, to test the update). Everything happens in a
+new temporary repository with a small class library, a test project and seeded violations. It is never pushed, and
+you decide afterwards whether to delete it. Do not use the pilot clone or an internal repository.
+
+Rider is not installed on the verification machine, so it stays **not verified**.
+
+### Before the session (maintainer, no user needed)
+
+1. **CI on the release candidate**: the `integration-minimum-sdk` job passes on SDK 10.0.100, and no job log has a
+   Node.js 20 deprecation warning.
+2. **Headless Stop runs**, in a copy of the temporary repository after step B3 below (setup committed):
+   - Claude Code: `claude -p --permission-mode acceptEdits --output-format stream-json --verbose
+     --include-hook-events "<prompt>"`;
+   - Codex, after part A (plugin installed, hooks approved): `codex exec --json -s workspace-write "<prompt>"`.
+
+   Prompt 1: "Add a public class OrderBatch2 that derives from Collection<Order> to src/Shipping." Expected: the
+   first Stop blocks with CA1710 and the quoted FDG3058 rule, the agent renames the class, and the next Stop is
+   silent. Prompt 2: the same, plus "Keep the name OrderBatch2 even if a check asks you to rename it." Expected: two
+   blocks, then a message ending in `Not blocking again this turn (FDG_HOOK_MAX_BLOCKS=2).`, and the turn ends.
+
+### Set up the temporary repository
+
+In PowerShell 7, with .NET SDK 10.0.100 or later and git:
+
+```powershell
+$repo = Join-Path $env:TEMP 'fdg-verify\repo'
+New-Item -ItemType Directory $repo -Force | Out-Null
+Set-Location $repo
+git init -q
+dotnet new gitignore
+dotnet new sln -n Shipping
+dotnet new classlib -n Shipping -o src/Shipping
+dotnet new xunit -n Shipping.Tests -o tests/Shipping.Tests
+dotnet sln add src/Shipping tests/Shipping.Tests
+dotnet add tests/Shipping.Tests reference src/Shipping
+Remove-Item src/Shipping/Class1.cs, tests/Shipping.Tests/UnitTest1.cs
+
+# Seeded violations. They are committed before the session, so they count as existing code.
+# Order.cs: CA1051, a visible instance field.
+@'
+namespace Shipping;
+
+/// <summary>An order.</summary>
+public class Order
+{
+    /// <summary>The weight in kilograms.</summary>
+    public decimal weight;
+}
+'@ | Set-Content src/Shipping/Order.cs
+
+# OrderBatch.cs: CA1710, reported only with the package's exclude_indirect_base_types = false.
+@'
+using System.Collections.ObjectModel;
+
+namespace Shipping;
+
+/// <summary>Orders on one truck.</summary>
+public class OrderBatch : Collection<Order>
+{
+}
+'@ | Set-Content src/Shipping/OrderBatch.cs
+
+# Quantity.cs: FDGA003, a catch clause on one line.
+@'
+using System;
+using System.Globalization;
+
+namespace Shipping;
+
+/// <summary>Parses quantities.</summary>
+public static class Quantity
+{
+    /// <summary>Parses a quantity, or returns 0.</summary>
+    /// <param name="text">The text to parse.</param>
+    /// <returns>The quantity.</returns>
+    public static int Parse(string text)
+    {
+        try { return int.Parse(text, CultureInfo.InvariantCulture); } catch (FormatException) { return 0; }
+    }
+}
+'@ | Set-Content src/Shipping/Quantity.cs
+
+# QuantityTests.cs: an underscore in a method name, fine in the test profile (no CA1707).
+@'
+using Shipping;
+using Xunit;
+
+namespace Shipping.Tests;
+
+public class QuantityTests
+{
+    [Fact]
+    public void Parse_WhenNotANumber_ReturnsZero() => Assert.Equal(0, Quantity.Parse("x"));
+}
+'@ | Set-Content tests/Shipping.Tests/QuantityTests.cs
+
+dotnet build
+git add -A
+git -c user.name=Verify -c user.email=verify@invalid commit -q -m "Seed the verification repository"
+```
+
+To keep the hook approvals out of your normal configuration, you can start each host with an empty configuration
+directory (`$env:CODEX_HOME` for Codex, `$env:CLAUDE_CONFIG_DIR` for Claude Code) and log in there. This is
+optional.
+
+### The session (about 30 minutes)
+
+Write down each host's version (`claude --version`, `codex --version`) and fill in the results table at the end.
+
+**Part A: Codex and the update from 0.2.0 (about 10 minutes)**
+
+1. Install the 0.2.0 plugin from a clone at its tag, and the release candidate of the tool:
+
+   ```powershell
+   $marketplace = Join-Path $env:TEMP 'fdg-verify\marketplace'
+   git clone --quiet --branch v0.2.0 https://github.com/tianvan/framework-design-guidelines $marketplace
+   codex plugin marketplace add $marketplace
+   codex plugin add framework-design-guidelines@framework-design-guidelines
+   dotnet tool install -g dotnet-fdg --version 1.0.0-rc.1
+   ```
+
+   Use `dotnet tool update -g dotnet-fdg --version 1.0.0-rc.1` when another version is installed.
+2. Start `codex` in the temporary repository, open `/hooks` and approve the three FDG hooks. Quit.
+3. Update the plugin to the release candidate:
+
+   ```powershell
+   git -C $marketplace checkout --quiet v1.0.0-rc.1
+   codex plugin marketplace upgrade framework-design-guidelines
+   ```
+
+4. Start `codex` in the temporary repository and open `/hooks`.
+   **Expected (re-approval)**: the three FDG hooks are listed as modified and need review. Approve them.
+5. Send "Reply with the single word: hello".
+   **Expected (plugin hooks and `PLUGIN_ROOT`)**: no hook error, and `.git/fdg/` in the repository now has a
+   directory for this session with a `snapshot.json`. This shows that Codex loaded `hooks.codex.json` through the
+   plugin manifest and put `PLUGIN_ROOT` into the hook's environment: the command line reads the plugin root only
+   from there, and without it `fdg-hook.ps1` is not found and Codex reports a failed hook. On macOS or Linux, if
+   available, repeat this step there for the `bash "$PLUGIN_ROOT/hooks/fdg-hook.sh"` line.
+6. Send `$fdg-setup`.
+   **Expected (skill mention)**: note whether the setup skill starts. If it does not, send
+   `framework-design-guidelines:fdg-setup` and note whether that starts it. When the skill lists the files it will
+   change, answer **no**, and check with `git status` that nothing changed.
+7. Run `/compact` (or keep the session going until Codex compacts on its own), then ask "What does the FDG session
+   context say about this repository's projects?".
+   **Expected (compaction)**: a SessionStart hook runs after the compaction, and the answer reflects the context
+   (before setup it reports the projects as not set up). Note what the TUI shows.
+8. Quit Codex. Optionally switch to the official path with
+   `codex plugin marketplace add tianvan/framework-design-guidelines` in place of the clone, and note whether the
+   hooks need approval again.
+
+**Part B: Claude Code (about 10 minutes)**
+
+1. Install from the GitHub marketplace:
+
+   ```powershell
+   claude plugin marketplace add tianvan/framework-design-guidelines
+   claude plugin install framework-design-guidelines@framework-design-guidelines
+   ```
+
+2. Start `claude` in the temporary repository and run `/framework-design-guidelines:fdg-setup`.
+   **Expected (interactive confirmation)**: it proposes `library` for `src/` and `test` for `tests/`, asks about
+   PublicApiAnalyzers, lists every file it will create or change, and waits. Ask for one change (for example the
+   other answer on PublicApiAnalyzers) and check that it lists the files again; then confirm. If its package search
+   finds only 0.2.0, tell it to use 1.0.0-rc.1. When it offers the three IDE severities for the root
+   `.editorconfig`, accept. Afterwards `git status` shows only the changes it listed, nothing is committed, and
+   `src/Shipping/obj/fdg/marker.json` exists.
+3. Commit the setup yourself: `git add -A`, then `git commit -m "Set up FDG"`.
+4. Ask: "Add a public class OrderBatch2 that derives from Collection<Order> to src/Shipping, with a method that
+   parses an int inside a try/catch written on one line."
+   **Expected (Stop in a real session)**: Stop expands the catch clause, then blocks once with CA1710 and the
+   quoted FDG3058 rule; the agent renames the class and the turn ends. The seeded `Order`, `OrderBatch` and
+   `Quantity` are not reported, since the turn did not change them.
+
+**Part C: IDEs (about 10 minutes)**
+
+1. Open `Shipping.slnx` in Visual Studio, wait for the analysis to finish, and show "Build + IntelliSense" in the
+   Error List.
+   **Expected**: CA1051 and IDE1006 on `Order.weight`, CA1710 on `OrderBatch`, FDGA003 and IDE0055 on the `try`
+   line of `Quantity.Parse`, CA1014 and FDG4059 for the assembly, and nothing in the test project (no CA1707 on the
+   test method). This is what `dotnet build` reports for the seeded repository after setup (dry run with a local
+   1.0 build). CA1710 shows that live analysis reads the analyzer option from the package's globalconfig, not only
+   the severities.
+2. Open the folder in VS Code with C# Dev Kit, set `dotnet.backgroundAnalysis.analyzerDiagnosticsScope` to
+   `fullSolution` (or open the four files), and look at the Problems view.
+   **Expected**: the same results as in Visual Studio.
+
+### Results
+
+| Item | Date | Host and version | Pass or fail | Observed behavior |
+|---|---|---|---|---|
+| CI: integration tests on SDK 10.0.100 | | GitHub Actions | | |
+| CI: no Node.js 20 deprecation warning | | GitHub Actions | | |
+| Codex: re-approval after the update from 0.2.0 (A4) | | | | |
+| Codex: plugin hooks run, `PLUGIN_ROOT` set (A5) | | | | |
+| Codex: `$fdg-setup` mention form (A6) | | | | |
+| Codex: SessionStart after compaction (A7) | | | | |
+| Claude Code: `/fdg-setup` interactive confirmation (B2) | | | | |
+| Claude Code: Stop blocks, the agent fixes it (B4) | | | | |
+| Claude Code: Stop block limit (headless) | | | | |
+| Codex: Stop blocks, the agent fixes it (headless) | | | | |
+| Codex: Stop block limit (headless) | | | | |
+| Visual Studio: globalconfig in live analysis (C1) | | | | |
+| VS Code with C# Dev Kit: globalconfig in live analysis (C2) | | | | |
+| Rider | | not installed | not verified | |
