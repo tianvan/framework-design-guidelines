@@ -1049,8 +1049,10 @@ public sealed class EmitterTests : IDisposable
 
         Assert.All(files, f => Assert.DoesNotContain("FDG9002", f.Content));
         Assert.All(files, f => Assert.DoesNotContain("FDG9003", f.Content));
-        Assert.Contains("**FDG9004**", ReferenceMain(input));
-        Assert.Contains(SkillReferenceEmitter.PartlyCheckedMarker, ReferenceMain(input));
+        // The partial sdk rule stays listed, and its own line carries the marker; every header mentions the marker,
+        // so only the line itself shows it.
+        string line = Lines(ReferenceMain(input)).Single(l => l.StartsWith("- **FDG9004** ", StringComparison.Ordinal));
+        Assert.Contains(" " + SkillReferenceEmitter.PartlyCheckedMarker, line);
     }
 
     [Fact]

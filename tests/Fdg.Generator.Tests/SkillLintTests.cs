@@ -482,8 +482,7 @@ public sealed class SkillLintTests
         int partlyCheckedInReferences = Directory.GetFiles(FdgWriteReferences, "*.md")
             .SelectMany(f => File.ReadLines(f))
             .Count(l => l.Contains(" " + SkillReferenceEmitter.PartlyCheckedMarker));
-        int partlyCheckedInData = Rules.Value.Values.Count(r =>
-            SkillReferenceEmitter.IsListed(r) && r.Mapping.Check.Coverage == CoverageLevel.Partial);
+        int partlyCheckedInData = Rules.Value.Values.Count(SkillReferenceEmitter.IsPartlyChecked);
         Assert.NotEqual(0, partlyCheckedInData);
         Assert.Equal(partlyCheckedInData, partlyCheckedInReferences);
 
@@ -580,9 +579,9 @@ public sealed class SkillLintTests
     private static string QuotedLine(Rule rule)
     {
         string line = Statement(rule);
-        if (rule.Mapping.Check.Kind is CheckKind.Sdk or CheckKind.Fdg && rule.Mapping.Check.Coverage == CoverageLevel.Partial)
+        if (SkillReferenceEmitter.IsPartlyChecked(rule))
         {
-            line += " (partly checked)";
+            line += " " + SkillReferenceEmitter.PartlyCheckedMarker;
         }
 
         ProfileSeverity severity = rule.Mapping.Severity;
