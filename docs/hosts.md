@@ -93,6 +93,10 @@ Consequences for the plugin (Task 8/10): after installing, and again after any p
 `hooks.json`, the user must approve the hooks in Codex (`/hooks` in the TUI) or they silently do nothing. The
 install documentation has to say so; SessionStart cannot warn about it, since it is itself a hook.
 
+**Upgrading from 0.2.0**: phase 3 changes every `commandWindows` line in `hooks.codex.json` once (see "The
+`commandWindows` line" below), so after updating the plugin Codex lists the three hooks as `Modified` and the user
+has to approve them once more in `/hooks`. The `command` lines for macOS and Linux are unchanged.
+
 ## Plugin layout for both hosts (Task 10)
 
 One plugin directory, `plugins/framework-design-guidelines/`, serves both hosts:
@@ -131,30 +135,67 @@ Codex runs a hook command through the session shell, which is PowerShell on Wind
 Claude Code reads only `.claude-plugin/plugin.json` and `hooks/hooks.json`, so it never sees `hooks.codex.json`.
 Option (a) of the Task 10 ruling therefore applies: `.codex-plugin/plugin.json` sets
 `"hooks": "./hooks/hooks.codex.json"`, whose entries have `command` set to
-`bash "${PLUGIN_ROOT}/hooks/fdg-hook.sh" <event>` and `commandWindows` set to
-`pwsh -NoProfile -ExecutionPolicy Bypass -File "${PLUGIN_ROOT}/hooks/fdg-hook.ps1" <event>`. Option (b),
+`bash "${PLUGIN_ROOT}/hooks/fdg-hook.sh" <event>` and `commandWindows` set to the line below. Option (b),
 `commandWindows` in the shared `hooks.json`, would also pass `claude plugin validate --strict`; it was not needed.
 
-`pwsh -File` starts its own PowerShell, so the command works whether the session shell is PowerShell or the
-`cmd.exe` fallback, and `-ExecutionPolicy Bypass` keeps a machine policy such as `AllSigned` from blocking the
-unsigned script. It needs PowerShell 7 (`pwsh`) on the PATH.
+### The `commandWindows` line
+
+```
+pwsh -NoProfile -ExecutionPolicy Bypass -Command "& (Join-Path ([Environment]::GetEnvironmentVariable('PLUGIN_ROOT')) 'hooks/fdg-hook.ps1') <event>"
+```
+
+Up to 0.2.0 it was `pwsh -NoProfile -ExecutionPolicy Bypass -File "${PLUGIN_ROOT}/hooks/fdg-hook.ps1" <event>`.
+Codex substitutes the plugin root into that text, and the session shell then parses it: in PowerShell a `$` or a
+backtick in the path (for example in a user name) is expanded inside the double quotes, and a `"` ends the
+string. The current line contains no `$`, no backtick and no `${PLUGIN_ROOT}`, so Codex substitutes nothing and
+both session shells, PowerShell and the `cmd.exe` fallback, hand it to `pwsh` unchanged. The inner `pwsh` reads
+the path from the `PLUGIN_ROOT` environment variable, which Codex sets for plugin hooks, so the path is never
+parsed as code. `HookShellTests.Codex_windows_command_survives_special_characters` runs the line under
+`pwsh -NoProfile -Command` and `cmd /d /s /c` with the plugin root ``a b$c`d'e 中文`` and checks that the payload
+reaches the tool and its stdout comes back byte for byte.
+
+`pwsh` starts its own PowerShell, so the command works whether the session shell is PowerShell or `cmd.exe`, and
+`-ExecutionPolicy Bypass` keeps a machine policy such as `AllSigned` from blocking the unsigned script. It needs
+PowerShell 7 (`pwsh`) on the PATH. Under `-Command` a script's `exit N` leaves `pwsh` with exit code 1, so
+`fdg-hook.ps1` ends with `[Environment]::Exit`, which keeps the tool's exit code (2 still blocks).
+
+The `command` line for macOS and Linux still has the substituted path inside double quotes, where `$SHELL -lc`
+expands `$`, backticks and `\`, and a `"` ends the string. Such characters in the plugin path are rare there; the
+line was left alone so that macOS and Linux users do not have to approve the hooks again.
 
 ### The wrappers
 
 Both wrappers run the tool's own executable, `dotnet-fdg`, not `dotnet fdg`: the `dotnet` muxer first resolves an
 SDK from the `global.json` of the current directory, so `dotnet fdg` fails where that file pins an SDK that is not
-installed (measured by the Task 10 review: exit 155), and it costs about 0.3 s against 0.07 s per call. They look
-for `dotnet-fdg` on the PATH, then in `~/.dotnet/tools` (`%USERPROFILE%\.dotnet\tools` on Windows), which covers a
-host whose PATH predates the first `dotnet tool install -g`.
+installed (measured by the Task 10 review: exit 155), and it costs about 0.3 s against 0.07 s per call. The
+exception is a repository that pins the tool. In order, they use:
 
-- Neither found: they print
+1. a local tool manifest, `.config/dotnet-tools.json` or `dotnet-tools.json` in the current directory or above it,
+   that lists the `dotnet-fdg` package (the key under `tools`, in any case): `dotnet tool run dotnet-fdg`, so the
+   repository's pinned version runs. The search stops at a manifest with `"isRoot": true`, as dotnet's does.
+   `fdg-hook.sh` does not parse JSON (jq may be missing): it removes whitespace and looks for the key
+   `"dotnet-fdg":`, so a different package whose command is called `dotnet-fdg` (an array element) does not count;
+2. `dotnet-fdg` on the PATH;
+3. `$DOTNET_CLI_HOME/.dotnet/tools`, when `DOTNET_CLI_HOME` is set;
+4. `%USERPROFILE%\.dotnet\tools` on Windows (also for `fdg-hook.sh` under Git Bash, where `HOME` can differ),
+   `~/.dotnet/tools` elsewhere. 3 and 4 cover a host whose PATH predates the first `dotnet tool install -g`.
+
+They start the tool once per hook: there is no `--version` probe any more, since the hook entry point checks the
+version and the protocol itself. The hook payload goes to its stdin byte for byte (`fdg-hook.ps1` copies the raw
+stdin stream, since piping it through PowerShell would re-encode it and append a line break), and its stdout is
+held back until it exits:
+
+- Nothing found: they print
   `{"systemMessage":"FDG: dotnet-fdg is not installed. Run: dotnet tool install -g dotnet-fdg"}` and exit 0.
-- Found, but `dotnet-fdg --version` fails: they print
-  `{"systemMessage":"FDG: dotnet-fdg failed to start: <first line of its stderr>"}` and exit 0.
-- Otherwise they run `dotnet-fdg hook <event>` with the hook payload as its stdin, byte for byte, and return its
-  exit code; its stdout reaches the host unchanged. `fdg-hook.sh` `exec`s the tool. `fdg-hook.ps1` cannot pipe the
-  payload through PowerShell, which would re-encode it and append a line break, so it copies the raw stdin stream
-  to the child.
+- Exit 0: its stdout, unchanged, and exit 0.
+- Non-zero exit with output: its stdout, unchanged, and its exit code.
+- Non-zero exit without output, for example a tool too old to know `hook`, one that cannot find its runtime, or
+  `dotnet tool run` failing on a `global.json` SDK that is not installed: they print
+  `{"systemMessage":"FDG: dotnet-fdg failed: <first line of its stderr>"}` and exit 0, so the failure is never
+  silent. The line is made valid UTF-8 first: `fdg-hook.sh` uses `iconv -f UTF-8 -t UTF-8 -c` when available and
+  otherwise drops every byte from 0x80 to 0xFF; `fdg-hook.ps1` decodes it as UTF-8 with U+FFFD for invalid bytes.
+  Then it is escaped for JSON (`fdg-hook.sh` escapes quotes, backslashes and tabs and drops other control
+  characters; `fdg-hook.ps1` uses `ConvertTo-Json`).
 
 `.gitattributes` keeps `*.sh` at LF line endings: with `core.autocrlf=true`, the Git for Windows default, a CRLF
 checkout fails in bash with `command not found` on `$'\r'`, and Claude Code installs marketplace plugins with git.

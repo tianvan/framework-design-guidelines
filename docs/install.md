@@ -25,7 +25,9 @@ as `dotnet fdg`), which needs it on the PATH.
 
 Update it with `dotnet tool update -g dotnet-fdg`. Without the tool, every hook shows
 `FDG: dotnet-fdg is not installed. Run: dotnet tool install -g dotnet-fdg`; when it is installed but does not
-start, they show `FDG: dotnet-fdg failed to start: ...` with the first line of its error.
+start or fails without output (for example a tool older than the plugin), they show `FDG: dotnet-fdg failed: ...`
+with the first line of its error. A repository whose local tool manifest (`.config/dotnet-tools.json`) lists
+`dotnet-fdg` gets that pinned version in the hooks, through `dotnet tool run`.
 
 ## 2. Install the plugin
 
