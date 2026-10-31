@@ -31,6 +31,20 @@ in phase 3 or appears here. The known limitations that users can run into are do
 - **Repositories without FDG pay a small cost per hook**: the onboarding check reads every `project.assets.json`
   (about 3 ms for a 4 MB file, about 0.3 s for 100 such projects). Reason to wait: bounded and measured; caching
   needs an invalidation rule.
+- **SessionStart gives no FDG context when its 10-second inspection runs out before any onboarded project is found**
+  (the git file list or the project discovery is still running). It then shows only
+  `FDG: session inspection timed out; some checks were skipped.` Reason to wait: telling which context applies needs
+  the discovery that ran out of time; only very large repositories on a slow disk hit it.
+- **A Stop build without dependencies trusts the existing output of referenced projects** when their changes do not
+  show in the turn's git status: a pull, checkout or commit between turns, a commit made by someone else during the
+  turn, a source directory named `artifacts`, `bin` or `obj` (taken for build output), or a `ProjectReference` in a
+  `Directory.Build.props` that a nearer one imports. The build can then report against stale referenced output.
+  Reason to wait: building every dependency each turn costs seconds on every Stop; `dotnet build` once brings the
+  output up to date, and [install.md](install.md#known-limitations) says so.
+- **A wrapper killed by the host can leave `dotnet-fdg` running**: the wrapper scripts start the tool as a child
+  process rather than with `exec`, so when the host ends the hook on its timeout, the tool keeps running until its
+  own timeout. Reason to wait: the tool's internal 60-second Stop timeout ends it below the host's 90 seconds, so it
+  is not left running for long; `exec` would lose the wrapper's report of a tool that fails without output.
 
 ## Setup
 
@@ -43,6 +57,9 @@ rare layouts, and a fix needs a design for keeping the entries in step with the 
 - A root `[*.cs]` entry also applies to projects that do not use the package. With `EnforceCodeStyleInBuild` on,
   such a project then reports these three in its build, which can fail it under `TreatWarningsAsErrors`.
 - The entries go stale when a project's profile changes later; setup does not revisit them.
+- An existing `.editorconfig` section that covers only part of a project is not detected as covering it, so setup
+  proposes an entry that overlaps it.
+- One entry whose glob spans projects with different profiles gets the severities of one profile for all of them.
 
 ## Rules and analyzers
 
@@ -54,6 +71,10 @@ rare layouts, and a fix needs a design for keeping the entries in step with the 
   whatever `indent_size` and `tab_width` say; only the line length check reads `tab_width`. A repository indented
   with two spaces gets reports on lists it chopped correctly. Reason to wait: the book's samples and the Roslyn
   defaults use four, and no noise sample uses another width.
+- **CA1063 on a `Dispose()` that already existed counts as existing API**: when the turn adds `IDisposable` to a
+  type that already had a `Dispose()` method, the CA1063 variants reported on that method, rather than on the type,
+  are not sent back to the AI. Only the base list of the type is compared, not a member's. Reason to wait: it errs on
+  the safe side (nothing is blocked wrongly), and the diagnostic still shows in the build.
 
 ## Generator
 

@@ -29,7 +29,7 @@ as `dotnet fdg`), which needs it on the PATH.
 
 Update it with `dotnet tool update -g dotnet-fdg`. Without the tool, every hook shows
 `FDG: dotnet-fdg is not installed. Run: dotnet tool install -g dotnet-fdg`; when it is installed but does not
-start or fails without output (for example a tool older than the plugin), they show `FDG: dotnet-fdg failed: ...`
+start or fails without output (for example one whose .NET runtime is missing), they show `FDG: dotnet-fdg failed: ...`
 with the first line of its error.
 
 A repository whose local tool manifest (`.config/dotnet-tools.json` or `dotnet-tools.json`, in the repository or
@@ -111,3 +111,11 @@ three are reported but not fixed.
 - **Stop time grows with the number of projects touched** in the turn, since each is built in turn; the Stop check
   gives up after 60 seconds (`FDG_HOOK_TIMEOUT_SECONDS`). A value above about 85 is capped by the host, which ends
   the Stop hook after 90 seconds.
+- **Referenced projects changed outside the turn**: when the turn changes no file of a referenced project, Stop builds
+  without dependencies and uses that project's existing output. Changes that a pull, checkout or commit between turns
+  brought in, commits someone else makes during the turn, a source directory named `artifacts`, `bin` or `obj`, and
+  a `ProjectReference` in a `Directory.Build.props` that a nearer one imports are not seen, so Stop can check against
+  out-of-date output. Run `dotnet build` once to bring it up to date.
+- **A very large repository on a slow disk**: SessionStart inspects for at most 10 seconds. When that runs out before
+  it finds a project that uses the package, the session starts without the FDG context and shows
+  `FDG: session inspection timed out; some checks were skipped.` The end-of-turn checks still run.
