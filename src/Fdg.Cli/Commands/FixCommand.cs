@@ -185,17 +185,20 @@ public sealed class FixCommand
 
     /// <summary>
     /// The includes and excludes that leave the broken files out. A broken file the user named is dropped from the
-    /// includes; the others, in the whole project or under a named directory, are excluded, so the run keeps its
-    /// scope, files linked from outside the project directory included. Excludes go to every batch of a run, so when
-    /// they would take up half of the command line, the remaining files are included one by one instead.
+    /// includes; every broken file the run still covers, in the whole project or under a named directory (also one
+    /// the user named itself), is excluded, so the run keeps its scope, files linked from outside the project
+    /// directory included. Excludes go to every batch of a run, so when they would take up half of the command line,
+    /// the remaining files are included one by one instead.
     /// </summary>
     private static (IReadOnlyList<string>? Includes, IReadOnlyList<string> Excludes) LeaveOut(
         FixTarget target,
         IReadOnlySet<string> broken,
         IReadOnlyList<string> remaining)
     {
+        string[]? kept = target.IncludeFiles?.Where(file => !broken.Contains(file)).ToArray();
+        string[] directories = kept?.Where(Directory.Exists).ToArray() ?? [];
         string[] excluded = broken
-            .Where(file => target.IncludeFiles is null || !target.IncludeFiles.Contains(file, ProjectFiles.PathComparer))
+            .Where(file => kept is null || directories.Any(directory => IsUnder(file, directory)))
             .Order(StringComparer.Ordinal)
             .ToArray();
         IReadOnlyList<string> excludes = FormatIncludes.ToProjectRelative(target.ProjectPath, excluded);
@@ -204,10 +207,16 @@ public sealed class FixCommand
             return (FormatIncludes.ToProjectRelative(target.ProjectPath, remaining), []);
         }
 
-        IReadOnlyList<string>? includes = target.IncludeFiles is null
-            ? null
-            : FormatIncludes.ToProjectRelative(target.ProjectPath, target.IncludeFiles.Where(file => !broken.Contains(file)).ToArray());
+        IReadOnlyList<string>? includes = kept is null ? null : FormatIncludes.ToProjectRelative(target.ProjectPath, kept);
         return (includes, excludes);
+    }
+
+    private static bool IsUnder(string file, string directory)
+    {
+        string relative = Path.GetRelativePath(directory, file);
+        return !Path.IsPathRooted(relative) &&
+            relative != ".." &&
+            !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal);
     }
 
     private static string SkipReason(ProjectInfo info) => info.State switch

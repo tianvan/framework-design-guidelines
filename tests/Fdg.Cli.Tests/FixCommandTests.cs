@@ -225,6 +225,21 @@ public sealed class FixCommandTests : IDisposable
     }
 
     [Fact]
+    public async Task Named_broken_file_under_a_named_directory_is_excluded()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        _tree.Write("A/Dir/Fine.cs", "class Fine { }\n");
+        _tree.Write("A/Dir/Bad.cs", "class Bad {\n");
+
+        Assert.Equal(0, await RunAsync("A/Dir", "A/Dir/Bad.cs"));
+
+        // The directory include still covers the broken file, so dropping it from the includes is not enough.
+        FormatCall call = Assert.Single(_formatter.Calls);
+        Assert.Equal(["Dir/"], call.IncludeFiles);
+        Assert.Equal(["Dir/Bad.cs"], call.ExcludeFiles);
+    }
+
+    [Fact]
     public async Task Too_many_broken_files_to_exclude_narrow_the_includes_instead()
     {
         AddProject("A/A.csproj", ProjectState.InScope);
