@@ -5,8 +5,9 @@ How long the plugin's hooks take on real code.
 ## Stop time
 
 The Stop hook (`dotnet-fdg hook turn-stop`) checks the files the AI changed in a turn: it formats them, builds their
-projects and reports the diagnostics on the changed lines. The numbers below are the **baseline of 0.2.0**, measured
-before any change to the hook.
+projects and reports the diagnostics on the changed lines. Below are the **baseline of 0.2.0**, measured before any
+change to the hook, and the numbers **after the Stop changes** of this release cycle, with a re-measure of 0.2.0 in the
+same window.
 
 ### Method
 
@@ -82,7 +83,7 @@ project.
 | Operating system | Microsoft Windows 10.0.26300 (Windows 11) |
 | CPU | 12th Gen Intel(R) Core(TM) i7-1255U |
 | Logical cores | 12 |
-| .NET SDK | 10.0.402 (selected by both samples' `global.json`) |
+| .NET SDK | 10.0.402 for the baseline, 10.0.403 for the later sets (selected by both samples' `global.json`, which asks for 10.0.100 with `latestFeature`; 10.0.402 was no longer installed) |
 
 ### Baseline: 0.2.0
 
@@ -115,3 +116,133 @@ $p = "$b\FrameworkDesignGuidelines.Analyzers.0.2.0-perfbase.1.nupkg"; $c = "$b\c
 ```
 
 To measure another build, pack it with a version of its own and pass the new package and CLI to the same commands.
+
+### After the Stop changes
+
+Package `FrameworkDesignGuidelines.Analyzers` `0.3.0-perf.1` and `dotnet-fdg`, both built from commit `2b7f1ad`. What
+the Stop does differently:
+
+- **One format pass.** Each project's changed files are formatted once instead of until they stop changing (at most
+  three runs, the last one usually a run that only verifies). A second run, with the passes left, follows only when the
+  build's SARIF log still has a warning of a diagnostic that formatting fixes (`fixDiagnostics` in `rules.json`) in one
+  of the project's changed files; if that run changes the files, the project is built again and that build is reported.
+  What formatting cannot fix is reported from the build as before. With `FDG_HOOK_BUILD=0` there is no build to tell,
+  so the Stop still formats until the files stop changing.
+- **No dependencies when none changed.** A project is built with `--no-dependencies` when its referenced projects,
+  read statically from the `ProjectReference` items of the project and of the projects it references, are known and no
+  file the turn changed or deleted is under one of their directories. An `Include` with an MSBuild property other than
+  the project's own directory, an unreadable project file, or a `ProjectReference` in the nearest
+  `Directory.Build.props` or `Directory.Build.targets` keeps the dependencies. A build without dependencies that fails
+  (other than in copying its output) or writes no log is done once more with them.
+
+In the measured rounds, the build after the one pass finds no fixable diagnostic left in the changed files, so each
+project is formatted once and built once. Serilog and Polly.Core reference no project and are built without
+dependencies; Polly.Extensions references Polly.Core, which the round changed, so it is built with them. The Stop
+output is the same as with 0.2.0.
+
+Between the baseline and these sets, files of the scratch directory under `%TEMP%` were removed: the published 0.2.0
+CLI had lost its dependency assemblies and the extracted package cache was incomplete. For the re-measure, the CLI was
+published again from commit `2e42877` (with SDK 10.0.403), the original package file was used and the package cache
+was refilled.
+
+Warm, one project (serilog), in the order the sets ran on 2026-10-31; after the changes and 0.2.0 alternate:
+
+| Set | Build | Warm-up, not counted (s) | Runs (s) | Median | Spread |
+| --- | --- | --- | --- | --- | --- |
+| 1 | after the changes | 11.75 | 11.72, 11.98, 11.37, 13.14, 11.44 | 11.72 s | 1.77 s |
+| 2 | 0.2.0 | 16.83 | 16.75, 16.80, 16.64, 17.26, 20.94 | 16.80 s | 4.30 s |
+| 3 | after the changes | 11.76 | 12.48, 11.78, 12.26, 13.18, 12.00 | 12.26 s | 1.40 s |
+| 4 | 0.2.0 | 25.89 | 20.03, 20.76, 18.65, 17.63, 18.26 | 18.65 s | 3.13 s |
+| 5 | after the changes | 13.43 | 13.86, 12.25, 12.29, 12.21, 12.19 | 12.25 s | 1.67 s |
+| 6 | 0.2.0 | 19.45 | 18.65, 19.50, 22.00, 20.45, 17.96 | 19.50 s | 4.04 s |
+| 7 | after the changes | 12.93 | 15.18, 13.33, 12.22, 11.95, 11.74 | 12.22 s | 3.44 s |
+
+All three cases:
+
+| Case | Sample | After the changes: median (runs) | 0.2.0 baseline (2026-10-28) | Change | 0.2.0 re-measured in the same window | Change |
+| --- | --- | --- | --- | --- | --- | --- |
+| Warm, one project | serilog | **12.22 s** (20 runs, 11.37–15.18) | 17.21 s | −29.0% | 18.65 s (15 runs, 16.64–22.00) | −34.5% |
+| Cold, one project | serilog | **17.53 s** (17.53, 18.15, 16.68; warm-up 15.32) | 20.97 s | −16.4% | | |
+| Warm, two projects | polly | **15.43 s** (18.72, 15.43, 14.76; warm-up 19.98) | 21.79 s | −29.2% | 21.56 s (20.96, 21.56, 22.87; warm-up 22.04) | −28.4% |
+| Warm, one project of polly | polly | 10.89 s (10.88, 12.33, 10.89; warm-up 12.01) | | | | |
+
+The warm medians pool the runs of all sets of a build. Within each pair of neighbouring sets the change is −27.0%
+(sets 2 and 3), −34.3% (sets 4 and 5) and −37.3% (sets 6 and 7). 0.2.0 varied more from set to set (medians 16.80 to
+19.50 s) than the changed Stop (11.72 to 12.26 s), and ran slower than on 2026-10-28.
+
+**Targets.**
+
+- *Warm, one file: at least 30% below the 0.2.0 baseline.* Met against 0.2.0 measured in the same window, on the same
+  sample copy and machine: −34.5% on the pooled medians, and −27.0% to −37.3% pair by pair. Against the 2026-10-28
+  figure, the pooled median is 29.0% lower, 0.17 s short of 30%; that figure was taken with SDK 10.0.402 and before the
+  machine got slower, which the same-window re-measure shows.
+- *Cold: under 30 s.* Met: 17.53 s.
+
+Where the remaining time goes, measured by hand in the serilog copy with the same arguments as the hook: the one
+`dotnet format` run takes about 10–11 s (loading the workspace 2.3 s, code style analysis and fixes 3.7 s, analyzer
+analysis and fixes 4.3 s, as its diagnostic output reports), the build about 2 s, and the rest of the Stop (git, diffs,
+reading the log) well under a second. The verification run that the change removes took about 7 s. Going below that
+needs the format run itself to be faster, for example by keeping a workspace loaded between Stops in a resident
+process, which is not part of this release.
+
+**More than one project.** The second polly project adds 4.5 s (10.89 to 15.43 s, +42%), far from doubling the time:
+the formats of both projects run at once, and only the builds run one after another. One MSBuild call for several
+projects, for example through a temporary traversal project, could save at most part of the second build, about 2 s
+here, while every project would have to be built with its dependencies and the logs told apart again. The builds stay
+one project at a time.
+
+The commands, in PowerShell from the repository root, after the baseline commands above:
+
+```powershell
+$w = "$env:TEMP\fdg-perf"; $o = "$w\perf\opt"
+dotnet pack src/FrameworkDesignGuidelines.Package -c Release -p:Version=0.3.0-perf.1 -o $o
+dotnet publish src/Fdg.Cli -c Release -o $o\cli
+$p = "$o\FrameworkDesignGuidelines.Analyzers.0.3.0-perf.1.nupkg"; $c = "$o\cli\dotnet-fdg.dll"
+./eng/perf/Measure-Stop.ps1 -Sample serilog -Package $p -Cli $c -WorkRoot $w -Out $w\perf\opt-serilog-warm.json -Runs 5
+./eng/perf/Measure-Stop.ps1 -Sample serilog -Package $p -Cli $c -WorkRoot $w -Out $w\perf\opt-serilog-cold.json -Runs 3 -Cold
+./eng/perf/Measure-Stop.ps1 -Sample polly -Package $p -Cli $c -WorkRoot $w -Out $w\perf\opt-polly-p2-warm.json -Projects 2 -Runs 3
+./eng/perf/Measure-Stop.ps1 -Sample polly -Package $p -Cli $c -WorkRoot $w -Out $w\perf\opt-polly-p1-warm.json -Projects 1 -Runs 3
+```
+
+The 0.2.0 sets of the same window ran the baseline commands with the republished CLI, alternating with the warm
+serilog sets above.
+
+## Build time with and without the package
+
+How much longer a build of a sample's project takes with the package, all of its rules on, than without it. Measured on
+2026-10-31 on the machine above (SDK 10.0.403) with package `0.3.0-perf.1`, by `eng/noise/Measure-Noise.ps1 -Timing`
+on the five samples of [noise-samples.md](noise-samples.md):
+
+- each build is a clean build of the sample's project for its framework, with the projects it references: the build
+  output is deleted, the project is restored (not timed), and `dotnet build --no-restore` is timed from process start
+  to exit;
+- after one untimed warm-up build, three builds without the package and three with it run in turn, so the build
+  servers are warm, as they are in a Stop; the table gives the medians;
+- without the package, a reference to it that a sample has is dropped (`eng/noise/NoPackage.targets`); with it, the
+  package is injected as for counting, its SARIF log included;
+- all output goes to a directory under the script's work root (`UseArtifactsOutput`, `ArtifactsPath` and
+  `OutputPath`), checked by evaluating every project first, so no file of a sample is deleted; for the internal samples
+  the script also compared the list of the sample's files before and after the timing builds, and none had appeared
+  or changed.
+
+| Sample | Framework | Without the package | With the package | Difference |
+| --- | --- | --- | --- | --- |
+| serilog | netstandard2.0 | 1.10 s (1.09, 1.13, 1.10) | 1.49 s (1.45, 1.49, 1.54) | +0.39 s (+35%) |
+| polly | netstandard2.0 | 2.02 s (1.81, 2.12, 2.02) | 2.43 s (2.42, 2.43, 2.70) | +0.41 s (+20%) |
+| newtonsoft-json | netstandard2.0 | 1.61 s (1.63, 1.61, 1.60) | 2.82 s (2.89, 2.82, 2.72) | +1.21 s (+75%) |
+| internal-a | net472 | 1.01 s (0.98, 1.01, 1.15) | 1.15 s (1.15, 1.17, 1.14) | +0.14 s (+14%) |
+| internal-b | net472 | 7.41 s (7.39, 7.41, 7.96) | 11.02 s (11.39, 10.70, 11.02) | +3.61 s (+49%) |
+
+The package's analyzers run inside the compile step, so the difference grows with the amount of code compiled and the
+number of diagnostics reported: the counting build of the same run found 2675 results in newtonsoft-json and 4019 in
+internal-b, against 1084 in serilog, 219 in polly and 104 in internal-a. In absolute terms the
+difference stays a few seconds; in a Stop it is part of the build's share (about 2 s of the 12 s for serilog), while
+the format run takes most of the time.
+
+The command, in PowerShell from the repository root (the internal samples are in a local sample file that is not
+committed):
+
+```powershell
+./eng/noise/Measure-Noise.ps1 -Samples eng/noise/samples.json,<local samples file> -Package <nupkg> `
+    -WorkRoot $env:TEMP/fdg-noise -Out $env:TEMP/fdg-noise/timing.json -Timing
+```
