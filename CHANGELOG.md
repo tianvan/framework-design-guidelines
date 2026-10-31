@@ -61,9 +61,14 @@ No diagnostic ids were added or removed and no severity changed.
   ([performance](docs/performance.md)). The second, verification-only `dotnet format` pass runs only when a
   diagnostic it could fix is still present, and a project is built without its dependencies when nothing under
   them changed.
-- Each hook starts one process: the separate `dotnet-fdg --version` probe is gone. When the tool fails without
-  output, the hook shows `FDG: dotnet-fdg failed:` with the first line of its error.
-- A `dotnet-fdg` pinned in the repository's local tool manifest is the one the hooks run.
+- The hook wrappers:
+  - start one process per hook: the separate `dotnet-fdg --version` probe is gone;
+  - show `FDG: dotnet-fdg failed:` with the first line of the tool's error when it exits non-zero without output,
+    instead of failing silently;
+  - turn a non-UTF-8 error line into valid UTF-8 and valid JSON;
+  - run the `dotnet-fdg` pinned in the repository's local tool manifest when there is one;
+  - also look for the tool under `DOTNET_CLI_HOME`, and the sh wrapper uses `USERPROFILE` under Git Bash on
+    Windows, where `HOME` can differ.
 - The Codex hook commands read the plugin root from the `PLUGIN_ROOT` environment variable, so a plugin path with
   `$`, a backtick or a quote works. **Codex users upgrading from 0.2.0 must approve the three hooks once more in
   `/hooks`.**
@@ -82,7 +87,7 @@ No diagnostic ids were added or removed and no severity changed.
   - include lists longer than the Windows command line, now split into several `dotnet format` runs.
 
   [docs/install.md](docs/install.md#known-limitations) lists what remains.
-- `dotnet fdg fix` keeps each file's line endings after `dotnet format`.
+- Stop and `dotnet fdg fix` keep each file's line endings after `dotnet format`.
 
 ### Requirements and release engineering
 

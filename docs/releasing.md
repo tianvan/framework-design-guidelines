@@ -50,9 +50,10 @@ The first push creates both package ids under your nuget.org account.
    dotnet test -c Release
    ```
 
-3. Update the version in the README's package reference example, give the release's section in `CHANGELOG.md` its date
-   (with the changes that can fail a `TreatWarningsAsErrors` build in their own subsection), commit, and push to
-   `main`. Wait for CI to pass.
+3. Update the version in the README's package reference example and check the release's section in
+   `CHANGELOG.md`, with the changes that can fail a `TreatWarningsAsErrors` build in their own subsection. For a
+   prerelease tag such as `v1.0.0-rc.1` the section stays `Unreleased`; for the final release, replace
+   `Unreleased` with the date. Commit, and push to `main`. Wait for CI to pass.
 4. Tag and push:
 
    ```
@@ -103,6 +104,6 @@ meaning. A change that an older tool cannot read raises the protocol number, and
 
 The plugin does not check the tool's version. Its hooks run `dotnet-fdg hook session-start`, `turn-start` and
 `turn-stop` (through the repository's local tool manifest when it lists `dotnet-fdg`). A tool that cannot run the
-command, for example one too old to know `hook` or one without its runtime, exits without output, and the wrapper
+command, for example one that fails to start because its runtime is missing, exits without output, and the wrapper
 then shows `FDG: dotnet-fdg failed:` with the first line of its error instead of failing silently. Keep the tool
 updated with the plugin; the tested combination is the same version of all three.
