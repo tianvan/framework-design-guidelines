@@ -33,10 +33,17 @@ public static class ProjectFiles
 
     /// <summary>
     /// The .csproj files in the nearest directory at or above <paramref name="directory"/> that has any, without
-    /// leaving the git repository (a directory holding <c>.git</c>) the search started in.
+    /// leaving the git repository (a directory holding <c>.git</c>) the search started in, nor going above
+    /// <paramref name="stopAt"/>, which is searched itself.
     /// </summary>
-    public static IReadOnlyList<string> FindOwningProjects(string directory)
+    /// <param name="stopAt">
+    /// Where the search ends outside git; by default the user's home directory, so that a file in a directory that
+    /// is not a repository is not given to a project far above it. Ignored when <paramref name="directory"/> is not
+    /// at or below it.
+    /// </param>
+    public static IReadOnlyList<string> FindOwningProjects(string directory, string? stopAt = null)
     {
+        string? boundary = Boundary(directory, stopAt ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
         for (DirectoryInfo? current = new(directory); current is not null; current = current.Parent)
         {
             string[] projects = Directory.GetFiles(current.FullName, "*.csproj");
@@ -45,12 +52,37 @@ public static class ProjectFiles
                 return projects.Order(StringComparer.OrdinalIgnoreCase).ToArray();
             }
 
-            if (Path.Exists(Path.Combine(current.FullName, ".git")))
+            if (Path.Exists(Path.Combine(current.FullName, ".git")) ||
+                (boundary is not null && PathComparer.Equals(Path.TrimEndingDirectorySeparator(current.FullName), boundary)))
             {
                 break;
             }
         }
 
         return [];
+    }
+
+    /// <returns>
+    /// <paramref name="stopAt"/> as a full path without a trailing separator, or <see langword="null"/> when it is
+    /// empty or <paramref name="directory"/> is not at or below it.
+    /// </returns>
+    private static string? Boundary(string directory, string stopAt)
+    {
+        if (string.IsNullOrWhiteSpace(stopAt))
+        {
+            return null;
+        }
+
+        string boundary = Path.TrimEndingDirectorySeparator(Path.GetFullPath(stopAt));
+        string start = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
+        if (PathComparer.Equals(start, boundary))
+        {
+            return boundary;
+        }
+
+        // A root such as C:\ keeps its separator.
+        string prefix = Path.EndsInDirectorySeparator(boundary) ? boundary : boundary + Path.DirectorySeparatorChar;
+        StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        return start.StartsWith(prefix, comparison) ? boundary : null;
     }
 }

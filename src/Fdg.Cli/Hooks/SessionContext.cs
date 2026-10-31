@@ -18,7 +18,8 @@ public sealed record SessionReport(string Context, IReadOnlyList<string> Issues)
 /// <summary>
 /// The SessionStart context (design §5.5) and self-check. Facts come from the files only: project files, the
 /// files <see cref="Onboarding"/> reads and the analyzer package's <c>fdg/marker*.json</c> in the intermediate
-/// directory; MSBuild is never run.
+/// directory; MSBuild is never run. Only <c>dotnet --version</c> runs, and the SDK's compiler when a marker has a
+/// symbolic language version.
 /// </summary>
 public sealed class SessionContext
 {
@@ -46,34 +47,60 @@ public sealed class SessionContext
     private static readonly string[] Pathspecs = [":(glob,icase)**/*.csproj", ":(glob,icase)**/" + BuildProps];
 
     private readonly IProcessRunner _runner;
+    private readonly ILanguageVersionSource _languageVersions;
+
+    /// <param name="runner">Runs <c>dotnet --version</c> and the compiler that resolves a symbolic language version.</param>
+    public SessionContext(IProcessRunner runner)
+        : this(runner, new CompilerLanguageVersions(runner))
+    {
+    }
 
     /// <param name="runner">Runs <c>dotnet --version</c>.</param>
-    public SessionContext(IProcessRunner runner)
+    /// <param name="languageVersions">Resolves a symbolic language version in a marker, such as <c>latest</c>.</param>
+    public SessionContext(IProcessRunner runner, ILanguageVersionSource languageVersions)
     {
         _runner = runner;
+        _languageVersions = languageVersions;
     }
+
+    /// <summary>The issue line added when <see cref="Inspect"/> runs out of time.</summary>
+    public const string TimedOutLine = "FDG: session inspection timed out; some checks were skipped.";
 
     /// <param name="repoRoot">
     /// A directory in the repository, whose git top level is used; outside git, the session's directory.
     /// </param>
     /// <returns>The text to add to the AI's context, or <see langword="null"/> when no project uses the analyzers.</returns>
-    public string? Build(string repoRoot) => Inspect(repoRoot)?.Text;
+    public string? Build(string repoRoot) => Inspect(repoRoot, CancellationToken.None)?.Text;
 
     /// <inheritdoc cref="Build"/>
-    public SessionReport? Inspect(string repoRoot)
+    /// <param name="cancellationToken">
+    /// Ends the inspection early, killing a process it runs: what was found by then is reported, followed by
+    /// <see cref="TimedOutLine"/>. When it ends before any project is known to use the analyzers, the result is
+    /// <see langword="null"/>, as in a repository that does not use them.
+    /// </param>
+    public SessionReport? Inspect(string repoRoot, CancellationToken cancellationToken)
     {
         if (!Directory.Exists(repoRoot))
         {
             return null;
         }
 
-        GitRepository? git = GitRepository.OpenAsync(repoRoot, CancellationToken.None).GetAwaiter().GetResult();
-        string root = git?.TopLevel ?? Path.GetFullPath(repoRoot);
-        IReadOnlyList<string> files = git is null
-            ? ListNearbyFiles(root)
-            : git.ListFilesAsync(Pathspecs, CancellationToken.None).GetAwaiter().GetResult();
+        GitRepository? git;
+        IReadOnlyList<string> files;
+        try
+        {
+            git = GitRepository.OpenAsync(repoRoot, cancellationToken).GetAwaiter().GetResult();
+            files = git is null
+                ? ListNearbyFiles(Path.GetFullPath(repoRoot))
+                : git.ListFilesAsync(Pathspecs, cancellationToken).GetAwaiter().GetResult();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
 
-        List<Project> projects = Discover(root, files);
+        string root = git?.TopLevel ?? Path.GetFullPath(repoRoot);
+        List<Project> projects = Discover(root, files, cancellationToken);
         if (!projects.Any(p => p.Onboarded))
         {
             return null;
@@ -85,14 +112,23 @@ public sealed class SessionContext
             project.SdkStyle = IsSdkStyle(Path.Combine(root, project.RelativePath));
         }
 
+        bool timedOut = cancellationToken.IsCancellationRequested;
         var noProfile = new List<string>();
         var neverBuilt = new List<string>();
         var newerProtocol = new List<string>();
         var langVersions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var resolvedLangVersions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var onboarded = projects.Where(p => p.SdkStyle && p.Onboarded).ToList();
         foreach (Project project in onboarded)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // The rest are left out rather than reported as never built.
+                timedOut = true;
+                break;
+            }
+
             IReadOnlyList<ProjectMarker> markers = CurrentMarkers(root, project);
             if (markers.Count == 0)
             {
@@ -116,10 +152,24 @@ public sealed class SessionContext
                 newerProtocol.Add(project.RelativePath);
             }
 
+            string projectDirectory = Path.GetDirectoryName(Path.GetFullPath(Path.Combine(root, project.RelativePath)))!;
             foreach (ProjectMarker marker in markers)
             {
                 if (LangVersion(marker.LangVersion) is string langVersion)
                 {
+                    if (SupportedLanguageVersions.IsSymbolic(langVersion))
+                    {
+                        try
+                        {
+                            langVersion = ResolveLangVersion(projectDirectory, langVersion, resolvedLangVersions, cancellationToken);
+                        }
+                        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                        {
+                            timedOut = true;
+                            langVersion = Unresolved(langVersion);
+                        }
+                    }
+
                     langVersions.Add(langVersion);
                 }
 
@@ -146,19 +196,37 @@ public sealed class SessionContext
             }
         }
 
+        string? dotnetVersion = null;
+        bool dotnetChecked = false;
+        if (!timedOut)
+        {
+            try
+            {
+                dotnetVersion = DotnetVersion(root, cancellationToken);
+                dotnetChecked = true;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                timedOut = true;
+            }
+        }
+
         var facts = new SetupFacts(
-            DotnetVersion(root),
+            dotnetVersion,
             noProfile,
             neverBuilt,
             newerProtocol,
             projects.Where(p => !p.SdkStyle && p.Onboarded).Select(p => p.RelativePath).ToList(),
-            git is not null);
-        return new SessionReport(context.ToString(), SelfCheck.Issues(facts));
+            git is not null,
+            dotnetChecked);
+        IReadOnlyList<string> issues = SelfCheck.Issues(facts);
+        return new SessionReport(context.ToString(), timedOut ? [.. issues, TimedOutLine] : issues);
     }
 
     /// <summary>
-    /// The project's markers, <c>marker.json</c> first, from <c>obj/fdg/</c> or else the artifacts layout
-    /// (<c>UseArtifactsOutput</c>: <c>&lt;Directory.Build.props directory&gt;/artifacts/obj/&lt;project name&gt;/fdg/</c>).
+    /// The project's markers, <c>marker.json</c> first, from <c>obj/fdg/</c> or the artifacts layout
+    /// (<c>UseArtifactsOutput</c>: <c>&lt;Directory.Build.props directory&gt;/artifacts/obj/&lt;project name&gt;/fdg/</c>),
+    /// whichever was written last.
     /// </summary>
     private static IReadOnlyList<ProjectMarker> CurrentMarkers(string root, Project project)
     {
@@ -166,53 +234,33 @@ public sealed class SessionContext
         string name = Path.GetFileNameWithoutExtension(fullPath);
         IEnumerable<string> artifactRoots = new[] { project.BuildPropsDirectory, string.Empty }
             .OfType<string>()
-            .Distinct(ProjectFiles.PathComparer)
             .Select(d => Path.Combine(root, d, "artifacts", "obj", name));
-        foreach (string directory in artifactRoots.Prepend(Path.Combine(Path.GetDirectoryName(fullPath)!, "obj")))
-        {
-            IReadOnlyList<ProjectMarker> markers = CurrentMarkers(Path.Combine(directory, "fdg"), Path.GetFileName(fullPath));
-            if (markers.Count > 0)
-            {
-                return markers;
-            }
-        }
-
-        return [];
+        IEnumerable<string> directories = artifactRoots
+            .Prepend(Path.Combine(Path.GetDirectoryName(fullPath)!, "obj"))
+            .Select(d => Path.Combine(d, "fdg"));
+        return ProjectMarker.ReadCurrent(directories, fullPath);
     }
 
     /// <summary>
-    /// The package writes markers but never deletes them. A project that targets one framework now, whose
-    /// <c>marker.json</c> framework has no <c>marker.&lt;tfm&gt;.json</c>, keeps only <c>marker.json</c>; the others are
-    /// left over from when it targeted several. A marker written by another project in the same directory is skipped.
+    /// What the compiler makes of a symbolic language version, asked once per value; for example
+    /// <c>latest (unresolved)</c> when it cannot tell.
     /// </summary>
-    private static IReadOnlyList<ProjectMarker> CurrentMarkers(string markerDirectory, string projectFileName)
+    private string ResolveLangVersion(
+        string projectDirectory,
+        string symbolic,
+        Dictionary<string, string> resolved,
+        CancellationToken cancellationToken)
     {
-        if (!Directory.Exists(markerDirectory))
+        if (!resolved.TryGetValue(symbolic, out string? langVersion))
         {
-            return [];
+            langVersion = _languageVersions.Resolve(projectDirectory, symbolic, cancellationToken) ?? Unresolved(symbolic);
+            resolved.Add(symbolic, langVersion);
         }
 
-        // By file name, so markers stay valid when the repository moves.
-        bool Own(ProjectMarker marker) =>
-            string.IsNullOrEmpty(marker.ProjectPath) ||
-            ProjectFiles.PathComparer.Equals(Path.GetFileName(marker.ProjectPath.Replace('\\', '/')), projectFileName);
-
-        ProjectMarker? main = ProjectMarker.Read(Path.Combine(markerDirectory, "marker.json")) is { } read && Own(read) ? read : null;
-        ProjectMarker[] perFramework = Directory.EnumerateFiles(markerDirectory, "marker.*.json")
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .Select(ProjectMarker.Read)
-            .OfType<ProjectMarker>()
-            .Where(Own)
-            .ToArray();
-        if (main is null)
-        {
-            return perFramework;
-        }
-
-        bool multiTargeting = perFramework.Any(m =>
-            string.Equals(m.TargetFramework?.Trim(), main.TargetFramework?.Trim(), StringComparison.OrdinalIgnoreCase));
-        return multiTargeting ? [main, .. perFramework] : [main];
+        return langVersion;
     }
+
+    private static string Unresolved(string symbolic) => symbolic + " (unresolved)";
 
     /// <summary>
     /// Outside git, looks two directory levels down only: sessions start anywhere, such as a home directory, where a
@@ -235,7 +283,8 @@ public sealed class SessionContext
 
     /// <summary>The projects and whether they use the analyzers; whether they are SDK-style is left for later.</summary>
     /// <param name="files">Paths relative to <paramref name="root"/>, with forward slashes.</param>
-    private static List<Project> Discover(string root, IReadOnlyList<string> files)
+    /// <param name="cancellationToken">Ends the discovery early, with the projects found by then.</param>
+    private static List<Project> Discover(string root, IReadOnlyList<string> files, CancellationToken cancellationToken)
     {
         // bin/, obj/ and dot-directories hold no projects of the repository's own.
         string[] inScope = files
@@ -247,6 +296,11 @@ public sealed class SessionContext
         var projects = new List<Project>();
         foreach (string relativePath in inScope.Where(IsProjectFile))
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+
             string fullPath = Path.Combine(root, relativePath);
             if (!File.Exists(fullPath))
             {
@@ -375,7 +429,7 @@ public sealed class SessionContext
         }
     }
 
-    /// <summary><c>9</c> becomes <c>9.0</c>; symbolic values such as <c>latest</c> are kept as written.</summary>
+    /// <summary><c>9</c> becomes <c>9.0</c>; symbolic values such as <c>latest</c> are kept as written, to be resolved.</summary>
     private static string? LangVersion(string? value)
     {
         string trimmed = value?.Trim() ?? string.Empty;
@@ -389,13 +443,14 @@ public sealed class SessionContext
 
     /// <summary>Runs in the repository, so its global.json selects the SDK.</summary>
     /// <returns><see langword="null"/> when it fails or <c>dotnet</c> cannot be started.</returns>
-    private string? DotnetVersion(string root)
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was cancelled.</exception>
+    private string? DotnetVersion(string root, CancellationToken cancellationToken)
     {
         ToolResult result;
         try
         {
             result = _runner
-                .RunAsync("dotnet", ["--version"], root, VersionTimeout, CancellationToken.None)
+                .RunAsync("dotnet", ["--version"], root, VersionTimeout, cancellationToken)
                 .GetAwaiter()
                 .GetResult();
         }

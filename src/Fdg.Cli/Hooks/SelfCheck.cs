@@ -9,13 +9,18 @@ namespace Fdg.Cli.Hooks;
 /// <param name="NeverBuilt">Onboarded projects without a marker.</param>
 /// <param name="NewerProtocol">Projects whose marker has a protocol newer than this CLI supports.</param>
 /// <param name="LegacyOnboarded">Non-SDK projects that reference the package; other non-SDK projects are no issue.</param>
+/// <param name="DotnetChecked">
+/// Whether <c>dotnet --version</c> ran; when the inspection ran out of time first, <paramref name="DotnetVersion"/>
+/// tells nothing.
+/// </param>
 public sealed record SetupFacts(
     string? DotnetVersion,
     IReadOnlyList<string> NoProfile,
     IReadOnlyList<string> NeverBuilt,
     IReadOnlyList<string> NewerProtocol,
     IReadOnlyList<string> LegacyOnboarded,
-    bool IsGitRepository);
+    bool IsGitRepository,
+    bool DotnetChecked);
 
 /// <summary>
 /// Turns <see cref="SetupFacts"/> into one <c>FDG setup issue:</c> line per problem the user can act on (Ruling 51).
@@ -38,11 +43,12 @@ public static class SelfCheck
     public static IReadOnlyList<string> Issues(SetupFacts facts)
     {
         var issues = new List<string>();
-        if (facts.DotnetVersion is null)
+        // Unchecked, the SDK gets no line rather than a wrong one.
+        if (facts.DotnetChecked && facts.DotnetVersion is null)
         {
             issues.Add(IssuePrefix + $"dotnet --version failed here; FDG needs .NET SDK {MinimumSdkVersion} or later." + RunSetup);
         }
-        else if (IsOlderThan(facts.DotnetVersion, MinimumSdk))
+        else if (facts.DotnetVersion is not null && IsOlderThan(facts.DotnetVersion, MinimumSdk))
         {
             // Nothing to fix with /fdg-setup: the user may be unable to move to a newer SDK.
             issues.Add(IssuePrefix +

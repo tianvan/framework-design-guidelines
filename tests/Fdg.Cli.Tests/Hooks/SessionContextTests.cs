@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Fdg.Cli.Hooks;
+using Fdg.Cli.Projects;
 using Fdg.Cli.Tooling;
 
 namespace Fdg.Cli.Tests.Hooks;
@@ -138,9 +139,65 @@ public sealed class SessionContextTests : IDisposable
         Project("src/C/C.csproj", "library", "latest", "net10.0");
 
         Assert.Equal(
-            "- Profiles: src/** = library. C# 7.3, 12.0, latest; targets net10.0, net472, net8.0, netstandard2.0. " +
+            "- Profiles: src/** = library. C# 7.3, 12.0, 14.0; targets net10.0, net472, net8.0, netstandard2.0. " +
             "Do not use newer syntax or APIs.",
-            ProfilesLine(Build()));
+            ProfilesLine(new SessionContext(DotnetRunner(), new FakeLanguageVersions("14.0")).Build(_repo.Root)));
+    }
+
+    [Fact]
+    public void Symbolic_lang_version_is_shown_resolved()
+    {
+        Project("src/A/A.csproj", "library", "latest", "net10.0");
+        Project("src/B/B.csproj", "library", "LatestMajor", "net10.0");
+        var languageVersions = new FakeLanguageVersions("14.0");
+
+        string context = new SessionContext(DotnetRunner(), languageVersions).Build(_repo.Root)!;
+
+        Assert.Equal(
+            "- Profiles: src/** = library. C# 14.0; targets net10.0. Do not use newer syntax or APIs.",
+            ProfilesLine(context));
+        Assert.Equal([(_repo.Path("src/A"), "latest"), (_repo.Path("src/B"), "LatestMajor")], languageVersions.Calls);
+    }
+
+    [Fact]
+    public void Unresolved_symbolic_lang_version_says_so()
+    {
+        Project("src/A/A.csproj", "library", "latest", "net10.0");
+
+        string context = new SessionContext(DotnetRunner(), new FakeLanguageVersions(null)).Build(_repo.Root)!;
+
+        Assert.Equal(
+            "- Profiles: src/A/** = library. C# latest (unresolved); targets net10.0. Do not use newer syntax or APIs.",
+            ProfilesLine(context));
+    }
+
+    [Fact]
+    public void Inspect_stops_at_the_timeout_with_a_note()
+    {
+        Project("src/A/A.csproj", "library", "latest", "net10.0");
+        Project("src/B/B.csproj", "library", "12.0", "net8.0");
+        using var timeout = new CancellationTokenSource();
+        var runner = new BlockingRunner(timeout);
+
+        SessionReport report = new SessionContext(runner, new FakeLanguageVersions("14.0")).Inspect(_repo.Root, timeout.Token)!;
+
+        Assert.StartsWith("This repository follows Framework Design Guidelines (3rd ed.).\n", report.Context);
+        Assert.Contains("- Profiles: src/** = library. C# 12.0, 14.0; targets net10.0, net8.0.", report.Context);
+        Assert.Equal(["FDG: session inspection timed out; some checks were skipped."], report.Issues);
+        Assert.True(runner.Cancelled);
+    }
+
+    [Fact]
+    public void Inspect_cancelled_while_resolving_a_lang_version_keeps_the_value_as_written()
+    {
+        Project("src/A/A.csproj", "library", "latest", "net10.0");
+        using var timeout = new CancellationTokenSource();
+        var languageVersions = new FakeLanguageVersions("14.0") { Cancel = timeout };
+
+        SessionReport report = new SessionContext(DotnetRunner(), languageVersions).Inspect(_repo.Root, timeout.Token)!;
+
+        Assert.Contains("C# latest (unresolved); targets net10.0.", report.Context);
+        Assert.Equal(["FDG: session inspection timed out; some checks were skipped."], report.Issues);
     }
 
     [Fact]
@@ -587,6 +644,53 @@ public sealed class SessionContextTests : IDisposable
 
     private static string[] Issues(string context) =>
         context.Split('\n').Where(l => l.StartsWith("FDG setup issue:", StringComparison.Ordinal)).ToArray();
+
+    private sealed class FakeLanguageVersions(string? resolved) : ILanguageVersionSource
+    {
+        public List<(string ProjectDirectory, string Symbolic)> Calls { get; } = [];
+
+        /// <summary>Cancelled on the first call, as if the timeout ran out while the compiler was asked.</summary>
+        public CancellationTokenSource? Cancel { get; init; }
+
+        public string? Resolve(string projectDirectory, string symbolicLangVersion, CancellationToken cancellationToken)
+        {
+            Calls.Add((projectDirectory, symbolicLangVersion));
+            Cancel?.Cancel();
+            cancellationToken.ThrowIfCancellationRequested();
+            return resolved;
+        }
+    }
+
+    /// <summary>
+    /// Starts the timeout on the first call, then blocks until it runs out (or 30 seconds pass), and fails the way
+    /// <see cref="ProcessRunner"/> does when the caller's token is cancelled.
+    /// </summary>
+    private sealed class BlockingRunner(CancellationTokenSource inspection) : IProcessRunner
+    {
+        public bool Cancelled { get; private set; }
+
+        public async Task<ToolResult> RunAsync(
+            string fileName,
+            IReadOnlyList<string> arguments,
+            string workingDirectory,
+            TimeSpan timeout,
+            CancellationToken cancellationToken)
+        {
+            inspection.CancelAfter(TimeSpan.FromMilliseconds(100));
+            try
+            {
+                // Long enough for any timeout, short enough to fail rather than hang when the token never arrives.
+                await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                Cancelled = true;
+                throw;
+            }
+
+            return new ToolResult(-1, string.Empty, TimedOut: true);
+        }
+    }
 
     /// <summary>Like <see cref="ProcessRunner"/> when the executable is not on PATH.</summary>
     private sealed class UnstartableRunner : IProcessRunner

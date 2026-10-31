@@ -41,12 +41,13 @@ public static class FdgCli
         if (args.Count == 2 && args[0] == "hook" && HookCommands.Events.Contains(args[1]))
         {
             var runner = new ProcessRunner();
+            var languageVersions = new CompilerLanguageVersions(runner);
             var hooks = new HookRunner(
-                new ProjectInfoProvider(runner, new CompilerLanguageVersions(runner)),
+                new ProjectInfoProvider(runner, languageVersions),
                 // The Stop hook's own timeout (FDG_HOOK_TIMEOUT_SECONDS) bounds formatting and building.
                 new DotnetFormatRunner(runner, Timeout.InfiniteTimeSpan),
                 new DotnetBuildRunner(runner, Timeout.InfiniteTimeSpan),
-                new SessionContext(runner),
+                new SessionContext(runner, languageVersions),
                 Environment.GetEnvironmentVariable);
             // Hosts write UTF-8 JSON whatever the console code page is.
             using var input = new StreamReader(Console.OpenStandardInput(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));

@@ -21,6 +21,10 @@ public sealed partial class HookRunner
 
     private static readonly TimeSpan CleanupGrace = TimeSpan.FromSeconds(2);
 
+    // The hosts give SessionStart 15 seconds and drop its whole output after that; the rest of it, process start
+    // included, takes well under a second.
+    private static readonly TimeSpan SessionInspectionTimeout = TimeSpan.FromSeconds(10);
+
     private static readonly TimeSpan StaleSessionAge = TimeSpan.FromDays(7);
 
     private readonly IProjectInfoProvider _projects;
@@ -50,8 +54,14 @@ public sealed partial class HookRunner
     /// </summary>
     public async Task<string> SessionStartAsync(HookInput input, CancellationToken cancellationToken)
     {
-        // Inspect finds the repository root itself.
-        SessionReport? report = _session.Inspect(input.Cwd);
+        // Inspect finds the repository root itself. Out of time, it kills what it runs and reports what it found.
+        SessionReport? report;
+        using (var inspection = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+        {
+            inspection.CancelAfter(SessionInspectionTimeout);
+            report = _session.Inspect(input.Cwd, inspection.Token);
+        }
+
         if (report is null)
         {
             return HookOutput.None;

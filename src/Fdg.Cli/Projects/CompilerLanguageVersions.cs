@@ -7,7 +7,8 @@ namespace Fdg.Cli.Projects;
 public interface ILanguageVersionSource
 {
     /// <returns>The concrete version, or <see langword="null"/> when it cannot be determined.</returns>
-    string? Resolve(string projectDirectory, string symbolicLangVersion);
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was cancelled.</exception>
+    string? Resolve(string projectDirectory, string symbolicLangVersion, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -27,9 +28,9 @@ public sealed class CompilerLanguageVersions : ILanguageVersionSource
         _runner = runner;
     }
 
-    public string? Resolve(string projectDirectory, string symbolicLangVersion)
+    public string? Resolve(string projectDirectory, string symbolicLangVersion, CancellationToken cancellationToken)
     {
-        string? sdkDirectory = FindSdkDirectory(projectDirectory);
+        string? sdkDirectory = FindSdkDirectory(projectDirectory, cancellationToken);
         if (sdkDirectory is null)
         {
             return null;
@@ -39,7 +40,7 @@ public sealed class CompilerLanguageVersions : ILanguageVersionSource
         {
             string compiler = Path.Combine(sdkDirectory, "Roslyn", "bincore", "csc.dll");
             ToolResult result = File.Exists(compiler)
-                ? Run(["exec", compiler, "-langversion:?"], projectDirectory)
+                ? Run(["exec", compiler, "-langversion:?"], projectDirectory, cancellationToken)
                 : new ToolResult(1, string.Empty, false);
             versions = result.Succeeded ? SupportedLanguageVersions.Parse(result.Output) : null;
             _bySdk.Add(sdkDirectory, versions);
@@ -49,10 +50,10 @@ public sealed class CompilerLanguageVersions : ILanguageVersionSource
     }
 
     /// <summary>The SDK that <c>dotnet</c> selects in the project directory (global.json applies there).</summary>
-    private string? FindSdkDirectory(string projectDirectory)
+    private string? FindSdkDirectory(string projectDirectory, CancellationToken cancellationToken)
     {
-        ToolResult version = Run(["--version"], projectDirectory);
-        ToolResult list = Run(["--list-sdks"], projectDirectory);
+        ToolResult version = Run(["--version"], projectDirectory, cancellationToken);
+        ToolResult list = Run(["--list-sdks"], projectDirectory, cancellationToken);
         if (!version.Succeeded || !list.Succeeded)
         {
             return null;
@@ -73,8 +74,13 @@ public sealed class CompilerLanguageVersions : ILanguageVersionSource
         return null;
     }
 
-    private ToolResult Run(IReadOnlyList<string> arguments, string workingDirectory) =>
-        _runner.RunAsync("dotnet", arguments, workingDirectory, Timeout, CancellationToken.None).GetAwaiter().GetResult();
+    /// <summary>A cancelled run throws, so that nothing is cached for it.</summary>
+    private ToolResult Run(IReadOnlyList<string> arguments, string workingDirectory, CancellationToken cancellationToken)
+    {
+        ToolResult result = _runner.RunAsync("dotnet", arguments, workingDirectory, Timeout, cancellationToken).GetAwaiter().GetResult();
+        cancellationToken.ThrowIfCancellationRequested();
+        return result;
+    }
 }
 
 /// <summary>What a compiler's <c>-langversion:?</c> lists, reduced to the values the symbolic names stand for.</summary>
@@ -116,6 +122,10 @@ public sealed record SupportedLanguageVersions(string Latest, string LatestMajor
             Format(released.Where(v => v.Minor == 0).DefaultIfEmpty(released.Max()!).Max()!),
             Format(versions.Max(v => v.Version)!));
     }
+
+    /// <summary>Whether <paramref name="langVersion"/> is one of the names <see cref="Resolve"/> maps, in any case.</summary>
+    public static bool IsSymbolic(string langVersion) =>
+        langVersion.Trim().ToLowerInvariant() is "latest" or "latestmajor" or "default" or "preview";
 
     public string? Resolve(string symbolicLangVersion) => symbolicLangVersion.Trim().ToLowerInvariant() switch
     {

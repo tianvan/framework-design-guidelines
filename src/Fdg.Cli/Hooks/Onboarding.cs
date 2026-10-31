@@ -11,9 +11,9 @@ namespace Fdg.Cli.Hooks;
 /// <c>Update</c> is the package id appears in the project file, or in the nearest <c>Directory.Build.props</c>,
 /// <c>Directory.Build.targets</c> or <c>Directory.Packages.props</c> at or above it, or in a file one of those imports
 /// explicitly (<c>GetPathOfFileAbove</c> or a relative path, possibly through a property set in the importing file).
-/// Comments never count. When the project has an
-/// <c>obj/project.assets.json</c>, it decides whether such a reference took effect. A package brought in only by
-/// other imports is not seen.
+/// Comments never count. When the project has a readable <c>obj/project.assets.json</c>, it decides instead: a
+/// project whose restore included the package is onboarded whatever brought it in, and one whose restore did not is
+/// not, whatever it declares. A package brought in only by other imports is seen once restored.
 /// </summary>
 public sealed partial class Onboarding
 {
@@ -64,15 +64,14 @@ public sealed partial class Onboarding
         }
 
         string directory = Path.GetDirectoryName(projectPath)!;
-        bool declared = Facts(projectPath, followImports: false).References ||
-            ImportedFiles.Any(name => FindAbove(directory, name) is string file && References(file, new HashSet<string>(ProjectFiles.PathComparer)));
-        if (!declared)
+        // Missing, being written by a restore or cut off: the declarations decide.
+        if (ProjectInfoProvider.TryReadReferencesPackage(Path.Combine(directory, "obj", "project.assets.json"), out bool restored))
         {
-            return false;
+            return restored;
         }
 
-        string assets = Path.Combine(directory, "obj", "project.assets.json");
-        return !File.Exists(assets) || ProjectInfoProvider.ReferencesPackage(assets);
+        return Facts(projectPath, followImports: false).References ||
+            ImportedFiles.Any(name => FindAbove(directory, name) is string file && References(file, new HashSet<string>(ProjectFiles.PathComparer)));
     }
 
     private bool References(string file, HashSet<string> visited)

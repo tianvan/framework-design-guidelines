@@ -168,6 +168,59 @@ public sealed class OnboardingTests : IDisposable
     }
 
     [Fact]
+    public void Assets_listing_the_package_onboard_a_project_without_a_declared_reference()
+    {
+        // The reference comes through an import the check cannot follow.
+        string project = _tree.Write(
+            "src/A/A.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\"><Import Project=\"$(CompanyBuildRoot)\\analyzers.props\" /></Project>\n");
+        _tree.Write(
+            "src/A/obj/project.assets.json",
+            "{\"libraries\":{\"FrameworkDesignGuidelines.Analyzers/0.1.0\":{\"type\":\"package\",\"path\":\"frameworkdesignguidelines.analyzers/0.1.0\"}}}");
+
+        Assert.True(IsOnboarded(project));
+    }
+
+    [Fact]
+    public void Assets_without_the_package_still_veto_a_declared_reference()
+    {
+        string project = _tree.Write("src/A/A.csproj", Reference);
+        _tree.Write("src/A/obj/project.assets.json", "{\"libraries\":{\"Other/1.0.0\":{\"path\":\"other/1.0.0\"}}}");
+
+        Assert.False(IsOnboarded(project));
+    }
+
+    [Theory]
+    [InlineData("{\"libraries\":{\"FrameworkDesignGuidelines.Analyzers/0.1.0\":")]
+    [InlineData("")]
+    public void Unreadable_assets_leave_the_decision_to_the_declarations(string assets)
+    {
+        string declared = _tree.Write("src/A/A.csproj", Reference);
+        _tree.Write("src/A/obj/project.assets.json", assets);
+        string undeclared = _tree.Write("src/B/B.csproj", Plain);
+        _tree.Write("src/B/obj/project.assets.json", assets);
+
+        Assert.True(IsOnboarded(declared));
+        Assert.False(IsOnboarded(undeclared));
+    }
+
+    [Fact]
+    public void Locked_assets_leave_the_decision_to_the_declarations()
+    {
+        string project = _tree.Write("src/A/A.csproj", Reference);
+        string assets = _tree.Write("src/A/obj/project.assets.json", "{\"libraries\":{}}");
+
+        // Like a restore that is writing the file.
+        using (new FileStream(assets, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                Assert.True(IsOnboarded(project));
+            }
+        }
+    }
+
+    [Fact]
     public void Unreadable_project_files_do_not_count()
     {
         string project = _tree.Write("src/A/A.csproj", "<Project><ItemGroup><PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\"");

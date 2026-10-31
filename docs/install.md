@@ -82,7 +82,8 @@ three are reported but not fixed.
 - **Extracting a class into a new file while the source file stays** reports the moved code as changed in the new
   file, so it is formatted and checked as new code.
 - **An explicit `ArtifactsPath` or a custom `BaseIntermediateOutputPath`**: SessionStart looks for the build marker
-  in the project's `obj/fdg/`, so it reports such a project as never built.
+  in the project's `obj/fdg/` and where `UseArtifactsOutput` puts it by default (`artifacts/obj/<project>/fdg/`
+  beside `Directory.Build.props`), so it reports such a project as never built.
 - **A `global.json` that pins an SDK that is not installed** breaks the checks: the builds that Stop and setup run
   fail before any analyzer runs. Install that SDK or relax the pin (`rollForward`).
 - **Stop time grows with the number of projects touched** in the turn, since each is built in turn; the Stop check
