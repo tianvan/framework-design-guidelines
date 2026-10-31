@@ -62,6 +62,9 @@ public sealed class PackageFixture : IDisposable
     /// </summary>
     public string FdgToolPath => _fdgTool.Value;
 
+    /// <summary>The feed that holds the packed dotnet-fdg tool once <see cref="FdgToolPath"/> has been used.</summary>
+    public string ToolFeedDirectory => Path.Combine(Root, "tool-feed");
+
     public void Dispose()
     {
         TempDirectory.Delete(Root);
@@ -100,7 +103,7 @@ public sealed class PackageFixture : IDisposable
 
     private string InstallFdgTool()
     {
-        string toolFeed = Path.Combine(Root, "tool-feed");
+        string toolFeed = ToolFeedDirectory;
         string toolDirectory = Path.Combine(Root, "tools");
         DotnetResult pack = PackSerialized(
             RepositoryRoot,
