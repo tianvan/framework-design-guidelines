@@ -3,8 +3,8 @@ namespace Fdg.Cli.Tooling;
 /// <summary>
 /// Runs dotnet format until the files stop changing, at most a given number of times. A FixAll pass cannot fix nested
 /// occurrences, such as single-line blocks inside each other, so one run is not always enough. After each run, every source file
-/// gets back the line ending it had before the first run (see <see cref="LineEndings"/>), also when the run fails
-/// or throws.
+/// that came out with mixed line endings gets back the line ending it had before the first run (see
+/// <see cref="LineEndings"/>), also when the run fails or throws.
 /// </summary>
 public static class FormatPasses
 {

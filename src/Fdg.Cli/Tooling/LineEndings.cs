@@ -3,14 +3,18 @@ using Fdg.Cli.IO;
 namespace Fdg.Cli.Tooling;
 
 /// <summary>
-/// Keeps each file's line ending across dotnet format. Without an <c>end_of_line</c> setting, the whitespace
-/// formatter writes the platform newline before a line that starts with a block comment, which leaves an LF file
-/// on Windows with mixed line endings.
+/// Repairs the mixed line endings dotnet format can leave in a file. Without an <c>end_of_line</c> setting, the
+/// whitespace formatter writes the platform newline before a line that starts with a block comment, which leaves an
+/// LF file on Windows with mixed line endings.
 /// </summary>
 /// <remarks>
 /// The files are edited as code units, so the encoding and its byte order mark stay as they are: a BOM selects
 /// UTF-16 or UTF-32, anything else is treated as single-byte units, which suits UTF-8 and other ASCII-compatible
 /// encodings.
+/// <para>
+/// A file that comes out with one style throughout is left alone, also when the style changed: that is a configured
+/// <c>end_of_line</c> at work.
+/// </para>
 /// </remarks>
 public static class LineEndings
 {
@@ -36,7 +40,10 @@ public static class LineEndings
         return endings;
     }
 
-    /// <summary>Gives each recorded file whose line endings changed its recorded newline throughout.</summary>
+    /// <summary>
+    /// Gives each recorded file that now has mixed line endings, or a lone carriage return, its recorded newline
+    /// throughout. A file that uses one style only, even a different one, is left as written.
+    /// </summary>
     public static void Restore(IReadOnlyDictionary<string, string> endings)
     {
         foreach (KeyValuePair<string, string> entry in endings)
@@ -47,6 +54,12 @@ public static class LineEndings
             }
 
             byte[] bytes = File.ReadAllBytes(entry.Key);
+            if (GetEnding(bytes) is not null)
+            {
+                // One style throughout: unchanged, or converted on purpose by end_of_line.
+                continue;
+            }
+
             if (Convert(bytes, entry.Value == "\r\n") is { } converted)
             {
                 AtomicFile.WriteAllBytes(entry.Key, converted);

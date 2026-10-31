@@ -87,7 +87,8 @@ No diagnostic ids were added or removed and no severity changed.
   - include lists longer than the Windows command line, now split into several `dotnet format` runs.
 
   [docs/install.md](docs/install.md#known-limitations) lists what remains.
-- Stop and `dotnet fdg fix` keep each file's line endings after `dotnet format`.
+- Stop and `dotnet fdg fix` repair the mixed line endings `dotnet format` can leave in a file, giving it back its
+  original line ending. A file converted throughout by a configured `end_of_line` is left as converted.
 
 ### Requirements and release engineering
 

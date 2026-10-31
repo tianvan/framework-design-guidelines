@@ -399,6 +399,35 @@ public sealed class FixCommandTests : IDisposable
     }
 
     [Fact]
+    public async Task Format_leaves_a_uniform_conversion_of_the_line_endings()
+    {
+        // end_of_line in .editorconfig makes dotnet format convert every line; that is the user's choice.
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string toCrLf = WriteBytes("A/ToCrLf.cs", "class A\n{\n}\n");
+        string toLf = WriteBytes("A/ToLf.cs", "class B\r\n{\r\n}\r\n");
+        _formatter.OnCall = _ =>
+        {
+            WriteBytes("A/ToCrLf.cs", "class A\r\n{\r\n    int x;\r\n}\r\n");
+            WriteBytes("A/ToLf.cs", "class B\n{\n    int y;\n}\n");
+        };
+
+        Assert.Equal(0, await RunAsync());
+        Assert.Equal(Encode("class A\r\n{\r\n    int x;\r\n}\r\n"), File.ReadAllBytes(toCrLf));
+        Assert.Equal(Encode("class B\n{\n    int y;\n}\n"), File.ReadAllBytes(toLf));
+    }
+
+    [Fact]
+    public async Task Format_repairs_a_lone_carriage_return_left_by_a_pass()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string file = WriteBytes("A/Code.cs", "class A\n{\n}\n");
+        _formatter.OnCall = _ => WriteBytes("A/Code.cs", "class A\r\n{\r\n    int x;\r}\r\n");
+
+        Assert.Equal(0, await RunAsync());
+        Assert.Equal(Encode("class A\n{\n    int x;\r}\n"), File.ReadAllBytes(file));
+    }
+
+    [Fact]
     public async Task Format_stops_once_a_pass_only_changes_line_endings()
     {
         // Restored to its line ending, the file equals the one before the pass, so no second pass runs.
