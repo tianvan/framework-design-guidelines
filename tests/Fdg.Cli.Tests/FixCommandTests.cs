@@ -187,6 +187,41 @@ public sealed class FixCommandTests : IDisposable
     }
 
     [Fact]
+    public async Task Fix_reports_files_with_syntax_errors_as_skipped()
+    {
+        string project = AddProject("A/A.csproj", ProjectState.InScope);
+        _tree.Write("A/Good.cs", "class Good { }\n");
+        _tree.Write("A/中文 目录/Broken.cs", "class Broken\n{\n    void M( { }\n}\n");
+
+        int exitCode = await RunAsync();
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(
+            "skipped A/中文 目录/Broken.cs: it has syntax errors (first at line 3); dotnet format does not change it\n" +
+            "fixed A/A.csproj\n",
+            Output);
+        // The broken file is left out of the run, so dotnet format really does not change it.
+        FormatCall call = Assert.Single(_formatter.Calls);
+        Assert.Equal(project, call.ProjectPath);
+        Assert.Equal(["Good.cs"], call.IncludeFiles);
+    }
+
+    [Fact]
+    public async Task Fix_of_broken_files_only_runs_no_format()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        _tree.Write("A/Broken.cs", "class Broken\n{\n    int x\n}\n");
+
+        int exitCode = await RunAsync("A/Broken.cs");
+
+        Assert.Equal(0, exitCode);
+        Assert.Empty(_formatter.Calls);
+        Assert.Equal(
+            "skipped A/Broken.cs: it has syntax errors (first at line 3); dotnet format does not change it\n",
+            Output);
+    }
+
+    [Fact]
     public async Task Format_failure_returns_exit_code_1_with_message()
     {
         AddProject("A/A.csproj", ProjectState.InScope);
@@ -222,7 +257,7 @@ public sealed class FixCommandTests : IDisposable
     public async Task Format_is_repeated_while_files_change_up_to_three_passes()
     {
         AddProject("A/A.csproj", ProjectState.InScope);
-        string file = _tree.Write("A/Code.cs", "0");
+        string file = _tree.Write("A/Code.cs", "// 0");
         _formatter.OnCall = _ => File.AppendAllText(file, "+");
 
         Assert.Equal(0, await RunAsync());
@@ -233,12 +268,12 @@ public sealed class FixCommandTests : IDisposable
     public async Task Format_stops_once_a_pass_changes_nothing()
     {
         AddProject("A/A.csproj", ProjectState.InScope);
-        string file = _tree.Write("A/Code.cs", "0");
+        string file = _tree.Write("A/Code.cs", "// 0");
         _formatter.OnCall = count =>
         {
             if (count == 1)
             {
-                File.WriteAllText(file, "1");
+                File.WriteAllText(file, "// 1");
             }
         };
 
@@ -250,8 +285,8 @@ public sealed class FixCommandTests : IDisposable
     public async Task Changes_outside_the_include_do_not_trigger_another_pass()
     {
         AddProject("A/A.csproj", ProjectState.InScope);
-        _tree.Write("A/Included.cs", "0");
-        string other = _tree.Write("A/Other.cs", "0");
+        _tree.Write("A/Included.cs", "// 0");
+        string other = _tree.Write("A/Other.cs", "// 0");
         _formatter.OnCall = _ => File.AppendAllText(other, "+");
 
         Assert.Equal(0, await RunAsync("A/Included.cs"));
@@ -336,6 +371,33 @@ public sealed class FixCommandTests : IDisposable
 
         Assert.Equal(1, await RunAsync());
         Assert.Equal(Encode("class A\n{\n}\n"), File.ReadAllBytes(file));
+    }
+
+    [Fact]
+    public async Task Thrown_format_still_restores_the_line_endings()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string file = WriteBytes("A/Code.cs", "class A\n{\n}\n");
+        _formatter.OnCall = _ =>
+        {
+            WriteBytes("A/Code.cs", "class A\r\n{\n}\n");
+            throw new OperationCanceledException();
+        };
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => RunAsync());
+        Assert.Equal(Encode("class A\n{\n}\n"), File.ReadAllBytes(file));
+    }
+
+    [Fact]
+    public async Task File_deleted_during_the_run_is_not_an_error()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        _tree.Write("A/Kept.cs", "class Kept { }\n");
+        string deleted = _tree.Write("A/Deleted.cs", "class Deleted { }\n");
+        _formatter.OnCall = _ => File.Delete(deleted);
+
+        Assert.Equal(0, await RunAsync());
+        Assert.Equal("fixed A/A.csproj\n", Output);
     }
 
     [Fact]

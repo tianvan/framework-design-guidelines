@@ -2,12 +2,15 @@ using System.Security.Cryptography;
 using Fdg.Cli.Projects;
 using Fdg.Cli.Rules;
 using Fdg.Cli.Tooling;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Fdg.Cli.Commands;
 
 /// <summary>
 /// <c>dotnet fdg fix [&lt;path&gt;...]</c>: runs dotnet format on every in-scope project, fixing the manifest's
 /// registered diagnostics except the breaking ones. Prints one line per project; exits with 1 when any project failed, 2 on invalid arguments.
+/// A file with syntax errors is left out of the run and gets a <c>skipped</c> line of its own; that is not a failure.
 /// </summary>
 public sealed class FixCommand
 {
@@ -127,10 +130,34 @@ public sealed class FixCommand
             return false;
         }
 
+        string[] sources = SourceFiles(target);
         IReadOnlyList<string>? includes = target.IncludeFiles is null
             ? null
             : FormatIncludes.ToProjectRelative(target.ProjectPath, target.IncludeFiles);
-        string[] sources = SourceFiles(target);
+        (string File, int Line)[] broken = sources
+            .Select(file => (File: file, Line: FirstSyntaxErrorLine(file) ?? 0))
+            .Where(file => file.Line > 0)
+            .ToArray();
+        if (broken.Length > 0)
+        {
+            // dotnet format still reformats the whitespace of a file it cannot parse (measured with SDK 10.0.403),
+            // so such files are left out of the run and the others are included one by one.
+            foreach ((string file, int line) in broken)
+            {
+                _output.WriteLine(
+                    $"skipped {DisplayPath(file, cwd)}: it has syntax errors (first at line {line}); " +
+                    "dotnet format does not change it");
+            }
+
+            sources = sources.Except(broken.Select(b => b.File), ProjectFiles.PathComparer).ToArray();
+            if (sources.Length == 0)
+            {
+                return true;
+            }
+
+            includes = FormatIncludes.ToProjectRelative(target.ProjectPath, sources);
+        }
+
         ToolResult format = await FormatPasses
             .RunAsync(
                 _formatter,
@@ -167,7 +194,6 @@ public sealed class FixCommand
     /// <summary>Relative to the current directory with forward slashes, as the user typed it.</summary>
     private static string DisplayPath(string path, string cwd) => Path.GetRelativePath(cwd, path).Replace('\\', '/');
 
-    /// <summary>A hash over the paths and contents of the C# files a format pass may change.</summary>
     /// <summary>The files a format pass may change: the included files, or the project's C# files.</summary>
     private static string[] SourceFiles(FixTarget target)
     {
@@ -179,16 +205,55 @@ public sealed class FixCommand
             .ToArray();
     }
 
+    /// <summary>
+    /// A hash over the paths and contents of the C# files a format pass may change. A file deleted during the run
+    /// counts as empty instead of failing the run.
+    /// </summary>
     private static string HashSources(IEnumerable<string> files)
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (string file in files)
         {
             hash.AppendData(System.Text.Encoding.UTF8.GetBytes(file + "\n"));
-            hash.AppendData(SHA256.HashData(File.ReadAllBytes(file)));
+            hash.AppendData(SHA256.HashData(ReadOrEmpty(file)));
         }
 
         return Convert.ToHexString(hash.GetHashAndReset());
+    }
+
+    private static byte[] ReadOrEmpty(string file)
+    {
+        try
+        {
+            return File.ReadAllBytes(file);
+        }
+        catch (Exception e) when (e is FileNotFoundException or DirectoryNotFoundException)
+        {
+            return [];
+        }
+    }
+
+    /// <summary>
+    /// The 1-based line of the first syntax error in the file, parsed with the newest language version so that only
+    /// real syntax errors count; <see langword="null"/> when it has none or cannot be read.
+    /// </summary>
+    private static int? FirstSyntaxErrorLine(string file)
+    {
+        string text;
+        try
+        {
+            text = File.ReadAllText(file);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+
+        SyntaxTree tree = CSharpSyntaxTree.ParseText(text, new CSharpParseOptions(LanguageVersion.Preview));
+        Diagnostic? first = tree.GetDiagnostics()
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .MinBy(d => d.Location.SourceSpan.Start);
+        return first is null ? null : first.Location.GetLineSpan().StartLinePosition.Line + 1;
     }
 
     private void Report(string verb, string display, string reason, ToolResult result)

@@ -1,3 +1,5 @@
+using Fdg.Cli.IO;
+
 namespace Fdg.Cli.Tooling;
 
 /// <summary>
@@ -47,7 +49,7 @@ public static class LineEndings
             byte[] bytes = File.ReadAllBytes(entry.Key);
             if (Convert(bytes, entry.Value == "\r\n") is { } converted)
             {
-                WriteAtomically(entry.Key, converted);
+                AtomicFile.WriteAllBytes(entry.Key, converted);
             }
         }
     }
@@ -109,23 +111,6 @@ public static class LineEndings
         }
 
         return changed ? output.ToArray() : null;
-    }
-
-    /// <summary>Writes a temporary file next to <paramref name="path"/>, then moves it over the original.</summary>
-    private static void WriteAtomically(string path, byte[] bytes)
-    {
-        string temporary = Path.Combine(
-            Path.GetDirectoryName(path)!,
-            "." + Path.GetFileName(path) + "." + Guid.NewGuid().ToString("N")[..8] + ".tmp");
-        try
-        {
-            File.WriteAllBytes(temporary, bytes);
-            File.Move(temporary, path, overwrite: true);
-        }
-        finally
-        {
-            File.Delete(temporary);
-        }
     }
 
     /// <summary>The code units of a file, as its byte order mark gives them.</summary>

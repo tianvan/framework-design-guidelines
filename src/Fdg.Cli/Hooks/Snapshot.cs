@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Fdg.Cli.IO;
 using Fdg.Cli.Projects;
 
 namespace Fdg.Cli.Hooks;
@@ -178,8 +179,9 @@ public static class Snapshot
             content = await moveSources.FindAsync(current, cancellationToken).ConfigureAwait(false);
         }
 
+        // Written once and then trusted, so a kill halfway must not leave a torn baseline.
         Directory.CreateDirectory(Path.GetDirectoryName(baseline)!);
-        await File.WriteAllBytesAsync(baseline, content ?? [], cancellationToken).ConfigureAwait(false);
+        AtomicFile.WriteAllBytes(baseline, content ?? []);
         return baseline;
     }
 

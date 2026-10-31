@@ -17,7 +17,16 @@
     <_FdgWritesSarif Condition="'$(FdgSarifDir)' != '' and '$(_FdgSarifProjectPath)' == '$(_FdgProjectPath)'">true</_FdgWritesSarif>
     <_FdgSarifName>$(TargetFramework)</_FdgSarifName>
     <_FdgSarifName Condition="'$(_FdgSarifName)' == ''">single</_FdgSarifName>
-    <ErrorLog Condition="'$(_FdgWritesSarif)' == 'true'">$(FdgSarifDir)/$(_FdgSarifName).sarif,version=2.1</ErrorLog>
+    <!--
+      The compiler splits /errorlog:<path>,version=2.1 on commas and keeps quotes as part of the path, so a path with
+      a comma is passed relative to the project directory, against which the compiler resolves it (measured with SDK
+      10.0.403). The state directory is usually inside the repository, so the comma in the repository's own name
+      drops out. When the relative path still has one, no log is requested rather than failing the build with
+      CS2046; dotnet-fdg then reports that no SARIF log was written.
+    -->
+    <_FdgSarifPath>$(FdgSarifDir)/$(_FdgSarifName).sarif</_FdgSarifPath>
+    <_FdgSarifPath Condition="'$(_FdgWritesSarif)' == 'true' and $(_FdgSarifPath.Contains(','))">$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$(_FdgSarifPath)'))</_FdgSarifPath>
+    <ErrorLog Condition="'$(_FdgWritesSarif)' == 'true' and !$(_FdgSarifPath.Contains(','))">$(_FdgSarifPath),version=2.1</ErrorLog>
   </PropertyGroup>
 
   <!--

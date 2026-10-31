@@ -51,6 +51,30 @@ public sealed class DotnetFormatRunnerTests
     }
 
     [Fact]
+    public async Task Long_include_list_does_not_exceed_the_command_line_limit()
+    {
+        string project = Path.Combine(Path.GetTempPath(), "中文 目录", "A", "A.csproj");
+        string[] includes = Enumerable.Range(0, 2000)
+            .Select(i => $"src/a rather long directory name/中文 目录/{i:D4}/SomeFairlyLongTypeNameForTheTest{i}.cs")
+            .Append("@starts with an at sign.cs")
+            .Append("#starts with a hash.cs")
+            .ToArray();
+        var runner = new RecordingRunner();
+
+        await new DotnetFormatRunner(runner, TimeSpan.FromMinutes(1))
+            .FormatAsync(project, includes, ["FDGA003"], CancellationToken.None);
+
+        Assert.NotEmpty(runner.Calls);
+        // Each argument costs at most its length, a separating space and two quotes.
+        Assert.All(runner.Calls, call => Assert.InRange("dotnet".Length + call.Arguments.Sum(a => a.Length + 3), 0, 30000));
+        // Every file is still included, each exactly once, whichever way the list was passed.
+        Assert.Equal(
+            includes.Select(i => i.StartsWith('@') || i.StartsWith('#') ? "./" + i : i),
+            runner.Calls.SelectMany(call => call.Includes));
+        Assert.All(runner.Calls, call => Assert.Equal(["--diagnostics", "FDGA003"], call.Arguments.TakeLast(2)));
+    }
+
+    [Fact]
     public void Includes_are_relative_to_the_project_with_forward_slashes()
     {
         using var tree = new TempTree();
@@ -63,6 +87,8 @@ public sealed class DotnetFormatRunnerTests
             FormatIncludes.ToProjectRelative(project, [file, directory]));
     }
 
+    private sealed record RecordedCall(IReadOnlyList<string> Arguments, IReadOnlyList<string> Includes);
+
     private sealed class RecordingRunner : IProcessRunner
     {
         public string? FileName { get; private set; }
@@ -70,6 +96,8 @@ public sealed class DotnetFormatRunnerTests
         public string? WorkingDirectory { get; private set; }
 
         public IReadOnlyList<string> Arguments { get; private set; } = [];
+
+        public List<RecordedCall> Calls { get; } = [];
 
         public Task<ToolResult> RunAsync(
             string fileName,
@@ -79,9 +107,38 @@ public sealed class DotnetFormatRunnerTests
             CancellationToken cancellationToken)
         {
             FileName = fileName;
-            Arguments = arguments;
+            Arguments = arguments.ToArray();
             WorkingDirectory = workingDirectory;
+            Calls.Add(new RecordedCall(Arguments, Includes(arguments)));
             return Task.FromResult(new ToolResult(0, string.Empty, false));
+        }
+
+        /// <summary>
+        /// The values after <c>--include</c>, with a response file read as dotnet format reads it: one value per
+        /// line. It is read now, since the runner deletes it after the call.
+        /// </summary>
+        private static List<string> Includes(IReadOnlyList<string> arguments)
+        {
+            var includes = new List<string>();
+            int start = arguments.ToList().IndexOf("--include");
+            if (start < 0)
+            {
+                return includes;
+            }
+
+            foreach (string argument in arguments.Skip(start + 1).TakeWhile(a => !a.StartsWith("--", StringComparison.Ordinal)))
+            {
+                if (argument.StartsWith('@'))
+                {
+                    includes.AddRange(File.ReadAllLines(argument[1..]).Where(line => line.Length > 0));
+                }
+                else
+                {
+                    includes.Add(argument);
+                }
+            }
+
+            return includes;
         }
     }
 }

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Fdg.Cli.IO;
 using Fdg.Cli.Projects;
 
 namespace Fdg.Cli.Hooks;
@@ -10,7 +11,8 @@ namespace Fdg.Cli.Hooks;
 /// Per-session hook state under <c>&lt;git-dir&gt;/fdg/&lt;session_id&gt;/</c>, which git never shows as a change:
 /// <c>snapshot.json</c>, <c>baseline/&lt;sha1(path)&gt;</c>, <c>ai/&lt;sha1(path)&gt;</c>,
 /// <c>formatted/&lt;sha1(path)&gt;</c>, <c>ai-lines.json</c>, <c>blocks.txt</c>, <c>autofix.json</c> and
-/// <c>sarif/&lt;turn&gt;/</c>. Paths are relative to the repository root with forward slashes.
+/// <c>sarif/&lt;turn&gt;/</c>. Paths are relative to the repository root with forward slashes. Files are replaced
+/// with <see cref="AtomicFile"/>, so a hook killed halfway leaves the previous content rather than a torn file.
 /// </summary>
 public sealed class StateStore
 {
@@ -172,7 +174,7 @@ public sealed class StateStore
     public void WriteBlocks(int blocks)
     {
         System.IO.Directory.CreateDirectory(Directory);
-        File.WriteAllText(Path.Combine(Directory, "blocks.txt"), blocks.ToString(CultureInfo.InvariantCulture));
+        AtomicFile.WriteAllText(Path.Combine(Directory, "blocks.txt"), blocks.ToString(CultureInfo.InvariantCulture));
     }
 
     public AutofixRecord? ReadAutofix() => ReadJson<AutofixRecord>("autofix.json");
@@ -218,6 +220,6 @@ public sealed class StateStore
     private void WriteJson<T>(string name, T value)
     {
         System.IO.Directory.CreateDirectory(Directory);
-        File.WriteAllText(Path.Combine(Directory, name), JsonSerializer.Serialize(value, JsonOptions));
+        AtomicFile.WriteAllText(Path.Combine(Directory, name), JsonSerializer.Serialize(value, JsonOptions));
     }
 }

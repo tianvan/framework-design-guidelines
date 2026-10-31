@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Fdg.Cli.Commands;
+using Fdg.Cli.IO;
 using Fdg.Cli.Projects;
 using Fdg.Cli.Rules;
 using Fdg.Cli.Tooling;
@@ -168,7 +169,7 @@ public sealed partial class HookRunner
         {
             string aiVersion = state.AiVersionPath(path);
             Directory.CreateDirectory(Path.GetDirectoryName(aiVersion)!);
-            File.Copy(Snapshot.FullPath(git, path), aiVersion, overwrite: true);
+            AtomicFile.Copy(Snapshot.FullPath(git, path), aiVersion);
         }
 
         // 2. Per project, a few at a time: format.
@@ -309,7 +310,7 @@ public sealed partial class HookRunner
             changedLines[current] = lines;
             aiLines[path] = lines.Order().ToArray();
             Directory.CreateDirectory(Path.GetDirectoryName(previous)!);
-            File.Copy(current, previous, overwrite: true);
+            AtomicFile.Copy(current, previous);
         }
 
         state.WriteAiLines(aiLines);
@@ -475,10 +476,15 @@ public sealed partial class HookRunner
         return (diagnostics, unreadable);
     }
 
-    /// <summary>A log with results, none of them in a file of the project, is a referenced project's.</summary>
+    /// <summary>
+    /// A log with results, none of them in a file of the project, is a referenced project's. The project's files are
+    /// those under its directory and those its project file lists in static <c>Compile</c> items, such as linked
+    /// shared files (<see cref="ProjectFiles.StaticCompileItems"/>).
+    /// </summary>
     private static bool IsForeign(IReadOnlyList<SarifDiagnostic> diagnostics, string projectPath)
     {
         var owners = new Dictionary<string, bool>(ProjectFiles.PathComparer);
+        HashSet<string>? compileItems = null;
         return diagnostics.Count > 0 && !diagnostics.Any(d =>
         {
             string directory = Path.GetDirectoryName(d.FilePath) ?? string.Empty;
@@ -489,7 +495,13 @@ public sealed partial class HookRunner
                 owners.Add(directory, owned);
             }
 
-            return owned;
+            if (owned)
+            {
+                return true;
+            }
+
+            compileItems ??= ProjectFiles.StaticCompileItems(projectPath).ToHashSet(ProjectFiles.PathComparer);
+            return compileItems.Contains(Path.GetFullPath(d.FilePath));
         });
     }
 

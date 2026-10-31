@@ -3,7 +3,8 @@ namespace Fdg.Cli.Tooling;
 /// <summary>
 /// Runs dotnet format until the files stop changing. A FixAll pass cannot fix nested occurrences, such as
 /// single-line blocks inside each other, so one run is not always enough. After each run, every source file
-/// gets back the line ending it had before the first run (see <see cref="LineEndings"/>).
+/// gets back the line ending it had before the first run (see <see cref="LineEndings"/>), also when the run fails
+/// or throws.
 /// </summary>
 public static class FormatPasses
 {
@@ -26,10 +27,18 @@ public static class FormatPasses
         ToolResult result = new(0, string.Empty, false);
         for (int pass = 1; pass <= MaxPasses; pass++)
         {
-            result = await formatter
-                .FormatAsync(projectPath, includeFiles, diagnostics, cancellationToken)
-                .ConfigureAwait(false);
-            LineEndings.Restore(endings);
+            try
+            {
+                result = await formatter
+                    .FormatAsync(projectPath, includeFiles, diagnostics, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                // Also when the run fails or is cancelled: dotnet format may have written some files already.
+                LineEndings.Restore(endings);
+            }
+
             if (!result.Succeeded)
             {
                 return result;

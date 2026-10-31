@@ -901,6 +901,58 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Linked_compile_results_do_not_force_a_rebuild()
+    {
+        // The project compiles files outside its directory through static Compile items; a log whose results are
+        // all in those files is the project's own, not a referenced project's.
+        _repo.Write(
+            "src/中文 App/App.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\">\n" +
+            "  <ItemGroup>\n" +
+            "    <PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" PrivateAssets=\"all\" />\n" +
+            "    <Compile Include=\"..\\Shared\\Linked.cs;$(MSBuildThisFileDirectory)..\\Shared\\Other.cs\" Link=\"Linked.cs\" />\n" +
+            "    <Compile Include=\"..\\Shared\\*.g.cs\" />\n" +
+            "  </ItemGroup>\n" +
+            "</Project>\n");
+        string linked = _repo.Write("src/Shared/Linked.cs", Lines(5));
+        string other = _repo.Write("src/Shared/Other.cs", Lines(5));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int changed;")));
+        _builder.Sarif = _ =>
+        [
+            new SarifResult("CA1707", "warning", "In a linked file", linked, 2),
+            new SarifResult("CA1707", "warning", "In another linked file", other, 3),
+        ];
+
+        await TurnStopAsync();
+
+        Assert.Equal([false], _builder.Calls.Select(c => c.NoIncremental));
+    }
+
+    [Fact]
+    public async Task Wildcard_compile_items_are_not_taken_as_the_project_s_files()
+    {
+        _repo.Write(
+            "src/中文 App/App.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\">\n" +
+            "  <ItemGroup>\n" +
+            "    <PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" PrivateAssets=\"all\" />\n" +
+            "    <Compile Include=\"..\\Lib\\*.cs\" />\n" +
+            "  </ItemGroup>\n" +
+            "</Project>\n");
+        string libFile = _repo.Write("src/Lib/L.cs", Lines(5));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int changed;")));
+        _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "In the referenced project", libFile, 2)];
+
+        await TurnStopAsync();
+
+        Assert.Equal([false, true], _builder.Calls.Select(c => c.NoIncremental));
+    }
+
+    [Fact]
     public async Task At_most_4_projects_are_formatted_at_once()
     {
         for (int i = 0; i < 7; i++)
