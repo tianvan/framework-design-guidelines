@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using Fdg.Cli.Tooling;
 
@@ -18,9 +17,6 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
     private static readonly TimeSpan QueryTimeout = TimeSpan.FromMinutes(2);
 
     private static readonly string[] Profiles = ["library", "application", "test"];
-
-    // Ruled out without parsing: assets files run to megabytes, and Onboarding reads them on every turn.
-    private static readonly byte[] LowerCasePackageId = Encoding.UTF8.GetBytes(PackageId.ToLowerInvariant() + "/");
 
     private static readonly string[] QueriedProperties =
     [
@@ -260,7 +256,7 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
             referencesPackage = assets.RootElement.ValueKind == JsonValueKind.Object &&
                 assets.RootElement.TryGetProperty("libraries", out JsonElement libraries) &&
                 libraries.ValueKind == JsonValueKind.Object &&
-                libraries.EnumerateObject().Any(l => l.Name.StartsWith(PackageId + "/", StringComparison.OrdinalIgnoreCase));
+                libraries.EnumerateObject().Any(IsPackage);
             return true;
         }
         catch (JsonException)
@@ -269,18 +265,25 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
         }
     }
 
-    /// <summary>Whether the package id followed by <c>/</c> appears anywhere, in any ASCII case.</summary>
-    private static bool MentionsPackage(byte[] content)
-    {
-        byte[] lower = new byte[content.Length];
-        for (int i = 0; i < content.Length; i++)
-        {
-            byte b = content[i];
-            lower[i] = b is >= (byte)'A' and <= (byte)'Z' ? (byte)(b | 0x20) : b;
-        }
+    /// <summary>
+    /// Whether the assets file may list the package: as written in its <c>libraries</c> key, or in NuGet's lower-case
+    /// <c>path</c>. Ruled out without parsing or copying, since assets files run to megabytes and Onboarding reads
+    /// them on every turn.
+    /// </summary>
+    private static bool MentionsPackage(ReadOnlySpan<byte> content) =>
+        content.IndexOf("FrameworkDesignGuidelines.Analyzers/"u8) >= 0 ||
+        content.IndexOf("frameworkdesignguidelines.analyzers/"u8) >= 0;
 
-        return lower.AsSpan().IndexOf(LowerCasePackageId) >= 0;
-    }
+    /// <summary>
+    /// A <c>libraries</c> entry for the package itself. A project reference to a project of the same name is listed
+    /// with <c>"type": "project"</c>.
+    /// </summary>
+    private static bool IsPackage(JsonProperty library) =>
+        library.Name.StartsWith(PackageId + "/", StringComparison.OrdinalIgnoreCase) &&
+        library.Value.ValueKind == JsonValueKind.Object &&
+        library.Value.TryGetProperty("type", out JsonElement type) &&
+        type.ValueKind == JsonValueKind.String &&
+        type.ValueEquals("package");
 
     private string? QueryMaxSupportedLangVersion(string csprojPath, string? targetFramework)
     {

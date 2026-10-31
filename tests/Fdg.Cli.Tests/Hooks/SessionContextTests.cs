@@ -188,6 +188,21 @@ public sealed class SessionContextTests : IDisposable
     }
 
     [Fact]
+    public void Projects_not_reached_before_the_timeout_are_left_out()
+    {
+        // A's language version takes the rest of the time; B, never built, is not reached.
+        Project("src/A/A.csproj", "library", "latest", "net10.0");
+        _repo.Write("src/B/B.csproj", Onboarded);
+        using var timeout = new CancellationTokenSource();
+        var languageVersions = new FakeLanguageVersions("14.0") { Cancel = timeout };
+
+        SessionReport report = new SessionContext(DotnetRunner(), languageVersions).Inspect(_repo.Root, timeout.Token)!;
+
+        Assert.Equal([SessionContext.TimedOutLine], report.Issues);
+        Assert.DoesNotContain("Never built", report.Text, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Inspect_cancelled_while_resolving_a_lang_version_keeps_the_value_as_written()
     {
         Project("src/A/A.csproj", "library", "latest", "net10.0");

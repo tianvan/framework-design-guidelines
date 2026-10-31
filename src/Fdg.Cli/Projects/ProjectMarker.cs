@@ -31,6 +31,9 @@ public sealed record ProjectMarker(
         foreach (string directory in markerDirectories.Select(Path.GetFullPath).Distinct(ProjectFiles.PathComparer))
         {
             IReadOnlyList<ProjectMarker> markers = ReadOwn(directory, projectPath, out DateTime written);
+            // The write time is that of the last change of content: the package writes markers only when they differ.
+            // After switching layouts back and forth, an unchanged marker in the layout in use can look older than
+            // the stale one, which then wins; accepted as rare.
             if (markers.Count > 0 && (current.Count == 0 || written > currentWritten))
             {
                 current = markers;

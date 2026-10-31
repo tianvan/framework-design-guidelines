@@ -271,6 +271,17 @@ public sealed class ProjectInfoProviderTests : IDisposable
     }
 
     [Fact]
+    public void Project_reference_of_the_same_name_is_NoPackage()
+    {
+        string project = WriteRestoredProject(
+            """{ "version": 3, "libraries": { "FrameworkDesignGuidelines.Analyzers/0.2.0": { "type": "project", "path": "../FrameworkDesignGuidelines.Analyzers/FrameworkDesignGuidelines.Analyzers.csproj" } } }""");
+
+        ProjectInfo info = new ProjectInfoProvider(new FakeProcessRunner(), NoCompiler).Get(project);
+
+        Assert.Equal(ProjectState.NoPackage, info.State);
+    }
+
+    [Fact]
     public void Provider_ignores_a_marker_of_another_project()
     {
         // Projects in one directory share obj/; the marker there is the one B.csproj wrote.

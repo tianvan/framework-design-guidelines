@@ -83,7 +83,9 @@ three are reported but not fixed.
   file, so it is formatted and checked as new code.
 - **An explicit `ArtifactsPath` or a custom `BaseIntermediateOutputPath`**: SessionStart looks for the build marker
   in the project's `obj/fdg/` and where `UseArtifactsOutput` puts it by default (`artifacts/obj/<project>/fdg/`
-  beside `Directory.Build.props`), so it reports such a project as never built.
+  beside `Directory.Build.props`), so it reports such a project as never built. The hooks read the restore's
+  `project.assets.json` from the same two places to tell whether a project uses the package; elsewhere they go by
+  the declared package references only.
 - **A `global.json` that pins an SDK that is not installed** breaks the checks: the builds that Stop and setup run
   fail before any analyzer runs. Install that SDK or relax the pin (`rollForward`).
 - **Stop time grows with the number of projects touched** in the turn, since each is built in turn; the Stop check

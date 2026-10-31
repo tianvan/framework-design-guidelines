@@ -9,6 +9,13 @@ public sealed class OnboardingTests : IDisposable
     private const string Reference =
         "<Project><ItemGroup><PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" PrivateAssets=\"all\" /></ItemGroup></Project>\n";
 
+    private const string PackageAssets =
+        "{\"libraries\":{\"FrameworkDesignGuidelines.Analyzers/0.1.0\":{\"type\":\"package\",\"path\":\"frameworkdesignguidelines.analyzers/0.1.0\"}}}";
+
+    private const string ProjectAssets =
+        "{\"libraries\":{\"FrameworkDesignGuidelines.Analyzers/0.2.0\":{\"type\":\"project\"," +
+        "\"path\":\"../FrameworkDesignGuidelines.Analyzers/FrameworkDesignGuidelines.Analyzers.csproj\"}}}";
+
     private readonly TempTree _tree = new();
 
     public void Dispose()
@@ -161,7 +168,7 @@ public sealed class OnboardingTests : IDisposable
         string restoredWithout = _tree.Write("src/A/A.csproj", Reference);
         _tree.Write("src/A/obj/project.assets.json", "{\"libraries\":{\"Other/1.0.0\":{}}}");
         string restoredWith = _tree.Write("src/B/B.csproj", Reference);
-        _tree.Write("src/B/obj/project.assets.json", "{\"libraries\":{\"FrameworkDesignGuidelines.Analyzers/0.1.0\":{}}}");
+        _tree.Write("src/B/obj/project.assets.json", PackageAssets);
 
         Assert.False(IsOnboarded(restoredWithout));
         Assert.True(IsOnboarded(restoredWith));
@@ -188,6 +195,50 @@ public sealed class OnboardingTests : IDisposable
         _tree.Write("src/A/obj/project.assets.json", "{\"libraries\":{\"Other/1.0.0\":{\"path\":\"other/1.0.0\"}}}");
 
         Assert.False(IsOnboarded(project));
+    }
+
+    [Fact]
+    public void Project_reference_of_the_same_name_is_not_the_package()
+    {
+        // As in this repository: projects that reference the analyzer project, not the package.
+        string undeclared = _tree.Write("src/A/A.csproj", Plain);
+        _tree.Write("src/A/obj/project.assets.json", ProjectAssets);
+        string declared = _tree.Write("src/B/B.csproj", Reference);
+        _tree.Write("src/B/obj/project.assets.json", ProjectAssets);
+
+        Assert.False(IsOnboarded(undeclared));
+        Assert.False(IsOnboarded(declared));
+    }
+
+    [Fact]
+    public void Assets_in_the_artifacts_layout_decide_when_newer()
+    {
+        _tree.Write("Directory.Build.props", "<Project><PropertyGroup><UseArtifactsOutput>true</UseArtifactsOutput></PropertyGroup></Project>\n");
+        string project = _tree.Write("src/A/A.csproj", Plain);
+        string stale = _tree.Write("src/A/obj/project.assets.json", "{\"libraries\":{}}");
+        string current = _tree.Write("artifacts/obj/A/project.assets.json", PackageAssets);
+        File.SetLastWriteTimeUtc(stale, DateTime.UtcNow.AddDays(-1));
+
+        Assert.True(IsOnboarded(project));
+
+        File.SetLastWriteTimeUtc(current, DateTime.UtcNow.AddDays(-2));
+        Assert.False(IsOnboarded(project));
+    }
+
+    [Fact]
+    public async Task Repository_is_onboarded_through_the_assets_of_an_undeclared_project()
+    {
+        using var repo = new GitTestRepo();
+        repo.Write("src/A/A.csproj", Reference);
+        repo.Write("src/A/obj/project.assets.json", "{\"libraries\":{}}");
+        repo.Write("src/B/B.csproj", Plain);
+        GitRepository git = (await GitRepository.OpenAsync(repo.Root, CancellationToken.None))!;
+
+        // A declares the package but its restore vetoes it; B declares nothing and has no restore.
+        Assert.False(await Onboarding.IsRepositoryOnboardedAsync(git, CancellationToken.None));
+
+        repo.Write("src/B/obj/project.assets.json", PackageAssets);
+        Assert.True(await Onboarding.IsRepositoryOnboardedAsync(git, CancellationToken.None));
     }
 
     [Theory]
