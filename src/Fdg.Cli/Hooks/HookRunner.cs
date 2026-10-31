@@ -412,6 +412,7 @@ public sealed partial class HookRunner
             _formatter,
             projectPath,
             FormatIncludes.ToProjectRelative(projectPath, files),
+            [],
             project.Manifest.FixDiagnostics,
             files,
             () => HashFiles(files),
@@ -436,7 +437,8 @@ public sealed partial class HookRunner
         (ToolResult build, IReadOnlyList<string> logs) = await BuildAsync(projectPath, sarifDirectory, noIncremental: false, cancellationToken)
             .ConfigureAwait(false);
         (IReadOnlyList<SarifDiagnostic> found, bool unreadable) = ReadLogs(logs, projectPath);
-        if (build.Succeeded && (logs.Count == 0 || IsForeign(found, projectPath)))
+        bool canWriteLog = DotnetBuildRunner.CanWriteLog(projectPath, sarifDirectory);
+        if (build.Succeeded && canWriteLog && (logs.Count == 0 || IsForeign(found, projectPath)))
         {
             // Up to date: CoreCompile was skipped and wrote no log, or only a referenced project wrote one (a
             // package without FdgSarifProject support). That is not "no issues".
@@ -446,6 +448,12 @@ public sealed partial class HookRunner
 
         if (logs.Count == 0)
         {
+            if (build.Succeeded && !canWriteLog)
+            {
+                return (build, false, "FDG: the path of the git directory or worktree has a comma, so dotnet build cannot " +
+                    $"write a SARIF log for {Display(git, projectPath)}; its diagnostics were not checked.");
+            }
+
             return (build, false, build.Succeeded
                 ? $"FDG: dotnet build wrote no SARIF log for {Display(git, projectPath)}; its diagnostics were not checked."
                 : Failure(git, "dotnet build", projectPath, build));

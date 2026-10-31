@@ -134,6 +134,7 @@ public sealed class FixCommand
         IReadOnlyList<string>? includes = target.IncludeFiles is null
             ? null
             : FormatIncludes.ToProjectRelative(target.ProjectPath, target.IncludeFiles);
+        IReadOnlyList<string> excludes = [];
         (string File, int Line)[] broken = sources
             .Select(file => (File: file, Line: FirstSyntaxErrorLine(file) ?? 0))
             .Where(file => file.Line > 0)
@@ -141,7 +142,7 @@ public sealed class FixCommand
         if (broken.Length > 0)
         {
             // dotnet format still reformats the whitespace of a file it cannot parse (measured with SDK 10.0.403),
-            // so such files are left out of the run and the others are included one by one.
+            // so such files are left out of the run.
             foreach ((string file, int line) in broken)
             {
                 _output.WriteLine(
@@ -155,7 +156,7 @@ public sealed class FixCommand
                 return true;
             }
 
-            includes = FormatIncludes.ToProjectRelative(target.ProjectPath, sources);
+            (includes, excludes) = LeaveOut(target, broken.Select(b => b.File).ToHashSet(ProjectFiles.PathComparer), sources);
         }
 
         ToolResult format = await FormatPasses
@@ -163,6 +164,7 @@ public sealed class FixCommand
                 _formatter,
                 target.ProjectPath,
                 includes,
+                excludes,
                 diagnostics,
                 sources,
                 () => HashSources(sources),
@@ -179,6 +181,33 @@ public sealed class FixCommand
 
         _output.WriteLine("fixed " + display);
         return true;
+    }
+
+    /// <summary>
+    /// The includes and excludes that leave the broken files out. A broken file the user named is dropped from the
+    /// includes; the others, in the whole project or under a named directory, are excluded, so the run keeps its
+    /// scope, files linked from outside the project directory included. Excludes go to every batch of a run, so when
+    /// they would take up half of the command line, the remaining files are included one by one instead.
+    /// </summary>
+    private static (IReadOnlyList<string>? Includes, IReadOnlyList<string> Excludes) LeaveOut(
+        FixTarget target,
+        IReadOnlySet<string> broken,
+        IReadOnlyList<string> remaining)
+    {
+        string[] excluded = broken
+            .Where(file => target.IncludeFiles is null || !target.IncludeFiles.Contains(file, ProjectFiles.PathComparer))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        IReadOnlyList<string> excludes = FormatIncludes.ToProjectRelative(target.ProjectPath, excluded);
+        if (DotnetFormatRunner.ArgumentsLength(excludes) > DotnetFormatRunner.MaxCommandLineLength / 2)
+        {
+            return (FormatIncludes.ToProjectRelative(target.ProjectPath, remaining), []);
+        }
+
+        IReadOnlyList<string>? includes = target.IncludeFiles is null
+            ? null
+            : FormatIncludes.ToProjectRelative(target.ProjectPath, target.IncludeFiles.Where(file => !broken.Contains(file)).ToArray());
+        return (includes, excludes);
     }
 
     private static string SkipReason(ProjectInfo info) => info.State switch
@@ -237,6 +266,12 @@ public sealed class FixCommand
     /// The 1-based line of the first syntax error in the file, parsed with the newest language version so that only
     /// real syntax errors count; <see langword="null"/> when it has none or cannot be read.
     /// </summary>
+    /// <remarks>
+    /// The file is parsed on its own, without the project's preprocessor symbols: code under <c>#if DEBUG</c> or
+    /// another symbol the project defines is inactive here, so an error there is missed, and an <c>#else</c> branch
+    /// the project never compiles is parsed, so an error there skips a file dotnet format would have changed. Every
+    /// <c>fix</c> parses each file it may change once, a cost that grows with the size of the project.
+    /// </remarks>
     private static int? FirstSyntaxErrorLine(string file)
     {
         string text;

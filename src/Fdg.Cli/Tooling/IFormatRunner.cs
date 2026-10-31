@@ -9,6 +9,9 @@ public interface IFormatRunner
     /// <see cref="FormatIncludes.ToProjectRelative"/> produces: relative to the project directory, forward slashes,
     /// directories ending in <c>/</c>.
     /// </param>
+    /// <param name="excludeFiles">
+    /// Files and directories left out of the run, in the same form as <paramref name="includeFiles"/>; empty for none.
+    /// </param>
     /// <param name="diagnostics">
     /// The diagnostic ids whose fixes may be applied; empty for none, so only whitespace is formatted. Whitespace is
     /// formatted in full either way.
@@ -16,6 +19,7 @@ public interface IFormatRunner
     Task<ToolResult> FormatAsync(
         string projectPath,
         IReadOnlyList<string>? includeFiles,
+        IReadOnlyList<string> excludeFiles,
         IReadOnlyList<string> diagnostics,
         CancellationToken cancellationToken);
 }

@@ -13,6 +13,7 @@ public sealed class DotnetFormatRunnerTests
         await new DotnetFormatRunner(runner, TimeSpan.FromMinutes(1)).FormatAsync(
             project,
             ["src/中文 目录/A.cs", "src/深 层/"],
+            [],
             ["FDGA003", "IDE0055"],
             CancellationToken.None);
 
@@ -33,7 +34,7 @@ public sealed class DotnetFormatRunnerTests
         var runner = new RecordingRunner();
 
         await new DotnetFormatRunner(runner, TimeSpan.FromMinutes(1))
-            .FormatAsync(Path.Combine(Path.GetTempPath(), "A.csproj"), null, ["FDGA003"], CancellationToken.None);
+            .FormatAsync(Path.Combine(Path.GetTempPath(), "A.csproj"), null, [], ["FDGA003"], CancellationToken.None);
 
         Assert.DoesNotContain("--include", runner.Arguments);
     }
@@ -45,7 +46,7 @@ public sealed class DotnetFormatRunnerTests
         var runner = new RecordingRunner();
 
         await new DotnetFormatRunner(runner, TimeSpan.FromMinutes(1))
-            .FormatAsync(project, ["A.cs"], [], CancellationToken.None);
+            .FormatAsync(project, ["A.cs"], [], [], CancellationToken.None);
 
         Assert.Equal(["format", "whitespace", project, "--no-restore", "--include", "A.cs"], runner.Arguments);
     }
@@ -53,25 +54,45 @@ public sealed class DotnetFormatRunnerTests
     [Fact]
     public async Task Long_include_list_does_not_exceed_the_command_line_limit()
     {
+        // dotnet format is forwarded: the dotnet CLI expands a response file itself and starts
+        // "dotnet exec <path>/dotnet-format.dll" with every argument, so only batches keep each line short enough.
         string project = Path.Combine(Path.GetTempPath(), "中文 目录", "A", "A.csproj");
         string[] includes = Enumerable.Range(0, 2000)
             .Select(i => $"src/a rather long directory name/中文 目录/{i:D4}/SomeFairlyLongTypeNameForTheTest{i}.cs")
             .Append("@starts with an at sign.cs")
-            .Append("#starts with a hash.cs")
             .ToArray();
         var runner = new RecordingRunner();
 
         await new DotnetFormatRunner(runner, TimeSpan.FromMinutes(1))
-            .FormatAsync(project, includes, ["FDGA003"], CancellationToken.None);
+            .FormatAsync(project, includes, ["Broken.cs"], ["FDGA003"], CancellationToken.None);
 
-        Assert.NotEmpty(runner.Calls);
-        // Each argument costs at most its length, a separating space and two quotes.
-        Assert.All(runner.Calls, call => Assert.InRange("dotnet".Length + call.Arguments.Sum(a => a.Length + 3), 0, 30000));
-        // Every file is still included, each exactly once, whichever way the list was passed.
+        Assert.True(runner.Calls.Count > 1, $"{runner.Calls.Count} call(s)");
+        Assert.All(runner.Calls, call =>
+        {
+            // Each argument costs at most its length, a separating space and two quotes; 1000 characters are left
+            // for the forwarder's "exec <path to dotnet-format.dll>".
+            Assert.InRange("dotnet".Length + call.Sum(a => a.Length + 3), 0, 30000 - 1000);
+            Assert.Equal(["format", project, "--no-restore", "--severity", "warn", "--include"], call.Take(6));
+            Assert.Equal(["--exclude", "Broken.cs", "--diagnostics", "FDGA003"], call.TakeLast(4));
+        });
+        // Every file is included exactly once, in order; a name starting with "@" is not read as a response file.
         Assert.Equal(
-            includes.Select(i => i.StartsWith('@') || i.StartsWith('#') ? "./" + i : i),
-            runner.Calls.SelectMany(call => call.Includes));
-        Assert.All(runner.Calls, call => Assert.Equal(["--diagnostics", "FDGA003"], call.Arguments.TakeLast(2)));
+            includes.Select(i => i.StartsWith('@') ? "./" + i : i),
+            runner.Calls.SelectMany(call => call.Skip(6).SkipLast(4)));
+    }
+
+    [Fact]
+    public async Task Excludes_follow_the_includes()
+    {
+        string project = Path.Combine(Path.GetTempPath(), "A", "A.csproj");
+        var runner = new RecordingRunner();
+
+        await new DotnetFormatRunner(runner, TimeSpan.FromMinutes(1))
+            .FormatAsync(project, null, ["中文 目录/Broken.cs", "@odd.cs"], [], CancellationToken.None);
+
+        Assert.Equal(
+            ["format", "whitespace", project, "--no-restore", "--exclude", "中文 目录/Broken.cs", "./@odd.cs"],
+            runner.Arguments);
     }
 
     [Fact]
@@ -87,8 +108,6 @@ public sealed class DotnetFormatRunnerTests
             FormatIncludes.ToProjectRelative(project, [file, directory]));
     }
 
-    private sealed record RecordedCall(IReadOnlyList<string> Arguments, IReadOnlyList<string> Includes);
-
     private sealed class RecordingRunner : IProcessRunner
     {
         public string? FileName { get; private set; }
@@ -97,7 +116,7 @@ public sealed class DotnetFormatRunnerTests
 
         public IReadOnlyList<string> Arguments { get; private set; } = [];
 
-        public List<RecordedCall> Calls { get; } = [];
+        public List<IReadOnlyList<string>> Calls { get; } = [];
 
         public Task<ToolResult> RunAsync(
             string fileName,
@@ -109,36 +128,8 @@ public sealed class DotnetFormatRunnerTests
             FileName = fileName;
             Arguments = arguments.ToArray();
             WorkingDirectory = workingDirectory;
-            Calls.Add(new RecordedCall(Arguments, Includes(arguments)));
+            Calls.Add(Arguments);
             return Task.FromResult(new ToolResult(0, string.Empty, false));
-        }
-
-        /// <summary>
-        /// The values after <c>--include</c>, with a response file read as dotnet format reads it: one value per
-        /// line. It is read now, since the runner deletes it after the call.
-        /// </summary>
-        private static List<string> Includes(IReadOnlyList<string> arguments)
-        {
-            var includes = new List<string>();
-            int start = arguments.ToList().IndexOf("--include");
-            if (start < 0)
-            {
-                return includes;
-            }
-
-            foreach (string argument in arguments.Skip(start + 1).TakeWhile(a => !a.StartsWith("--", StringComparison.Ordinal)))
-            {
-                if (argument.StartsWith('@'))
-                {
-                    includes.AddRange(File.ReadAllLines(argument[1..]).Where(line => line.Length > 0));
-                }
-                else
-                {
-                    includes.Add(argument);
-                }
-            }
-
-            return includes;
         }
     }
 }

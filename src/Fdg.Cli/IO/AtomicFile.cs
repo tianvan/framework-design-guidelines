@@ -21,6 +21,10 @@ namespace Fdg.Cli.IO;
 /// restored right after dotnet format rewrote them.
 /// </para>
 /// <para>
+/// The move is tried up to <see cref="MoveAttempts"/> times, <see cref="MoveRetryDelay"/> apart, since an editor, an
+/// indexer or a virus scanner may hold the target open for a moment.
+/// </para>
+/// <para>
 /// A symbolic link is followed: the file it finally points to is replaced, in that file's directory, and the link
 /// stays a link. Without this, the move would replace the link itself with a regular file. A hard link is not kept:
 /// the path gets a new file, and the other names keep the old content.
@@ -28,6 +32,10 @@ namespace Fdg.Cli.IO;
 /// </remarks>
 public static class AtomicFile
 {
+    private const int MoveAttempts = 3;
+
+    private static readonly TimeSpan MoveRetryDelay = TimeSpan.FromMilliseconds(75);
+
     private static readonly Encoding Utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
     /// <summary>Writes to a temporary file next to <paramref name="path"/>, then moves it over <paramref name="path"/>.</summary>
@@ -46,12 +54,12 @@ public static class AtomicFile
                 stream.Flush(flushToDisk: true);
             }
 
-            File.Move(temporary, target, overwrite: true);
+            Move(temporary, target);
         }
         finally
         {
             // Gone after a successful move; after a failure, the target still has its old content.
-            File.Delete(temporary);
+            DeleteQuietly(temporary);
         }
     }
 
@@ -68,6 +76,34 @@ public static class AtomicFile
             using FileStream input = File.OpenRead(source);
             input.CopyTo(stream);
         });
+
+    private static void Move(string temporary, string target)
+    {
+        for (int attempt = 1; ; attempt++)
+        {
+            try
+            {
+                File.Move(temporary, target, overwrite: true);
+                return;
+            }
+            catch (Exception e) when (attempt < MoveAttempts && e is IOException or UnauthorizedAccessException)
+            {
+                Thread.Sleep(MoveRetryDelay);
+            }
+        }
+    }
+
+    /// <summary>Deletes the temporary file without hiding the exception that may be on its way out.</summary>
+    private static void DeleteQuietly(string temporary)
+    {
+        try
+        {
+            File.Delete(temporary);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
 
     /// <returns>The file the symbolic links at <paramref name="path"/> finally point to, or <paramref name="path"/>.</returns>
     private static string ResolveLinks(string path)

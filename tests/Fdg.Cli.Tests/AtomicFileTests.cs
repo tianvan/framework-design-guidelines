@@ -41,6 +41,27 @@ public sealed class AtomicFileTests : IDisposable
     }
 
     [Fact]
+    public void Write_retries_while_the_target_is_briefly_in_use()
+    {
+        string path = _tree.Write("state/blocks.txt", "1");
+        var locked = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        // A thread of its own, so that a busy thread pool cannot delay the release past the retries.
+        var release = new Thread(() =>
+        {
+            Thread.Sleep(30);
+            locked.Dispose();
+        });
+        release.Start();
+
+        AtomicFile.WriteAllText(path, "2");
+
+        release.Join();
+        Assert.Equal("2", File.ReadAllText(path));
+        Assert.Equal([path], Directory.GetFiles(Path.GetDirectoryName(path)!));
+    }
+
+    [Fact]
     public void Copy_copies_the_content()
     {
         string source = _tree.Write("src/A.cs", "class A { }\n");

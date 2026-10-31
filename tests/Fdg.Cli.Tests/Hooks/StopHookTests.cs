@@ -931,6 +931,67 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Linked_compile_items_under_project_directory_properties_do_not_force_a_rebuild()
+    {
+        _repo.Write(
+            "src/中文 App/App.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\">\n" +
+            "  <ItemGroup>\n" +
+            "    <PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" PrivateAssets=\"all\" />\n" +
+            "    <Compile Include=\"$(MSBuildThisFileDirectory)..\\Shared\\ViaThisFile.cs\" />\n" +
+            "    <Compile Include=\"$(MSBuildProjectDirectory)/../Shared/ViaProject.cs\" />\n" +
+            "  </ItemGroup>\n" +
+            "</Project>\n");
+        string viaThisFile = _repo.Write("src/Shared/ViaThisFile.cs", Lines(5));
+        string viaProject = _repo.Write("src/Shared/ViaProject.cs", Lines(5));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int changed;")));
+
+        // Each log holds a result in one of the two files only, so each property form is checked on its own.
+        foreach (string file in (string[])[viaThisFile, viaProject])
+        {
+            _builder.Calls.Clear();
+            _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "In a linked file", file, 2)];
+
+            await TurnStopAsync();
+
+            Assert.Equal([false], _builder.Calls.Select(c => c.NoIncremental));
+        }
+    }
+
+    [Fact]
+    public async Task Comma_in_the_git_directory_path_is_named_as_the_reason_for_a_missing_log()
+    {
+        // The package passes ErrorLog relative to the project, but a git directory elsewhere keeps its comma, so
+        // the package requests no log; the forced rebuild would not write one either.
+        using var tree = new TempTree();
+        string root = tree.Directory("work");
+        string gitDirectory = tree.Path("git,dir");
+        Run(root, "git", "init", "-q", "-b", "main", "--separate-git-dir", gitDirectory);
+        Run(root, "git", "config", "user.name", "FDG Test");
+        Run(root, "git", "config", "user.email", "fdg@example.invalid");
+        string project = tree.Write("work/App/App.csproj", OnboardedProject);
+        _projects.Add(project, ProjectState.InScope);
+        tree.Write("work/App/Order.cs", Lines(10));
+        Run(root, "git", "add", "-A");
+        Run(root, "git", "commit", "-q", "-m", "init");
+        await CreateRunner().TurnStartAsync(new HookInput(HostKind.Claude, Session, root, "UserPromptSubmit"), CancellationToken.None);
+        tree.Write("work/App/Order.cs", Lines(10, (4, "int changed;")));
+        _builder.Sarif = _ => null;
+
+        string output = await CreateRunner().TurnStopAsync(
+            new HookInput(HostKind.Claude, Session, root, "Stop") { StopHookActive = false },
+            CancellationToken.None);
+
+        Assert.Equal(
+            "FDG: the path of the git directory or worktree has a comma, so dotnet build cannot write a SARIF log for " +
+            "App/App.csproj; its diagnostics were not checked.",
+            Json(output, "systemMessage"));
+        Assert.Equal([false], _builder.Calls.Select(c => c.NoIncremental));
+    }
+
+    [Fact]
     public async Task Wildcard_compile_items_are_not_taken_as_the_project_s_files()
     {
         _repo.Write(
@@ -1429,6 +1490,27 @@ public sealed class StopHookTests : IDisposable
     {
         public override Task<string> ReadToEndAsync(CancellationToken cancellationToken) =>
             throw new IOException("The pipe has been ended.");
+    }
+
+    private static void Run(string workingDirectory, string fileName, params string[] arguments)
+    {
+        var startInfo = new System.Diagnostics.ProcessStartInfo(fileName)
+        {
+            WorkingDirectory = workingDirectory,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        foreach (string argument in arguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        using var process = System.Diagnostics.Process.Start(startInfo)!;
+        Task<string> error = process.StandardError.ReadToEndAsync();
+        process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+        Assert.True(process.ExitCode == 0, error.Result);
     }
 
     /// <summary>Makes <paramref name="directory"/> unlistable for the current user, or listable again.</summary>

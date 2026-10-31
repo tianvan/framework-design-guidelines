@@ -49,6 +49,18 @@ public sealed class DotnetBuildRunner : IBuildRunner
     }
 
     /// <summary>
+    /// Whether the package can have the compiler write a SARIF log to <paramref name="sarifDirectory"/>. The compiler
+    /// splits <c>/errorlog:</c> on <c>,</c>, so the package passes the log's path relative to the project directory when
+    /// the full path has a comma, and requests no log when that relative path still has one: a git directory or
+    /// worktree elsewhere whose path has a comma.
+    /// </summary>
+    public static bool CanWriteLog(string projectPath, string sarifDirectory)
+    {
+        string log = Path.Combine(sarifDirectory, "single.sarif");
+        return !log.Contains(',') || !Path.GetRelativePath(Path.GetDirectoryName(projectPath)!, log).Contains(',');
+    }
+
+    /// <summary>
     /// Escapes a value for <c>-p:Name=value</c>: the characters MSBuild treats specially (<c>% $ @ ' ; ? *</c>, as
     /// <c>[MSBuild]::Escape</c> does) and the <c>,</c> that separates properties on the command line become
     /// <c>%XX</c>, which MSBuild turns back into the character when it uses the value.

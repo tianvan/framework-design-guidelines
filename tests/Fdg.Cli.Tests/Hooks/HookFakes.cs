@@ -49,6 +49,7 @@ public sealed class FakeHookFormatter : IFormatRunner
     public async Task<ToolResult> FormatAsync(
         string projectPath,
         IReadOnlyList<string>? includeFiles,
+        IReadOnlyList<string> excludeFiles,
         IReadOnlyList<string> diagnostics,
         CancellationToken cancellationToken)
     {

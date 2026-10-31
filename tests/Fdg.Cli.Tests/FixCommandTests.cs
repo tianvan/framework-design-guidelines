@@ -200,10 +200,45 @@ public sealed class FixCommandTests : IDisposable
             "skipped A/中文 目录/Broken.cs: it has syntax errors (first at line 3); dotnet format does not change it\n" +
             "fixed A/A.csproj\n",
             Output);
-        // The broken file is left out of the run, so dotnet format really does not change it.
+        // The broken file is excluded from the run, so dotnet format really does not change it; the project keeps
+        // its whole scope, linked files included.
         FormatCall call = Assert.Single(_formatter.Calls);
         Assert.Equal(project, call.ProjectPath);
+        Assert.Null(call.IncludeFiles);
+        Assert.Equal(["中文 目录/Broken.cs"], call.ExcludeFiles);
+    }
+
+    [Fact]
+    public async Task Broken_files_are_removed_from_the_given_includes_and_excluded_below_given_directories()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        _tree.Write("A/Good.cs", "class Good { }\n");
+        _tree.Write("A/Broken.cs", "class Broken {\n");
+        _tree.Write("A/Dir/Fine.cs", "class Fine { }\n");
+        _tree.Write("A/Dir/Bad.cs", "class Bad {\n");
+
+        Assert.Equal(0, await RunAsync("A/Good.cs", "A/Broken.cs", "A/Dir"));
+
+        FormatCall call = Assert.Single(_formatter.Calls);
+        Assert.Equal(["Good.cs", "Dir/"], call.IncludeFiles);
+        Assert.Equal(["Dir/Bad.cs"], call.ExcludeFiles);
+    }
+
+    [Fact]
+    public async Task Too_many_broken_files_to_exclude_narrow_the_includes_instead()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        _tree.Write("A/Good.cs", "class Good { }\n");
+        for (int i = 0; i < 200; i++)
+        {
+            _tree.Write($"A/a rather long directory name for broken files/BrokenFileWithAFairlyLongName{i:D3}.cs", "class B {\n");
+        }
+
+        Assert.Equal(0, await RunAsync());
+
+        FormatCall call = Assert.Single(_formatter.Calls);
         Assert.Equal(["Good.cs"], call.IncludeFiles);
+        Assert.Empty(call.ExcludeFiles);
     }
 
     [Fact]
@@ -389,6 +424,29 @@ public sealed class FixCommandTests : IDisposable
     }
 
     [Fact]
+    public async Task Failed_restore_does_not_hide_the_format_exception()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string file = WriteBytes("A/Code.cs", "class A\n{\n}\n");
+        FileStream? locked = null;
+        _formatter.OnCall = _ =>
+        {
+            WriteBytes("A/Code.cs", "class A\r\n{\n}\n");
+            locked = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            throw new OperationCanceledException();
+        };
+
+        try
+        {
+            await Assert.ThrowsAsync<OperationCanceledException>(() => RunAsync());
+        }
+        finally
+        {
+            locked?.Dispose();
+        }
+    }
+
+    [Fact]
     public async Task File_deleted_during_the_run_is_not_an_error()
     {
         AddProject("A/A.csproj", ProjectState.InScope);
@@ -493,6 +551,7 @@ public sealed class FixCommandTests : IDisposable
     private sealed record FormatCall(
         string ProjectPath,
         IReadOnlyList<string>? IncludeFiles,
+        IReadOnlyList<string> ExcludeFiles,
         IReadOnlyList<string> Diagnostics);
 
     /// <summary>Answers with queued infos per project; the last one repeats.</summary>
@@ -555,10 +614,11 @@ public sealed class FixCommandTests : IDisposable
         public Task<ToolResult> FormatAsync(
             string projectPath,
             IReadOnlyList<string>? includeFiles,
+            IReadOnlyList<string> excludeFiles,
             IReadOnlyList<string> diagnostics,
             CancellationToken cancellationToken)
         {
-            Calls.Add(new FormatCall(projectPath, includeFiles, diagnostics));
+            Calls.Add(new FormatCall(projectPath, includeFiles, excludeFiles, diagnostics));
             OnCall(Calls.Count);
             return Task.FromResult(Result(projectPath));
         }
