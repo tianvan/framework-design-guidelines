@@ -42,8 +42,11 @@ public sealed class HookShellTests : IDisposable
         // Prints its arguments, echoes stdin byte for byte and exits 1, like `dotnet-fdg hook` on a bad payload.
         Echo,
 
-        // Writes the given stderr bytes and a second line, nothing to stdout, and exits 1.
+        // Writes the given stderr bytes and a second line (no stderr at all without them), nothing to stdout.
         Fail,
+
+        // Reads stdin and writes the given stdout bytes (possibly none), nothing to stderr.
+        Print,
     }
 
     public void Dispose()
@@ -220,6 +223,95 @@ public sealed class HookShellTests : IDisposable
         AssertForwarded(RunPwsh(PwshPath(_tree.Directory("empty-path")), dotnetCliHome: _tree.Path("cli home")));
     }
 
+    [BashTheory]
+    [InlineData(0, "{\"continue\":true}\n")]
+    [InlineData(0, "")]
+    [InlineData(3, "{\"systemMessage\":\"partial\"}\n")]
+    public void Wrapper_passes_the_tool_output_and_exit_code_through(int exitCode, string output)
+    {
+        string dir = WriteFakeTool(
+            "fake-tool",
+            "dotnet-fdg",
+            FakeBehavior.Print,
+            forPwsh: false,
+            exitCode: exitCode,
+            output: Encoding.UTF8.GetBytes(output));
+
+        AssertPassedThrough(RunBash(BashPath(dir)), exitCode, output);
+    }
+
+    [BashFact]
+    public void Wrapper_reports_the_exit_code_of_a_failure_without_stderr()
+    {
+        string dir = WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Fail, forPwsh: false, exitCode: 3);
+
+        AssertFailure(RunBash(BashPath(dir)), "exit code 3");
+    }
+
+    [PwshTheory]
+    [InlineData(0, "{\"continue\":true}\n")]
+    [InlineData(0, "")]
+    [InlineData(3, "{\"systemMessage\":\"partial\"}\n")]
+    public void Pwsh_wrapper_passes_the_tool_output_and_exit_code_through(int exitCode, string output)
+    {
+        string dir = WriteFakeTool(
+            "fake-tool",
+            "dotnet-fdg",
+            FakeBehavior.Print,
+            forPwsh: true,
+            exitCode: exitCode,
+            output: Encoding.UTF8.GetBytes(output));
+
+        AssertPassedThrough(RunPwsh(PwshPath(dir)), exitCode, output);
+    }
+
+    [PwshFact]
+    public void Pwsh_wrapper_reports_the_exit_code_of_a_failure_without_stderr()
+    {
+        string dir = WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Fail, forPwsh: true, exitCode: 3);
+
+        AssertFailure(RunPwsh(PwshPath(dir)), "exit code 3");
+    }
+
+    [PwshFact]
+    public void Codex_windows_command_keeps_the_tool_exit_code()
+    {
+        // Under `pwsh -Command` a script's `exit 3` would end pwsh with 1; fdg-hook.ps1 uses Environment.Exit.
+        const string Output = "{\"systemMessage\":\"partial\"}\n";
+        string command = SingleHook(ReadHooks("hooks.codex.json"), "Stop")["commandWindows"]!.GetValue<string>();
+        string root = _tree.Path("codex root");
+        Directory.CreateDirectory(Path.Combine(root, "hooks"));
+        File.Copy(Path.Combine(HooksDir, "fdg-hook.ps1"), Path.Combine(root, "hooks", "fdg-hook.ps1"));
+        string dir = WriteFakeTool(
+            "fake-tool",
+            "dotnet-fdg",
+            FakeBehavior.Print,
+            forPwsh: true,
+            exitCode: 3,
+            output: Encoding.UTF8.GetBytes(Output));
+        string path = PwshPath(dir) + Path.PathSeparator + Path.GetDirectoryName(Shells.Pwsh);
+        var environment = new Dictionary<string, string> { ["PLUGIN_ROOT"] = root };
+
+        // The line's own pwsh, started as Codex does without a session shell: the code comes through.
+        const string Prefix = "pwsh -NoProfile -ExecutionPolicy Bypass -Command \"";
+        Assert.StartsWith(Prefix, command);
+        Assert.EndsWith("\"", command);
+        string script = command[Prefix.Length..^1];
+        string[] arguments = { "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script };
+        AssertPassedThrough(Run(Shells.Pwsh!, arguments, path, environment: environment), 3, Output);
+        if (OperatingSystem.IsWindows())
+        {
+            // The cmd.exe fallback passes it on too.
+            string cmd = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+            var viaCmd = Run(cmd, null, path, environment: environment, rawArguments: $"/d /s /c \"{command}\"");
+            AssertPassedThrough(viaCmd, 3, Output);
+        }
+
+        // A PowerShell session shell around the line turns any non-zero code into 1; the stdout still comes through.
+        var viaPwsh = Run(Shells.Pwsh!, new[] { "-NoProfile", "-Command", command }, path, environment: environment);
+        AssertPassedThrough(viaPwsh, 1, Output);
+    }
+
     [PwshFact]
     public void Codex_windows_command_survives_special_characters()
     {
@@ -376,6 +468,15 @@ public sealed class HookShellTests : IDisposable
         Assert.Equal(1, result.ExitCode);
     }
 
+    private static void AssertPassedThrough(
+        (int ExitCode, byte[] Output, string Error) result, int exitCode, string output)
+    {
+        Assert.True(
+            Encoding.UTF8.GetBytes(output).SequenceEqual(result.Output),
+            $"Output was: {Encoding.UTF8.GetString(result.Output)}\n{result.Error}");
+        Assert.Equal(exitCode, result.ExitCode);
+    }
+
     private static void AssertCalls(string fakeDir, params string[] expected)
     {
         string[] calls = File.ReadAllLines(Path.Combine(fakeDir, "calls.txt"));
@@ -446,32 +547,50 @@ public sealed class HookShellTests : IDisposable
     /// <summary>
     /// Writes a fake tool called <paramref name="name"/> into <paramref name="relativeDir"/>. Each run appends its
     /// arguments to <c>calls.txt</c> next to it, then behaves as <paramref name="behavior"/> says, writing
-    /// <paramref name="error"/> to stderr for <see cref="FakeBehavior.Fail"/>. Returns its directory.
+    /// <paramref name="error"/> to stderr for <see cref="FakeBehavior.Fail"/> or <paramref name="output"/> to stdout
+    /// for <see cref="FakeBehavior.Print"/>, and exits with <paramref name="exitCode"/>. Returns its directory.
     /// </summary>
     private string WriteFakeTool(
-        string relativeDir, string name, FakeBehavior behavior, bool forPwsh, byte[]? error = null)
+        string relativeDir,
+        string name,
+        FakeBehavior behavior,
+        bool forPwsh,
+        byte[]? error = null,
+        int exitCode = 1,
+        byte[]? output = null)
     {
         string dir = _tree.Directory(relativeDir);
-        byte[] stderr = (error ?? Array.Empty<byte>()).Concat(Encoding.UTF8.GetBytes("\nsecond line\n")).ToArray();
+        byte[] stderr = error is null
+            ? Array.Empty<byte>()
+            : error.Concat(Encoding.UTF8.GetBytes("\nsecond line\n")).ToArray();
+        byte[] stdout = output ?? Array.Empty<byte>();
         if (forPwsh && OperatingSystem.IsWindows())
         {
             // PowerShell only runs PATHEXT commands on Windows: a batch file hands over to a script. cmd.exe reads
             // batch files in the OEM code page, so the CJK path is only reached through %~dp0.
-            string run = behavior == FakeBehavior.Echo
-                ? "$header = [Text.Encoding]::UTF8.GetBytes(($args -join ' ') + \"`n\")\n" +
-                  "$out.Write($header, 0, $header.Length)\n" +
-                  "[Console]::OpenStandardInput().CopyTo($out)\n"
-                : $"$bytes = [byte[]]({string.Join(',', stderr.Select(b => "0x" + b.ToString("X2")))})\n" +
-                  "$err = [Console]::OpenStandardError()\n" +
-                  "$err.Write($bytes, 0, $bytes.Length)\n" +
-                  "$err.Flush()\n";
+            string run = behavior switch
+            {
+                FakeBehavior.Echo =>
+                    "$header = [Text.Encoding]::UTF8.GetBytes(($args -join ' ') + \"`n\")\n" +
+                    "$out.Write($header, 0, $header.Length)\n" +
+                    "[Console]::OpenStandardInput().CopyTo($out)\n",
+                FakeBehavior.Fail =>
+                    $"$bytes = [byte[]]@({PwshBytes(stderr)})\n" +
+                    "$err = [Console]::OpenStandardError()\n" +
+                    "$err.Write($bytes, 0, $bytes.Length)\n" +
+                    "$err.Flush()\n",
+                _ =>
+                    "[Console]::OpenStandardInput().CopyTo([IO.Stream]::Null)\n" +
+                    $"$bytes = [byte[]]@({PwshBytes(stdout)})\n" +
+                    "$out.Write($bytes, 0, $bytes.Length)\n",
+            };
             _tree.Write(
                 Path.Combine(relativeDir, "fake.ps1"),
                 "[IO.File]::AppendAllText((Join-Path $PSScriptRoot 'calls.txt'), ($args -join ' ') + \"`n\")\n" +
                 "$out = [Console]::OpenStandardOutput()\n" +
                 run +
                 "$out.Flush()\n" +
-                "exit 1\n");
+                $"exit {exitCode}\n");
             _tree.Write(
                 Path.Combine(relativeDir, name + ".cmd"),
                 "@echo off\r\n" +
@@ -479,15 +598,18 @@ public sealed class HookShellTests : IDisposable
             return dir;
         }
 
-        string body = behavior == FakeBehavior.Echo
-            ? "printf '%s\\n' \"$*\"\ncat\n"
-            : $"printf '{string.Concat(stderr.Select(b => "\\" + Convert.ToString(b, 8).PadLeft(3, '0')))}' >&2\n";
+        string body = behavior switch
+        {
+            FakeBehavior.Echo => "printf '%s\\n' \"$*\"\ncat\n",
+            FakeBehavior.Fail => $"printf '{ShBytes(stderr)}' >&2\n",
+            _ => $"cat >/dev/null\nprintf '{ShBytes(stdout)}'\n",
+        };
         _tree.Write(
             Path.Combine(relativeDir, name),
             "#!/bin/sh\n" +
             "printf '%s\\n' \"$*\" >> \"$(dirname \"$0\")/calls.txt\"\n" +
             body +
-            "exit 1\n");
+            $"exit {exitCode}\n");
         if (!OperatingSystem.IsWindows())
         {
             File.SetUnixFileMode(
@@ -496,6 +618,17 @@ public sealed class HookShellTests : IDisposable
         }
 
         return dir;
+    }
+
+    private static string PwshBytes(byte[] bytes)
+    {
+        return string.Join(',', bytes.Select(b => "0x" + b.ToString("X2")));
+    }
+
+    // Octal escapes for printf, so that any byte survives the shell.
+    private static string ShBytes(byte[] bytes)
+    {
+        return string.Concat(bytes.Select(b => "\\" + Convert.ToString(b, 8).PadLeft(3, '0')));
     }
 
     private (int ExitCode, byte[] Output, string Error) Run(
@@ -615,6 +748,28 @@ public sealed class BashFactAttribute : FactAttribute
 public sealed class PwshFactAttribute : FactAttribute
 {
     public PwshFactAttribute()
+    {
+        if (Shells.Pwsh is null)
+        {
+            Skip = "pwsh is not available.";
+        }
+    }
+}
+
+public sealed class BashTheoryAttribute : TheoryAttribute
+{
+    public BashTheoryAttribute()
+    {
+        if (Shells.Bash is null)
+        {
+            Skip = "bash is not available.";
+        }
+    }
+}
+
+public sealed class PwshTheoryAttribute : TheoryAttribute
+{
+    public PwshTheoryAttribute()
     {
         if (Shells.Pwsh is null)
         {

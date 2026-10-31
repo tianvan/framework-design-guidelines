@@ -159,7 +159,12 @@ reaches the tool and its stdout comes back byte for byte.
 `pwsh` starts its own PowerShell, so the command works whether the session shell is PowerShell or `cmd.exe`, and
 `-ExecutionPolicy Bypass` keeps a machine policy such as `AllSigned` from blocking the unsigned script. It needs
 PowerShell 7 (`pwsh`) on the PATH. Under `-Command` a script's `exit N` leaves `pwsh` with exit code 1, so
-`fdg-hook.ps1` ends with `[Environment]::Exit`, which keeps the tool's exit code (2 still blocks).
+`fdg-hook.ps1` ends with `[Environment]::Exit`, which keeps the tool's exit code for whoever started this `pwsh`.
+That matters only for the `cmd.exe` fallback and for a host that runs the line without a session shell: a
+PowerShell session shell around the line still turns any non-zero exit code into 1. Neither case changes what the
+hooks do, because `dotnet-fdg hook` itself exits only 0 or 1 and signals a block through its stdout JSON
+(`decision`), which passes through unchanged. `HookShellTests.Codex_windows_command_keeps_the_tool_exit_code`
+pins both behaviours.
 
 ### The `command` line
 
