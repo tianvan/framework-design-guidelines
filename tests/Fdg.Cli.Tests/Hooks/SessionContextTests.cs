@@ -216,6 +216,20 @@ public sealed class SessionContextTests : IDisposable
     }
 
     [Fact]
+    public void Inspect_out_of_time_before_any_project_is_found_still_says_so()
+    {
+        Project("src/A/A.csproj", "library", "12.0", "net8.0");
+        using var timeout = new CancellationTokenSource();
+        timeout.Cancel();
+
+        SessionReport report = new SessionContext(DotnetRunner(), new FakeLanguageVersions("14.0")).Inspect(_repo.Root, timeout.Token)!;
+
+        Assert.Equal(string.Empty, report.Context);
+        Assert.Equal([SessionContext.TimedOutLine], report.Issues);
+        Assert.Equal(SessionContext.TimedOutLine, report.Text);
+    }
+
+    [Fact]
     public void Missing_profile_adds_setup_issue_line()
     {
         Project("src/A/A.csproj", string.Empty);

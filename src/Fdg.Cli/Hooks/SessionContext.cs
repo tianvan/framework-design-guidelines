@@ -75,8 +75,8 @@ public sealed class SessionContext
     /// <inheritdoc cref="Build"/>
     /// <param name="cancellationToken">
     /// Ends the inspection early, killing a process it runs: what was found by then is reported, followed by
-    /// <see cref="TimedOutLine"/>. When it ends before any project is known to use the analyzers, the result is
-    /// <see langword="null"/>, as in a repository that does not use them.
+    /// <see cref="TimedOutLine"/>. When it ends before any project is known to use the analyzers, the report has no
+    /// context and <see cref="TimedOutLine"/> only, since the repository may use them.
     /// </param>
     public SessionReport? Inspect(string repoRoot, CancellationToken cancellationToken)
     {
@@ -96,14 +96,14 @@ public sealed class SessionContext
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            return null;
+            return TimedOutBeforeAnyProject();
         }
 
         string root = git?.TopLevel ?? Path.GetFullPath(repoRoot);
-        List<Project> projects = Discover(root, files, cancellationToken);
+        List<Project> projects = Discover(root, files, cancellationToken, out bool complete);
         if (!projects.Any(p => p.Onboarded))
         {
-            return null;
+            return complete ? null : TimedOutBeforeAnyProject();
         }
 
         // Parsed only now: most sessions are in repositories that do not use the analyzers.
@@ -224,6 +224,12 @@ public sealed class SessionContext
     }
 
     /// <summary>
+    /// Out of time before any project was known to use the analyzers: no context, which would be guesswork, but the
+    /// user learns that the checks did not run.
+    /// </summary>
+    private static SessionReport TimedOutBeforeAnyProject() => new(string.Empty, [TimedOutLine]);
+
+    /// <summary>
     /// The project's markers, <c>marker.json</c> first, from <c>obj/fdg/</c> or the artifacts layout
     /// (<c>UseArtifactsOutput</c>: <c>&lt;Directory.Build.props directory&gt;/artifacts/obj/&lt;project name&gt;/fdg/</c>),
     /// whichever was written last.
@@ -284,8 +290,14 @@ public sealed class SessionContext
     /// <summary>The projects and whether they use the analyzers; whether they are SDK-style is left for later.</summary>
     /// <param name="files">Paths relative to <paramref name="root"/>, with forward slashes.</param>
     /// <param name="cancellationToken">Ends the discovery early, with the projects found by then.</param>
-    private static List<Project> Discover(string root, IReadOnlyList<string> files, CancellationToken cancellationToken)
+    /// <param name="complete">Set to <see langword="false"/> when <paramref name="cancellationToken"/> ended it early.</param>
+    private static List<Project> Discover(
+        string root,
+        IReadOnlyList<string> files,
+        CancellationToken cancellationToken,
+        out bool complete)
     {
+        complete = true;
         // bin/, obj/ and dot-directories hold no projects of the repository's own.
         string[] inScope = files
             .Where(f => !f.Split('/')[..^1].Any(ProjectFiles.IsSkippedDirectory))
@@ -298,6 +310,7 @@ public sealed class SessionContext
         {
             if (cancellationToken.IsCancellationRequested)
             {
+                complete = false;
                 break;
             }
 
