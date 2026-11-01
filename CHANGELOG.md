@@ -52,6 +52,8 @@ No diagnostic ids were added or removed and no severity changed.
 - A miscased visible `const` quotes the rule for visible fields (FDG3077) as well as the one for constants.
 - `/fdg-setup` offers to set the severities of IDE0280, IDE0250 and IDE0251 in the root `.editorconfig`, so that
   `dotnet fdg fix` and Stop apply their fixes instead of reporting them.
+- `/fdg-setup` treats an answer to its questions or a requested change as a change to the plan, not as a
+  confirmation: it shows the updated list of files again and waits until you confirm it.
 - All Stops of one turn share one auto-fix record, and a file reformatted throughout is summarized instead of
   listed range by range.
 

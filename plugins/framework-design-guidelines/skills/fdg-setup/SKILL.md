@@ -15,7 +15,9 @@ Onboard this repository's C# projects in four steps. Ground rules for every step
 - Change only files in the working tree. Never run `git add`, `git commit`, `git stash` or `git checkout`, and never
   create a branch. The user reviews the result with `git diff` and commits it.
 - Before you edit anything, list every file you will create or change, with what you will put in it, and wait for
-  the user to confirm. Edit nothing until they do.
+  the user to confirm. Edit nothing until they do. A reply that answers your questions or asks for a change is not a
+  confirmation: apply the answers to the plan, show the whole updated list and wait again, until the user confirms
+  the list as it stands.
 - Add no plugin-specific files at the repository root. Settings go into the project's own MSBuild files; the only
   exception is the three severities that step 3 offers for the root `.editorconfig`.
 - Never put the package id in comments: the hooks would read a commented-out reference as onboarding.
