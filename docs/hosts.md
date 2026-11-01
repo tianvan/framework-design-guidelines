@@ -547,8 +547,8 @@ Write down each host's version (`claude --version`, `codex --version`) and fill 
 
 | Item | Date | Host and version | Pass or fail | Observed behavior |
 |---|---|---|---|---|
-| CI: integration tests on SDK 10.0.100 | | GitHub Actions | | |
-| CI: no Node.js 20 deprecation warning | | GitHub Actions | | |
+| CI: integration tests on SDK 10.0.100 | 2026-11-01 | GitHub Actions | pass (after a fix) | The first run on PR #2 failed with NETSDK1004: the job restored only the test project, and the package project builds the analyzer projects through the MSBuild task. A `dotnet restore` step fixed it; 27 of 27 passed on SDK 10.0.100, on the PR, on `main` and in the `v1.0.0-rc.1` release run. |
+| CI: no Node.js 20 deprecation warning | 2026-11-01 | GitHub Actions | pass | No Node.js 20 annotation on any job. The only annotation was the notice that `ubuntu-latest` moves to Ubuntu 26. |
 | Codex: re-approval after the update from 0.2.0 (A4) | | | | |
 | Codex: plugin hooks run, `PLUGIN_ROOT` set (A5) | | | | |
 | Codex: SessionStart context (A6) | | | | |
@@ -556,9 +556,9 @@ Write down each host's version (`claude --version`, `codex --version`) and fill 
 | Codex: SessionStart after compaction (A8) | | | | |
 | Claude Code: `/fdg-setup` interactive confirmation (B2) | | | | |
 | Claude Code: Stop blocks, the agent fixes it (B4) | | | | |
-| Claude Code: Stop block limit (headless) | | | | |
-| Codex: Stop blocks, the agent fixes it (headless) | | | | |
-| Codex: Stop block limit (headless) | | | | |
+| Claude Code: Stop block limit (headless) | 2026-11-01 | Claude Code 2.1.314 | pass | With prompt 2 the agent added `[SuppressMessage]` for CA1710 after the first block ("the name was explicitly requested"), so the next Stop was silent and the limit was not reached. With "and do not suppress any diagnostic" added: two blocks with CA1710 and FDG3058, then the `Not blocking again this turn (FDG_HOOK_MAX_BLOCKS=2)` message, and the turn ended. With prompt 1 the first Stop blocked with CA1710 and FDG3058 as expected, but the agent also suppressed CA1710 instead of renaming, and asked whether to rename. |
+| Codex: Stop blocks, the agent fixes it (headless) | 2026-11-01 | Codex CLI 0.164.0 | pass for the hook; agent suppressed | `codex exec` with the `-c` hooks of `hooks.codex.json` and `PLUGIN_ROOT` set to a clone at `v1.0.0-rc.1`. With prompt 1 the agent saw CA1710 in its own build and added a justified `[SuppressMessage]` before finishing, so Stop had nothing to report. With prompt 2 Stop blocked once (`blocks.txt` = 1) and the agent then suppressed CA1710. `codex exec --json` does not show hook output, so blocks were read from the hook state. |
+| Codex: Stop block limit (headless) | 2026-11-01 | Codex CLI 0.164.0 | pass | With "and do not suppress any diagnostic" added to prompt 2: two blocks (`blocks.txt` = 2), three final answers, and the turn ended. |
 | Visual Studio: globalconfig in live analysis (C1) | | | | |
 | VS Code with C# Dev Kit: globalconfig in live analysis (C2) | | | | |
 | Rider | | not installed | not verified | |
