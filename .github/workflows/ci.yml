@@ -103,5 +103,10 @@ jobs:
           global-json-file: global.json
           dotnet-version: 10.0.100
 
+      # The package project builds the analyzer projects through the MSBuild task, so restoring the test project
+      # alone leaves them unrestored.
+      - name: Restore
+        run: dotnet restore
+
       - name: Integration tests on the minimum SDK
         run: dotnet test tests/Fdg.IntegrationTests -c Release -nologo
