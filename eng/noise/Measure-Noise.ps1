@@ -28,6 +28,25 @@ The result JSON file, outside this repository and outside every local sample.
 
 .PARAMETER Diagnostics
 When given, only these diagnostic ids are counted and listed.
+
+.PARAMETER Timing
+Also times clean builds of each sample's project for its framework, without the package and with it, and adds
+"timing": { "<sample>": { "withoutPackageSeconds": <median>, "withPackageSeconds": <median>, ... } } to -Out.
+After one untimed warm-up build without the package, three builds without the package and three with it run in
+turn. Each deletes the build output, restores (not timed) and times `dotnet build --no-restore` from process start to
+exit. The builds without the package pass NoPackage.targets, which drops a PackageReference to the package that the
+sample may already have; the builds with it inject the package as the counting build does.
+
+The output goes to WorkRoot/timing/<sample>/artifacts, so that deleting it never touches a file of the sample: every
+timing build passes UseArtifactsOutput=true, ArtifactsPath and OutputPath under that directory. Before the first
+timing build, the script evaluates the project and, recursively, the projects it references (an evaluation writes
+nothing) and checks that their intermediate, project extensions, output and documentation paths are all under it. A
+sample where one is not, for example because its own files set it, is not timed and gets { "skipped": "<reason>" }.
+For a local sample, the check also covers PackageOutputPath when GeneratePackageOnBuild is true,
+CompilerGeneratedFilesOutputPath when EmitCompilerGeneratedFiles is true, and the NuGet lock file that restore writes
+when RestorePackagesWithLockFile is true or updates when it exists. The files of a local sample (without .git) are
+also listed before and after the timing builds; the number of files that appeared, changed or are gone is written as
+outsideWorkRoot (0 when none), and their paths go to WorkRoot/logs/<sample>-timing-outside.txt.
 #>
 [CmdletBinding()]
 param(
@@ -43,7 +62,9 @@ param(
     [Parameter(Mandatory)]
     [string] $Out,
 
-    [string[]] $Diagnostics
+    [string[]] $Diagnostics,
+
+    [switch] $Timing
 )
 
 Set-StrictMode -Version Latest
@@ -306,6 +327,279 @@ function Read-SarifLocations([string] $SarifPath, [string] $SampleRoot, [string[
     return $locations
 }
 
+function Get-Median([double[]] $Values)
+{
+    $sorted = @($Values | Sort-Object)
+    $middle = [int][Math]::Floor($sorted.Count / 2)
+    if ($sorted.Count % 2 -eq 1)
+    {
+        return $sorted[$middle]
+    }
+
+    return ($sorted[$middle - 1] + $sorted[$middle]) / 2
+}
+
+# A path as MSBuild reports it, full or relative to the project directory, as a full path. MSBuild often writes
+# backslashes, which are no separator on Unix.
+function Resolve-MSBuildPath([string] $Directory, [string] $Path)
+{
+    if (-not $IsWindows)
+    {
+        $Path = $Path.Replace('\', '/')
+    }
+
+    return [System.IO.Path]::GetFullPath($Path, $Directory)
+}
+
+# The global properties of a timing build that send all of its output under $Artifacts.
+function Get-OutputProperties([string] $Artifacts)
+{
+    return @(
+        '-p:UseArtifactsOutput=true'
+        "-p:ArtifactsPath=$Artifacts"
+        "-p:OutputPath=$(Join-Path $Artifacts 'bin')$([System.IO.Path]::DirectorySeparatorChar)"
+    )
+}
+
+# Evaluates the project and the projects it references, recursively, with the timing build's output properties;
+# returns a reason why a timing build could write outside $Artifacts, or $null when every path checked is under it.
+# With -Strict (a local sample), also the package a build may pack, the source generators' files it may emit, and a
+# NuGet lock file that restore would write or update must stay under $Artifacts.
+function Test-OutputUnder([string] $ProjectPath, [string] $Artifacts, [string] $Framework, [switch] $Strict)
+{
+    $names = @(
+        'BaseIntermediateOutputPath', 'IntermediateOutputPath', 'MSBuildProjectExtensionsPath', 'BaseOutputPath', 'OutputPath',
+        'OutDir', 'DocumentationFile'
+    )
+    # Each path is written only when its switch is true.
+    $switched = [ordered]@{
+        PackageOutputPath = 'GeneratePackageOnBuild'
+        CompilerGeneratedFilesOutputPath = 'EmitCompilerGeneratedFiles'
+    }
+    $queried = $names + @($switched.Keys) + @($switched.Values) + @('RestorePackagesWithLockFile', 'NuGetLockFilePath')
+    $pending = [System.Collections.Generic.Stack[object]]::new()
+    $pending.Push([pscustomobject]@{ Project = $ProjectPath; Framework = $Framework })
+    $seen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    while ($pending.Count -gt 0)
+    {
+        $item = $pending.Pop()
+        if (-not $seen.Add($item.Project))
+        {
+            continue
+        }
+
+        $arguments = @('msbuild', $item.Project, '-nologo', '-getItem:ProjectReference') +
+            @($queried | ForEach-Object { "-getProperty:$_" }) + (Get-OutputProperties $Artifacts)
+        if ($item.Framework)
+        {
+            $arguments += "-p:TargetFramework=$($item.Framework)"
+        }
+
+        $evaluation = Invoke-Tool 'dotnet' $arguments
+        # Without the project's name, so that the reason stays anonymous for an internal sample.
+        $which = if ($item.Framework) { "the sample's project" } else { 'a project it references' }
+        if ($evaluation.ExitCode -ne 0)
+        {
+            return "Evaluating $which failed with exit code $($evaluation.ExitCode)."
+        }
+
+        $json = ($evaluation.Output -join "`n") | ConvertFrom-Json -Depth 16
+        $directory = [System.IO.Path]::GetDirectoryName($item.Project)
+        foreach ($name in $names)
+        {
+            $value = [string](Get-Property $json.Properties $name)
+            if ($value -and -not (Test-IsUnder (Resolve-MSBuildPath $directory $value) $Artifacts))
+            {
+                return "$name of $which is not under the timing output directory."
+            }
+        }
+
+        if ($Strict)
+        {
+            foreach ($name in $switched.Keys)
+            {
+                $value = [string](Get-Property $json.Properties $name)
+                $on = [string](Get-Property $json.Properties $switched[$name]) -eq 'true'
+                if ($on -and $value -and -not (Test-IsUnder (Resolve-MSBuildPath $directory $value) $Artifacts))
+                {
+                    return "$($switched[$name]) is true and $name of $which is not under the timing output directory."
+                }
+            }
+
+            # Restore writes a lock file when asked to, and updates one that exists.
+            $lockFile = [string](Get-Property $json.Properties 'NuGetLockFilePath')
+            $lockPath = Resolve-MSBuildPath $directory $(if ($lockFile) { $lockFile } else { 'packages.lock.json' })
+            $withLockFile = [string](Get-Property $json.Properties 'RestorePackagesWithLockFile') -eq 'true'
+            if (($withLockFile -or (Test-Path -LiteralPath $lockPath)) -and -not (Test-IsUnder $lockPath $Artifacts))
+            {
+                return "Restore of $which would write or update a NuGet lock file outside the timing output directory."
+            }
+        }
+
+        foreach ($reference in @(Get-Property (Get-Property $json 'Items') 'ProjectReference'))
+        {
+            if ($null -ne $reference)
+            {
+                $referencePath = Get-Property $reference 'FullPath'
+                if (-not $referencePath)
+                {
+                    $referencePath = [string]$reference.Identity
+                }
+
+                $pending.Push([pscustomobject]@{ Project = Resolve-MSBuildPath $directory $referencePath; Framework = $null })
+            }
+        }
+    }
+
+    return $null
+}
+
+# Lists the files under $Root, without .git and without following junctions or links, one line per file with its
+# relative path, size and last write time.
+function Get-FileListing([string] $Root)
+{
+    $listing = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+    $pending = [System.Collections.Generic.Stack[string]]::new()
+    $pending.Push($Root)
+    while ($pending.Count -gt 0)
+    {
+        $directory = [System.IO.DirectoryInfo]::new($pending.Pop())
+        foreach ($entry in $directory.EnumerateFileSystemInfos())
+        {
+            if ($entry -is [System.IO.DirectoryInfo])
+            {
+                if ($entry.Name -ne '.git' -and -not $entry.Attributes.HasFlag([System.IO.FileAttributes]::ReparsePoint))
+                {
+                    $pending.Push($entry.FullName)
+                }
+            }
+            else
+            {
+                $relative = [System.IO.Path]::GetRelativePath($Root, $entry.FullName)
+                [void]$listing.Add("$relative`t$($entry.Length)`t$($entry.LastWriteTimeUtc.Ticks)")
+            }
+        }
+    }
+
+    return , $listing
+}
+
+# Deletes the timing output, restores, and times one build; returns the seconds, or throws with the first error.
+function Invoke-CleanBuild([object] $Sample, [string] $ProjectPath, [string] $TimingRoot, [bool] $WithPackage, [string] $LogName)
+{
+    $artifacts = Join-Path $TimingRoot 'artifacts'
+    $sarifDirectory = Join-Path $TimingRoot 'sarif'
+    foreach ($directory in $artifacts, $sarifDirectory)
+    {
+        if (Test-Path -LiteralPath $directory)
+        {
+            Remove-Item -LiteralPath $directory -Recurse -Force
+        }
+    }
+
+    New-Item -ItemType Directory -Path $sarifDirectory | Out-Null
+    $properties = (Get-OutputProperties $artifacts) + @(
+        '-p:TreatWarningsAsErrors=false'
+        "-p:FrameworkDesignGuidelinesProfile=$($Sample.profile)"
+    )
+    if ($WithPackage)
+    {
+        $properties += @(
+            "-p:CustomBeforeMicrosoftCommonProps=$injectProps"
+            "-p:CustomAfterMicrosoftCommonTargets=$injectTargets"
+            "-p:FdgNoisePackage=$packageDirectory"
+            "-p:FdgNoiseSarifDir=$sarifDirectory"
+        )
+    }
+    else
+    {
+        $properties += "-p:CustomAfterMicrosoftCommonTargets=$noPackageTargets"
+    }
+
+    $restore = Invoke-Tool 'dotnet' (@('restore', $ProjectPath) + $properties)
+    Set-Content -LiteralPath (Join-Path $logsDirectory "$LogName-restore.log") -Value $restore.Output
+    if ($restore.ExitCode -ne 0)
+    {
+        throw "dotnet restore failed: $(Get-FirstError $restore.Output "exit code $($restore.ExitCode)")"
+    }
+
+    $watch = [System.Diagnostics.Stopwatch]::StartNew()
+    $build = Invoke-Tool 'dotnet' (@('build', $ProjectPath, '--no-restore', '-f', $Sample.framework) + $properties)
+    $watch.Stop()
+    Set-Content -LiteralPath (Join-Path $logsDirectory "$LogName.log") -Value $build.Output
+    if ($build.ExitCode -ne 0)
+    {
+        throw "dotnet build failed: $(Get-FirstError $build.Output "exit code $($build.ExitCode)")"
+    }
+
+    return [Math]::Round($watch.Elapsed.TotalSeconds, 2)
+}
+
+# Times the clean builds of one sample (see -Timing); returns its entry for the timing field.
+function Measure-SampleBuildTime([object] $Sample, [string] $SampleRoot, [string] $ProjectPath, [string] $TimingRoot, [bool] $IsLocal)
+{
+    $name = [string]$Sample.name
+    $artifacts = Join-Path $TimingRoot 'artifacts'
+    $reason = Test-OutputUnder $ProjectPath $artifacts $Sample.framework -Strict:$IsLocal
+    if ($reason)
+    {
+        return [ordered]@{ skipped = $reason }
+    }
+
+    $before = if ($IsLocal) { Get-FileListing $SampleRoot } else { $null }
+    $without = [System.Collections.Generic.List[double]]::new()
+    $with = [System.Collections.Generic.List[double]]::new()
+    $entry = [ordered]@{}
+    try
+    {
+        $warmUp = Invoke-CleanBuild $Sample $ProjectPath $TimingRoot $false "$name-timing-warm-up"
+        Write-Host "warm-up without the package: $warmUp s"
+        for ($round = 1; $round -le 3; $round++)
+        {
+            $seconds = Invoke-CleanBuild $Sample $ProjectPath $TimingRoot $false "$name-timing-without-$round"
+            $without.Add($seconds)
+            Write-Host "without the package, round $($round): $seconds s"
+            $seconds = Invoke-CleanBuild $Sample $ProjectPath $TimingRoot $true "$name-timing-with-$round"
+            $with.Add($seconds)
+            Write-Host "with the package, round $($round): $seconds s"
+        }
+
+        $entry['withoutPackageSeconds'] = Get-Median $without.ToArray()
+        $entry['withPackageSeconds'] = Get-Median $with.ToArray()
+        $entry['withoutPackageRuns'] = $without.ToArray()
+        $entry['withPackageRuns'] = $with.ToArray()
+    }
+    catch
+    {
+        $entry['buildFailed'] = $_.Exception.Message
+    }
+    finally
+    {
+        # Only the directories this script made under WorkRoot are deleted.
+        foreach ($directory in $artifacts, (Join-Path $TimingRoot 'sarif'))
+        {
+            if (Test-Path -LiteralPath $directory)
+            {
+                Remove-Item -LiteralPath $directory -Recurse -Force
+            }
+        }
+    }
+
+    if ($IsLocal)
+    {
+        $after = Get-FileListing $SampleRoot
+        # Files that appeared or changed, and files that are gone.
+        $outside = @(
+            @($after | Where-Object { -not $before.Contains($_) }) + @($before | Where-Object { -not $after.Contains($_) }) |
+                ForEach-Object { $_.Split("`t")[0] } |
+                Sort-Object -Unique)
+        Set-Content -LiteralPath (Join-Path $logsDirectory "$name-timing-outside.txt") -Value $outside
+        $entry['outsideWorkRoot'] = $outside.Count
+    }
+
+    return $entry
+}
+
 # pwsh -File passes "a,b" as one string, so comma-separated lists are split here.
 $Samples = @($Samples -split ',' | ForEach-Object Trim | Where-Object { $_ })
 $Diagnostics = @($Diagnostics -split ',' | ForEach-Object Trim | Where-Object { $_ })
@@ -313,6 +607,7 @@ $Diagnostics = @($Diagnostics -split ',' | ForEach-Object Trim | Where-Object { 
 $repositoryRoot = Get-FullPath (Join-Path $PSScriptRoot '..' '..')
 $injectProps = Get-FullPath (Join-Path $PSScriptRoot 'Inject.props')
 $injectTargets = Get-FullPath (Join-Path $PSScriptRoot 'Inject.targets')
+$noPackageTargets = Get-FullPath (Join-Path $PSScriptRoot 'NoPackage.targets')
 $packagePath = Get-FullPath $Package
 $workRootPath = Get-FullPath $WorkRoot
 $outPath = Get-FullPath $Out
@@ -327,9 +622,9 @@ foreach ($samplesFile in $Samples)
             throw "Sample name '$($sample.name)' must be letters, digits, '.', '_' or '-'."
         }
 
-        if ($sample.name -eq 'overrides')
+        if ($sample.name -in 'overrides', 'timing')
         {
-            throw "Sample name 'overrides' is reserved for the overrides field of -Out."
+            throw "Sample name '$($sample.name)' is reserved for a field of -Out."
         }
 
         if ($sampleList.Where({ $_.name -eq $sample.name }).Count -gt 0)
@@ -462,6 +757,29 @@ foreach ($sample in $sampleList)
 }
 
 $results['overrides'] = $overrides
+
+if ($Timing)
+{
+    $timingResults = [ordered]@{}
+    foreach ($sample in $sampleList)
+    {
+        $name = [string]$sample.name
+        Write-Host "== timing $name"
+        $localPath = Get-Property $sample 'path'
+        $sampleRoot = if ($localPath) { Get-FullPath $localPath } else { Join-Path $workRootPath $name }
+        if (-not (Test-Path -LiteralPath $sampleRoot))
+        {
+            $timingResults[$name] = [ordered]@{ skipped = 'The sample was not fetched.' }
+            continue
+        }
+
+        $projectPath = [System.IO.Path]::GetFullPath((Join-Path $sampleRoot $sample.project))
+        $timingRoot = Join-Path (Join-Path $workRootPath 'timing') $name
+        $timingResults[$name] = Measure-SampleBuildTime $sample $sampleRoot $projectPath $timingRoot ([bool]$localPath)
+    }
+
+    $results['timing'] = $timingResults
+}
 $outDirectory = [System.IO.Path]::GetDirectoryName($outPath)
 New-Item -ItemType Directory -Path $outDirectory -Force | Out-Null
 Set-Content -LiteralPath $outPath -Value ($results | ConvertTo-Json -Depth 8)

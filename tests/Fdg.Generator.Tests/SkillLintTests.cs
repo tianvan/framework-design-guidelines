@@ -158,6 +158,45 @@ public sealed class SkillLintTests
         }
     }
 
+    /// <summary>
+    /// Windows and macOS find <c>references/appA-coding-style.md</c> under the name <c>appa-coding-style.md</c>, Linux
+    /// does not, so every link must name its file with the exact case. The check compares the link with the directory
+    /// listing; <see cref="File.Exists(string)"/> would hide a mismatch.
+    /// </summary>
+    [Fact]
+    public void References_are_linked_with_exact_case()
+    {
+        foreach (string name in SkillNames)
+        {
+            string skillDirectory = Path.GetDirectoryName(SkillPath(name))!;
+            foreach (string path in ReferencePaths(Read(SkillPath(name)).Body))
+            {
+                AssertExactCase(skillDirectory, path, $"{name}/SKILL.md");
+            }
+        }
+
+        string fdgWriteDirectory = Path.GetDirectoryName(SkillPath("fdg-write"))!;
+        foreach (string path in ReferencePaths(Read(AgentPath).Body))
+        {
+            AssertExactCase(fdgWriteDirectory, "references/" + Path.GetFileName(path), "fdg-reviewer.md");
+        }
+    }
+
+    [Fact]
+    public void Reference_file_names_are_lowercase()
+    {
+        string[] files = Directory.GetFiles(FdgWriteReferences, "*", SearchOption.AllDirectories);
+
+        Assert.NotEmpty(files);
+        foreach (string file in files)
+        {
+            string name = Path.GetFileName(file);
+            Assert.True(
+                name == name.ToLowerInvariant(),
+                $"{Relative(file)} must have a lowercase name.");
+        }
+    }
+
     /// <summary>A second guard besides the generator: the checked-in references stay small enough to load.</summary>
     [Fact]
     public void Every_reference_file_is_at_most_32_KB()
@@ -190,10 +229,11 @@ public sealed class SkillLintTests
 
     /// <summary>
     /// The format of a rule line, the same as the generated references without their examples link:
-    /// <c>**&lt;id&gt;** &lt;STRENGTH&gt; &lt;text&gt;[ (library only) | (not in test projects)][ (context: &lt;context&gt;)][ [C# N+]]</c>
+    /// <c>**&lt;id&gt;** &lt;STRENGTH&gt; &lt;text&gt;[ (partly checked)][ (library only) | (not in test projects)][ (context: &lt;context&gt;)][ [C# N+]]</c>
     /// <c>[ (alt: &lt;alt&gt;)]</c>,
     /// with <c>(can cause: &lt;context&gt;)</c> instead of <c>(context: &lt;context&gt;)</c> for an appendix D verdict.
-    /// The bracketed parts are required exactly when the rule is on in <c>library</c> and off in <c>application</c>
+    /// The bracketed parts are required exactly when an analyzer checks the rule only in part, the rule is on in
+    /// <c>library</c> and off in <c>application</c>
     /// (or on in <c>application</c> and off in <c>test</c>), has a context, a minimum language version or an
     /// alternative, so the AI always sees the profile, the version
     /// tag and the fallback. The review output form
@@ -423,6 +463,33 @@ public sealed class SkillLintTests
     }
 
     /// <summary>
+    /// The skills and the reviewer agent explain <see cref="SkillReferenceEmitter.PartlyCheckedMarker"/>: tools check
+    /// only part of such a rule. The review output leaves the marker out like the profile markers.
+    /// </summary>
+    [Fact]
+    public void Skills_explain_the_partly_checked_marker()
+    {
+        const string Omitted = "`(partly checked)`";
+
+        Assert.Contains(SkillReferenceEmitter.PartlyCheckedMarker, Joined(SkillPath("fdg-write")));
+        foreach (string path in new[] { SkillPath("fdg-review"), AgentPath })
+        {
+            string text = Joined(path);
+            Assert.Contains("\"" + SkillReferenceEmitter.PartlyCheckedMarker + "\"", text);
+            Assert.Contains("without `(library only)`, `(not in test projects)`, " + Omitted, text);
+        }
+
+        int partlyCheckedInReferences = Directory.GetFiles(FdgWriteReferences, "*.md")
+            .SelectMany(f => File.ReadLines(f))
+            .Count(l => l.Contains(" " + SkillReferenceEmitter.PartlyCheckedMarker));
+        int partlyCheckedInData = Rules.Value.Values.Count(SkillReferenceEmitter.IsPartlyChecked);
+        Assert.NotEqual(0, partlyCheckedInData);
+        Assert.Equal(partlyCheckedInData, partlyCheckedInReferences);
+
+        static string Joined(string path) => string.Join(" ", Read(path).Lines.Select(l => l.Trim()));
+    }
+
+    /// <summary>
     /// fdg-fix builds with the marker's <c>projectPath</c>, the exact string the package compares with
     /// <c>FdgSarifProject</c>, and never treats a project without a SARIF log as clean.
     /// </summary>
@@ -436,6 +503,50 @@ public sealed class SkillLintTests
         Assert.Contains("dotnet build <projectPath>", body);
         Assert.Contains("diagnostics could not be checked (no SARIF log)", body);
         Assert.Contains("system temporary directory", body);
+    }
+
+    /// <summary>
+    /// dotnet format applies the fixes of IDE0280, IDE0250 and IDE0251 only when an <c>.editorconfig</c> sets their
+    /// severity, so fdg-setup offers those entries, writes them only after the user confirms, never overwrites an
+    /// existing one (an existing entry settles only the files it applies to), handles a nested root
+    /// <c>.editorconfig</c>, and takes each profile's value from a table that matches the rule data.
+    /// </summary>
+    [Fact]
+    public void Fdg_setup_offers_editorconfig_severities_for_option_less_ide_fixes()
+    {
+        string[] diagnostics = ["IDE0280", "IDE0250", "IDE0251"];
+        MarkdownFile skill = Read(SkillPath("fdg-setup"));
+        string body = string.Join(" ", skill.Body.Split('\n').Select(l => l.Trim()));
+
+        Assert.Contains("root `.editorconfig`", body);
+        Assert.Contains("`[*.cs]` section", body);
+        Assert.Contains("`[<project directory>/**.cs]` section", body);
+        Assert.Contains("write them only after the user confirms", body);
+        Assert.Contains("Never overwrite or remove an existing entry", body);
+        Assert.Contains("only for the files it applies to", body);
+        Assert.Contains("nested `.editorconfig` with `root = true`", body);
+        Assert.Contains("`,`, `#` or `;`", body);
+        foreach (string diagnostic in diagnostics)
+        {
+            Assert.Contains($"dotnet_diagnostic.{diagnostic}.severity", body);
+        }
+
+        Regex row = new(
+            @"^\s*\| (?<diagnostic>IDE\d{4}) \| (?<rule>FDG[1-9A-Z]\d{3}) \| " +
+            @"(?<library>\w+) \| (?<application>\w+) \| (?<test>\w+) \|$");
+        Match[] rows = skill.Lines.Select(l => row.Match(l)).Where(m => m.Success).ToArray();
+        Assert.Equal(diagnostics, rows.Select(m => m.Groups["diagnostic"].Value));
+        foreach (Match match in rows)
+        {
+            Rule rule = Rules.Value[match.Groups["rule"].Value];
+            Assert.Contains(match.Groups["diagnostic"].Value, rule.Mapping.Check.Diagnostics);
+            ProfileSeverity severity = rule.Mapping.Severity;
+            Assert.Equal(Text(severity.Library), match.Groups["library"].Value);
+            Assert.Equal(Text(severity.Application), match.Groups["application"].Value);
+            Assert.Equal(Text(severity.Test), match.Groups["test"].Value);
+        }
+
+        static string Text(SeverityLevel level) => level.ToString().ToLowerInvariant();
     }
 
     [Fact]
@@ -468,6 +579,11 @@ public sealed class SkillLintTests
     private static string QuotedLine(Rule rule)
     {
         string line = Statement(rule);
+        if (SkillReferenceEmitter.IsPartlyChecked(rule))
+        {
+            line += " " + SkillReferenceEmitter.PartlyCheckedMarker;
+        }
+
         ProfileSeverity severity = rule.Mapping.Severity;
         if (severity.Library != SeverityLevel.None && severity.Application == SeverityLevel.None)
         {
@@ -507,6 +623,28 @@ public sealed class SkillLintTests
 
     private static IEnumerable<string> ReferencePaths(string text) =>
         ReferencePath.Matches(text).Select(m => m.Groups["path"].Value).Distinct();
+
+    /// <summary>
+    /// Asserts that every segment of <paramref name="link"/>, relative to <paramref name="baseDirectory"/>, is the exact
+    /// name of an entry in its directory.
+    /// </summary>
+    private static void AssertExactCase(string baseDirectory, string link, string owner)
+    {
+        string directory = baseDirectory;
+        foreach (string segment in link.Split('/'))
+        {
+            if (segment == "..")
+            {
+                directory = Path.GetFullPath(Path.Combine(directory, ".."));
+                continue;
+            }
+
+            bool exact = Directory.EnumerateFileSystemEntries(directory)
+                .Any(entry => string.Equals(Path.GetFileName(entry), segment, StringComparison.Ordinal));
+            Assert.True(exact, $"{owner} links {link}, but {Relative(directory)} has no entry named exactly '{segment}'.");
+            directory = Path.Combine(directory, segment);
+        }
+    }
 
     private static string Relative(string path) => Path.GetRelativePath(Root.Value, path).Replace('\\', '/');
 

@@ -68,7 +68,7 @@ public static class RuleLoader
     public static MetaFile LoadMeta(string rulesDir)
     {
         string path = Path.Combine(rulesDir, MetaFileName);
-        MetaDto dto = MetaDeserializer.Deserialize<MetaDto>(File.ReadAllText(path))
+        MetaDto dto = YamlErrors.Read(path, MetaDeserializer.Deserialize<MetaDto>)
             ?? throw new FormatException($"{path} is empty.");
 
         return new MetaFile(
@@ -86,7 +86,7 @@ public static class RuleLoader
 
     public static IReadOnlyList<Rule> LoadRules(string path)
     {
-        return RuleYaml.Deserialize(File.ReadAllText(path));
+        return YamlErrors.Read(path, RuleYaml.Deserialize);
     }
 
     /// <summary>Loads every chapter listed in <c>meta.yaml</c>, in the listed order.</summary>
@@ -151,6 +151,11 @@ public static class RuleLoader
             || dto.Sections.Any(string.IsNullOrWhiteSpace))
         {
             throw new FormatException($"meta.yaml: a references entry of chapter {chapter} needs a file and at least one section.");
+        }
+
+        if (dto.File.Any(char.IsAsciiLetterUpper))
+        {
+            throw new FormatException($"meta.yaml: reference file name '{dto.File}' must be lowercase (chapter {chapter}).");
         }
 
         if (!SplitStem.IsMatch(dto.File))

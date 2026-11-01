@@ -2,16 +2,21 @@
 
 # Chapter 5: Member Design — 5.1
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 ## 5.1.1 Member Overloading
 
 - **FDG5001** DO try to use descriptive parameter names to indicate the default used by shorter overloads. (not in test projects) — examples: examples/ch05-members-general.md#fdg5001
 - **FDG5002** DO NOT arbitrarily vary parameter names in overloads. If a parameter in one overload represents the same input as a parameter in another overload, the parameters should have the same name. (not in test projects) — examples: examples/ch05-members-general.md#fdg5002
+- **FDG5003** AVOID being inconsistent in the ordering of parameters in overloaded members. Parameters with the same name should appear in the same position in all overloads. (partly checked) (not in test projects) — examples: examples/ch05-members-general.md#fdg5003
+- **FDG5004** DO make only the longest overload virtual (if extensibility is required). Shorter overloads should simply call through to a longer overload. (partly checked) (not in test projects) — examples: examples/ch05-members-general.md#fdg5004
 - **FDG5006** DO NOT have overloads with parameters at the same position and similar types, yet with different semantics. (not in test projects) — examples: examples/ch05-members-general.md#fdg5006
 - **FDG5007** DO allow `null` to be passed for optional arguments. (not in test projects) — examples: examples/ch05-members-general.md#fdg5007
+- **FDG5008** DO NOT have overloads with a generic type parameter in one method and a specific type in another. (partly checked) (not in test projects) — examples: examples/ch05-members-general.md#fdg5008
 - **FDG5009** CONSIDER using default parameters on the longest overload of a method. (not in test projects) — examples: examples/ch05-members-general.md#fdg5009
+- **FDG5010** DO provide a simple overload, with no default parameters, for any method with two or more defaulted parameters. (partly checked) (not in test projects) — examples: examples/ch05-members-general.md#fdg5010
 - **FDG5012** DO NOT change the default value for a parameter once it has been publicly released. (library only) — examples: examples/ch05-members-general.md#fdg5012
+- **FDG5013** DO NOT have two overloads of a method with “compatible” required parameters that both use default parameters. (partly checked) (not in test projects)
 - **FDG5014** AVOID having two overloads of the same method that both use default parameters. (not in test projects)
 - **FDG5016** DO move all default parameters to the new, longer overload when adding optional parameters to an existing method. (library only) — examples: examples/ch05-members-general.md#fdg5016
 
@@ -22,7 +27,10 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG5019** CONSIDER implementing interface members explicitly to simulate variance (change parameters or return types in “overridden” members). (not in test projects) — examples: examples/ch05-members-general.md#fdg5019
 - **FDG5020** CONSIDER implementing interface members explicitly to hide a member and add an equivalent member with a better name. (not in test projects) — examples: examples/ch05-members-general.md#fdg5020
 - **FDG5021** DO NOT use explicit members as a security boundary. (not in test projects) — examples: examples/ch05-members-general.md#fdg5021
+- **FDG5022** DO provide a protected virtual member that offers the same functionality as the explicitly implemented member if the functionality is meant to be specialized by derived classes. (partly checked) (not in test projects) — examples: examples/ch05-members-general.md#fdg5022
 
 ## 5.1.3 Choosing Between Properties and Methods
 
 - **FDG5023** CONSIDER using a property if the member represents a logical attribute of the type. (not in test projects) — examples: examples/ch05-members-general.md#fdg5023
+- **FDG5024** DO use a property, rather than a method, if the value of the property is stored in the process memory and the property would just provide access to the value. (partly checked) (not in test projects) — examples: examples/ch05-members-general.md#fdg5024
+- **FDG5025** DO use a method, rather than a property, in the following situations: (partly checked) (not in test projects) — examples: examples/ch05-members-general.md#fdg5025

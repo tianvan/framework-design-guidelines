@@ -1,0 +1,12 @@
+<Project>
+
+  <!--
+    Build timing: passed as CustomAfterMicrosoftCommonTargets by Measure-Noise.ps1 -Timing for the builds without the
+    package. A sample that already references FrameworkDesignGuidelines.Analyzers drops the reference here, before
+    restore reads it, so that these builds have none of the package's analyzers, props or targets.
+  -->
+  <ItemGroup>
+    <PackageReference Remove="FrameworkDesignGuidelines.Analyzers" />
+  </ItemGroup>
+
+</Project>

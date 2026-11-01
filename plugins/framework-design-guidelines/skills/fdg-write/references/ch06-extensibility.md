@@ -2,7 +2,7 @@
 
 # Chapter 6: Designing for Extensibility
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 ## 6.1.1 Unsealed Classes
 
@@ -38,6 +38,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 - **FDG6017** CONSIDER making base classes abstract even if they don’t contain any abstract members. This clearly communicates to the users that the class is designed solely to be inherited from. (library only) — examples: examples/ch06-extensibility.md#fdg6017
 - **FDG6018** CONSIDER placing base classes in a separate namespace from the mainline scenario types. By definition, base classes are intended for advanced extensibility scenarios and are not interesting to the majority of users. See section 2.2.4 for details. (library only)
+- **FDG6019** AVOID naming base classes with a “Base” suffix if the class is intended for use in public APIs. (partly checked) (library only) — examples: examples/ch06-extensibility.md#fdg6019
 
 ## 6.3 Sealing
 

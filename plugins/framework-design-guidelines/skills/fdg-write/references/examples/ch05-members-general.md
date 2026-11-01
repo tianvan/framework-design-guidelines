@@ -31,6 +31,46 @@ public class String {
 }
 ```
 
+## FDG5003
+
+AVOID being inconsistent in the ordering of parameters in overloaded members. Parameters with the same name should appear in the same position in all overloads.
+
+```csharp
+public class EventLog {
+   public EventLog();
+   public EventLog(string logName);
+   public EventLog(string logName, string machineName);
+   public EventLog(string logName, string machineName, string source);
+}
+```
+
+In some specific cases, this otherwise very strict guideline can be broken. For example, a `params` array parameter has to be the last parameter in a parameter list. If a `params` array parameter appears in an overloaded member, the API designer might need to make a trade-off and either settle for inconsistent parameter ordering or not use the `params` modifier. For more information on the `params` array parameters, see section 5.8.4.
+
+Another case where the guideline might need to be violated is when the parameter list contains `out` parameters. These parameters should typically appear at the end of the parameter list, which again means that the API designer might need to settle for a slightly inconsistent order of parameters in overloads with `out` parameters. See section 5.8 for more information on `out` parameters.
+
+## FDG5004
+
+DO make only the longest overload virtual (if extensibility is required). Shorter overloads should simply call through to a longer overload.
+
+```csharp
+public class Encoding {
+   public bool IsAlwaysNormalized(){
+     return IsAlwaysNormalized(NormalizationForm.FormC);
+   }
+   public virtual bool IsAlwaysNormalized(NormalizationForm form){
+     //do real work here
+   }
+}
+```
+
+For more information on the design of virtual members, see Chapter 6.
+
+> **Brian Pepin:** Remember that you can apply this pattern to abstract classes, too. In your abstract class, you can perform all necessary argument checking in nonabstract, nonvirtual methods and then provide a single abstract method for the developer to implement.
+
+> **Chris Sells:** I love this guideline, not only because it makes the library code easier to reason about, but also because it makes it easier for me to write. If I have to implement each overload from scratch instead of making the less complicated ones call the more complicated ones, then I have to test and maintain all that copied code, too, which I’m far too lazy to do properly.
+>
+> Further, if I’ve got more than two overloads, I always make the less complicated ones call the next more complicated one and not the most complicated one, like the three overloads of `IsAlwaysNormalized` shown previously for `Encoding`. That way, I’m not hard-coding defaults in more than one place—if I had to do that, I’d probably get it wrong.
+
 ## FDG5006
 
 DO NOT have overloads with parameters at the same position and similar types, yet with different semantics.
@@ -74,6 +114,33 @@ else DrawGeometry(brush, pen, geometry);
 
 > **Brad Abrams:** Notice that this guideline is not intended to encourage developers to use `null` as a magic constant, but rather to help them avoid explicit checking, as previously described. In fact, whenever you have to use literal `null` when calling an API, it indicates an error in your code or in the framework not providing the appropriate overload.
 
+## FDG5008
+
+DO NOT have overloads with a generic type parameter in one method and a specific type in another.
+
+When designing methods on a generic type, it may sometimes seem appropriate to have a generic-based overload and a `System.String-`based overload, as in this example:
+
+```csharp
+public class PrettyPrinter<T> {
+  public void PrettyPrint(string format){ ... }
+  public void PrettyPrint(T otherPrinter){ ... }
+  public void PrettyPrint(T otherPrinter, string format){ ... }
+}
+```
+
+However, when the generic type is itself `System.String`, the overload that uses the generic type parameter becomes uncallable.
+
+```csharp
+PrettyPrinter<string> printer = new PrettyPrinter<string>();
+...
+// C# overload resolution says this is PrettyPrint(string),
+// not PrettyPrint(T).
+// There's no way to call PrettyPrint(T) from C#.
+printer.PrettyPrint("hello, world");
+```
+
+> **Jeremy Barton:** This guidance doesn’t apply as strongly for generic methods (as opposed to non-generic methods on a generic types), because a generic method can be explicitly invoked by specifying the generic type arguments. But it still can cause unpleasant syntax, may not be possible to solve in all CLR languages, and is far more likely to have different semantics between the two methods with the same name.
+
 ## FDG5009
 
 CONSIDER using default parameters on the longest overload of a method.
@@ -94,6 +161,24 @@ BigInteger val = BigInteger.Parse(input, provider: formatCulture);
 > **Stephen Toub:** It’s worth considering the performance implications of default parameters. A method such as `Parse` (in the preceding example) likely needs to validate all of its arguments and also have all of the branches necessary to support any valid combination of those arguments, even when it’s called with the default values for all of the optional arguments. In contrast, if this example used multiple overloads, the overload that just took `value` wouldn’t need to validate either `style` or `provider`, and it could delegate directly to the internal implementation that’s able to handle the equivalent of `NumberStyles.Integer` when no format provider is specified. For methods called on hot code paths in high-performance scenarios, that difference can be measurable.
 >
 > When looking at tools for tree shaking/linking, overloads with lots of default parameters can also be problematic. Let’s say the `Parse` method had different implementations to handle integer and hex number styles. A linker that sees this overload being used might end up keeping both the integer and hex support, even if it’s only ever called with the default integer argument. If this were instead an overload that didn’t take a style at all, a linker has a better chance of being able to strip away portions of the implementation that go unused.
+
+## FDG5010
+
+DO provide a simple overload, with no default parameters, for any method with two or more defaulted parameters.
+
+Usability studies have shown that default parameters are a comparatively advanced feature. Many developers are confused with the presentation in IntelliSense, and sometimes think that they have to provide the defaulted arguments as exactly the value shown by IntelliSense. Providing the simple overload makes your method easier to approach for users who need only the default behaviors.
+
+```csharp
+public static BigInteger Parse(ReadOnlySpan<char> value)
+   // Since a provider is 'specified' this calls the overload
+   // which uses default parameters.
+   => Parse(value, provider: null);
+
+public static BigInteger Parse(
+   ReadOnlySpan<char> value,
+   NumberStyles style = NumberStyles.Integer,
+   IFormatProvider provider = null) { ... }
+```
 
 ## FDG5012
 
@@ -219,8 +304,105 @@ Such members can be called by any code by simply casting an instance to the inte
 
 > **Rico Mariani:** Generally, objects that have security issues should expose the fewest possible interfaces and inherit as little as possible. Get your code reuse by encapsulation rather than by inheritance, and seal as much as you can. My biggest dissent with the guidelines is that they do not recommend sealing as often as I believe they should. Where there are security issues, be more careful and consider sealing more aggressively, inheriting less aggressively, and using explicit (sealed) implementations of those interfaces you need to offer.
 
+## FDG5022
+
+DO provide a protected virtual member that offers the same functionality as the explicitly implemented member if the functionality is meant to be specialized by derived classes.
+
+Explicitly implemented members cannot be overridden. They can be redefined, but then subtypes cannot call the base method’s implementation. It is recommended that you name the protected member by either using the same name or affixing `Core` to the interface member name.
+
+```csharp
+[Serializable]
+public class List<T> : ISerializable {
+  ...
+   void ISerializable.GetObjectData(
+    SerializationInfo info, StreamingContext context) {
+    GetObjectData(info,context);
+   }
+
+   protected virtual void GetObjectData(
+    SerializationInfo info, StreamingContext context) {
+    ...
+   }
+}
+```
+
+> **Rico Mariani:** Classes designed to be subclassed in normal use need extra care. The times when the `Core` functions are called is part of the contract, so document it well and try not to change it. Access to protected members might allow partially trusted code to do bad things to the internal state. You must code with the expectation that the subclass will be hostile.
+
 ## FDG5023
 
 CONSIDER using a property if the member represents a logical attribute of the type.
 
 For example, `Button.Color` is a property because color is an attribute of a button.
+
+## FDG5024
+
+DO use a property, rather than a method, if the value of the property is stored in the process memory and the property would just provide access to the value.
+
+For example, a member that retrieves the name of a `Customer` from a field stored in the object should be a property.
+
+```csharp
+public Customer {
+  public Customer(string name){
+    this.name = name;
+  }
+   public string Name {
+    get { return this.name; }
+  }
+  private string name;
+}
+```
+
+## FDG5025
+
+DO use a method, rather than a property, in the following situations:
+
+- The operation is orders of magnitude slower than a field access would be. If you are even considering providing an asynchronous version of an operation to avoid blocking the thread, it is very likely that the operation is too expensive to be a property. In particular, operations that access the network or the file system (other than once for initialization) should likely be methods, not properties.
+- The operation is a conversion, such as the `Object.ToString` method.
+- The operation returns a different result each time it is called, even if the parameters don’t change. For example, the `Guid.NewGuid` method returns a different value each time it is called.
+  > **Jeffrey Richter**
+  >
+  > The `DateTime.Now` property is an example of a place in .NET where this property should have been a method because the operation returns a different result each time.
+- The operation has a significant and observable side effect. Notice that populating an internal cache is not generally considered an observable side effect.
+  > **Brian Pepin**
+  >
+  > The `Handle` property on a Windows Forms control is an example of where too many side effects might occur. If the control has not had its handle created yet, accessing the `Handle` property will create it. I can’t tell you how many times I’ve completely changed the result of a debugging session by setting up a watch on the `Handle` property. The debugger’s watch will actually create the control’s handle, often hiding your bug.
+- The operation returns a copy of an internal state (this does not include copies of value-type objects returned on the stack).
+- The operation returns an array.
+
+Properties that return arrays can be very misleading. Usually it is necessary to return a copy of an internal array so that the user cannot change the internal state. This could lead to inefficient code.
+
+In the following example, the `Employees` property is accessed twice in every iteration of the loop. That would be 2*n* + 1 copies for the following short code sample:
+
+```csharp
+Company microsoft = GetCompanyData("MSFT");
+for (int i = 0; i < microsoft.Employees.Length; i++) {
+   if (microsoft.Employees[i].Alias == "kcwalina"){
+       ...
+   }
+}
+```
+
+This problem can be addressed in one of two ways:
+
+- Change the property into a method, which communicates to callers that they are not just accessing an internal field and probably are creating an array every time they call the method. Given that, users are more likely to call the method once, cache the result, and work with the cached array.
+  ```
+  Company microsoft = GetCompanyData("MSFT");
+  Employees[] employees = microsoft.GetEmployees();
+  for (int i = 0; i < employees.Length; i++) {
+     if (employees[i].Alias == "kcwalina"){
+         ...
+     }
+  }
+  ```
+- Change the property to return a collection instead of an array. You can use `ReadOnlyCollection<T>` to provide public read-only access to a private array. Alternatively, you can use a subclass of `Collection<T>` to provide controlled read-write access, so that you can be notified when the user code modifies the collection. See section 8.3 for more details on using `ReadOnlyCollection<T>` and `Collection<T>`.
+  ```
+  public ReadOnlyCollection<Employee> Employees {
+     get { return roEmployees; }
+  }
+  private Employee[] employees;
+  private ReadOnlyCollection<Employee> roEmployees;
+  ```
+
+> **Brad Abrams:** Some of the guidelines in this book were debated and agreed on in the abstract; others were learned in the school of hard knocks. The guideline on properties that return arrays belongs to the school of hard knocks camp. When we were investigating some performance issues in version 1.0 of the .NET Framework, we noticed that thousands of arrays were being created and quickly trashed. It turns out that many places in the framework itself ran into this pattern. Needless to say, we fixed those instances and the guidelines.
+
+> **Rico Mariani:** I hope you’ve read this far—you really must understand that the preceding guideline is designed to avoid some pretty big problems. I’d encourage you to remember this shorthand: Use properties for simple access to simple data with a simple computation. Don’t stray from that pattern.

@@ -118,6 +118,24 @@ public sealed class FixEndToEndTests : IClassFixture<PackageFixture>
         AssertOnlyFdgFixes(workspace.Read(Path.Combine("Strict", "Strict.cs")));
     }
 
+    [Fact]
+    public void Fix_respects_a_configured_end_of_line()
+    {
+        // The LF file comes out CRLF throughout, as end_of_line asks; the CLI does not convert it back.
+        using var workspace = new SampleWorkspace(_fixture, "fix crlf", "[*.cs]\nend_of_line = crlf\n");
+        workspace.AddProject("Fixed", "application", ViolatingSource);
+        string path = Path.Combine(workspace.DirectoryPath, "Fixed", "Fixed.cs");
+        Assert.DoesNotContain("\r", File.ReadAllText(path));
+
+        DotnetResult fix = workspace.Fdg("fix", "Fixed");
+
+        Assert.True(fix.ExitCode == 0, $"dotnet fdg exited with {fix.ExitCode}:\n{fix.Output}");
+        string source = File.ReadAllText(path);
+        AssertFixed(source, "textColor");
+        Assert.Contains("\r\n", source);
+        Assert.DoesNotContain("\n", source.Replace("\r\n", string.Empty, StringComparison.Ordinal));
+    }
+
     /// <summary>
     /// The FDG fixes and whitespace of <see cref="StrictSource"/> are applied; CA1822's "make it static", a warning
     /// here, is not: it would break every caller of a public method.

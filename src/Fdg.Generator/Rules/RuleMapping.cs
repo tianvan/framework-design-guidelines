@@ -4,7 +4,12 @@ public sealed record CheckInfo(CheckKind Kind, IReadOnlyList<string> Diagnostics
 
 public sealed record ProfileSeverity(SeverityLevel Library, SeverityLevel Application, SeverityLevel Test);
 
-public sealed record AnalyzerInfo(string Message, string Category);
+/// <summary>
+/// The message and category of an fdg analyzer's descriptor. <paramref name="CompilationEnd"/> marks a rule that its
+/// analyzer reports only when the compilation ends, which the descriptor declares with
+/// <c>WellKnownDiagnosticTags.CompilationEnd</c> (RS1037).
+/// </summary>
+public sealed record AnalyzerInfo(string Message, string Category, bool CompilationEnd = false);
 
 /// <summary>
 /// Which IDE1006 violations a naming rule explains: the kinds of symbol it applies to

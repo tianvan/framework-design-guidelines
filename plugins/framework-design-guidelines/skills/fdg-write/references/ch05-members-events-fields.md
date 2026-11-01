@@ -2,14 +2,22 @@
 
 # Chapter 5: Member Design — 5.4–5.5
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 ## 5.4 Event Design
 
 - **FDG5056** DO use the term “raise” for events rather than “fire” or “trigger.” (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5056
+- **FDG5057** DO use `System.EventHandler<T>` instead of manually creating new delegates to be used as event handlers. (partly checked) (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5057
 - **FDG5058** CONSIDER using a subclass of `EventArgs` as the event argument, unless you are absolutely sure the event will never need to carry any data to the event handling method, in which case you can use the `EventArgs` type directly. (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5058
+- **FDG5059** DO use a protected virtual method to raise each event. This is applicable only to nonstatic events on unsealed classes—not to structs, sealed classes, or static events. (partly checked) (library only) — examples: examples/ch05-members-events-fields.md#fdg5059
+- **FDG5060** DO take one parameter to the protected method that raises an event. (partly checked) (library only) — examples: examples/ch05-members-events-fields.md#fdg5060
+- **FDG5061** DO NOT pass `null` as the sender when raising a nonstatic event. (partly checked) (not in test projects)
+- **FDG5062** DO pass `null` as the sender when raising a static event. (partly checked) (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5062
+- **FDG5063** DO NOT pass `null` as the event data parameter when raising an event. (partly checked) (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5063
 - **FDG5064** CONSIDER raising events that the end user can cancel. This guideline applies only to pre-events. (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5064
 
 ## 5.5 Field Design
 
+- **FDG5066** DO use constant fields for constants that will never change. (partly checked) (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5066
 - **FDG5067** CONSIDER using public `static readonly` fields for predefined object instances. (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5067
+- **FDG5068** DO NOT assign instances of mutable types to public or protected `readonly` fields. (partly checked) (not in test projects) — examples: examples/ch05-members-events-fields.md#fdg5068

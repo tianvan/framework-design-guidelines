@@ -119,7 +119,11 @@
       "required": ["message", "category"],
       "properties": {
         "message": { "type": "string", "minLength": 1 },
-        "category": { "type": "string", "minLength": 1 }
+        "category": { "type": "string", "minLength": 1 },
+        "compilationEnd": {
+          "description": "Optional. True when the analyzer reports only at the end of the compilation; the descriptor then carries the CompilationEnd custom tag.",
+          "type": "boolean"
+        }
       }
     }
   }

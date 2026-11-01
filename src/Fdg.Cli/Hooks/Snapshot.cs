@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Fdg.Cli.IO;
 using Fdg.Cli.Projects;
 
 namespace Fdg.Cli.Hooks;
@@ -17,10 +18,19 @@ public sealed record TurnSnapshot(
     DateTimeOffset? Started = null);
 
 /// <summary>
-/// What <see cref="Snapshot.FindChangesAsync"/> found: changed candidate files, deleted candidate paths, and one-line
-/// notes about changes it could not attribute to the turn.
+/// What <see cref="Snapshot.FindChangesAsync"/> found: changed candidate files, deleted candidate paths, one-line
+/// notes about changes it could not attribute to the turn, and every path that may have changed.
 /// </summary>
-public sealed record TurnChanges(IReadOnlyList<string> Changed, IReadOnlyList<string> Deleted, IReadOnlyList<string> Notes);
+/// <param name="Touched">
+/// Every path, of any kind and in or out of scope, that <c>git status</c> lists or a commit made during the turn
+/// changed, outside <c>bin/</c>, <c>obj/</c> and <c>artifacts/</c> directories; in ordinal order. A file dirty since
+/// before the turn is listed too.
+/// </param>
+public sealed record TurnChanges(
+    IReadOnlyList<string> Changed,
+    IReadOnlyList<string> Deleted,
+    IReadOnlyList<string> Notes,
+    IReadOnlyList<string> Touched);
 
 /// <summary>
 /// Turn snapshots from <c>git status</c>. A file changed in a turn is a candidate file that is dirty now and was
@@ -99,7 +109,12 @@ public static class Snapshot
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)
             .ToArray();
-        return new TurnChanges(changed, deleted, notes);
+        string[] touched = paths
+            .Where(p => !IsOutputPath(p))
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        return new TurnChanges(changed, deleted, notes, touched);
     }
 
     /// <summary>
@@ -178,8 +193,9 @@ public static class Snapshot
             content = await moveSources.FindAsync(current, cancellationToken).ConfigureAwait(false);
         }
 
+        // Written once and then trusted, so a kill halfway must not leave a torn baseline.
         Directory.CreateDirectory(Path.GetDirectoryName(baseline)!);
-        await File.WriteAllBytesAsync(baseline, content ?? [], cancellationToken).ConfigureAwait(false);
+        AtomicFile.WriteAllBytes(baseline, content ?? []);
         return baseline;
     }
 
@@ -207,6 +223,13 @@ public static class Snapshot
         string[] segments = relativePath.Split('/');
         return !segments[..^1].Any(ProjectFiles.IsSkippedDirectory);
     }
+
+    /// <summary>A path under a <c>bin/</c>, <c>obj/</c> or <c>artifacts/</c> directory: build output.</summary>
+    private static bool IsOutputPath(string relativePath) =>
+        relativePath.Split('/')[..^1].Any(s =>
+            s.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
+            s.Equals("obj", StringComparison.OrdinalIgnoreCase) ||
+            s.Equals("artifacts", StringComparison.OrdinalIgnoreCase));
 
     private static async Task<IReadOnlyList<string>> CandidatesAsync(GitRepository git, CancellationToken cancellationToken) =>
         Candidates(git, (await git.StatusAsync(cancellationToken).ConfigureAwait(false)).Select(e => e.Path));

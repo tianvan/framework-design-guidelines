@@ -1,0 +1,16 @@
+# Settings for the Roslyn analyzer rules (RS*) that Microsoft.CodeAnalysis.Analyzers runs on this project. They are build
+# settings of this repository, not rule severities shipped to users: the shipped rules never use 'error'.
+[*.cs]
+# A diagnostic that an analyzer reports from a compilation end action must say so in its descriptor, or the IDE reports
+# it with the wrong lifetime. fdg-gen writes the tag from analyzer.compilationEnd in the rule data.
+dotnet_diagnostic.RS1037.severity = error
+
+# The descriptors are generated, and a file named *.g.cs counts as generated code, which analyzers skip: RS1037 would
+# never see a descriptor that lacks the tag. The RS rules below then see the descriptors too, so they are switched off
+# for this file, each with its reason.
+[Generated/FdgDescriptors.g.cs]
+generated_code = false
+# RS1031: a title is the sentence of the guideline, which ends with a period.
+dotnet_diagnostic.RS1031.severity = none
+# RS2008: release tracking; fdg-gen owns the diagnostic ids and writes them, with the rule docs, from the rule data.
+dotnet_diagnostic.RS2008.severity = none

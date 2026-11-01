@@ -2,6 +2,56 @@
 
 # Appendix A: C# Coding Style Conventions — explanations and examples
 
+## FDGA001
+
+DO place the opening brace on the next line, indented to the same level as the block statement.
+
+```csharp
+if (someExpression)
+{
+    DoSomething();
+}
+```
+
+## FDGA003
+
+DO place the closing brace on its own line, except the end of a `do`..`while` statement.
+
+```csharp
+if (someExpression)
+{
+    do
+    {
+        DoSomething();
+    } while(someOtherCondition);
+}
+else if (someOtherExpression)
+{
+    ...
+}
+```
+
+## FDGA004
+
+AVOID omitting braces, even if the language allows it.
+
+Braces should not be considered optional. Even for single-statement blocks, you should use braces. This increases code readability and maintainability.
+
+```csharp
+for (int i = 0; i < 100; i++)
+{
+    DoSomething(i);
+}
+```
+
+One exception to the rule is braces in `case` statements. These braces can be omitted, because the `case` and `break` statements indicate the beginning and the end of the block.
+
+```csharp
+case 0:
+   DoSomething();
+   break;
+```
+
 ## FDGA005
 
 CONSIDER omitting braces in an argument validation preamble.
@@ -85,6 +135,54 @@ string complex =
         Property2;
 ```
 
+## FDGA023
+
+DO chop before the first argument or parameter, indent one indentation level, and include one argument or parameter per line when a method declaration or method invocation is exceedingly long.
+
+```csharp
+private void SomeMethod(
+    int firstParameter,
+    string secondParameter,
+    bool thirdParameter,
+    string fourthParameter)
+{
+
+    ...
+
+    SomeOtherMethod(
+        firstParameter * 100,
+        fourthParameter,
+        thirdParameter &&
+            secondParameter.Length > fourthParameter.Length,
+        22);
+
+    ...
+}
+```
+
+> **Jeremy Barton:** We don’t have a set line length as part of our style guidelines. I set my IDE to give a guide line at 120 characters, which is generally narrow enough to avoid horizontal scrolling for most IDE configurations and web-based code viewers. However, I treat this as a “soft” limit and violate it when adding the line break makes the line too hard to read.
+
+## FDGA025
+
+DO add a blank line after a closing brace, unless the next line is also a closing brace.
+
+```csharp
+while (!queue.IsEmpty)
+{
+    Element toProcess = queue.Pop();
+
+    if (toProcess == null)
+    {
+        continue;
+    }
+
+    if (!toProcess.IsDone)
+    {
+        ...
+    }
+}
+```
+
 ## FDGA026
 
 DO add a blank line after “paragraphs” of code where it enhances readability.
@@ -109,6 +207,26 @@ switch (someExpression)
 >
 > ...
 > ```
+
+## FDGA027
+
+DO always explicitly specify visibility modifiers.
+
+```csharp
+Right:
+    internal class SomeClass
+    {
+        private object _lockObject;
+        ...
+    }
+
+Wrong:
+    class SomeClass
+    {
+        object _lockObject;
+        ...
+    }
+```
 
 ## FDGA039
 
@@ -154,6 +272,98 @@ Wrong:
     Int32 count = split.Length;
 ```
 
+## FDGA042
+
+DO NOT use the `var` keyword except to save the result of a `new`, `as`-cast or “hard” cast.
+
+In the core .NET libraries, we only use `var` when the type name is already specified. We don’t use it when calling factory methods, calling methods for which “everyone knows” the return type (e.g., `String.IndexOf`), or receiving the result of a `TryParse` method. We also do not compel the use of `var` when using a `new`, `as`-cast, or “hard” cast; instead, we leave it as a judgment call on the part of the code author.
+
+```csharp
+Acceptable (no var):
+    StringBuilder builder = new StringBuilder();
+    List<int> list = collection as List<int>;
+    string built = ProcessList(list, builder);
+    SomeType fromCache = cache.Get<SomeType>();
+
+    if (int.TryParse(input, out int parsedValue)
+    {
+        ...
+    }
+
+Acceptable (maximal use of var):
+    var builder = new StringBuilder();
+    var list = collection as List<int>;
+    string built = ProcessList(list, builder);
+    SomeType fromCache = cache.Get<SomeType>();
+
+    if (int.TryParse(input, out int parsedValue)
+    {
+        ...
+    }
+
+Wrong (uses var in places that are not permitted):
+    var builder = new StringBuilder();
+    var list = collection as List<int>;
+    var built = ProcessList(list, builder);
+    var fromCache = cache.Get<SomeType>();
+
+    if (int.TryParse(input, out var parsedValue)
+    {
+        ...
+    }
+```
+
+## FDGA043
+
+DO use object initializers where possible.
+
+This rule can be ignored when working with a type that has a required order of property assignment. As with most exceptions to a rule, however, a comment should explain why the code should not be changed to use object initializers. The object initializer does respect the order the properties are assigned, but it doesn’t “feel” as ordered as multiple assignment statements.
+
+```csharp
+Right:
+    SomeType someType = new SomeType
+    {
+        PropA = ...,
+        PropB = ...,
+        PropC = ...,
+    }
+
+Acceptable:
+    // PropB has to be set first
+    SomeType someType = new SomeType
+    {
+        PropB = ...,
+    };
+    someType.PropA = ...;
+    someType.PropC = ...;
+
+Not preferred:
+    SomeType someType = new SomeType();
+    someType.PropB = ...;
+    someType.PropA = ...;
+    someType.PropC = ...;
+```
+
+## FDGA044
+
+DO use collection initializers where possible.
+
+```csharp
+Right:
+     SomeCollection someColl = new SomeCollection
+     {
+         first,
+         second,
+         third,
+     };
+
+Not preferred:
+    SomeCollection someColl = new SomeCollection();
+    someColl.Add(first);
+    someColl.Add(second);
+    someColl.Add(third);
+```
+
 ## FDGA045
 
 CONSIDER using expression-bodied members when the implementation of a property or method is unlikely to change.
@@ -164,6 +374,18 @@ public partial class UnseekableStream : Stream
     public bool CanSeek => false;
     public override long Seek(long offset, SeekOrigin origin) =>
          throw new NotSupportedException();
+}
+```
+
+## FDGA046
+
+DO use auto-implemented properties when the implementation is unlikely to change.
+
+```csharp
+internal partial class SomeCache
+{
+    internal long HitCount { get; private set; }
+    internal long MissCount { get; private set; }
 }
 ```
 
@@ -182,6 +404,21 @@ public partial class R\u00E9sum\u00E9
 ...
 string nihongo = "\u65E5\u672C\u8A9E";
 ```
+
+## FDGA048
+
+DO use the `nameof(...)` syntax, instead of a literal string, when referring to the name of a type, member, or parameter.
+
+```csharp
+Right: throw new ArgumentNullException(nameof(target));
+Wrong: throw new ArgumentNullException("target");
+```
+
+## FDGA049
+
+DO apply the `readonly` modifier to fields when possible.
+
+Be careful when applying the `readonly` modifier to fields where the field type is a `struct`. If the struct isn’t declared as `readonly`, then property and method invocations might make local copies of the value and create a performance problem.
 
 ## FDGA050
 
@@ -208,6 +445,58 @@ public SomeType(SomeOtherType target, ...)
         throw new ArgumentNullException(nameof(target));
 
     ...
+}
+```
+
+## FDGA052
+
+DO use PascalCasing for namespace, type, and member names, except for internal and private fields.
+
+```csharp
+namespace Your.MultiWord.Namespace
+{
+    public abstract class SomeClass
+    {
+        internal int SomeProperty { get; private set; }
+        ...
+    }
+}
+```
+
+## FDGA053
+
+DO use PascalCasing for const locals and const fields except for interop code, where it should match the name from the called code exactly.
+
+```csharp
+internal class SomeClass
+{
+    private const DefaultListSize = 32;
+
+    private bool Encode()
+    {
+        const int RetryCount = 3;
+        const int ERROR_MORE_DATA = 0xEA;
+
+        ...
+    }
+}
+```
+
+## FDGA055
+
+DO use a prefix “_” (underscore) for private and internal instance fields, “s_” for private and internal static fields, and “t_” for private and internal thread-static fields.
+
+These prefixes are very valuable to a code reviewer. Reading from, or writing to, a field indicates why a method isn’t declared as `static`. Writes to a field indicate a persisted state. Reading from, or writing to, a static field indicates a shared persisted state and a potential thread-safety problem. Thread-static fields require even more attention, because they may lose their value after an `await`—or have never been initialized on this thread.
+
+```csharp
+internal partial class SomeClass
+{
+    [ThreadStatic]
+    private static byte[] t_buffer;
+
+    private static int s_instanceCount;
+
+    private int _instanceId;
 }
 ```
 
@@ -262,6 +551,14 @@ Multiple internal types in one file are allowed, though there is a preference fo
 DO name the source file with the name of the public type it contains.
 
 For example, the `String` class should be in a file named “String.cs” and the `List<T>` class should be in a file named “List.cs”.
+
+## FDGA067
+
+DO organize the directory hierarchy just like the namespace hierarchy.
+
+For example, the source file for `System.Collections.Generic.List<T>` should be in the System\Collections\Generic directory.
+
+For assemblies that have a common namespace prefix for all types, removing empty top-level directories is a usual practice. Thus, a type named “SomeProject.BitManipulation.Simd” from an assembly with a common prefix of “SomeProject” would usually be found at <project root>\BitManipulation\Simd.cs.
 
 ## FDGA068
 

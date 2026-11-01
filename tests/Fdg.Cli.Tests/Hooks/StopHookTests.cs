@@ -355,6 +355,22 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Formatting_keeps_the_line_ending_of_a_changed_file()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (5, "int x;")));
+        // dotnet format writes the platform newline before a line that starts with a block comment.
+        _formatter.OnFormat = _ => File.WriteAllText(
+            order,
+            File.ReadAllText(order).Replace("\nint x;\n", "\n/* c */ int x;\r\n", StringComparison.Ordinal));
+
+        await TurnStopAsync();
+
+        Assert.NotEmpty(_formatter.Calls);
+        Assert.Equal(Lines(10, (5, "/* c */ int x;")), File.ReadAllText(order));
+    }
+
+    [Fact]
     public async Task Later_stop_does_not_count_earlier_formatting_as_the_AIs_lines()
     {
         _repo.Write("src/中文 App/Order.cs", Lines(10, (5, "if (x) return;")));
@@ -705,6 +721,52 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Stop_blocks_CA1063_after_IDisposable_is_added_to_an_existing_type()
+    {
+        CommitOrder("class Order {\n    void Ship() { }\n}\n");
+        await TurnStartAsync();
+        string order = _repo.Write(
+            "src/中文 App/Order.cs",
+            "class Order : System.IDisposable {\n    void Ship() { }\n    public void Dispose() { }\n}\n");
+        _builder.Sarif = _ => [
+            new SarifResult(
+                "CA1063",
+                "warning",
+                "Provide an overridable implementation of Dispose(bool) on 'Order' or mark the type as sealed",
+                order,
+                1) { Column = 7 },
+        ];
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal("block", Json(output, "decision"));
+        string reason = Json(output, "reason")!;
+        Assert.Contains("src/中文 App/Order.cs:1 CA1063", reason);
+        Assert.DoesNotContain("Existing API", reason);
+    }
+
+    [Fact]
+    public async Task Naming_diagnostic_on_an_existing_type_that_gained_a_base_type_does_not_block()
+    {
+        CommitOrder("public class Order {\n    void Ship() { }\n}\n");
+        await TurnStartAsync();
+        string order = _repo.Write(
+            "src/中文 App/Order.cs",
+            "public class Order : System.Exception {\n    void Ship() { }\n}\n");
+        _builder.Sarif = _ => [new SarifResult("CA1710", "warning", "Rename Order to end in 'Exception'", order, 1) { Column = 14 }];
+
+        string output = await TurnStopAsync();
+
+        Assert.Null(Json(output, "decision"));
+        Assert.StartsWith(
+            "FDG: 1 issue(s) on existing API in lines you changed; not blocking. Tell the user instead of changing the API.\n" +
+            "Existing API: do not change it to fix this; tell the user.\n" +
+            "src/中文 App/Order.cs:1 CA1710 Rename Order to end in 'Exception'\n",
+            Json(output, "systemMessage"));
+        Assert.Equal(0, (await StateAsync()).ReadBlocks());
+    }
+
+    [Fact]
     public async Task Breaking_diagnostic_in_a_file_created_this_turn_blocks()
     {
         await TurnStartAsync();
@@ -839,6 +901,143 @@ public sealed class StopHookTests : IDisposable
     }
 
     [Fact]
+    public async Task Linked_compile_results_do_not_force_a_rebuild()
+    {
+        // The project compiles files outside its directory through static Compile items; a log whose results are
+        // all in those files is the project's own, not a referenced project's.
+        _repo.Write(
+            "src/中文 App/App.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\">\n" +
+            "  <ItemGroup>\n" +
+            "    <PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" PrivateAssets=\"all\" />\n" +
+            "    <Compile Include=\"..\\Shared\\Linked.cs;$(MSBuildThisFileDirectory)..\\Shared\\Other.cs\" Link=\"Linked.cs\" />\n" +
+            "    <Compile Include=\"..\\Shared\\*.g.cs\" />\n" +
+            "  </ItemGroup>\n" +
+            "</Project>\n");
+        string linked = _repo.Write("src/Shared/Linked.cs", Lines(5));
+        string other = _repo.Write("src/Shared/Other.cs", Lines(5));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int changed;")));
+        _builder.Sarif = _ =>
+        [
+            new SarifResult("CA1707", "warning", "In a linked file", linked, 2),
+            new SarifResult("CA1707", "warning", "In another linked file", other, 3),
+        ];
+
+        await TurnStopAsync();
+
+        Assert.Equal([false], _builder.Calls.Select(c => c.NoIncremental));
+    }
+
+    [Fact]
+    public async Task Linked_compile_items_under_project_directory_properties_do_not_force_a_rebuild()
+    {
+        _repo.Write(
+            "src/中文 App/App.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\">\n" +
+            "  <ItemGroup>\n" +
+            "    <PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" PrivateAssets=\"all\" />\n" +
+            "    <Compile Include=\"$(MSBuildThisFileDirectory)..\\Shared\\ViaThisFile.cs\" />\n" +
+            "    <Compile Include=\"$(MSBuildProjectDirectory)/../Shared/ViaProject.cs\" />\n" +
+            "  </ItemGroup>\n" +
+            "</Project>\n");
+        string viaThisFile = _repo.Write("src/Shared/ViaThisFile.cs", Lines(5));
+        string viaProject = _repo.Write("src/Shared/ViaProject.cs", Lines(5));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int changed;")));
+
+        // Each log holds a result in one of the two files only, so each property form is checked on its own.
+        foreach (string file in (string[])[viaThisFile, viaProject])
+        {
+            _builder.Calls.Clear();
+            _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "In a linked file", file, 2)];
+
+            await TurnStopAsync();
+
+            Assert.Equal([false], _builder.Calls.Select(c => c.NoIncremental));
+        }
+    }
+
+    [Fact]
+    public async Task Comma_in_the_git_directory_path_is_named_as_the_reason_for_a_missing_log()
+    {
+        // The package passes ErrorLog relative to the project, but a git directory elsewhere keeps its comma, so
+        // the package requests no log; the forced rebuild would not write one either.
+        using var tree = new TempTree();
+        string root = await StartTurnWithACommaInTheGitDirectoryAsync(tree);
+        tree.Write("work/App/Order.cs", Lines(10, (4, "int changed;")));
+        _builder.Sarif = _ => null;
+
+        string output = await CreateRunner().TurnStopAsync(
+            new HookInput(HostKind.Claude, Session, root, "Stop") { StopHookActive = false },
+            CancellationToken.None);
+
+        Assert.Equal(
+            "FDG: the path of the git directory or worktree has a comma, so dotnet build cannot write a SARIF log for " +
+            "App/App.csproj; its diagnostics were not checked.",
+            Json(output, "systemMessage"));
+        // No log can come back, so neither a forced rebuild nor one with dependencies would tell more.
+        Assert.Equal([(false, true)], _builder.Calls.Select(c => (c.NoIncremental, c.NoDependencies)));
+    }
+
+    [Fact]
+    public async Task Project_that_cannot_get_a_log_is_formatted_until_its_files_stop_changing()
+    {
+        using var tree = new TempTree();
+        string root = await StartTurnWithACommaInTheGitDirectoryAsync(tree);
+        string order = tree.Write("work/App/Order.cs", Lines(10, (4, "int changed;")));
+        _formatter.OnFormat = _ => File.AppendAllText(order, "// formatted\n");
+        _builder.Sarif = _ => null;
+
+        await CreateRunner().TurnStopAsync(
+            new HookInput(HostKind.Claude, Session, root, "Stop") { StopHookActive = false },
+            CancellationToken.None);
+
+        Assert.Equal(FormatPasses.MaxPasses, _formatter.Calls.Count);
+        Assert.Single(_builder.Calls);
+    }
+
+    private async Task<string> StartTurnWithACommaInTheGitDirectoryAsync(TempTree tree)
+    {
+        string root = tree.Directory("work");
+        string gitDirectory = tree.Path("git,dir");
+        Run(root, "git", "init", "-q", "-b", "main", "--separate-git-dir", gitDirectory);
+        Run(root, "git", "config", "user.name", "FDG Test");
+        Run(root, "git", "config", "user.email", "fdg@example.invalid");
+        string project = tree.Write("work/App/App.csproj", OnboardedProject);
+        _projects.Add(project, ProjectState.InScope);
+        tree.Write("work/App/Order.cs", Lines(10));
+        Run(root, "git", "add", "-A");
+        Run(root, "git", "commit", "-q", "-m", "init");
+        await CreateRunner().TurnStartAsync(new HookInput(HostKind.Claude, Session, root, "UserPromptSubmit"), CancellationToken.None);
+        return root;
+    }
+
+    [Fact]
+    public async Task Wildcard_compile_items_are_not_taken_as_the_project_s_files()
+    {
+        _repo.Write(
+            "src/中文 App/App.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\">\n" +
+            "  <ItemGroup>\n" +
+            "    <PackageReference Include=\"FrameworkDesignGuidelines.Analyzers\" PrivateAssets=\"all\" />\n" +
+            "    <Compile Include=\"..\\Lib\\*.cs\" />\n" +
+            "  </ItemGroup>\n" +
+            "</Project>\n");
+        string libFile = _repo.Write("src/Lib/L.cs", Lines(5));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int changed;")));
+        _builder.Sarif = _ => [new SarifResult("CA1707", "warning", "In the referenced project", libFile, 2)];
+
+        await TurnStopAsync();
+
+        Assert.Equal([false, true], _builder.Calls.Select(c => c.NoIncremental));
+    }
+
+    [Fact]
     public async Task At_most_4_projects_are_formatted_at_once()
     {
         for (int i = 0; i < 7; i++)
@@ -876,6 +1075,184 @@ public sealed class StopHookTests : IDisposable
 
         Assert.Equal(2, _builder.Calls.Count);
         Assert.Equal(1, _builder.MaxConcurrent);
+    }
+
+    [Fact]
+    public async Task Second_format_pass_is_skipped_when_no_fixable_diagnostic_remains()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;"), (8, "int y;")));
+        // A second pass would find nothing left to change, but it is only run for what the build still finds.
+        _formatter.OnFormat = _ => File.WriteAllText(order, Lines(10, (4, "int x;"), (8, "private int y;")));
+        _builder.Sarif = _ => [new SarifResult("CA1031", "warning", "Do not catch general exception types", order, 4)];
+
+        await TurnStopAsync();
+
+        Assert.Single(_formatter.Calls);
+        Assert.Single(_builder.Calls);
+    }
+
+    [Fact]
+    public async Task Second_format_pass_runs_when_a_fixable_diagnostic_remains()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "try { } catch { }"), (8, "int y;")));
+        // The first pass fixes line 8; what it left is fixed by the next one, which changes line 2, and then the
+        // file stops changing. FDGA003 on line 4 is still there after both.
+        string[] passes =
+        [
+            Lines(10, (4, "try { } catch { }"), (8, "private int y;")),
+            Lines(10, (2, "// line 2 fixed"), (4, "try { } catch { }"), (8, "private int y;")),
+        ];
+        _formatter.OnFormat = _ => File.WriteAllText(order, passes[Math.Min(_formatter.Calls.Count, passes.Length) - 1]);
+        _builder.Sarif = _ => [new SarifResult("FDGA003", "warning", "Put the block on its own lines", order, 4)];
+
+        string output = await TurnStopAsync();
+
+        Assert.Equal(3, _formatter.Calls.Count);
+        Assert.All(_formatter.Calls, c => Assert.Equal(["Order.cs"], c.IncludeFiles));
+        Assert.Equal(2, _builder.Calls.Count);
+        Assert.Contains("Order.cs:4 FDGA003", Json(output, "reason")!);
+        // What the second format changed is recorded too.
+        AutofixFile file = Assert.Single((await StateAsync()).ReadAutofix()!.Files);
+        Assert.Equal([new LineRange(2, 2), new LineRange(8, 8)], file.Ranges);
+    }
+
+    [Fact]
+    public async Task Fixable_diagnostic_that_formatting_cannot_fix_is_reported_without_a_rebuild()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "try { } catch { }")));
+        _builder.Sarif = _ => [new SarifResult("FDGA003", "warning", "Put the block on its own lines", order, 4)];
+
+        string output = await TurnStopAsync();
+
+        // The second format changed nothing, so the first build's log still holds.
+        Assert.Equal(2, _formatter.Calls.Count);
+        Assert.Single(_builder.Calls);
+        Assert.Contains("Order.cs:4 FDGA003", Json(output, "reason")!);
+    }
+
+    [Fact]
+    public async Task Build_uses_no_dependencies_when_no_referenced_project_changed()
+    {
+        ReferenceLib();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+
+        await TurnStopAsync();
+
+        HookBuildCall build = Assert.Single(_builder.Calls);
+        Assert.True(build.NoDependencies);
+        Assert.False(build.NoIncremental);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Build_keeps_dependencies_when_a_referenced_project_changed(bool delete)
+    {
+        string libFile = ReferenceLib();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        // Lib is not onboarded, so none of its files are checked, but App compiles against them.
+        if (delete)
+        {
+            File.Delete(libFile);
+        }
+        else
+        {
+            File.WriteAllText(libFile, Lines(5, (2, "int changed;")));
+        }
+
+        await TurnStopAsync();
+
+        Assert.Equal([(_project, false)], _builder.Calls.Select(c => (c.ProjectPath, c.NoDependencies)));
+    }
+
+    [Theory]
+    [InlineData("src/Lib/Lib.csproj")]
+    [InlineData("src/Lib/Strings.resx")]
+    [InlineData("src/Lib/Directory.Build.props")]
+    public async Task Build_keeps_dependencies_when_only_a_non_source_file_of_a_referenced_project_changed(string path)
+    {
+        ReferenceLib();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        _repo.Write(path, "<Project />\n");
+
+        await TurnStopAsync();
+
+        Assert.Equal([false], _builder.Calls.Select(c => c.NoDependencies));
+    }
+
+    [Fact]
+    public async Task Build_output_of_a_referenced_project_does_not_keep_dependencies()
+    {
+        ReferenceLib();
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        _repo.Write("src/Lib/obj/project.assets.json", "{}\n");
+        _repo.Write("src/Lib/bin/Debug/Lib.xml", "<doc />\n");
+        _repo.Write("src/Lib/artifacts/Lib.dll", "x\n");
+
+        await TurnStopAsync();
+
+        Assert.Equal([true], _builder.Calls.Select(c => c.NoDependencies));
+    }
+
+    [Fact]
+    public async Task No_dependencies_build_that_writes_no_log_falls_back_to_a_full_build()
+    {
+        await TurnStartAsync();
+        _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        _builder.Sarif = _ => null;
+
+        string output = await TurnStopAsync();
+
+        // Each build without a log is forced once; then the one without dependencies is done again with them.
+        Assert.Equal(
+            [(false, true), (true, true), (false, false), (true, false)],
+            _builder.Calls.Select(c => (c.NoIncremental, c.NoDependencies)));
+        Assert.Equal(
+            "FDG: dotnet build wrote no SARIF log for src/中文 App/App.csproj; its diagnostics were not checked.",
+            Json(output, "systemMessage"));
+    }
+
+    [Fact]
+    public async Task Failed_build_without_a_log_still_gets_the_format_passes_left()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int x;")));
+        _formatter.OnFormat = _ => File.AppendAllText(order, "// formatted\n");
+        _builder.Result = new ToolResult(1, "error MSB4018: The task failed unexpectedly.\n", false);
+        _builder.Sarif = _ => null;
+
+        await TurnStopAsync();
+
+        Assert.Equal(FormatPasses.MaxPasses, _formatter.Calls.Count);
+        // Without and then with dependencies; the second format does not build again.
+        Assert.Equal(2, _builder.Calls.Count);
+    }
+
+    [Fact]
+    public async Task No_dependencies_build_failure_falls_back_to_a_full_build()
+    {
+        ReferenceLib();
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (4, "int Bad_Name;")));
+        // Lib's output is out of date, so App does not compile against it without building it first.
+        _builder.ResultOf = call => call.NoDependencies ? new ToolResult(1, "error CS0117: 'Lib' has no member 'M'\n", false) : _builder.Result;
+        _builder.Sarif = call => call.NoDependencies
+            ? [new SarifResult("CS0117", "error", "'Lib' has no member 'M'", order, 9)]
+            : [new SarifResult("CA1707", "warning", "Remove the underscores", order, 4)];
+
+        string reason = Json(await TurnStopAsync(), "reason")!;
+
+        Assert.Equal([true, false], _builder.Calls.Select(c => c.NoDependencies));
+        Assert.Contains("Order.cs:4 CA1707", reason);
+        Assert.DoesNotContain("CS0117", reason);
+        Assert.DoesNotContain("failed", reason);
     }
 
     [Fact]
@@ -936,7 +1313,9 @@ public sealed class StopHookTests : IDisposable
         Assert.Equal(
             "FDG: dotnet build failed for src/中文 App/App.csproj (exit code 1): error MSB4018: The task failed unexpectedly.",
             Json(output, "systemMessage")!);
-        Assert.Single(_builder.Calls);
+        // App references no project, so it is built without dependencies first, and the failure is tried once more
+        // with them.
+        Assert.Equal([(false, true), (false, false)], _builder.Calls.Select(c => (c.NoIncremental, c.NoDependencies)));
     }
 
     [Fact]
@@ -991,6 +1370,76 @@ public sealed class StopHookTests : IDisposable
             "FDG auto-formatted at the end of the last turn: src/中文 App/Order.cs (line 8). Re-read those regions before editing them.",
             JsonDocument.Parse(next).RootElement.GetProperty("hookSpecificOutput").GetProperty("additionalContext").GetString());
         Assert.Null(state.ReadAutofix());
+    }
+
+    [Fact]
+    public async Task Second_stop_in_a_turn_merges_the_autofix_record()
+    {
+        string other = _repo.Write("src/中文 App/Other.cs", Lines(10));
+        _repo.CommitAll();
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (8, "int y;")));
+        _formatter.OnFormat = _ => File.WriteAllText(order, Lines(10, (8, "private int y;")));
+        await TurnStopAsync();
+
+        // The second Stop finds Order.cs already formatted, and only fixes Other.cs.
+        File.WriteAllText(other, Lines(10, (3, "int z;")));
+        _formatter.OnFormat = _ => File.WriteAllText(other, Lines(10, (3, "private int z;")));
+        await TurnStopAsync();
+        string next = await TurnStartAsync(HostKind.Codex);
+
+        Assert.Equal(
+            "FDG auto-formatted at the end of the last turn: src/中文 App/Order.cs (line 8); " +
+            "src/中文 App/Other.cs (line 3). Re-read those regions before editing them.",
+            JsonDocument.Parse(next).RootElement.GetProperty("hookSpecificOutput").GetProperty("additionalContext").GetString());
+    }
+
+    [Fact]
+    public async Task Second_stop_that_formats_nothing_keeps_the_record_of_the_turn()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (8, "int y;")));
+        _formatter.OnFormat = _ => File.WriteAllText(order, Lines(10, (8, "private int y;")));
+        await TurnStopAsync();
+
+        // Order.cs is already formatted, so this Stop changes nothing.
+        _formatter.OnFormat = _ => { };
+        await TurnStopAsync();
+        string next = await TurnStartAsync(HostKind.Codex);
+
+        Assert.Equal(
+            "FDG auto-formatted at the end of the last turn: src/中文 App/Order.cs (line 8). Re-read those regions before editing them.",
+            JsonDocument.Parse(next).RootElement.GetProperty("hookSpecificOutput").GetProperty("additionalContext").GetString());
+    }
+
+    [Fact]
+    public async Task Autofix_record_stores_the_line_count_of_the_formatted_file()
+    {
+        await TurnStartAsync();
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (8, "int y;")));
+        _formatter.OnFormat = _ => File.WriteAllText(order, Lines(12, (8, "private int y;")));
+
+        await TurnStopAsync();
+
+        AutofixFile file = Assert.Single((await StateAsync()).ReadAutofix()!.Files);
+        Assert.Equal(12, file.LineCount);
+    }
+
+    [Fact]
+    public async Task Stop_in_a_new_turn_replaces_the_record()
+    {
+        await TurnStartAsync();
+        StateStore state = await StateAsync();
+        state.WriteAutofix(new AutofixRecord(
+            state.ReadSnapshot()!.Turn - 1,
+            [new AutofixFile("src/中文 App/Old.cs", [new LineRange(1, 2)])]));
+        string order = _repo.Write("src/中文 App/Order.cs", Lines(10, (8, "int y;")));
+        _formatter.OnFormat = _ => File.WriteAllText(order, Lines(10, (8, "private int y;")));
+
+        await TurnStopAsync();
+
+        AutofixFile file = Assert.Single(state.ReadAutofix()!.Files);
+        Assert.Equal("src/中文 App/Order.cs", file.Path);
     }
 
     [Fact]
@@ -1199,6 +1648,21 @@ public sealed class StopHookTests : IDisposable
         Assert.StartsWith("FDG hook error: hook input is not JSON", stderr.ToString());
     }
 
+    /// <summary>Makes App reference a new project, Lib, not onboarded; returns the full path of Lib's one file.</summary>
+    private string ReferenceLib()
+    {
+        _repo.Write("src/Lib/Lib.csproj", Project);
+        string libFile = _repo.Write("src/Lib/L.cs", Lines(5));
+        _repo.Write(
+            "src/中文 App/App.csproj",
+            OnboardedProject.Replace(
+                "  </ItemGroup>\n",
+                "    <ProjectReference Include=\"..\\Lib\\Lib.csproj\" />\n  </ItemGroup>\n",
+                StringComparison.Ordinal));
+        _repo.CommitAll();
+        return libFile;
+    }
+
     private void CommitOrder(string content)
     {
         _repo.Write("src/中文 App/Order.cs", content);
@@ -1245,6 +1709,27 @@ public sealed class StopHookTests : IDisposable
     {
         public override Task<string> ReadToEndAsync(CancellationToken cancellationToken) =>
             throw new IOException("The pipe has been ended.");
+    }
+
+    private static void Run(string workingDirectory, string fileName, params string[] arguments)
+    {
+        var startInfo = new System.Diagnostics.ProcessStartInfo(fileName)
+        {
+            WorkingDirectory = workingDirectory,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        foreach (string argument in arguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        using var process = System.Diagnostics.Process.Start(startInfo)!;
+        Task<string> error = process.StandardError.ReadToEndAsync();
+        process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+        Assert.True(process.ExitCode == 0, error.Result);
     }
 
     /// <summary>Makes <paramref name="directory"/> unlistable for the current user, or listable again.</summary>

@@ -11,9 +11,10 @@ namespace Fdg.Cli.Hooks;
 /// <c>Update</c> is the package id appears in the project file, or in the nearest <c>Directory.Build.props</c>,
 /// <c>Directory.Build.targets</c> or <c>Directory.Packages.props</c> at or above it, or in a file one of those imports
 /// explicitly (<c>GetPathOfFileAbove</c> or a relative path, possibly through a property set in the importing file).
-/// Comments never count. When the project has an
-/// <c>obj/project.assets.json</c>, it decides whether such a reference took effect. A package brought in only by
-/// other imports is not seen.
+/// Comments never count. When the project has a readable <c>project.assets.json</c> (in <c>obj/</c>, or in the
+/// <c>UseArtifactsOutput</c> layout), it decides instead: a project whose restore included the package is onboarded
+/// whatever brought it in, and one whose restore did not is not, whatever it declares. A package brought in only by
+/// other imports is seen once restored.
 /// </summary>
 public sealed partial class Onboarding
 {
@@ -38,41 +39,71 @@ public sealed partial class Onboarding
 
     /// <summary>
     /// Whether any project in the repository is onboarded. Cheap enough for every turn: one <c>git ls-files</c>, and
-    /// only project files that mention the package id are parsed.
+    /// only project files that mention the package id are parsed. The projects that declare the package come first;
+    /// the restore results of the others are read only when none of those is onboarded.
     /// </summary>
     public static async Task<bool> IsRepositoryOnboardedAsync(GitRepository git, CancellationToken cancellationToken)
     {
         var onboarding = new Onboarding(git.TopLevel);
+        var undeclared = new List<string>();
         foreach (string relativePath in await git.ListFilesAsync(Pathspecs, cancellationToken).ConfigureAwait(false))
         {
-            if (!relativePath.Split('/')[..^1].Any(ProjectFiles.IsSkippedDirectory) &&
-                onboarding.IsOnboarded(Path.GetFullPath(Path.Combine(git.TopLevel, relativePath))))
+            string projectPath = Path.GetFullPath(Path.Combine(git.TopLevel, relativePath));
+            if (relativePath.Split('/')[..^1].Any(ProjectFiles.IsSkippedDirectory) || !File.Exists(projectPath))
+            {
+                continue;
+            }
+
+            if (!onboarding.IsDeclared(projectPath))
+            {
+                undeclared.Add(projectPath);
+            }
+            else if (onboarding.Restored(projectPath) ?? true)
             {
                 return true;
             }
         }
 
-        return false;
+        return undeclared.Any(p => onboarding.Restored(p) == true);
     }
 
     /// <param name="projectPath">Full path of the .csproj.</param>
-    public bool IsOnboarded(string projectPath)
+    public bool IsOnboarded(string projectPath) =>
+        File.Exists(projectPath) && (Restored(projectPath) ?? IsDeclared(projectPath));
+
+    /// <summary>Whether the project file or one of the files it picks up references the package.</summary>
+    private bool IsDeclared(string projectPath)
     {
-        if (!File.Exists(projectPath))
-        {
-            return false;
-        }
-
         string directory = Path.GetDirectoryName(projectPath)!;
-        bool declared = Facts(projectPath, followImports: false).References ||
+        return Facts(projectPath, followImports: false).References ||
             ImportedFiles.Any(name => FindAbove(directory, name) is string file && References(file, new HashSet<string>(ProjectFiles.PathComparer)));
-        if (!declared)
+    }
+
+    /// <summary>
+    /// Whether the project's last restore included the package, from the newer of <c>obj/project.assets.json</c>
+    /// and the <c>UseArtifactsOutput</c> one (<c>artifacts/obj/&lt;project name&gt;/project.assets.json</c> beside the
+    /// nearest <c>Directory.Build.props</c>).
+    /// </summary>
+    /// <returns>
+    /// <see langword="null"/> when there is none, or the newer is being written by a restore or cut off: then the
+    /// declarations decide.
+    /// </returns>
+    private bool? Restored(string projectPath)
+    {
+        string directory = Path.GetDirectoryName(projectPath)!;
+        var candidates = new List<string> { Path.Combine(directory, "obj", "project.assets.json") };
+        if (FindAbove(directory, "Directory.Build.props") is string buildProps)
         {
-            return false;
+            candidates.Add(Path.Combine(
+                Path.GetDirectoryName(buildProps)!,
+                "artifacts",
+                "obj",
+                Path.GetFileNameWithoutExtension(projectPath),
+                "project.assets.json"));
         }
 
-        string assets = Path.Combine(directory, "obj", "project.assets.json");
-        return !File.Exists(assets) || ProjectInfoProvider.ReferencesPackage(assets);
+        string? assets = candidates.Where(File.Exists).MaxBy(File.GetLastWriteTimeUtc);
+        return assets is not null && ProjectInfoProvider.TryReadReferencesPackage(assets, out bool restored) ? restored : null;
     }
 
     private bool References(string file, HashSet<string> visited)

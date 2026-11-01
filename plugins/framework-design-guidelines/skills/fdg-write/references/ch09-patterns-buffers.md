@@ -2,18 +2,23 @@
 
 # Chapter 9: Common Design Patterns — 9.12–9.12.2
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 ## 9.12 Operating on Buffers
 
 - **FDG9137** CONSIDER using Spans as a representation of buffers. (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9137
+- **FDG9138** DO use `ReadOnlySpan<T>` instead of `Span<T>` where possible. (partly checked) (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9138
 - **FDG9139** AVOID returning a `Span<T>` or `ReadOnlySpan<T>` unless the lifetime of the returned Span is very clear. (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9139
 - **FDG9140** DO provide very clear documentation for the ownership rules on a Span that you return that did not come from the caller. (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9140
 - **FDG9141** CONSIDER returning a `ReadOnlySpan<T>` from a get-only property or parameter-less method to represent fixed data, when `T` is an immutable type. (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9141
-- **FDG9142** CONSIDER returning `System.Range` representing the bounds of a Span parameter, rather than a slice of the parameter. (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9142
+- **FDG9142** CONSIDER returning `System.Range` representing the bounds of a Span parameter, rather than a slice of the parameter. (partly checked) (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9142
+- **FDG9143** DO use `ReadOnlyMemory<T>` in place of `ReadOnlySpan<T>` in asynchronous methods. (partly checked) (not in test projects)
+- **FDG9144** DO use `Memory<T>` in place of `Span<T>` in asynchronous methods. (partly checked) (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9144
 - **FDG9145** DO use `ReadOnlyMemory<T>` in place of `ReadOnlySpan<T>` for parameters when the purpose of the constructor or method is to store a reference to the buffer. (not in test projects)
 - **FDG9146** DO use `Memory<T>` in place of `Span<T>` for parameters when the purpose of the constructor or method is to save a reference to the buffer. (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9146
-- **FDG9149** CONSIDER adding Span- or Memory-based alternatives to methods that accept arrays or strings. (library only) — examples: examples/ch09-patterns-buffers.md#fdg9149
+- **FDG9147** AVOID overloading a method across `Span<T>` and `ReadOnlySpan<T>`, or `Memory<T>` and `ReadOnlyMemory<T>`. (partly checked) (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9147
+- **FDG9148** AVOID overloading a method across `Span<T>` and `Memory<T>`, or `ReadOnlySpan<T>` and `ReadOnlyMemory<T>`. (partly checked) (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9148
+- **FDG9149** CONSIDER adding Span- or Memory-based alternatives to methods that accept arrays or strings. (partly checked) (library only) — examples: examples/ch09-patterns-buffers.md#fdg9149
 - **FDG9150** CONSIDER providing array-accepting alternatives for methods that accept Span or Memory values. (library only)
 - **FDG9151** CONSIDER providing `System.String`-accepting alternatives for methods that accept `ReadOnlySpan<char>` or `ReadOnlyMemory<char>`. (library only) — examples: examples/ch09-patterns-buffers.md#fdg9151
 - **FDG9152** CONSIDER providing an array-returning alternative to buffer-writing methods. (library only) — examples: examples/ch09-patterns-buffers.md#fdg9152
@@ -23,8 +28,10 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 9.12.1 Data Transformation Operations
 
+- **FDG9156** DO position the input buffer parameter (“source”) as the first method parameter, when there is an explicit input buffer parameter. (partly checked) (not in test projects)
+- **FDG9157** DO position the output buffer parameter (“destination”) as the first method parameter after the source parameter(s). (partly checked) (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9157
 - **FDG9158** DO let the caller know the number of elements written into each destination buffer. (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9158
-- **FDG9159** CONSIDER naming an `out` parameter that reports the number of values written by a buffer-writing method “bytesWritten,” “charsWritten,” or “valuesWritten” (as appropriate to the data type). (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9159
+- **FDG9159** CONSIDER naming an `out` parameter that reports the number of values written by a buffer-writing method “bytesWritten,” “charsWritten,” or “valuesWritten” (as appropriate to the data type). (partly checked) (not in test projects) — examples: examples/ch09-patterns-buffers.md#fdg9159
 
 ## 9.12.2 Writing Fixed or Predetermined Sizes to a Buffer
 

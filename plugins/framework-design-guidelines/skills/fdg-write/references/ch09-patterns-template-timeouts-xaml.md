@@ -2,7 +2,7 @@
 
 # Chapter 9: Common Design Patterns — 9.9–9.11
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 ## 9.9 Template Method
 
@@ -15,6 +15,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 ## 9.10 Timeouts
 
 - **FDG9129** DO prefer method parameters as the mechanism for users to provide timeout time. (not in test projects) — examples: examples/ch09-patterns-template-timeouts-xaml.md#fdg9129
+- **FDG9130** DO prefer using `TimeSpan` to represent timeout time. (partly checked) (not in test projects) — examples: examples/ch09-patterns-template-timeouts-xaml.md#fdg9130
 - **FDG9131** DO throw `System.TimeoutException` when a timeout elapses. (not in test projects) — examples: examples/ch09-patterns-template-timeouts-xaml.md#fdg9131
 - **FDG9132** DO NOT return error codes to indicate timeout expiration. (not in test projects) — examples: examples/ch09-patterns-template-timeouts-xaml.md#fdg9132
 

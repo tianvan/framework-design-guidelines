@@ -90,6 +90,15 @@ counts. FDGA004 replaces IDE0011 (see the notes).
   newtonsoft-json reports are lists that are chopped one item per line but whose closing parenthesis is on its own
   line. The rule text does not say where the parenthesis goes, but the rule's example keeps it on the last item's
   line, so these are counted as true warnings; they are debatable.
+- **FDGA003 and FDGA023, phase 3 rerun.** The FDGA003 code fix now moves a block comment after the opening brace into
+  the block (`catch { /* ignore */ }`) and expands every block of a switch section in one pass. The FDGA023 code fix
+  keeps a block comment before an item on the item's line. FDGA023 now counts a tab as reaching the next tab stop of
+  `tab_width` (4 when not set) when it compares a line with `max_line_length`. Both rules were measured again with the
+  same samples and profiles, with packages built from the code before and after the change. The counts did not
+  change: FDGA003 is serilog 0, polly 0, newtonsoft-json 0, internal-a 1 and internal-b 9, and FDGA023 is 141, 89,
+  986, 20 and 84. The per-location lists are identical, so there were no new or vanished locations to spot-check, and
+  the table does not change. In the open-source samples, no line crosses 120 columns only because of its tabs (only
+  newtonsoft-json has tabs: 53 lines, none at the start of a line), and no reported line has a block comment.
 - **FDGA004 (was IDE0011).** IDE0011 first counted serilog 123, polly 0, newtonsoft-json 0, internal-a 28 and
   internal-b 98, and 5 of 20 spot-checked reports were false positives: all an argument validation preamble
   (`if (x == null) throw ...;`), which FDGA005 allows without braces. Lowering IDE0011 to `suggestion` (R7) would have
@@ -173,6 +182,24 @@ never join words across a digit or underscore. Every report was checked (19 in a
   methods; `FileName`, `fileName` or the plural `fileNames` (13), `UserName` or `userName` (3) and `UserID` (1) in the
   internal samples. The fix round added only the `fileNames` report.
 - **FDG3086.** No sample declares an operator with an indexed parameter name; the tests cover the positive cases.
+
+### Phase 3: CA1710 on indirect base types
+
+Two packages, measured with `-Diagnostics CA1710` (library profile for the open-source samples, application for the
+internal ones): 0.3.0-p3t9a with CA1710's default `exclude_indirect_base_types = true`, and 0.3.0-p3t9b, the same
+source with `dotnet_code_quality.CA1710.exclude_indirect_base_types = false` added, which makes CA1710 check every base
+type and interface of a type, not only its direct base. Without the option every count was 0, as in the chapter 7
+and chapter 8 rows. The table gives the counts with it. Every new report was checked (2 in all); none vanished.
+
+| Diagnostic | Rules | serilog | polly | newtonsoft-json | internal-a | internal-b | Checked | FP | True | Treatment |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| CA1710 | FDG3048 to FDG3050, FDG3053, FDG3056 to FDG3059, FDG3074, FDG3076, FDG7057, FDG8005, FDG8038, FDG8039 | 0 | 0 | 0 | 0 | 2 | 2 | 0 | 2 | Option set to `false` (FDG3048), since 0 of 2 is within 1 in 20. FDG3049, FDG3053, FDG3056, FDG3059, FDG3076 and FDG8005 are now coverage full. |
+
+- **CA1710.** internal-b's 2 are public classes derived from `ObservableCollection<T>` that add no members, each a
+  list of one kind of item, named with a `List` suffix. Neither is a reusable, specialized data structure, so FDG3058
+  and FDG8039 ask for the `Collection` suffix: both true. With the default, CA1710 does not report them, because they
+  get the collection interfaces only through their base class. polly's 0 is measured with its own configuration, which
+  sets CA1710 to silent in some of its projects (see the chapter 7 notes).
 
 ## Chapter 2 mappings
 

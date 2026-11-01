@@ -2955,6 +2955,7 @@
   analyzer:
     message: The extension method '{0}' has the same signature as an extension method in '{1}'
     category: Members
+    compilationEnd: true
   notes: FDG5077 reports externally visible extension methods of one assembly that have the same name, the same number of type parameters and the same parameter types, this parameter included, in different classes. Methods in other assemblies are not seen. The Mariani annotation describes namespaces that offer the same services as mutually exclusive flavors; such pairs are reported, and the text keeps them under AVOID. Renaming or removing a public method changes the public API, so the fix is breaking.
 - id: FDG5078
   strength: CONSIDER

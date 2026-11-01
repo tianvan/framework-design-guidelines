@@ -16,7 +16,7 @@ public static class ProfileFile
     {
         string path = Path.Combine(rulesDir, FileName);
         Dictionary<string, List<string>>? profiles =
-            Deserializer.Deserialize<Dictionary<string, List<string>>?>(File.ReadAllText(path));
+            YamlErrors.Read(path, Deserializer.Deserialize<Dictionary<string, List<string>>?>);
 
         return (profiles ?? new Dictionary<string, List<string>>()).ToDictionary(
             p => p.Key,

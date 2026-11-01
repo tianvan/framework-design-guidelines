@@ -89,6 +89,24 @@ public class RuleYamlTests
         Assert.Equal(yaml, RuleYaml.Serialize(loaded));
     }
 
+    [Fact]
+    public void Analyzer_compilation_end_round_trips_and_is_omitted_when_false()
+    {
+        IReadOnlyList<Rule> rules = SampleRules();
+        var plain = new AnalyzerInfo("Message", "Layout");
+        Rule first = rules[0] with { Mapping = rules[0].Mapping with { Analyzer = plain } };
+        Rule second = rules[1] with { Mapping = rules[1].Mapping with { Analyzer = plain with { CompilationEnd = true } } };
+
+        string yaml = RuleYaml.Serialize(new[] { first, second });
+        IReadOnlyList<Rule> loaded = RuleYaml.Deserialize(yaml);
+
+        Assert.Equal(1, yaml.Split("compilationEnd:").Length - 1);
+        Assert.Contains("    category: Layout\n    compilationEnd: true\n", yaml);
+        Assert.False(loaded[0].Mapping.Analyzer!.CompilationEnd);
+        Assert.True(loaded[1].Mapping.Analyzer!.CompilationEnd);
+        Assert.Equal(yaml, RuleYaml.Serialize(loaded));
+    }
+
     /// <summary>
     /// Every rule file of the repository is in the form <see cref="RuleYaml.Serialize"/> writes, so a file edited by
     /// hand or by another tool, such as one that quotes <c>autofix: 'no'</c>, is caught.

@@ -942,7 +942,7 @@
   minLanguage: "7.2"
   alternative: Before C# 7.2 there is no readonly struct; declare every instance field readonly.
   analyzer: null
-  notes: IDE0250 reports a struct whose instance fields are all readonly but which is not declared readonly. Adding the modifier does not change the public API, so the fix is safe.
+  notes: IDE0250 reports a struct whose instance fields are all readonly but which is not declared readonly. Adding the modifier does not change the public API, so the fix is safe. dotnet format applies the fix only when an .editorconfig sets IDE0250's severity, not from the package's globalconfig; /fdg-setup offers to add that entry to the root .editorconfig.
 - id: FDG4029
   strength: DO
   text: declare nonmutating methods on mutable value types with the `readonly` modifier.
@@ -997,7 +997,7 @@
   minLanguage: "8.0"
   alternative: Before C# 8.0 there are no readonly members; make the type immutable instead (FDG4027).
   analyzer: null
-  notes: IDE0251 reports a member of a struct that does not mutate the instance and is not readonly. Members of a readonly struct are not reported, matching the body. Adding the modifier does not change the public API.
+  notes: IDE0251 reports a member of a struct that does not mutate the instance and is not readonly. Members of a readonly struct are not reported, matching the body. Adding the modifier does not change the public API. dotnet format applies the fix only when an .editorconfig sets IDE0251's severity, not from the package's globalconfig; /fdg-setup offers to add that entry to the root .editorconfig.
 - id: FDG4030
   strength: DO
   text: ensure that a state where all instance data is set to zero, false, or null (as appropriate) is valid.

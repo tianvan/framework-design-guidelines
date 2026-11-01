@@ -16,7 +16,8 @@ Onboard this repository's C# projects in four steps. Ground rules for every step
   create a branch. The user reviews the result with `git diff` and commits it.
 - Before you edit anything, list every file you will create or change, with what you will put in it, and wait for
   the user to confirm. Edit nothing until they do.
-- Add no plugin-specific files at the repository root. Settings go into the project's own MSBuild files.
+- Add no plugin-specific files at the repository root. Settings go into the project's own MSBuild files; the only
+  exception is the three severities that step 3 offers for the root `.editorconfig`.
 - Never put the package id in comments: the hooks would read a commented-out reference as onboarding.
 
 ## Step 1: Find the projects
@@ -26,7 +27,8 @@ Onboard this repository's C# projects in four steps. Ground rules for every step
 2. A project is SDK-style when its root element is `<Project Sdk="...">`, or it contains `<Sdk Name="..." />` or
    `<Import ... Sdk="..." />`. Only SDK-style projects are supported. Name every other (legacy) project and tell the
    user it is not supported and will be left untouched.
-3. Run `dotnet --version`. FDG needs .NET SDK 8.0.100 or later; if it is older, say so and stop.
+3. Run `dotnet --version`. FDG supports .NET SDK 10.0.100 and later. If it is older, say so, explain that some rules
+   do not run on older SDKs, and ask the user whether to continue.
 4. Note what already exists: every `Directory.Build.props`, a `Directory.Packages.props` with
    `ManagePackageVersionsCentrally` set to `true` (central package management), and any project that already
    references `FrameworkDesignGuidelines.Analyzers` or sets `FrameworkDesignGuidelinesProfile`. Keep what is right.
@@ -116,6 +118,57 @@ First show the user the list of files you will change, then wait for confirmatio
    `PublicAPI.Unshipped.txt` next to each library project. The package picks these files up itself; do not add them
    as `AdditionalFiles`. Tell the user that RS0016 now reports every public API not yet recorded, and that its code
    fix adds them to `PublicAPI.Unshipped.txt`.
+5. Offer the `.editorconfig` severities. `dotnet format`, which `/fdg-fix` and the end-of-turn check run, applies the
+   fixes of IDE0280, IDE0250 and IDE0251 only when their severity is set in an `.editorconfig`; the severity the
+   package sets is not enough for these three, because they have no option that carries it. Without the entries, the
+   checks still report these diagnostics but never fix them. The value for each profile, from the rule data:
+
+   | Diagnostic | Rule | library | application | test |
+   |---|---|---|---|---|
+   | IDE0280 | FDGA048 | warning | warning | warning |
+   | IDE0250 | FDG4028 | warning | warning | none |
+   | IDE0251 | FDG4029 | warning | warning | none |
+
+   Put the proposed entries in the list of changes the user confirms, and write them only after the user confirms:
+   1. First search every `.editorconfig` in the repository for `dotnet_diagnostic.IDE0280.severity`,
+      `dotnet_diagnostic.IDE0250.severity` and `dotnet_diagnostic.IDE0251.severity`. Never overwrite or remove an
+      existing entry. An existing entry settles its diagnostic only for the files it applies to: the files under its
+      file's directory that its section matches. Leave the diagnostic out of the proposal for the projects whose files
+      it covers, and propose it as usual for every other project. For example, if `tests/.editorconfig` sets
+      `dotnet_diagnostic.IDE0251.severity = none`, the projects under `tests/` get no IDE0251 entry, but the
+      `library` projects still get `warning`. For each existing entry, show the user the file, the section, the
+      existing value and the value from the table for the profile of the projects it covers, and let the user decide;
+      change it only if the user asks.
+   2. A project under a nested `.editorconfig` with `root = true` (in its own directory or one between it and the
+      repository root) never reads the root `.editorconfig`. Propose that project's entries in that nested file
+      instead, by the same rules: shown to the user first, written only after the user confirms, and never
+      overwriting an existing entry; its sections are relative to that file's directory. If the user declines, tell
+      them that these fixes will not be applied in that project. Leave such projects out of the next two steps.
+   3. For each diagnostic, look up the value of every remaining onboarded project's profile. The value that most
+      projects use goes into the `[*.cs]` section of the `.editorconfig` at the repository root; on a tie, use
+      `warning`. Leave out a diagnostic whose value is `none` for every project.
+   4. Each project whose value differs gets its own `[<project directory>/**.cs]` section in the same file, after the
+      `[*.cs]` section (a later section wins). Write the directory relative to the repository root with forward
+      slashes, and put a `\` before any `*`, `?`, `[`, `]`, `{`, `}`, `,`, `#` or `;` in it. For example, with two
+      `application` projects and the test project `tests/App.Tests`:
+
+      ```ini
+      [*.cs]
+      dotnet_diagnostic.IDE0280.severity = warning
+      dotnet_diagnostic.IDE0250.severity = warning
+      dotnet_diagnostic.IDE0251.severity = warning
+
+      [tests/App.Tests/**.cs]
+      dotnet_diagnostic.IDE0250.severity = none
+      dotnet_diagnostic.IDE0251.severity = none
+      ```
+
+   5. Add to an existing root `.editorconfig` and keep its content: append to its `[*.cs]` section, or add a
+      `[*.cs]` section if it has none. If there is no root `.editorconfig`, propose a new one with only these
+      sections, without `root = true`. Within a file a later section wins, so a new entry must not come after an
+      existing entry for the same diagnostic that matches the same files; where it would, propose
+      `[<project directory>/**.cs]` sections for the projects that need the value instead.
+   6. If the user declines, write nothing and tell them that these three are then reported but not fixed.
 
 ## Step 4: Build and confirm
 

@@ -100,7 +100,8 @@ public sealed class LineEndingTests
                     }
                 }
                 """),
-            extraEditorConfig: "indent_style = tab\nmax_line_length = 38\n",
+            // The call's line is 46 columns wide with tab stops every 4 columns; the signature's line, 40.
+            extraEditorConfig: "indent_style = tab\nmax_line_length = 45\n",
             endOfLine: endOfLine);
     }
 

@@ -3,6 +3,7 @@ using System.Text.Json;
 using Fdg.Generator.Book;
 using Fdg.Generator.Commands;
 using Fdg.Generator.Rules;
+using Fdg.Generator.Sdk;
 using Json.Schema;
 using YamlDotNet.Core;
 
@@ -407,25 +408,118 @@ public sealed class GeneratorCliTests : IDisposable, IClassFixture<InstalledSdkF
     }
 
     [Fact]
-    public void Check_with_a_failing_dotnet_gives_one_line()
+    public void Unrecognized_sdk_layout_names_the_expected_path()
     {
-        // check runs `dotnet --version` in the parent of the rules directory. A global.json that asks for an SDK that
-        // is not installed makes dotnet fail with several lines on stderr.
-        string root = Path.Combine(_rulesDir, "repo");
-        string rulesDir = Path.Combine(root, "rules");
-        Directory.CreateDirectory(rulesDir);
-        File.Copy(Path.Combine(_rulesDir, "meta.yaml"), Path.Combine(rulesDir, "meta.yaml"));
-        File.WriteAllText(
-            Path.Combine(root, "global.json"),
-            "{ \"sdk\": { \"version\": \"99.0.0\", \"rollForward\": \"disable\" } }\n");
+        string emptySdk = Path.Combine(_rulesDir, "empty-sdk");
+        Directory.CreateDirectory(emptySdk);
 
-        var result = Run("check", "--rules", rulesDir);
+        var result = Run("check", "--rules", _rulesDir, "--sdk", emptySdk);
 
         string error = result.Error.Trim();
         Assert.Equal(2, result.ExitCode);
         Assert.DoesNotContain("\n", error);
-        Assert.Contains("'dotnet --version' failed", error);
-        Assert.Contains("99.0.0", error);
+        Assert.Contains(Path.Combine(emptySdk, "DotnetTools", "dotnet-format"), error);
+        Assert.Contains("--sdk", error);
+    }
+
+    [Fact]
+    public void Sdk_without_dotnet_format_names_only_what_is_missing()
+    {
+        string sdk = Path.Combine(_rulesDir, "partial-sdk");
+        string netSdk = Path.Combine(sdk, "Sdks", "Microsoft.NET.Sdk");
+        Directory.CreateDirectory(Path.Combine(netSdk, "analyzers"));
+        Directory.CreateDirectory(Path.Combine(netSdk, "codestyle", "cs"));
+
+        var result = Run("check", "--rules", _rulesDir, "--sdk", sdk);
+
+        string error = result.Error.Trim();
+        Assert.Equal(2, result.ExitCode);
+        Assert.DoesNotContain("\n", error);
+        Assert.Contains(Path.Combine(sdk, "DotnetTools", "dotnet-format"), error);
+        Assert.DoesNotContain(Path.Combine(netSdk, "analyzers"), error);
+        Assert.DoesNotContain(Path.Combine(netSdk, "codestyle", "cs"), error);
+    }
+
+    [Fact]
+    public void Check_resolves_the_sdk_from_the_current_directory()
+    {
+        // --rules points at a copy outside the repository: the SDK is still the one global.json selects for the
+        // current directory, not for the parent of the rules directory.
+        Extract();
+        AddSchemaAndProfiles();
+        var requested = new List<string>();
+
+        CheckCommand.Run(
+            new[] { "--rules", _rulesDir },
+            new StringWriter(),
+            new StringWriter(),
+            directory =>
+            {
+                requested.Add(directory);
+                return _sdk.Directory;
+            });
+
+        Assert.Equal(new[] { Directory.GetCurrentDirectory() }, requested);
+        Assert.NotEqual(Path.GetDirectoryName(_rulesDir), requested[0]);
+    }
+
+    [Fact]
+    public void Check_with_a_failing_dotnet_gives_one_line()
+    {
+        // check runs `dotnet --version` in the current directory. A global.json that asks for an SDK that is not
+        // installed makes dotnet fail with several lines on stderr. The test cannot change the directory of the
+        // process it runs in, so the locator it hands to check looks in a directory that has such a global.json.
+        string root = Path.Combine(_rulesDir, "repo");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(
+            Path.Combine(root, "global.json"),
+            "{ \"sdk\": { \"version\": \"99.0.0\", \"rollForward\": \"disable\" } }\n");
+        var error = new StringWriter();
+
+        int exitCode = CheckCommand.Run(
+            new[] { "--rules", _rulesDir },
+            new StringWriter(),
+            error,
+            _ => SdkLocator.FindSdkDirectory(root));
+
+        string message = error.ToString().Trim();
+        Assert.Equal(2, exitCode);
+        Assert.DoesNotContain("\n", message);
+        Assert.Contains("'dotnet --version' failed", message);
+        Assert.Contains("99.0.0", message);
+    }
+
+    [Theory]
+    [InlineData("check")]
+    [InlineData("generate")]
+    public void Malformed_yaml_names_file_line_and_column(string command)
+    {
+        AddSchemaAndProfiles();
+        File.WriteAllText(Path.Combine(_rulesDir, "ch09-sample.yaml"), "- id: FDG3001\n  text: [unclosed");
+
+        var result = command == "check"
+            ? Check()
+            : Run("generate", "--rules", _rulesDir, "--out", Path.Combine(_rulesDir, "out"), "--version", "0.1.0");
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("ch09-sample.yaml", result.Error);
+        Assert.Matches(@"\(\d+,\d+\): ", result.Error);
+        Assert.DoesNotContain("   at ", result.Error);
+    }
+
+    [Theory]
+    [InlineData("meta.yaml")]
+    [InlineData("profiles.yaml")]
+    public void Malformed_support_files_name_file_line_and_column(string fileName)
+    {
+        AddSchemaAndProfiles();
+        File.WriteAllText(Path.Combine(_rulesDir, fileName), "repositoryUrl: [unclosed");
+
+        var result = Run("generate", "--rules", _rulesDir, "--out", Path.Combine(_rulesDir, "out"), "--version", "0.1.0");
+
+        Assert.Equal(2, result.ExitCode);
+        Assert.Contains(Path.Combine(_rulesDir, fileName), result.Error);
+        Assert.Matches(@"\(\d+,\d+\): ", result.Error);
     }
 }
 

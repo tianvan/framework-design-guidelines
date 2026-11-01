@@ -168,6 +168,55 @@ public sealed class HookEndToEndTests : IClassFixture<PackageFixture>
         Assert.Contains("App/App.cs:5 IDE1006", output.RootElement.GetProperty("reason").GetString()!);
     }
 
+    [Fact]
+    public void Hook_works_in_a_repository_path_with_semicolon_and_comma()
+    {
+        // MSBuild splits -p: values on ';' and ','; the compiler splits ErrorLog on ','. The SARIF log must still be
+        // written and read, so the unfixable IDE1006 blocks. The repository sits below the workspace: NuGet itself
+        // cannot restore with a nuget.config in a directory whose path has a ';' (SettingsLoadingContext requires a
+        // rooted path, SDK 10.0.403).
+        using var workspace = new SampleWorkspace(_fixture, "hook odd path");
+        const string Repository = "repo;semi,comma";
+        string sample = Path.Combine(Repository, "Sample", "Sample.cs");
+        workspace.Write(
+            Path.Combine(Repository, "Sample", "Sample.csproj"),
+            $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>netstandard2.0</TargetFramework>
+                <LangVersion>7.3</LangVersion>
+                <FrameworkDesignGuidelinesProfile>application</FrameworkDesignGuidelinesProfile>
+              </PropertyGroup>
+              <ItemGroup>
+                {workspace.PackageReference}
+              </ItemGroup>
+            </Project>
+            """);
+        workspace.Write(sample, CleanSource);
+        string root = Path.Combine(workspace.DirectoryPath, Repository);
+        DotnetResult warmUp = workspace.Build(Path.Combine(root, "Sample", "Sample.csproj"));
+        Assert.True(warmUp.ExitCode == 0, warmUp.Output);
+        workspace.Write(Path.Combine(Repository, ".gitignore"), "bin/\nobj/\n");
+        Git(workspace, "-C", root, "init", "-q");
+        Git(workspace, "-C", root, "add", "-A");
+        Git(workspace, "-C", root, "-c", "user.name=FDG Test", "-c", "user.email=fdg@example.invalid", "commit", "-q", "-m", "init");
+        string json = JsonSerializer.Serialize(new { session_id = "e2e", cwd = root, hook_event_name = "UserPromptSubmit" });
+        DotnetResult turnStart = workspace.FdgHook("turn-start", json, Environment);
+        Assert.True(turnStart.ExitCode == 0 && turnStart.Output.Trim().Length == 0, turnStart.Output);
+
+        workspace.Write(sample, ChangedSource);
+        DotnetResult stop = workspace.FdgHook("turn-stop", json.Replace("UserPromptSubmit", "Stop"), Environment);
+        _log.WriteLine($"turn-stop (exit {stop.ExitCode}):\n{stop.Output}");
+
+        Assert.Equal(0, stop.ExitCode);
+        using JsonDocument output = JsonDocument.Parse(stop.Output);
+        Assert.Equal("block", output.RootElement.GetProperty("decision").GetString());
+        string reason = output.RootElement.GetProperty("reason").GetString()!;
+        Assert.StartsWith("FDG found 1 issue(s) in lines you changed this turn.", reason);
+        Assert.Contains("Sample/Sample.cs:5 IDE1006", reason);
+        Assert.DoesNotContain("InvalidOperationException) { }", workspace.Read(sample));
+    }
+
     private static string LibSource(int value) =>
         $$"""
         namespace Lib

@@ -29,18 +29,24 @@ A public name cannot change later without breaking callers, so choose names care
 | When you are about to | Read |
 |---|---|
 | Plan a new public API or feature area: its scenarios and code samples, its entry points, its layers, or its documentation | [references/ch02-fundamentals.md](references/ch02-fundamentals.md) |
-| Name an assembly, a namespace or a resource, add a new version of an existing API, name operator overload parameters, or name anything not covered by the top rules | [references/ch03-naming.md](references/ch03-naming.md) |
-| Design a type: choose between a class, struct, interface or abstract class, or organize types into namespaces; design a static class, an interface, a struct, an enum, a nested type or a strongly typed string; or set assembly metadata | [references/ch04-types-4-1-to-4-4.md](references/ch04-types-4-1-to-4-4.md), [references/ch04-types-4-5-on.md](references/ch04-types-4-5-on.md) |
+| Choose the casing or the words of a name (acronyms, compound words, abbreviations, language-specific names), or name a new version of an existing API | [references/ch03-naming-3-1-to-3-2.md](references/ch03-naming-3-1-to-3-2.md) |
+| Name an assembly, a package, a namespace, a type, a generic type parameter, an enum, a method, a property, an event, a field, a parameter, an operator overload parameter or a resource, or name anything not covered by the top rules | [references/ch03-naming-3-3-on.md](references/ch03-naming-3-3-on.md) |
+| Design a type: choose between a class, struct, interface or abstract class, or organize types into namespaces | [references/ch04-types-4-1-to-4-4.md](references/ch04-types-4-1-to-4-4.md) |
+| Design a static class, an interface or a struct | [references/ch04-types-4-5-to-4-7.md](references/ch04-types-4-5-to-4-7.md) |
+| Design an enum or a flag enum, a nested type or a strongly typed string, or set assembly metadata | [references/ch04-types-4-8-on.md](references/ch04-types-4-8-on.md) |
 | Design members in general: member overloads, explicit interface implementations, or choose between a property and a method | [references/ch05-members-general.md](references/ch05-members-general.md) |
 | Design a property, an indexer, a property change event, a constructor or a static constructor | [references/ch05-members-properties-constructors.md](references/ch05-members-properties-constructors.md) |
 | Design an event, an event handler or a field | [references/ch05-members-events-fields.md](references/ch05-members-events-fields.md) |
 | Design an extension method or an operator overload | [references/ch05-members-extensions-operators.md](references/ch05-members-extensions-operators.md) |
 | Design a parameter: enum vs boolean, argument validation, ref, out, params, pointers, or use a tuple in a member signature | [references/ch05-members-parameters.md](references/ch05-members-parameters.md) |
 | Design for extensibility: choose an extensibility mechanism (unsealed classes, protected members, events, callbacks, virtual members, abstractions, base classes) or decide when to seal | [references/ch06-extensibility.md](references/ch06-extensibility.md) |
-| Throw, choose, catch, wrap or design an exception, write an exception message, or use the Tester-Doer or Try patterns | [references/ch07-exceptions.md](references/ch07-exceptions.md) |
+| Throw, catch or wrap an exception, choose the type of exception to throw, or write an exception message | [references/ch07-exceptions-7-1-to-7-2.md](references/ch07-exceptions-7-1-to-7-2.md) |
+| Use a standard exception type (`ArgumentException`, `InvalidOperationException`, `OperationCanceledException`, `FormatException` and others), design a custom exception, or use the Tester-Doer or Try patterns | [references/ch07-exceptions-7-3-on.md](references/ch07-exceptions-7-3-on.md) |
 | Use arrays, design a custom attribute, or choose, return or implement a collection in a public API | [references/ch08-usage-arrays-attributes-collections.md](references/ch08-usage-arrays-attributes-collections.md) |
 | Use `DateTime`, `DateTimeOffset`, `ICloneable`, `IComparable<T>`, `IEquatable<T>`, `Nullable<T>`, `Uri` or `System.Xml` types; override `Equals`, `GetHashCode` or `ToString`; design a serializable type; or overload an equality operator | [references/ch08-usage-types.md](references/ch08-usage-types.md) |
-| Design an aggregate component, a factored type, an asynchronous method (Task-Based Async Pattern, `IAsyncEnumerable<T>`), or a dependency property | [references/ch09-patterns-aggregate-async.md](references/ch09-patterns-aggregate-async.md) |
+| Design an aggregate component or a factored type, or design an asynchronous method: choose the async pattern, apply the Task-Based Async Pattern, or pick its return type | [references/ch09-patterns-aggregate-async.md](references/ch09-patterns-aggregate-async.md) |
+| Add an async variant of a synchronous method, implement an async method consistently (`Task.Status`, the awaiting context, deadlocks, `ValueTask`, exceptions), use `await foreach`, or return `IAsyncEnumerable<T>` | [references/ch09-patterns-async-consistency.md](references/ch09-patterns-async-consistency.md) |
+| Design a dependency property | [references/ch09-patterns-dependency-properties.md](references/ch09-patterns-dependency-properties.md) |
 | Implement the Dispose Pattern, a finalizer, a scoped operation or `IAsyncDisposable` | [references/ch09-patterns-dispose.md](references/ch09-patterns-dispose.md) |
 | Design a factory or support LINQ | [references/ch09-patterns-factories-linq.md](references/ch09-patterns-factories-linq.md) |
 | Apply the Optional Feature Pattern, covariance or contravariance | [references/ch09-patterns-optional-variance.md](references/ch09-patterns-optional-variance.md) |
@@ -48,10 +54,12 @@ A public name cannot change later without breaking callers, so choose names care
 | Design an operation on buffers, a data transformation or a fixed-size write | [references/ch09-patterns-buffers.md](references/ch09-patterns-buffers.md) |
 | Write a value to a buffer with the Try-Write Pattern, or report partial writes with `OperationStatus` | [references/ch09-patterns-buffers-try-write.md](references/ch09-patterns-buffers-try-write.md) |
 | Change an already shipped public API | [references/appd-breaking-changes-d-1-to-d-8.md](references/appd-breaking-changes-d-1-to-d-8.md), [references/appd-breaking-changes-d-9-on.md](references/appd-breaking-changes-d-9-on.md) |
-| Organize a source file, order members, sort using directives, or write comments | [references/appA-coding-style.md](references/appA-coding-style.md) |
+| Organize a source file, order members, sort using directives, or write comments | [references/appa-coding-style.md](references/appa-coding-style.md) |
 
-Each reference lists, by section, every rule of its chapter that tools do not enforce. When a rule's wording is not
-enough, follow the `examples:` link at the end of its line to the book's explanation and code.
+Each reference lists, by section, every rule of its chapter that tools do not enforce in full. A rule marked
+"(partly checked)" is one that analyzers check only in part: follow the whole rule as you write, since the
+analyzers will not catch the rest. When a rule's wording is not enough, follow the `examples:` link at the end of its
+line to the book's explanation and code.
 
 ## Top rules
 

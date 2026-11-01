@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Fdg.Cli.Commands;
+using Fdg.Cli.IO;
 using Fdg.Cli.Projects;
 using Fdg.Cli.Rules;
 using Fdg.Cli.Tooling;
@@ -20,6 +21,10 @@ public sealed partial class HookRunner
     private const int MaxParallelFormats = 4;
 
     private static readonly TimeSpan CleanupGrace = TimeSpan.FromSeconds(2);
+
+    // The hosts give SessionStart 15 seconds and drop its whole output after that; the rest of it, process start
+    // included, takes well under a second.
+    private static readonly TimeSpan SessionInspectionTimeout = TimeSpan.FromSeconds(10);
 
     private static readonly TimeSpan StaleSessionAge = TimeSpan.FromDays(7);
 
@@ -50,8 +55,14 @@ public sealed partial class HookRunner
     /// </summary>
     public async Task<string> SessionStartAsync(HookInput input, CancellationToken cancellationToken)
     {
-        // Inspect finds the repository root itself.
-        SessionReport? report = _session.Inspect(input.Cwd);
+        // Inspect finds the repository root itself. Out of time, it kills what it runs and reports what it found.
+        SessionReport? report;
+        using (var inspection = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+        {
+            inspection.CancelAfter(SessionInspectionTimeout);
+            report = _session.Inspect(input.Cwd, inspection.Token);
+        }
+
         if (report is null)
         {
             return HookOutput.None;
@@ -148,6 +159,7 @@ public sealed partial class HookRunner
         IReadOnlyList<ProjectWork> projects = GroupByProject(git, changes.Changed, notes);
         if (projects.Count == 0)
         {
+            // Nothing in scope is left changed (the changes were reverted), so there is nothing to re-read.
             state.WriteAutofix(null);
             state.WriteAiLines(new Dictionary<string, int[]>());
             return Finish(notes, []);
@@ -157,24 +169,33 @@ public sealed partial class HookRunner
         {
             string aiVersion = state.AiVersionPath(path);
             Directory.CreateDirectory(Path.GetDirectoryName(aiVersion)!);
-            File.Copy(Snapshot.FullPath(git, path), aiVersion, overwrite: true);
+            AtomicFile.Copy(Snapshot.FullPath(git, path), aiVersion);
         }
 
-        // 2. Per project, a few at a time: format.
+        // 2. Per project, a few at a time: format. One pass when the build can write a SARIF log, since the log tells
+        // whether another is needed (step 3); without a build or a log nothing would, so all passes run at once.
+        int[] formatPasses = projects
+            .Select(p => settings.Build && DotnetBuildRunner.CanWriteLog(
+                p.Info.ProjectPath,
+                state.SarifDirectory(snapshot.Turn, p.Info.ProjectPath)) ? 1 : FormatPasses.MaxPasses)
+            .ToArray();
         var formatNotes = new ConcurrentDictionary<int, string>();
         await Parallel.ForEachAsync(
             projects.Select((project, index) => (Project: project, Index: index)),
             new ParallelOptions { MaxDegreeOfParallelism = MaxParallelFormats, CancellationToken = cancellationToken },
             async (item, token) =>
             {
-                if (await FormatProjectAsync(git, item.Project, token).ConfigureAwait(false) is string note)
+                if (await FormatProjectAsync(git, item.Project, formatPasses[item.Index], token).ConfigureAwait(false) is string note)
                 {
                     formatNotes[item.Index] = note;
                 }
             }).ConfigureAwait(false);
 
         // 3-4. One project at a time, since builds of projects that reference each other would compile the shared
-        // ones at once: build, read the SARIF logs.
+        // ones at once: build, format again if the build still finds something formatting fixes, read the SARIF logs.
+        // A referenced project with any change, onboarded or not and of any file kind, is built with the project that
+        // uses it.
+        string[] turnFiles = changes.Touched.Concat(changes.Deleted).Select(f => Snapshot.FullPath(git, f)).ToArray();
         var diagnostics = new List<(ProjectWork Project, SarifDiagnostic Diagnostic)>();
         var failedBuilds = new List<(ProjectWork Project, ToolResult Build, bool LogsRead)>();
         for (int i = 0; i < projects.Count; i++)
@@ -182,14 +203,22 @@ public sealed partial class HookRunner
             string? note = formatNotes.GetValueOrDefault(i);
             if (settings.Build)
             {
-                (ToolResult build, bool hasLogs, string? buildNote) = await BuildProjectAsync(
-                    git, state, snapshot.Turn, projects[i], diagnostics, cancellationToken).ConfigureAwait(false);
+                (ToolResult build, bool hasLogs, string? buildNote, string? formatNote) = await BuildProjectAsync(
+                    git,
+                    state,
+                    snapshot.Turn,
+                    projects[i],
+                    turnFiles,
+                    passesLeft: note is null ? FormatPasses.MaxPasses - formatPasses[i] : 0,
+                    diagnostics,
+                    cancellationToken)
+                    .ConfigureAwait(false);
                 if (!build.Succeeded && hasLogs)
                 {
                     failedBuilds.Add((projects[i], build, buildNote is null));
                 }
 
-                note ??= buildNote;
+                note ??= formatNote ?? buildNote;
             }
 
             if (note is not null)
@@ -298,7 +327,7 @@ public sealed partial class HookRunner
             changedLines[current] = lines;
             aiLines[path] = lines.Order().ToArray();
             Directory.CreateDirectory(Path.GetDirectoryName(previous)!);
-            File.Copy(current, previous, overwrite: true);
+            AtomicFile.Copy(current, previous);
         }
 
         state.WriteAiLines(aiLines);
@@ -392,7 +421,7 @@ public sealed partial class HookRunner
     }
 
     /// <returns>A one-line note when formatting failed.</returns>
-    private async Task<string?> FormatProjectAsync(GitRepository git, ProjectWork project, CancellationToken cancellationToken)
+    private async Task<string?> FormatProjectAsync(GitRepository git, ProjectWork project, int maxPasses, CancellationToken cancellationToken)
     {
         string projectPath = project.Info.ProjectPath;
         string[] files = project.Files.Select(f => Snapshot.FullPath(git, f)).ToArray();
@@ -400,48 +429,171 @@ public sealed partial class HookRunner
             _formatter,
             projectPath,
             FormatIncludes.ToProjectRelative(projectPath, files),
+            [],
             project.Manifest.FixDiagnostics,
+            files,
             () => HashFiles(files),
+            maxPasses,
             cancellationToken).ConfigureAwait(false);
         return format.Succeeded ? null : Failure(git, "dotnet format", projectPath, format);
     }
 
+    /// <summary>
+    /// Builds the project, without its dependencies when nothing under them may have changed
+    /// (<see cref="CanSkipDependencies"/>). When the build still finds a diagnostic that formatting fixes in a file of
+    /// the project changed this turn, formats the project's files again with the passes left and, if that changed them,
+    /// builds again and uses that build: one pass cannot fix nested occurrences, and what formatting cannot fix is
+    /// reported from the build like anything else. When the build wrote no log, nothing tells whether another pass is
+    /// needed, so the passes left run without a second build.
+    /// </summary>
+    /// <param name="passesLeft">
+    /// The format passes left for this Stop: 0 when the first format failed (it is not run again) or already ran all.
+    /// </param>
     /// <returns>
-    /// The build result, whether it wrote SARIF logs, and a one-line note when the project's diagnostics could not
-    /// be read.
+    /// The build result, whether it wrote SARIF logs, a one-line note when the project's diagnostics could not be read,
+    /// and a one-line note when the second format failed.
     /// </returns>
-    private async Task<(ToolResult Build, bool HasLogs, string? Note)> BuildProjectAsync(
+    private async Task<(ToolResult Build, bool HasLogs, string? Note, string? FormatNote)> BuildProjectAsync(
         GitRepository git,
         StateStore state,
         int turn,
         ProjectWork project,
+        IReadOnlyList<string> turnFiles,
+        int passesLeft,
         List<(ProjectWork, SarifDiagnostic)> diagnostics,
         CancellationToken cancellationToken)
     {
         string projectPath = project.Info.ProjectPath;
         string sarifDirectory = state.SarifDirectory(turn, projectPath);
-        (ToolResult build, IReadOnlyList<string> logs) = await BuildAsync(projectPath, sarifDirectory, noIncremental: false, cancellationToken)
-            .ConfigureAwait(false);
-        (IReadOnlyList<SarifDiagnostic> found, bool unreadable) = ReadLogs(logs, projectPath);
-        if (build.Succeeded && (logs.Count == 0 || IsForeign(found, projectPath)))
+        bool canWriteLog = DotnetBuildRunner.CanWriteLog(projectPath, sarifDirectory);
+        ProjectBuild result = await BuildWithFallbackAsync(
+            projectPath, sarifDirectory, CanSkipDependencies(projectPath, turnFiles), canWriteLog, cancellationToken).ConfigureAwait(false);
+
+        string? formatNote = null;
+        if (passesLeft > 0 && result.Logs.Count == 0)
         {
-            // Up to date: CoreCompile was skipped and wrote no log, or only a referenced project wrote one (a
-            // package without FdgSarifProject support). That is not "no issues".
-            (build, logs) = await BuildAsync(projectPath, sarifDirectory, noIncremental: true, cancellationToken).ConfigureAwait(false);
-            (found, unreadable) = ReadLogs(logs, projectPath);
+            formatNote = await FormatProjectAsync(git, project, passesLeft, cancellationToken).ConfigureAwait(false);
+        }
+        else if (passesLeft > 0 && HasFixableDiagnostic(git, project, result.Diagnostics))
+        {
+            string[] files = project.Files.Select(f => Snapshot.FullPath(git, f)).ToArray();
+            string before = HashFiles(files);
+            formatNote = await FormatProjectAsync(git, project, passesLeft, cancellationToken).ConfigureAwait(false);
+
+            // Unchanged files compile to the same diagnostics, so the logs already read still hold.
+            if (HashFiles(files) != before)
+            {
+                result = await BuildWithFallbackAsync(projectPath, sarifDirectory, result.NoDependencies, canWriteLog, cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
 
+        (ToolResult build, IReadOnlyList<string> logs, IReadOnlyList<SarifDiagnostic> found, bool unreadable, _) = result;
         if (logs.Count == 0)
         {
+            if (build.Succeeded && !canWriteLog)
+            {
+                return (build, false, "FDG: the path of the git directory or worktree has a comma, so dotnet build cannot " +
+                    $"write a SARIF log for {Display(git, projectPath)}; its diagnostics were not checked.", formatNote);
+            }
+
             return (build, false, build.Succeeded
                 ? $"FDG: dotnet build wrote no SARIF log for {Display(git, projectPath)}; its diagnostics were not checked."
-                : Failure(git, "dotnet build", projectPath, build));
+                : Failure(git, "dotnet build", projectPath, build), formatNote);
         }
 
         diagnostics.AddRange(found.Select(d => (project, d)));
         return (build, true, unreadable
             ? $"FDG: cannot read the SARIF log of {Display(git, projectPath)}; its diagnostics were not checked."
-            : null);
+            : null, formatNote);
+    }
+
+    /// <summary>
+    /// Whether the project can be built against the existing output of the projects it references: their closure is
+    /// known (<see cref="ProjectReferences.Closure"/>) and no path that may have changed (<see cref="TurnChanges.Touched"/>,
+    /// of any file kind, in scope or not, dirty since before the turn included) or that was deleted is under one of
+    /// their directories. Files outside those directories, such as an explicitly imported props file or a shared file
+    /// linked into a referenced project, are not considered.
+    /// </summary>
+    private static bool CanSkipDependencies(string projectPath, IReadOnlyList<string> turnFiles)
+    {
+        IReadOnlySet<string>? closure = ProjectReferences.Closure(projectPath);
+        if (closure is null)
+        {
+            return false;
+        }
+
+        string[] directories = closure.Select(p => Path.GetDirectoryName(p)!).Distinct(ProjectFiles.PathComparer).ToArray();
+        return !turnFiles.Any(file => directories.Any(directory => IsUnder(file, directory)));
+    }
+
+    private static bool IsUnder(string path, string directory)
+    {
+        string relative = Path.GetRelativePath(directory, path);
+        return !Path.IsPathRooted(relative) && relative != ".." && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A warning or error that formatting fixes (<see cref="RulesManifest.FixDiagnostics"/>; dotnet format runs with
+    /// <c>--severity warn</c>), not suppressed, on any line of a file of the project changed this turn.
+    /// </summary>
+    private static bool HasFixableDiagnostic(GitRepository git, ProjectWork project, IReadOnlyList<SarifDiagnostic> diagnostics)
+    {
+        var fixable = project.Manifest.FixDiagnostics.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var files = project.Files.Select(f => Snapshot.FullPath(git, f)).ToHashSet(ProjectFiles.PathComparer);
+        return diagnostics.Any(d =>
+            !d.Suppressed && (d.Level is "warning" or "error") && fixable.Contains(d.RuleId) && files.Contains(d.FilePath));
+    }
+
+    /// <summary>
+    /// Builds as <see cref="BuildWithLogsAsync"/> does. A build without dependencies that wrote no log, or failed other
+    /// than in copying its output after the compile, is done once more with them: the output of a referenced project
+    /// may be missing, or out of date after a change made before the turn.
+    /// </summary>
+    private async Task<ProjectBuild> BuildWithFallbackAsync(
+        string projectPath,
+        string sarifDirectory,
+        bool noDependencies,
+        bool canWriteLog,
+        CancellationToken cancellationToken)
+    {
+        ProjectBuild result = await BuildWithLogsAsync(projectPath, sarifDirectory, noDependencies, canWriteLog, cancellationToken)
+            .ConfigureAwait(false);
+        bool compiled = result.Logs.Count > 0 && (result.Build.Succeeded || IsCopyFailure(result.Build));
+        bool expectsLog = canWriteLog || !result.Build.Succeeded;
+        if (noDependencies && !compiled && expectsLog)
+        {
+            result = await BuildWithLogsAsync(projectPath, sarifDirectory, noDependencies: false, canWriteLog, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Builds and reads the logs. A build that succeeded without a log of the project's own is done again with
+    /// <c>--no-incremental</c>.
+    /// </summary>
+    private async Task<ProjectBuild> BuildWithLogsAsync(
+        string projectPath,
+        string sarifDirectory,
+        bool noDependencies,
+        bool canWriteLog,
+        CancellationToken cancellationToken)
+    {
+        (ToolResult build, IReadOnlyList<string> logs) = await BuildAsync(
+            projectPath, sarifDirectory, noIncremental: false, noDependencies, cancellationToken).ConfigureAwait(false);
+        (IReadOnlyList<SarifDiagnostic> found, bool unreadable) = ReadLogs(logs, projectPath);
+        if (build.Succeeded && canWriteLog && (logs.Count == 0 || IsForeign(found, projectPath)))
+        {
+            // Up to date: CoreCompile was skipped and wrote no log, or only a referenced project wrote one (a
+            // package without FdgSarifProject support). That is not "no issues".
+            (build, logs) = await BuildAsync(projectPath, sarifDirectory, noIncremental: true, noDependencies, cancellationToken)
+                .ConfigureAwait(false);
+            (found, unreadable) = ReadLogs(logs, projectPath);
+        }
+
+        return new ProjectBuild(build, logs, found, unreadable, noDependencies);
     }
 
     private static (IReadOnlyList<SarifDiagnostic> Diagnostics, bool Unreadable) ReadLogs(IReadOnlyList<string> logs, string projectPath)
@@ -463,10 +615,15 @@ public sealed partial class HookRunner
         return (diagnostics, unreadable);
     }
 
-    /// <summary>A log with results, none of them in a file of the project, is a referenced project's.</summary>
+    /// <summary>
+    /// A log with results, none of them in a file of the project, is a referenced project's. The project's files are
+    /// those under its directory and those its project file lists in static <c>Compile</c> items, such as linked
+    /// shared files (<see cref="ProjectFiles.StaticCompileItems"/>).
+    /// </summary>
     private static bool IsForeign(IReadOnlyList<SarifDiagnostic> diagnostics, string projectPath)
     {
         var owners = new Dictionary<string, bool>(ProjectFiles.PathComparer);
+        HashSet<string>? compileItems = null;
         return diagnostics.Count > 0 && !diagnostics.Any(d =>
         {
             string directory = Path.GetDirectoryName(d.FilePath) ?? string.Empty;
@@ -477,7 +634,13 @@ public sealed partial class HookRunner
                 owners.Add(directory, owned);
             }
 
-            return owned;
+            if (owned)
+            {
+                return true;
+            }
+
+            compileItems ??= ProjectFiles.StaticCompileItems(projectPath).ToHashSet(ProjectFiles.PathComparer);
+            return compileItems.Contains(Path.GetFullPath(d.FilePath));
         });
     }
 
@@ -486,6 +649,7 @@ public sealed partial class HookRunner
         string projectPath,
         string sarifDirectory,
         bool noIncremental,
+        bool noDependencies,
         CancellationToken cancellationToken)
     {
         // Logs of an earlier Stop in this turn must not pass for this build's.
@@ -494,7 +658,7 @@ public sealed partial class HookRunner
             Directory.Delete(sarifDirectory, recursive: true);
         }
 
-        ToolResult result = await _builder.BuildAsync(projectPath, sarifDirectory, noIncremental, cancellationToken).ConfigureAwait(false);
+        ToolResult result = await _builder.BuildAsync(projectPath, sarifDirectory, noIncremental, noDependencies, cancellationToken).ConfigureAwait(false);
         IReadOnlyList<string> logs = Directory.Exists(sarifDirectory)
             ? Directory.GetFiles(sarifDirectory, "*.sarif").Order(StringComparer.Ordinal).ToArray()
             : [];
@@ -513,7 +677,7 @@ public sealed partial class HookRunner
     {
         var sourceLines = new Dictionary<string, string[]>(ProjectFiles.PathComparer);
         var trees = new Dictionary<string, SyntaxTree>(ProjectFiles.PathComparer);
-        var baselineKeys = new Dictionary<string, IReadOnlySet<DeclarationKey>?>(ProjectFiles.PathComparer);
+        var baselines = new Dictionary<string, BaselineDeclarations?>(ProjectFiles.PathComparer);
         var seen = new HashSet<(string, int, string, string)>();
         var issues = new List<ReportedIssue>();
         foreach ((ProjectWork project, SarifDiagnostic diagnostic) in diagnostics)
@@ -537,11 +701,11 @@ public sealed partial class HookRunner
             }
 
             string? source = diagnostic.Line >= 1 && diagnostic.Line <= lines.Length ? lines[diagnostic.Line - 1].Trim() : null;
-            (NamingSymbolKind, NamingFailure)? naming = diagnostic.RuleId == DeclarationLocator.NamingDiagnosticId
+            (IReadOnlyList<NamingSymbolKind>, NamingFailure)? naming = diagnostic.RuleId == DeclarationLocator.NamingDiagnosticId
                 ? NamingOf(diagnostic, trees)
                 : null;
             bool existingApi = project.Manifest.BreakingFixDiagnostics.Contains(diagnostic.RuleId, StringComparer.OrdinalIgnoreCase) &&
-                await IsExistingApiAsync(git, state, snapshot, moveSources, path, diagnostic, trees, baselineKeys, cancellationToken).ConfigureAwait(false);
+                await IsExistingApiAsync(git, state, snapshot, moveSources, path, diagnostic, trees, baselines, cancellationToken).ConfigureAwait(false);
             issues.Add(new ReportedIssue(
                 path,
                 diagnostic.Line,
@@ -557,7 +721,8 @@ public sealed partial class HookRunner
 
     /// <summary>
     /// Whether the diagnostic is about a declaration the file already had at the start of the turn. False when the
-    /// baseline cannot be read or parsed, so the issue is reported as before.
+    /// baseline cannot be read or parsed, so the issue is reported as before, and for a diagnostic on a type whose
+    /// base list the turn changed, unless it is a naming one (<see cref="ExistingApi.ComparesBaseList"/>).
     /// </summary>
     private static async Task<bool> IsExistingApiAsync(
         GitRepository git,
@@ -567,27 +732,32 @@ public sealed partial class HookRunner
         string path,
         SarifDiagnostic diagnostic,
         Dictionary<string, SyntaxTree> trees,
-        Dictionary<string, IReadOnlySet<DeclarationKey>?> baselineKeys,
+        Dictionary<string, BaselineDeclarations?> baselines,
         CancellationToken cancellationToken)
     {
-        if (!baselineKeys.TryGetValue(diagnostic.FilePath, out IReadOnlySet<DeclarationKey>? keys))
+        if (!baselines.TryGetValue(diagnostic.FilePath, out BaselineDeclarations? declarations))
         {
             try
             {
                 string baselinePath = await Snapshot.WriteBaselineAsync(git, state, snapshot, path, moveSources, cancellationToken)
                     .ConfigureAwait(false);
                 SyntaxTree baseline = DeclarationLocator.Parse(await File.ReadAllTextAsync(baselinePath, cancellationToken).ConfigureAwait(false));
-                keys = DeclarationLocator.DeclaredKeys(baseline);
+                declarations = DeclarationLocator.Baseline(baseline);
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException)
             {
-                keys = null;
+                declarations = null;
             }
 
-            baselineKeys.Add(diagnostic.FilePath, keys);
+            baselines.Add(diagnostic.FilePath, declarations);
         }
 
-        return ExistingApi.IsExisting(TreeOf(diagnostic.FilePath, trees), keys, diagnostic.Line, diagnostic.Column);
+        return ExistingApi.IsExisting(
+            TreeOf(diagnostic.FilePath, trees),
+            declarations,
+            diagnostic.Line,
+            diagnostic.Column,
+            compareBaseList: ExistingApi.ComparesBaseList(diagnostic.RuleId));
     }
 
     /// <summary>The file's current text, parsed once; from the text rather than its lines, since Roslyn counts line breaks that ReadAllLines does not.</summary>
@@ -602,8 +772,8 @@ public sealed partial class HookRunner
         return tree;
     }
 
-    /// <summary>What IDE1006 flagged: the kind of the declared symbol and how its name fails; null if either is unknown.</summary>
-    private static (NamingSymbolKind, NamingFailure)? NamingOf(SarifDiagnostic diagnostic, Dictionary<string, SyntaxTree> trees)
+    /// <summary>What IDE1006 flagged: the kinds of the declared symbol and how its name fails; null if either is unknown.</summary>
+    private static (IReadOnlyList<NamingSymbolKind>, NamingFailure)? NamingOf(SarifDiagnostic diagnostic, Dictionary<string, SyntaxTree> trees)
     {
         NamingFailure? failure = DeclarationLocator.ClassifyNamingFailure(diagnostic.Message);
         if (failure is null)
@@ -611,8 +781,8 @@ public sealed partial class HookRunner
             return null;
         }
 
-        NamingSymbolKind? kind = DeclarationLocator.NamingKindAt(TreeOf(diagnostic.FilePath, trees), diagnostic.Line, diagnostic.Column);
-        return kind is null ? null : (kind.Value, failure.Value);
+        IReadOnlyList<NamingSymbolKind>? kinds = DeclarationLocator.NamingKindsAt(TreeOf(diagnostic.FilePath, trees), diagnostic.Line, diagnostic.Column);
+        return kinds is null ? null : (kinds, failure.Value);
     }
 
     /// <summary>
@@ -658,7 +828,10 @@ public sealed partial class HookRunner
             $"{Display(git, first.FilePath)}:{first.Line} {first.RuleId} {first.Message}";
     }
 
-    /// <summary>Diffs the AI's version of each file with the formatted one and stores the changed ranges.</summary>
+    /// <summary>
+    /// Diffs the AI's version of each file with the formatted one and stores the changed ranges, joined with what
+    /// earlier Stops of the same turn recorded: a file they formatted is found already formatted by this one.
+    /// </summary>
     private static async Task<AutofixRecord?> RecordAutofixAsync(
         GitRepository git,
         StateStore state,
@@ -677,11 +850,15 @@ public sealed partial class HookRunner
             IReadOnlyList<LineRange> ranges = ChangedLines.ParseHunks(diff);
             if (ranges.Count > 0)
             {
-                files.Add(new AutofixFile(path, ranges));
+                int lineCount = File.ReadLines(Snapshot.FullPath(git, path)).Count();
+                files.Add(new AutofixFile(path, ranges, lineCount));
             }
         }
 
-        AutofixRecord? record = files.Count == 0 ? null : new AutofixRecord(turn, files);
+        AutofixRecord? previous = state.ReadAutofix();
+        AutofixRecord? record = files.Count == 0
+            ? previous is not null && previous.Turn == turn ? previous : null
+            : AutofixRecord.Merge(previous, new AutofixRecord(turn, files));
         state.WriteAutofix(record);
         return record;
     }
@@ -721,4 +898,15 @@ public sealed partial class HookRunner
     }
 
     private sealed record ProjectWork(ProjectInfo Info, RulesManifest Manifest, List<string> Files);
+
+    /// <summary>
+    /// A build of one project: its result, the logs it wrote and what they hold, and whether it skipped the projects
+    /// the project references.
+    /// </summary>
+    private sealed record ProjectBuild(
+        ToolResult Build,
+        IReadOnlyList<string> Logs,
+        IReadOnlyList<SarifDiagnostic> Diagnostics,
+        bool Unreadable,
+        bool NoDependencies);
 }

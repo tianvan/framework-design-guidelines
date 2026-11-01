@@ -13,6 +13,97 @@ public class Order {
 }
 ```
 
+## FDG8002
+
+DO remember that arrays are mutable types—even arrays of immutable types.
+
+It’s easy to fall into the logical fallacy that “one `Int32` is immutable, so `new Int32[] { 1, 2 }` is also immutable,” especially when it comes to the `readonly` field modifier. But the `readonly` field modifier only prevents replacing the entirety of the array; changing element values via the indexer is still possible.
+
+This example demonstrates the pitfalls of using read-only array fields:
+
+```csharp
+//bad code
+public sealed class Path {
+  public static readonly char[] InvalidPathChars =
+    { '\"', '<', '>', '|'};
+}
+```
+
+This allows callers to change the values in the array as follows:
+
+```csharp
+Path.InvalidPathChars[0] = 'A';
+```
+
+Instead, you can either use a read-only collection (only if the items are immutable) or clone the array before returning it.
+
+```csharp
+public static ReadOnlyCollection<char> GetInvalidPathChars() {
+  return Array.AsReadOnly(badChars);
+}
+
+public static char[] GetInvalidPathChars() {
+  return (char[])badChars.Clone();
+}
+```
+
+Another option available to immutable element types is `ReadOnlySpan<T>`. The Span types, and the trade-offs that come from them, are discussed in section 9.12.
+
+## FDG8003
+
+AVOID array properties.
+
+Array-based property get methods can be implemented in one of four basic ways: direct state return, direct unauthoritative return, shallow-copy, and deep-copy. The distinction between the four implementations only matters when a caller writes to the returned array, or modifies an object exposed via the array.
+
+- Direct return is used by `ArraySegment<T>.Array`. This is in keeping with the purpose of `ArraySegment`, which effectively is to associate bounds with an array.
+  ```
+  public T[] Array => _array;
+  ```
+- Direct unauthoritative return means the property uses a computed array, and returns the same array for two successive calls—assuming no object modification occurred between them. A caller writing back to the array doesn’t alter the behavior of other properties and methods on the object, but does corrupt the property for other callers. This technique is used by `NameValueCollection.AllKeys`.
+  ```
+  public string[] AllKeys {
+   get {
+     if (_allKeys == null) {
+       _allKeys = new string[_entries.Count];
+       for (int i = 0; i < _entries.Count; i++) {
+         _allKeys[i] = _entries[i].Key;
+       }
+     }
+     return _allKeys;
+   }
+  }
+  ```
+- Shallow-copy properties return a new array on every call, but reference types are not duplicated to make the new array. Object state can still be modified if the element type is a mutable reference type, but replacing values within the array has no effect on the object. This technique is used by `DataTable.PrimaryKey`.
+  ```
+  private List<Calendar> _calendars;
+  public Calendar[] ShallowCalendars => _calendars.ToArray();
+  ```
+- Deep-copy properties return a new array on every call, and the array contains new instances of any reference type values. The intent of a deep-copy is usually to completely avoid caller modifications affecting object state. Deep-copies are rare in .NET. Indeed, the few properties that technically perform deep-copy do so as a side effect of using `String.Substring` in the accessor method.
+  ```
+  public Calendar[] DeepCalendars {
+   get {
+     Calendar[] calendars = new Calendar[_calendars.Count];
+     for (int i = 0; i < _calendars.Count; i++) {
+       calendars[i] = (Calendar)_calendars[i].Clone();
+     }
+     return calendars;
+   }
+  }
+  ```
+- When the array element type is fully immutable, a shallow-copy is as effective as a deep-copy for protecting the object state with a lower memory and CPU cost. The “value copy” deep-copy/shallow-copy hybrid technique is used by `NumberFormatInfo.NumberGroupSizes`.
+  ```
+  private int[] _numberGroupSizes;
+  public int[] NumberGroupSizes {
+   get => (int[])_numberGroupSizes.Clone();
+  }
+  ```
+
+Set methods can similarly be implemented in any of the four ways.
+
+Per the guidance that properties should be almost as fast as a field access (section 5.1.3), the direct and unauthoritative direct returns are the only techniques that should be used by properties. Nevertheless, the implementation for a little more than half of the array-based properties in .NET Standard 2.0 returns a copy of one form or another. Given the inconsistency with arrays, the recommendation is to use collection-based properties, `ReadOnlyMemory<T>` (see section 9.12), or methods— where a name like “GetRawBuffer” can convey that the array is being returned directly.
+
+If you’re defining an array transport type, like `ArraySegment<T>`, then a property directly returning the array is the most natural way of exposing the array back out.
+
 ## FDG8004
 
 CONSIDER using jagged arrays instead of multidimensional arrays.
@@ -50,6 +141,42 @@ public class NameAttribute : Attribute {
 }
 ```
 
+## FDG8009
+
+DO provide constructor parameters to initialize properties corresponding to required arguments. Each parameter should have the same name (although with different casing) as the corresponding property.
+
+```csharp
+[AttributeUsage(...)]
+public class NameAttribute : Attribute {
+  public NameAttribute(string userName){..} // required argument
+  public string UserName { get{..} } // required argument
+   ...
+}
+```
+
+> **Krzysztof Cwalina:** This guideline applies equally to case-sensitive and case-insensitive languages. For example, this is how the attribute would look if defined using case-insensitive VB.NET:
+>
+> ```
+> Public Class FooAttribute
+>   Dim nameValue As String
+>   Public Sub New(ByVal name As String)
+>     nameValue = name
+>   End Sub
+>
+>   Public ReadOnly Property Name() As String
+>     Get
+>       Return nameValue
+>     End Get
+>   End Property
+> End Clas
+> ```
+
+## FDG8010
+
+DO NOT provide constructor parameters to initialize properties corresponding to the optional arguments.
+
+In other words, do not have properties that can be set with both a constructor and a setter. This guideline makes very explicit which arguments are optional and which are required, and it avoids having two ways of doing the same thing.
+
 ## FDG8013
 
 DO NOT use weakly typed collections in public APIs.
@@ -68,6 +195,46 @@ public class ComponentDesigner {
   ...
 }
 ```
+
+## FDG8014
+
+DO NOT use `ArrayList` or `List<T>` in public APIs.
+
+These types are data structures designed to be used in internal implementation, not in public APIs. `List<T>` is optimized for performance and power at the cost of cleanness of the APIs and flexibility. For example, if you return `List<T>`, you will never be able to receive notifications when client code modifies the collection. Also, `List<T>` exposes many members, such as `BinarySearch`, that are not useful or applicable in many scenarios. Sections 8.3.1 and 8.3.2 describe types (abstractions) designed specifically for use in public APIs.
+
+Instead of using these concrete types, consider `Collection<T>`, `IEnumerable<T>`, `IList<T>`, `IReadOnlyList<T>`, or other collection abstractions.
+
+```csharp
+// bad design
+public class Order {
+  public List<OrderItem> Items { get { ... } }
+  ...
+}
+// good design
+public class Order {
+  public Collection<OrderItem> Items { get { ... } }
+  ...
+}
+// also good design
+public class Order {
+  public IList<OrderItem> Items { get { ... } }
+  ...
+}
+```
+
+## FDG8015
+
+DO NOT use `Hashtable` or `Dictionary<TKey,TValue>` in public APIs.
+
+These types are data structures designed to be used in internal implementation. Public APIs should use `IDictionary`, `IDictionary <TKey, TValue>`, or a custom type implementing one or both of the interfaces.
+
+## FDG8016
+
+DO NOT use `IEnumerator<T>`, `IEnumerator`, or any other type that implements either of these interfaces, except as the return type of a `GetEnumerator` method.
+
+> **Anthony Moore:** I’ve seen a lot of violations of this guideline ever since LINQ has been available. The review body made an explicit decision that LINQ should not change this guideline. Your callers can end up with a clumsy object model if they choose not to use LINQ or use a language that does not support it.
+
+Types returning enumerators from methods other than `GetEnumerator` cannot be used with the `foreach` statement.
 
 ## FDG8018
 
@@ -107,6 +274,25 @@ public List(IEnumerable<T> collection){
    foreach(T item in collection){
       Add(item);
    }
+}
+```
+
+## FDG8020
+
+DO NOT provide settable collection properties.
+
+Users can replace the contents of the collection by clearing the collection first and then adding the new contents. If replacing the whole collection is a common scenario, consider providing the `AddRange` method on the collection.
+
+```csharp
+// bad design
+public class Order {
+   public Collection<OrderItem> Items { get { ... } set { ... } }
+   ...
+}
+// good design
+public class Order {
+   public Collection<OrderItem> Items { get { ... } }
+   ...
 }
 ```
 
@@ -223,6 +409,21 @@ public class Directory {
 
 Keyed collections usually have larger memory footprints and should not be used if the memory overhead outweighs the benefits of having the keys.
 
+## FDG8026
+
+DO NOT return null values from collection properties or from methods returning collections. Return an empty collection or an empty array instead.
+
+Users of collection properties often assume that the following code will always work:
+
+```csharp
+IEnumerable<string> list = GetList();
+foreach(string name in list){
+  ...
+}
+```
+
+The general rule is that null and empty (zero-item) collections or arrays should be treated the same.
+
 ## FDG8027
 
 DO NOT return snapshot collections from properties. Properties should return live collections.
@@ -259,6 +460,35 @@ Collections provide more control over contents, can evolve over time, and are mo
 
 However, if you are developing low-level APIs, it might be better to use array parameters for read-write scenarios. Arrays have a smaller memory footprint, which helps reduce the working set, and access to elements in an array is faster because it is optimized by the runtime.
 
+## FDG8031
+
+DO use byte arrays instead of collections of bytes.
+
+```csharp
+// bad design
+public Collection<byte> ReadBytes() { ... }
+
+// good design
+public byte[] ReadBytes() { ... }
+
+// more performant good designs (see 9.12)
+public int ReadBytes(byte[] destination) { ... }
+public int ReadBytes(Span<byte> destination) { ... }
+```
+
+## FDG8032
+
+DO NOT use arrays for properties if the property would have to return a new array (e.g., a copy of an internal array) every time the property getter is called.
+
+This ensures that users will not write the following inefficient code:
+
+```csharp
+//bad design
+for(int index=0; index< customer.Orders.Length; index++) {
+  Console.WriteLine(customer.Orders[i]);
+}
+```
+
 ## FDG8033
 
 CONSIDER inheriting from `Collection<T>`, `ReadOnlyCollection<T>`, or `KeyedCollection<TKey,TItem>` when designing new collections.
@@ -270,6 +500,18 @@ public class OrderCollection : Collection<Order> {
   }
 }
 ```
+
+## FDG8034
+
+DO implement `IEnumerable<T>` when designing new collections. Consider implementing `ICollection<T>`, `IReadOnlyList<T>`, or even `IList<T>` where it makes sense.
+
+```csharp
+public class TextDecorationCollection : IList<TextDecoration> ... {
+   ...
+}
+```
+
+When implementing such a custom collection, follow the API pattern established by `Collection<T>` and `ReadOnlyCollection<T>` as closely as possible. That is, implement the same members explicitly, name the parameters in the same way that these two collections name them, and so on. In other words, make your custom collection different from these two collections only when you have a very good reason to do so.
 
 ## FDG8035
 
@@ -286,6 +528,16 @@ public class OrderCollection : IList<Order>, IList {
 AVOID implementing collection interfaces on types with complex APIs unrelated to the concept of a collection.
 
 In other words, a collection should be a simple type used to store, access, and manipulate items, and not much more.
+
+## FDG8039
+
+DO use the “Collection” suffix in names of types implementing `IEnumerable` (or any of its descendants) and representing a list of items.
+
+```csharp
+public class OrderCollection : IEnumerable<Order> { ... }
+public class CustomerCollection : ICollection<Customer> { ... }
+public class AddressCollection : IList<Address> { ... }
+```
 
 ## FDG8040
 

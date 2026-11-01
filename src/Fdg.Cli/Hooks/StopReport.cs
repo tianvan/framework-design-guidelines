@@ -82,7 +82,8 @@ public static class StopReport
     /// <summary>
     /// The rules a diagnostic checks under <paramref name="profile"/>, most relevant first, at most
     /// <see cref="MaxRulesPerIssue"/>. For IDE1006, if any of its rules carries naming tags, the tags decide: only the
-    /// rules that list the symbol kind and the failure of <paramref name="naming"/> are quoted, and none when it is
+    /// rules that list any of the symbol kinds and the failure of <paramref name="naming"/> are quoted (a visible const
+    /// has two kinds), and none when it is
     /// <see langword="null"/> because the position or the message could not be read; the narrower a rule's tags (the
     /// fewer symbol kinds and failures it lists), the earlier it comes, so the rule written for this kind of symbol
     /// beats the general one. Otherwise the rules sharing more
@@ -97,21 +98,21 @@ public static class StopReport
         string message,
         string? sourceLine,
         string? profile,
-        (NamingSymbolKind Kind, NamingFailure Failure)? naming)
+        (IReadOnlyList<NamingSymbolKind> Kinds, NamingFailure Failure)? naming)
     {
         RuleEntry[] rules = manifest.Rules.Where(r => r.Diagnostics.Contains(ruleId)).ToArray();
         bool tagged = ruleId == DeclarationLocator.NamingDiagnosticId && rules.Any(r => r.Naming is not null);
         if (tagged)
         {
-            if (naming is not var (kind, failure))
+            if (naming is not var (kinds, failure))
             {
                 return [];
             }
 
-            string symbol = CamelCase(kind);
+            string[] symbols = kinds.Select(CamelCase).ToArray();
             string failureText = CamelCase(failure);
             rules = rules
-                .Where(r => r.Naming is { } tags && tags.Symbols.Contains(symbol) && tags.Failures.Contains(failureText))
+                .Where(r => r.Naming is { } tags && tags.Symbols.Intersect(symbols).Any() && tags.Failures.Contains(failureText))
                 .ToArray();
         }
 

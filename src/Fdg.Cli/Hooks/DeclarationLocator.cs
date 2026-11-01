@@ -44,6 +44,15 @@ public enum NamingFailure
 /// </param>
 public sealed record DeclarationKey(string Container, string Name, string Kind, string Signature = "", string Part = "");
 
+/// <summary>A baseline file's declarations, and the base list of each type declaration in it.</summary>
+/// <param name="Keys">The file's <see cref="DeclarationLocator.DeclaredKeys"/>.</param>
+/// <param name="BaseLists">
+/// For the key of each type declared in the file (a class, struct, interface, record or enum), its base types in the
+/// file: each one's text without whitespace, ordinal-sorted and joined with commas; empty when it has none. The
+/// declarations of a partial type in the file are taken together.
+/// </param>
+public sealed record BaselineDeclarations(IReadOnlySet<DeclarationKey> Keys, IReadOnlyDictionary<DeclarationKey, string> BaseLists);
+
 /// <summary>
 /// Tells what an IDE1006 diagnostic is about: the kind of symbol declared at its position and how its name fails.
 /// Both are read from the source and the message, so a rule is quoted only when both are certain.
@@ -53,20 +62,24 @@ public static class DeclarationLocator
     /// <summary>The diagnostic whose rules the symbol kind and failure of the flagged name select.</summary>
     public const string NamingDiagnosticId = "IDE1006";
 
-    /// <summary>Parses <paramref name="source"/> for <see cref="NamingKindAt(SyntaxTree, int, int)"/>, which callers can repeat on one tree.</summary>
+    /// <summary>Parses <paramref name="source"/> for <see cref="NamingKindsAt(SyntaxTree, int, int)"/>, which callers can repeat on one tree.</summary>
     public static SyntaxTree Parse(string source) =>
         CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview));
 
-    /// <summary>The kind of the symbol declared at the 1-based line and column, or null when no declaration name is there.</summary>
+    /// <summary>
+    /// The kinds of the symbol declared at the 1-based line and column, or null when no declaration name is there.
+    /// One kind, except for a const field that is visible outside its assembly, which is both a
+    /// <see cref="NamingSymbolKind.ConstField"/> and a <see cref="NamingSymbolKind.VisibleField"/>.
+    /// </summary>
     /// <remarks>
     /// Also null when the source has syntax errors (it may not be the code that was built), for declarations that are
     /// not members of a type, for top-level statements, and for symbols without a kind (enum members, local functions).
     /// </remarks>
-    public static NamingSymbolKind? NamingKindAt(string source, int line, int column) =>
-        NamingKindAt(Parse(source), line, column);
+    public static IReadOnlyList<NamingSymbolKind>? NamingKindsAt(string source, int line, int column) =>
+        NamingKindsAt(Parse(source), line, column);
 
-    /// <inheritdoc cref="NamingKindAt(string, int, int)"/>
-    public static NamingSymbolKind? NamingKindAt(SyntaxTree tree, int line, int column)
+    /// <inheritdoc cref="NamingKindsAt(string, int, int)"/>
+    public static IReadOnlyList<NamingSymbolKind>? NamingKindsAt(SyntaxTree tree, int line, int column)
     {
         if (PositionOf(tree, line, column) is not int position)
         {
@@ -86,7 +99,15 @@ public static class DeclarationLocator
             return null;
         }
 
-        return KindOf(token);
+        if (KindOf(token) is not { } kind)
+        {
+            return null;
+        }
+
+        return kind == NamingSymbolKind.ConstField && token.Parent is VariableDeclaratorSyntax { Parent.Parent: FieldDeclarationSyntax field } &&
+            IsVisible(field)
+            ? [NamingSymbolKind.ConstField, NamingSymbolKind.VisibleField]
+            : [kind];
     }
 
     /// <summary>
@@ -184,6 +205,20 @@ public static class DeclarationLocator
     }
 
     /// <summary>
+    /// <see cref="DeclaredKeys"/> of <paramref name="tree"/> and the base list of each type it declares. Null when the
+    /// tree has syntax errors. Callers that ask about several positions of one file can compute it once.
+    /// </summary>
+    public static BaselineDeclarations? Baseline(SyntaxTree tree) =>
+        DeclaredKeys(tree) is IReadOnlySet<DeclarationKey> keys ? new BaselineDeclarations(keys, BaseLists(tree)) : null;
+
+    /// <summary>
+    /// The base list of the type <paramref name="key"/> in <paramref name="tree"/>, in the form of
+    /// <see cref="BaselineDeclarations.BaseLists"/>; null when the tree declares no type with that key.
+    /// </summary>
+    internal static string? BaseListOf(SyntaxTree tree, DeclarationKey key) =>
+        BaseLists(tree).GetValueOrDefault(key);
+
+    /// <summary>
     /// Roslyn's IDE1006 messages: "Missing prefix: '_'" and "Prefix '_' is not expected" → Prefix; the messages
     /// "These words must begin with upper case characters", "These non-leading words must begin with an upper case
     /// letter" and "The first word, 'X', must begin with a lower case character" → Casing; everything else
@@ -221,6 +256,30 @@ public static class DeclarationLocator
         (bool)SyntaxErrors.GetValue(
             tree,
             t => t.GetRoot().GetDiagnostics().Any(d => d.Severity == DiagnosticSeverity.Error));
+
+    /// <summary>The base list of each type declared in <paramref name="tree"/>, by key; see <see cref="BaselineDeclarations.BaseLists"/>.</summary>
+    private static Dictionary<DeclarationKey, string> BaseLists(SyntaxTree tree)
+    {
+        // The declarations of a partial type share a key; their base types are one set, so moving a base type from
+        // one of them to another does not change it.
+        var baseTypes = new Dictionary<DeclarationKey, SortedSet<string>>();
+        IEnumerable<BaseTypeDeclarationSyntax> types = tree.GetRoot()
+            .DescendantNodes(n => n is not (BlockSyntax or ArrowExpressionClauseSyntax))
+            .OfType<BaseTypeDeclarationSyntax>();
+        foreach (BaseTypeDeclarationSyntax type in types)
+        {
+            DeclarationKey key = KeyOf(type)!;
+            if (!baseTypes.TryGetValue(key, out SortedSet<string>? names))
+            {
+                names = new SortedSet<string>(StringComparer.Ordinal);
+                baseTypes.Add(key, names);
+            }
+
+            names.UnionWith((type.BaseList?.Types ?? []).Select(t => Compact(t.Type)));
+        }
+
+        return baseTypes.ToDictionary(p => p.Key, p => string.Join(',', p.Value));
+    }
 
     /// <summary>The parameters and type parameters a declaration declares, as <see cref="DeclarationKey.Part"/> values.</summary>
     private static IEnumerable<string> PartsOf(SyntaxNode node)
@@ -385,21 +444,29 @@ public static class DeclarationLocator
     }
 
     /// <summary>
-    /// Const wins over visibility; a field without an accessibility modifier is private, except in an interface,
-    /// where it is public.
+    /// A const is a <see cref="NamingSymbolKind.ConstField"/> whatever its visibility; the visibility of a const is
+    /// told by <see cref="IsVisible"/>.
     /// </summary>
     private static NamingSymbolKind FieldKind(FieldDeclarationSyntax field)
     {
-        SyntaxTokenList modifiers = field.Modifiers;
-        if (modifiers.Any(SyntaxKind.ConstKeyword))
+        if (field.Modifiers.Any(SyntaxKind.ConstKeyword))
         {
             return NamingSymbolKind.ConstField;
         }
 
-        bool visible = modifiers.Any(SyntaxKind.PublicKeyword) ||
+        return IsVisible(field) ? NamingSymbolKind.VisibleField : NamingSymbolKind.PrivateField;
+    }
+
+    /// <summary>
+    /// Whether the field is visible outside its assembly; a field without an accessibility modifier is private,
+    /// except in an interface, where it is public.
+    /// </summary>
+    private static bool IsVisible(FieldDeclarationSyntax field)
+    {
+        SyntaxTokenList modifiers = field.Modifiers;
+        return modifiers.Any(SyntaxKind.PublicKeyword) ||
             (modifiers.Any(SyntaxKind.ProtectedKeyword) && !modifiers.Any(SyntaxKind.PrivateKeyword)) ||
             (field.Parent is InterfaceDeclarationSyntax && !modifiers.Any(SyntaxKind.PrivateKeyword) &&
                 !modifiers.Any(SyntaxKind.InternalKeyword));
-        return visible ? NamingSymbolKind.VisibleField : NamingSymbolKind.PrivateField;
     }
 }

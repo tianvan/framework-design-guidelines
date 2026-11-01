@@ -35,24 +35,30 @@ This is a review: give findings and change no files.
 2. Find each file's profile: the `FrameworkDesignGuidelinesProfile` of the project that contains it (in the
    project file or a `Directory.Build.props` above it, or `profile` in the project's `obj/fdg/marker.json`).
 3. Read the rule references for the topics the code in scope touches. Read
-   [ch03-naming.md](../fdg-write/references/ch03-naming.md) for every review outside `test` projects and
-   [appA-coding-style.md](../fdg-write/references/appA-coding-style.md) for every review; add the others by topic:
+   [ch03-naming-3-1-to-3-2.md](../fdg-write/references/ch03-naming-3-1-to-3-2.md) and
+   [ch03-naming-3-3-on.md](../fdg-write/references/ch03-naming-3-3-on.md) for every review outside `test` projects
+   and [appa-coding-style.md](../fdg-write/references/appa-coding-style.md) for every review; add the others by
+   topic:
 
    | When the code in scope | Read |
    |---|---|
    | Shapes a public API's scenarios, entry points, layers or documentation | [ch02-fundamentals.md](../fdg-write/references/ch02-fundamentals.md) |
    | Declares a class, struct, interface or abstract class, or organizes types into namespaces | [ch04-types-4-1-to-4-4.md](../fdg-write/references/ch04-types-4-1-to-4-4.md) |
-   | Declares a static class, interface, struct, enum, nested type or strongly typed string, or sets assembly metadata | [ch04-types-4-5-on.md](../fdg-write/references/ch04-types-4-5-on.md) |
+   | Declares a static class, an interface or a struct | [ch04-types-4-5-to-4-7.md](../fdg-write/references/ch04-types-4-5-to-4-7.md) |
+   | Declares an enum, a nested type or a strongly typed string, or sets assembly metadata | [ch04-types-4-8-on.md](../fdg-write/references/ch04-types-4-8-on.md) |
    | Overloads members, implements interface members explicitly, or picks a property over a method | [ch05-members-general.md](../fdg-write/references/ch05-members-general.md) |
    | Declares properties, indexers, constructors or static constructors | [ch05-members-properties-constructors.md](../fdg-write/references/ch05-members-properties-constructors.md) |
    | Declares events, event handlers or fields | [ch05-members-events-fields.md](../fdg-write/references/ch05-members-events-fields.md) |
    | Declares extension methods, operators or conversion operators | [ch05-members-extensions-operators.md](../fdg-write/references/ch05-members-extensions-operators.md) |
    | Declares or validates parameters, or uses tuples in signatures | [ch05-members-parameters.md](../fdg-write/references/ch05-members-parameters.md) |
    | Declares virtual, protected or sealed members, callbacks, abstractions or base classes | [ch06-extensibility.md](../fdg-write/references/ch06-extensibility.md) |
-   | Throws, catches or declares exceptions, or has Try methods | [ch07-exceptions.md](../fdg-write/references/ch07-exceptions.md) |
+   | Throws, catches or wraps exceptions, or writes exception messages | [ch07-exceptions-7-1-to-7-2.md](../fdg-write/references/ch07-exceptions-7-1-to-7-2.md) |
+   | Throws or catches a standard exception type, declares a custom exception, or has Tester-Doer or Try methods | [ch07-exceptions-7-3-on.md](../fdg-write/references/ch07-exceptions-7-3-on.md) |
    | Uses arrays, attributes or collections in signatures | [ch08-usage-arrays-attributes-collections.md](../fdg-write/references/ch08-usage-arrays-attributes-collections.md) |
    | Uses `DateTime`, `DateTimeOffset`, `IComparable<T>`, `Nullable<T>`, `Uri` or XML types, overrides `Equals`, `GetHashCode` or `ToString`, or overloads `==` | [ch08-usage-types.md](../fdg-write/references/ch08-usage-types.md) |
-   | Declares async methods, aggregate components or dependency properties | [ch09-patterns-aggregate-async.md](../fdg-write/references/ch09-patterns-aggregate-async.md) |
+   | Declares async methods or aggregate components | [ch09-patterns-aggregate-async.md](../fdg-write/references/ch09-patterns-aggregate-async.md) |
+   | Implements async methods or async variants, uses `await foreach`, `ValueTask` or `IAsyncEnumerable<T>` | [ch09-patterns-async-consistency.md](../fdg-write/references/ch09-patterns-async-consistency.md) |
+   | Declares dependency properties | [ch09-patterns-dependency-properties.md](../fdg-write/references/ch09-patterns-dependency-properties.md) |
    | Implements `IDisposable`, `IAsyncDisposable` or a finalizer | [ch09-patterns-dispose.md](../fdg-write/references/ch09-patterns-dispose.md) |
    | Declares factories or LINQ support | [ch09-patterns-factories-linq.md](../fdg-write/references/ch09-patterns-factories-linq.md) |
    | Has optional features or variant generic parameters | [ch09-patterns-optional-variance.md](../fdg-write/references/ch09-patterns-optional-variance.md) |
@@ -64,8 +70,9 @@ This is a review: give findings and change no files.
    In `test` projects read only the Chapter 7, Chapter 8 and Appendix A references; the other chapters are off
    there, and skip the rules marked "(library only)" or "(not in test projects)" in the references you read. In
    `application` projects skip the rules marked "(library only)": they are about a library's public surface and are
-   off there. The references list the rules tools do not enforce; follow a rule's `examples:` link
-   when its wording is not enough.
+   off there. The references list the rules tools do not enforce in full; follow a rule's `examples:` link
+   when its wording is not enough. A rule marked "(partly checked)" is checked by analyzers only in part: report
+   only the part the tools cannot check, and do not repeat what a diagnostic already reports on the same line.
 4. Check every declaration in scope against those rules. Report a finding only when a specific rule clearly applies
    to a specific line. Do not invent advice the rules do not support, and do not report what analyzers and
    `dotnet format` already fix or report (layout, modifiers, and the casing of an identifier's first letter). A rule
@@ -98,7 +105,7 @@ One finding per rule and line, ordered by file and line, in exactly this form:
 ```
 
 The strength and rule text are copied verbatim from the reference, without `(library only)`, `(not in test projects)`,
-`(context: ...)` or `(can cause: ...)`, the version tag, `(alt: ...)` or the `examples:` link. For example:
+`(partly checked)`, `(context: ...)` or `(can cause: ...)`, the version tag, `(alt: ...)` or the `examples:` link. For example:
 
 ```
 src/Orders/OrderMgr.cs:12 — FDG3014 DO NOT use abbreviations or contractions as part of identifier names.

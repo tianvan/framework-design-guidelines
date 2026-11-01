@@ -30,6 +30,12 @@ public sealed class TempTree : IDisposable
     {
         try
         {
+            // git makes object files read-only, which Directory.Delete refuses to remove.
+            foreach (string file in System.IO.Directory.EnumerateFiles(Root, "*", SearchOption.AllDirectories))
+            {
+                File.SetAttributes(file, FileAttributes.Normal);
+            }
+
             System.IO.Directory.Delete(Root, recursive: true);
         }
         catch (IOException)

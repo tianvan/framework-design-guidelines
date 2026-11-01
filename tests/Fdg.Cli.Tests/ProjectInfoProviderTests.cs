@@ -271,6 +271,63 @@ public sealed class ProjectInfoProviderTests : IDisposable
     }
 
     [Fact]
+    public void Project_reference_of_the_same_name_is_NoPackage()
+    {
+        string project = WriteRestoredProject(
+            """{ "version": 3, "libraries": { "FrameworkDesignGuidelines.Analyzers/0.2.0": { "type": "project", "path": "../FrameworkDesignGuidelines.Analyzers/FrameworkDesignGuidelines.Analyzers.csproj" } } }""");
+
+        ProjectInfo info = new ProjectInfoProvider(new FakeProcessRunner(), NoCompiler).Get(project);
+
+        Assert.Equal(ProjectState.NoPackage, info.State);
+    }
+
+    [Fact]
+    public void Provider_ignores_a_marker_of_another_project()
+    {
+        // Projects in one directory share obj/; the marker there is the one B.csproj wrote.
+        string project = WriteRestoredProject();
+        _tree.Write("A/B.csproj", TempTree.SdkProject);
+        _tree.Write("A/obj/fdg/marker.json", Marker("test", "12.0", "net8.0", projectPath: "C:/src/A/B.csproj"));
+        var runner = new FakeProcessRunner().RespondToMSBuild(new Dictionary<string, string>
+        {
+            ["FrameworkDesignGuidelinesProfile"] = "library",
+            ["FdgPackageVersion"] = "0.1.0",
+            ["FdgProtocolVersion"] = "1",
+            ["LangVersion"] = "7.3",
+            ["TargetFramework"] = "netstandard2.0",
+        });
+
+        ProjectInfo info = new ProjectInfoProvider(runner, NoCompiler).Get(project);
+
+        Assert.Equal("library", info.Profile);
+        Assert.Equal("netstandard2.0", info.TargetFramework);
+        Assert.NotEmpty(runner.Calls);
+    }
+
+    [Fact]
+    public void Newer_artifacts_marker_wins_over_a_stale_obj_marker()
+    {
+        // Switched to UseArtifactsOutput: obj/ still holds what the last build before the switch wrote.
+        _tree.Write("Directory.Build.props", "<Project><PropertyGroup><UseArtifactsOutput>true</UseArtifactsOutput></PropertyGroup></Project>\n");
+        string project = WriteRestoredProject();
+        string stale = _tree.Write("A/obj/fdg/marker.json", Marker("application", "7.3", "netstandard2.0"));
+        string current = _tree.Write("artifacts/obj/A/fdg/marker.json", Marker("library", "12.0", "net8.0"));
+        File.SetLastWriteTimeUtc(stale, DateTime.UtcNow.AddDays(-1));
+        var runner = new FakeProcessRunner();
+
+        ProjectInfo info = new ProjectInfoProvider(runner, NoCompiler).Get(project);
+
+        Assert.Equal(("library", "net8.0"), (info.Profile, info.TargetFramework));
+        Assert.Empty(runner.Calls);
+
+        // And the other way round.
+        File.SetLastWriteTimeUtc(current, DateTime.UtcNow.AddDays(-2));
+        info = new ProjectInfoProvider(runner, NoCompiler).Get(project);
+
+        Assert.Equal(("application", "netstandard2.0"), (info.Profile, info.TargetFramework));
+    }
+
+    [Fact]
     public void Failed_msbuild_query_throws_with_its_output()
     {
         string project = _tree.Write("A/A.csproj", TempTree.SdkProject);
@@ -286,16 +343,21 @@ public sealed class ProjectInfoProviderTests : IDisposable
     {
         public List<(string ProjectDirectory, string Symbolic)> Calls { get; } = [];
 
-        public string? Resolve(string projectDirectory, string symbolicLangVersion)
+        public string? Resolve(string projectDirectory, string symbolicLangVersion, CancellationToken cancellationToken)
         {
             Calls.Add((projectDirectory, symbolicLangVersion));
             return versions?.Resolve(symbolicLangVersion);
         }
     }
 
-    private static string Marker(string profile, string langVersion, string targetFramework, string rulesPath = "") =>
+    private static string Marker(
+        string profile,
+        string langVersion,
+        string targetFramework,
+        string rulesPath = "",
+        string projectPath = "C:/src/A/A.csproj") =>
         $$"""
-        { "protocol": 1, "packageVersion": "0.1.0", "profile": "{{profile}}", "langVersion": "{{langVersion}}", "targetFramework": "{{targetFramework}}", "rulesPath": "{{rulesPath}}", "projectPath": "x" }
+        { "protocol": 1, "packageVersion": "0.1.0", "profile": "{{profile}}", "langVersion": "{{langVersion}}", "targetFramework": "{{targetFramework}}", "rulesPath": "{{rulesPath}}", "projectPath": "{{projectPath}}" }
         """;
 
     private string WriteRestoredProject(string assets = Assets)

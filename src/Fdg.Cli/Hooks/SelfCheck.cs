@@ -9,26 +9,29 @@ namespace Fdg.Cli.Hooks;
 /// <param name="NeverBuilt">Onboarded projects without a marker.</param>
 /// <param name="NewerProtocol">Projects whose marker has a protocol newer than this CLI supports.</param>
 /// <param name="LegacyOnboarded">Non-SDK projects that reference the package; other non-SDK projects are no issue.</param>
+/// <param name="DotnetChecked">
+/// Whether <c>dotnet --version</c> ran; when the inspection ran out of time first, <paramref name="DotnetVersion"/>
+/// tells nothing.
+/// </param>
 public sealed record SetupFacts(
     string? DotnetVersion,
     IReadOnlyList<string> NoProfile,
     IReadOnlyList<string> NeverBuilt,
     IReadOnlyList<string> NewerProtocol,
     IReadOnlyList<string> LegacyOnboarded,
-    bool IsGitRepository);
+    bool IsGitRepository,
+    bool DotnetChecked);
 
 /// <summary>
 /// Turns <see cref="SetupFacts"/> into one <c>FDG setup issue:</c> line per problem the user can act on (Ruling 51).
-/// Lines for what /fdg-setup cannot change (legacy projects, no git repository) do not point to it.
+/// Lines for what /fdg-setup cannot change (an old SDK, legacy projects, no git repository) do not point to it.
 /// </summary>
 public static class SelfCheck
 {
     public const string IssuePrefix = "FDG setup issue: ";
 
-    public const string MinimumSdkVersion = "8.0.100";
-
-    /// <summary>With an older SDK (still 8.0.100 or later) some rules do not run; SessionStart notes it.</summary>
-    public const string FullCoverageSdkVersion = "10.0.100";
+    /// <summary>The oldest SDK FDG supports: with an older one some rules do not run.</summary>
+    public const string MinimumSdkVersion = "10.0.100";
 
     private const string RunSetup = " Run /fdg-setup to fix.";
 
@@ -37,25 +40,20 @@ public static class SelfCheck
 
     private static readonly Version MinimumSdk = Version.Parse(MinimumSdkVersion);
 
-    private static readonly Version FullCoverageSdk = Version.Parse(FullCoverageSdkVersion);
-
     public static IReadOnlyList<string> Issues(SetupFacts facts)
     {
         var issues = new List<string>();
-        if (facts.DotnetVersion is null)
+        // Unchecked, the SDK gets no line rather than a wrong one.
+        if (facts.DotnetChecked && facts.DotnetVersion is null)
         {
             issues.Add(IssuePrefix + $"dotnet --version failed here; FDG needs .NET SDK {MinimumSdkVersion} or later." + RunSetup);
         }
-        else if (IsOlderThan(facts.DotnetVersion, MinimumSdk))
-        {
-            issues.Add(IssuePrefix + $".NET SDK {facts.DotnetVersion} is older than {MinimumSdkVersion}." + RunSetup);
-        }
-        else if (IsOlderThan(facts.DotnetVersion, FullCoverageSdk))
+        else if (facts.DotnetVersion is not null && IsOlderThan(facts.DotnetVersion, MinimumSdk))
         {
             // Nothing to fix with /fdg-setup: the user may be unable to move to a newer SDK.
             issues.Add(IssuePrefix +
-                $".NET SDK {facts.DotnetVersion} is older than {FullCoverageSdkVersion}: " +
-                $"some rules need SDK {FullCoverageSdkVersion} or later.");
+                $".NET SDK {facts.DotnetVersion} is older than {MinimumSdkVersion}, the oldest SDK FDG supports; " +
+                "some rules do not run.");
         }
 
         if (facts.NoProfile.Count > 0)

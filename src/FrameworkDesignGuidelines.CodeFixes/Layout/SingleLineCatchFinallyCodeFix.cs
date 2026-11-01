@@ -13,7 +13,9 @@ namespace FrameworkDesignGuidelines.CodeFixes.Layout;
 
 /// <summary>
 /// Fixes FDGA003: puts each brace of the block on its own line, aligned with the line of the block's owner
-/// (one level further for a switch section), and the statements one per line, one level further in.
+/// (one level further for a switch section), and the statements one per line, one level further in. Block comments
+/// after the opening brace stay inside the block, on a line of their own before the first statement. The single-line
+/// blocks of a switch section, all reported on its first label, are fixed together.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(SingleLineCatchFinallyCodeFix)), Shared]
 public sealed class SingleLineCatchFinallyCodeFix : CodeFixProvider
@@ -39,21 +41,27 @@ public sealed class SingleLineCatchFinallyCodeFix : CodeFixProvider
         foreach (Diagnostic diagnostic in context.Diagnostics)
         {
             SyntaxToken owner = root.FindToken(diagnostic.Location.SourceSpan.Start);
-            if (FindBlock(owner) is BlockSyntax block)
+            ImmutableArray<BlockSyntax> blocks = FindBlocks(owner);
+            if (!blocks.IsEmpty)
             {
                 context.RegisterCodeFix(
                     CodeAction.Create(
                         Title,
-                        cancellationToken => ExpandAsync(context.Document, block, cancellationToken),
+                        cancellationToken => ExpandAsync(context.Document, blocks, cancellationToken),
                         equivalenceKey: Title),
                     diagnostic);
             }
         }
     }
 
-    private static BlockSyntax? FindBlock(SyntaxToken owner)
+    /// <summary>
+    /// Finds the single-line blocks that <paramref name="owner"/> owns: one at most, except for the first label of a
+    /// switch section, which owns every block statement of the section.
+    /// </summary>
+    private static ImmutableArray<BlockSyntax> FindBlocks(SyntaxToken owner)
     {
         // The owner's parent holds the block, except for a switch label, whose section holds it.
+        ImmutableArray<BlockSyntax>.Builder blocks = ImmutableArray.CreateBuilder<BlockSyntax>();
         foreach (SyntaxNode? node in new[] { owner.Parent, owner.Parent?.Parent })
         {
             foreach (BlockSyntax block in node?.ChildNodes().OfType<BlockSyntax>() ?? [])
@@ -62,49 +70,84 @@ public sealed class SingleLineCatchFinallyCodeFix : CodeFixProvider
                     && blockOwner == owner
                     && SingleLineCatchFinallyAnalyzer.IsSingleLine(block))
                 {
-                    return block;
+                    blocks.Add(block);
                 }
             }
         }
 
-        return null;
+        return blocks.ToImmutable();
     }
 
-    private static async Task<Document> ExpandAsync(Document document, BlockSyntax block, CancellationToken cancellationToken)
+    private static async Task<Document> ExpandAsync(
+        Document document,
+        ImmutableArray<BlockSyntax> blocks,
+        CancellationToken cancellationToken)
     {
         SourceText text = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
         SyntaxNode? root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-        if (root is null || !SingleLineCatchFinallyAnalyzer.TryGetOwner(block, out SyntaxToken owner))
+        if (root is null)
         {
             return document;
         }
 
+        // In document order: a block's opening brace is placed after the edit that the block before it makes to the
+        // token that follows it, so the brace gets the block's own indentation.
+        var edits = new TokenEdits(text);
+        foreach (BlockSyntax block in blocks)
+        {
+            if (SingleLineCatchFinallyAnalyzer.TryGetOwner(block, out SyntaxToken owner))
+            {
+                Expand(edits, text, block, owner);
+            }
+        }
+
+        return await edits.ApplyAsync(document, root, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static void Expand(TokenEdits edits, SourceText text, BlockSyntax block, SyntaxToken owner)
+    {
         string ownerIndentation = LayoutText.GetLineIndentation(text, owner.SpanStart);
         string unit = LayoutText.GetIndentUnit(ownerIndentation);
         string braceIndentation = block.Parent is SwitchSectionSyntax ? ownerIndentation + unit : ownerIndentation;
         string statementIndentation = braceIndentation + unit;
 
-        var edits = new TokenEdits(text);
         SyntaxToken open = block.OpenBraceToken;
         SyntaxToken close = block.CloseBraceToken;
         edits.BreakBetween(open.GetPreviousToken(), open, braceIndentation);
 
+        // The block is on one line, so the opening brace shares its line with the token after it. Block comments after
+        // the brace get a line of their own inside the block: the formatter would split a comment and a statement that
+        // share a line anyway.
         SyntaxToken previous = open;
         foreach (StatementSyntax statement in block.Statements)
         {
-            edits.BreakBetween(previous, statement.GetFirstToken(), statementIndentation);
+            SyntaxToken first = statement.GetFirstToken();
+            if (previous == open)
+            {
+                edits.ForceBreakAroundComments(open, first, statementIndentation, statementIndentation);
+            }
+            else
+            {
+                edits.BreakBetween(previous, first, statementIndentation);
+            }
+
             previous = statement.GetLastToken();
         }
 
-        edits.BreakBetween(previous, close, braceIndentation);
+        if (previous == open)
+        {
+            edits.ForceBreakAroundComments(open, close, statementIndentation, braceIndentation);
+        }
+        else
+        {
+            edits.BreakBetween(previous, close, braceIndentation);
+        }
 
         SyntaxToken next = close.GetNextToken();
         if (!next.IsKind(SyntaxKind.None))
         {
             edits.BreakBetween(close, next, GetNextTokenIndentation(text, next, ownerIndentation));
         }
-
-        return await edits.ApplyAsync(document, root, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

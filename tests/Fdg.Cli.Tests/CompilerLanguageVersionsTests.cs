@@ -59,8 +59,8 @@ public sealed class CompilerLanguageVersionsTests : IDisposable
                 new ToolResult(0, "Supported language versions:\n7.3\n12.0\n12.1\n13.0 (default)\nlatest\n", false));
         var source = new CompilerLanguageVersions(runner);
 
-        Assert.Equal("13.0", source.Resolve(project, "latest"));
-        Assert.Equal("13.0", source.Resolve(project, "default"));
+        Assert.Equal("13.0", source.Resolve(project, "latest", CancellationToken.None));
+        Assert.Equal("13.0", source.Resolve(project, "default", CancellationToken.None));
         Assert.Single(runner.Calls, c => c[0] == "exec");
     }
 
@@ -70,7 +70,7 @@ public sealed class CompilerLanguageVersionsTests : IDisposable
         // Runs the real dotnet: the SDK this repository's global.json selects ships C# 14.
         var source = new CompilerLanguageVersions(new ProcessRunner());
 
-        string? latest = source.Resolve(AppContext.BaseDirectory, "latest");
+        string? latest = source.Resolve(AppContext.BaseDirectory, "latest", CancellationToken.None);
 
         Assert.NotNull(latest);
         Assert.True(Version.Parse(latest) >= new Version(14, 0), latest);
@@ -83,6 +83,6 @@ public sealed class CompilerLanguageVersionsTests : IDisposable
             .Respond(a => a[0] == "--version", new ToolResult(0, "10.0.402\n", false))
             .Respond(a => a[0] == "--list-sdks", new ToolResult(0, "8.0.100 [C:\\dotnet\\sdk]\n", false));
 
-        Assert.Null(new CompilerLanguageVersions(runner).Resolve(_tree.Root, "latest"));
+        Assert.Null(new CompilerLanguageVersions(runner).Resolve(_tree.Root, "latest", CancellationToken.None));
     }
 }

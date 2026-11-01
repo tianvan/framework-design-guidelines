@@ -25,6 +25,18 @@ public class Customer {
 }
 ```
 
+## FDG8053
+
+DO implement `IEquatable<T>` on value types.
+
+The `Object.Equals` method on value types causes boxing, and its default implementation is not very efficient because it uses reflection. `IEquatable<T>.Equals` can offer much better performance and can be implemented so that it does not cause boxing.
+
+```csharp
+public struct Int32 : IEquatable<Int32> {
+  public bool Equals(Int32 other){ ... }
+}
+```
+
 ## FDG8054
 
 DO follow the same guidelines as for overriding `Object.Equals` when implementing `IEquatable<T>.Equals`.
@@ -115,6 +127,37 @@ For convenience, the contract taken directly from the `System.Object` documentat
 DO override `GetHashCode` whenever you override `Equals`.
 
 The contracts of `Equals` and `GetHashCode` are interdependent. For more information, see section 8.9.2 on implementing `GetHashCode`.
+
+## FDG8066
+
+DO NOT throw exceptions from `Equals`.
+
+Two objects should either be equal or not equal. So, for example, even if the argument passed to `Equals` is null, returning false is better than throwing an exception.
+
+## FDG8067
+
+DO override `Equals` on value types.
+
+The default implementation uses reflection to access and compare all the fields. In consequence, it is often unacceptably inefficient.
+
+## FDG8068
+
+DO provide an overload of `Equals` taking the value type parameter by implementing `IEquatable<T>`.
+
+This provides a way to compare two value types without boxing the parameter passed to `Equals`.
+
+```csharp
+public struct MyStruct {
+  public bool Equals (MyStruct value) { ... }
+   ...
+}
+```
+
+## FDG8070
+
+DO NOT implement value equality on mutable reference types.
+
+Reference types that implement value equality (e.g., `System.String`) should be immutable. Mutable reference types with value equality can, for example, be “lost” in hashtables when their value (and so the hash code) changes.
 
 ## FDG8071
 
@@ -222,6 +265,19 @@ Forward compatibility is also important, but is an often overlooked area. When a
 
 Test compatibility of serialization when making changes to serializable types. Try deserializing the new version into an old version, and vice versa, across as broad a range as you expect your users to need.
 
+## FDG8089
+
+DO implement the `ISerializable` members explicitly.
+
+```csharp
+[Serializable]
+public class Person : ISerializable {
+  void ISerializable.GetObjectData(...) {
+    ...
+  }
+}
+```
+
 ## FDG8090
 
 DO apply a link demand to `ISerializable.GetObjectData` implementation. This ensures that only fully trusted assemblies and the Runtime Serializer have access to the member.
@@ -240,6 +296,22 @@ public class Person : ISerializable {
 ```
 
 > **Jeremy Barton:** Link demands are part of the now-deprecated Code Access Security (CAS) system. The guidance may feel antiquated, but since the platforms that support CAS and the platforms that support AppDomains are the same, it’s still something you should do when using the `ISerializable` interface.
+
+## FDG8091
+
+DO use `System.Uri` to represent URI and URL data.
+
+This applies to parameter types, property types, and return value types.
+
+```csharp
+public class Navigator {
+  public Navigator(Uri initialLocation);
+  public Uri CurrentLocation { get; }
+  public Uri NavigateTo(Uri location);
+}
+```
+
+> **Mark Alcazar:** `System.Uri` is a much safer and richer way of representing URIs. Extensive manipulation of URI-related data using plain strings has been shown to cause many security and correctness problems.
 
 ## FDG8092
 
@@ -288,6 +360,23 @@ public class SomeResource {
 }
 ```
 
+## FDG8096
+
+DO NOT use `XmlNode` or `XmlDocument` to represent XML data. Instead, favor using instances of `IXPathNavigable`, `XmlReader`, `XmlWriter`, or subtypes of `XNode`. `XmlNode` and `XmlDocument` are not designed for exposing in public APIs.
+
+```csharp
+// bad design
+public class ServerConfiguration {
+   ...
+   public XmlDocument ConfigurationData { get { ... } }
+}
+// good design
+public class ServerConfiguration {
+   ...
+   public IXPathNavigable ConfigurationData { get { ... } }
+}
+```
+
 ## FDG8097
 
 DO use `XmlReader`, `IXPathNavigable`, or subtypes of `XNode` as input or output of members that accept or return XML.
@@ -299,6 +388,91 @@ Use these abstractions instead of `XmlDocument`, `XmlNode`, or `XPathDocument`, 
 DO NOT overload one of the equality operators and not the other.
 
 It is very surprising to developers when they discover that a type overloads just one of the operators.
+
+## FDG8100
+
+DO ensure that `Object.Equals` and the equality operators have exactly the same semantics and similar performance characteristics.
+
+This often means that `Object.Equals` needs to be overridden when the equality operators are overloaded.
+
+```csharp
+public struct PositiveInt32 : IEquatable<PositiveInt32> {
+  public bool Equals(PositiveInt32 other) { ... }
+  public override bool Equals(object obj) { ... }
+  public static bool operator==(PositiveInt32 x, PositiveInt32 y){
+    return x.Equals(y);
+  }
+  public static bool operator!=(PositiveInt32 x, PositiveInt32 y){
+    return !x.Equals(y);
+  }
+  ...
+}
+```
+
+## FDG8101
+
+DO NOT throw exceptions from equality operators.
+
+For example, return false if one of the arguments is null instead of throwing `NullReferenceException`.
+
+## FDG8102
+
+DO implement `IEquatable<T>`, with the same behavior as the operator, on any type that defines `operator==`.
+
+For more information on `IEquatable<T>`, see section 8.6.
+
+## FDG8103
+
+DO implement `operator==` with the mathematical reflexive and transitive properties.
+
+The mathematical reflexive property states that when `a == b`, then `b == a`. To maintain the reflexive property when you define the equality operator against another type, you need to define it twice—once with this type as the first parameter, and once with this type as the second parameter. You also need to ensure that the values are the same, of course.
+
+```csharp
+// Bad: (int == SomeType) is not defined when (SomeType == int) is
+public partial struct SomeType {
+ public static bool operator==(SomeType left, int right){ ... }
+}
+
+// OK: Both (int == SomeType) and (SomeType == int) are defined
+// OK: Both operators return the same answer for the same values
+// Bad: Not transitive (the next explanation)
+public partial struct SomeType {
+ public static bool operator==(SomeType left, int right){ ... }
+
+ public static bool operator==(int left, SomeType right)
+   => right == left;
+}
+```
+
+The mathematical transitive property states that when `a == b` and `b == c`, then a `== c`. To maintain the transitive property when you define the equality operator against another type, you need to also define an overload that compares two instances of the defining type.
+
+In the previous example, if we had two `SomeType` instances, we could compare them against each other by indirectly comparing them against some Int32 value that returns true for at least one instance, but we should be able to directly compare the two `SomeType` instances.
+
+```csharp
+// OK: Now == is both transitive and reflexive.
+// Defining operator!= is an exercise left to the reader.
+public struct SomeType {
+ public static bool operator==(SomeType left, int right){ ... }
+
+ public static bool operator==(int left, SomeType right)
+   => right == left;
+ public static bool operator==(SomeType left, SomeType right) { ... }
+}
+```
+
+## FDG8105
+
+DO overload the equality operators on value types, if equality is meaningful.
+
+In most programming languages, there is no default implementation of `operator==` for value types.
+
+## FDG8106
+
+AVOID overloading equality operators on mutable reference types.
+
+Many languages have built-in equality operators for reference types. The built-in operators usually implement the reference equality, and many developers are surprised when the default behavior is changed to the value equality.
+
+This problem is mitigated for immutable reference types because immutability makes it much harder to notice the difference between reference equality and value equality.
 
 ## FDG8107
 

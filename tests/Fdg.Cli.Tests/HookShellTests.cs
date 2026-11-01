@@ -6,16 +6,19 @@ namespace Fdg.Cli.Tests;
 
 /// <summary>
 /// Runs the plugin's hook wrappers (<c>hooks/fdg-hook.sh</c> and <c>hooks/fdg-hook.ps1</c>) with a restricted
-/// <c>PATH</c>, a temporary home directory and a fake <c>dotnet-fdg</c>, from a plugin root whose path contains a
-/// space and CJK characters.
+/// <c>PATH</c>, a temporary home directory and a fake <c>dotnet-fdg</c> or <c>dotnet</c>, from a plugin root whose
+/// path contains a space and CJK characters.
 /// </summary>
 public sealed class HookShellTests : IDisposable
 {
     private const string InstallHint =
         "{\"systemMessage\":\"FDG: dotnet-fdg is not installed. Run: dotnet tool install -g dotnet-fdg\"}";
 
-    // What the fake tool writes to stderr when --version fails: quotes, backslashes and a tab need JSON escaping.
-    private const string VersionError = "A \"quoted\" C:\\sdk\\6.0.999 path\twith a tab";
+    // What an older dotnet-fdg without the hook command writes to stderr.
+    private const string UnknownCommandError = "Unrecognized command 'hook'";
+
+    // A stderr line that needs JSON escaping: quotes, backslashes and a tab.
+    private const string EscapedError = "A \"quoted\" C:\\sdk\\6.0.999 path\twith a tab";
 
     // Where `dotnet tool install -g` puts the tool, under the home directory the wrappers are given.
     private static readonly string DotnetToolsDir = Path.Combine("home", ".dotnet", "tools");
@@ -26,7 +29,25 @@ public sealed class HookShellTests : IDisposable
     private static readonly byte[] Payload = Encoding.UTF8.GetBytes(
         "{\"cwd\":\"C:\\\\Users\\\\用户\\\\测试 项目\",\r\n\"prompt\":\"naïve – ✓ 🙂\"\n}");
 
+    // Invalid UTF-8 (0xB4 0xED) between valid text, as a tool might print in a legacy code page.
+    private static readonly byte[] NonUtf8Error = Encoding.UTF8.GetBytes("bad ")
+        .Concat(new byte[] { 0xB4, 0xED })
+        .Concat(Encoding.UTF8.GetBytes(" bytes 中文"))
+        .ToArray();
+
     private readonly TempTree _tree = new();
+
+    private enum FakeBehavior
+    {
+        // Prints its arguments, echoes stdin byte for byte and exits 1, like `dotnet-fdg hook` on a bad payload.
+        Echo,
+
+        // Writes the given stderr bytes and a second line (no stderr at all without them), nothing to stdout.
+        Fail,
+
+        // Reads stdin and writes the given stdout bytes (possibly none), nothing to stderr.
+        Print,
+    }
 
     public void Dispose()
     {
@@ -36,53 +57,312 @@ public sealed class HookShellTests : IDisposable
     [BashFact]
     public void Missing_tool_prints_install_hint_json_and_exits_zero()
     {
-        AssertInstallHint(RunBash(_tree.Directory("empty-path")));
-    }
-
-    [BashFact]
-    public void Tool_that_fails_to_start_reports_its_first_error_line()
-    {
-        AssertFailedToStart(RunBash(WriteFakeTool("fake-tool", versionExitCode: 155, forPwsh: false)));
+        AssertInstallHint(RunBash(BashPath(_tree.Directory("empty-path"))));
     }
 
     [BashFact]
     public void Stdin_is_forwarded_to_dotnet_fdg()
     {
-        AssertForwarded(RunBash(BashPath(WriteFakeTool("fake-tool", versionExitCode: 0, forPwsh: false))));
+        AssertForwarded(RunBash(BashPath(WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Echo, forPwsh: false))));
     }
 
     [BashFact]
     public void Tool_in_dotnet_tools_is_used_when_path_is_stale()
     {
-        WriteFakeTool(DotnetToolsDir, versionExitCode: 0, forPwsh: false);
+        WriteFakeTool(DotnetToolsDir, "dotnet-fdg", FakeBehavior.Echo, forPwsh: false);
 
         AssertForwarded(RunBash(BashPath(_tree.Directory("empty-path"))));
+    }
+
+    [BashFact]
+    public void Wrapper_runs_the_tool_once_without_a_version_probe()
+    {
+        string dir = WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Echo, forPwsh: false);
+
+        AssertForwarded(RunBash(BashPath(dir)));
+        AssertCalls(dir, "hook session-start");
+    }
+
+    [BashFact]
+    public void Wrapper_reports_a_tool_failure_without_output()
+    {
+        string dir = WriteFakeTool(
+            "fake-tool", "dotnet-fdg", FakeBehavior.Fail, forPwsh: false, Encoding.UTF8.GetBytes(UnknownCommandError));
+
+        AssertFailure(RunBash(BashPath(dir)), UnknownCommandError);
+    }
+
+    [BashFact]
+    public void Wrapper_escapes_the_failure_line_for_json()
+    {
+        string dir = WriteFakeTool(
+            "fake-tool", "dotnet-fdg", FakeBehavior.Fail, forPwsh: false, Encoding.UTF8.GetBytes(EscapedError));
+
+        AssertFailure(RunBash(BashPath(dir)), EscapedError);
+    }
+
+    [BashFact]
+    public void Wrapper_reports_non_utf8_stderr_as_valid_json()
+    {
+        string dir = WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Fail, forPwsh: false, NonUtf8Error);
+
+        // iconv drops the invalid bytes; without iconv the wrapper drops every non-ASCII byte.
+        string message = AssertFailure(RunBash(BashPath(dir)), expectedLine: null);
+        Assert.StartsWith("FDG: dotnet-fdg failed: bad ", message);
+        Assert.Contains(" bytes", message);
+    }
+
+    [BashFact]
+    public void Wrapper_uses_the_local_tool_manifest()
+    {
+        string dotnet = WriteFakeTool("fake-dotnet", "dotnet", FakeBehavior.Echo, forPwsh: false);
+        string tool = WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Echo, forPwsh: false);
+        string repo = WriteManifest("Dotnet-FDG");
+
+        var result = RunBash(BashPath(dotnet + Path.PathSeparator + tool), Path.Combine(repo, "src"), "turn-stop");
+
+        AssertForwarded(result, "tool run dotnet-fdg hook turn-stop");
+        AssertCalls(dotnet, "tool run dotnet-fdg hook turn-stop");
+        Assert.False(File.Exists(Path.Combine(tool, "calls.txt")));
+    }
+
+    [BashFact]
+    public void Wrapper_ignores_a_manifest_that_does_not_list_dotnet_fdg()
+    {
+        // Another package whose command happens to be called dotnet-fdg: only a tools key counts.
+        string dotnet = WriteFakeTool("fake-dotnet", "dotnet", FakeBehavior.Echo, forPwsh: false);
+        string tool = WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Echo, forPwsh: false);
+        string repo = WriteManifest("dotnet-other");
+
+        AssertForwarded(RunBash(BashPath(dotnet + Path.PathSeparator + tool), repo));
+        Assert.False(File.Exists(Path.Combine(dotnet, "calls.txt")));
+    }
+
+    [BashFact]
+    public void Wrapper_finds_the_tool_under_DOTNET_CLI_HOME()
+    {
+        WriteFakeTool(Path.Combine("cli home", ".dotnet", "tools"), "dotnet-fdg", FakeBehavior.Echo, forPwsh: false);
+
+        AssertForwarded(RunBash(BashPath(_tree.Directory("empty-path")), dotnetCliHome: _tree.Path("cli home")));
     }
 
     [PwshFact]
     public void Pwsh_missing_tool_prints_install_hint_json_and_exits_zero()
     {
-        AssertInstallHint(RunPwsh(_tree.Directory("empty-path")));
-    }
-
-    [PwshFact]
-    public void Pwsh_tool_that_fails_to_start_reports_its_first_error_line()
-    {
-        AssertFailedToStart(RunPwsh(WriteFakeTool("fake-tool", versionExitCode: 155, forPwsh: true)));
+        AssertInstallHint(RunPwsh(PwshPath(_tree.Directory("empty-path"))));
     }
 
     [PwshFact]
     public void Pwsh_stdin_is_forwarded_to_dotnet_fdg()
     {
-        AssertForwarded(RunPwsh(PwshPath(WriteFakeTool("fake-tool", versionExitCode: 0, forPwsh: true))));
+        AssertForwarded(RunPwsh(PwshPath(WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Echo, forPwsh: true))));
     }
 
     [PwshFact]
     public void Pwsh_tool_in_dotnet_tools_is_used_when_path_is_stale()
     {
-        WriteFakeTool(DotnetToolsDir, versionExitCode: 0, forPwsh: true);
+        WriteFakeTool(DotnetToolsDir, "dotnet-fdg", FakeBehavior.Echo, forPwsh: true);
 
         AssertForwarded(RunPwsh(PwshPath(_tree.Directory("empty-path"))));
+    }
+
+    [PwshFact]
+    public void Pwsh_wrapper_runs_the_tool_once_without_a_version_probe()
+    {
+        string dir = WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Echo, forPwsh: true);
+
+        AssertForwarded(RunPwsh(PwshPath(dir)));
+        AssertCalls(dir, "hook session-start");
+    }
+
+    [PwshFact]
+    public void Pwsh_wrapper_reports_a_tool_failure_without_output()
+    {
+        string dir = WriteFakeTool(
+            "fake-tool", "dotnet-fdg", FakeBehavior.Fail, forPwsh: true, Encoding.UTF8.GetBytes(UnknownCommandError));
+
+        AssertFailure(RunPwsh(PwshPath(dir)), UnknownCommandError);
+    }
+
+    [PwshFact]
+    public void Pwsh_wrapper_escapes_the_failure_line_for_json()
+    {
+        string dir = WriteFakeTool(
+            "fake-tool", "dotnet-fdg", FakeBehavior.Fail, forPwsh: true, Encoding.UTF8.GetBytes(EscapedError));
+
+        AssertFailure(RunPwsh(PwshPath(dir)), EscapedError);
+    }
+
+    [PwshFact]
+    public void Pwsh_wrapper_reports_non_utf8_stderr_as_valid_json()
+    {
+        string dir = WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Fail, forPwsh: true, NonUtf8Error);
+
+        AssertFailure(RunPwsh(PwshPath(dir)), "bad \uFFFD\uFFFD bytes 中文");
+    }
+
+    [PwshFact]
+    public void Pwsh_wrapper_uses_the_local_tool_manifest()
+    {
+        string dotnet = WriteFakeTool("fake-dotnet", "dotnet", FakeBehavior.Echo, forPwsh: true);
+        string tool = WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Echo, forPwsh: true);
+        string repo = WriteManifest("Dotnet-FDG");
+
+        var result = RunPwsh(PwshPath(dotnet + Path.PathSeparator + tool), Path.Combine(repo, "src"), "turn-stop");
+
+        AssertForwarded(result, "tool run dotnet-fdg hook turn-stop");
+        AssertCalls(dotnet, "tool run dotnet-fdg hook turn-stop");
+        Assert.False(File.Exists(Path.Combine(tool, "calls.txt")));
+    }
+
+    [PwshFact]
+    public void Pwsh_wrapper_finds_the_tool_under_DOTNET_CLI_HOME()
+    {
+        WriteFakeTool(Path.Combine("cli home", ".dotnet", "tools"), "dotnet-fdg", FakeBehavior.Echo, forPwsh: true);
+
+        AssertForwarded(RunPwsh(PwshPath(_tree.Directory("empty-path")), dotnetCliHome: _tree.Path("cli home")));
+    }
+
+    [BashTheory]
+    [InlineData(0, "{\"continue\":true}\n")]
+    [InlineData(0, "")]
+    [InlineData(3, "{\"systemMessage\":\"partial\"}\n")]
+    public void Wrapper_passes_the_tool_output_and_exit_code_through(int exitCode, string output)
+    {
+        string dir = WriteFakeTool(
+            "fake-tool",
+            "dotnet-fdg",
+            FakeBehavior.Print,
+            forPwsh: false,
+            exitCode: exitCode,
+            output: Encoding.UTF8.GetBytes(output));
+
+        AssertPassedThrough(RunBash(BashPath(dir)), exitCode, output);
+    }
+
+    [BashFact]
+    public void Wrapper_reports_the_exit_code_of_a_failure_without_stderr()
+    {
+        string dir = WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Fail, forPwsh: false, exitCode: 3);
+
+        AssertFailure(RunBash(BashPath(dir)), "exit code 3");
+    }
+
+    [PwshTheory]
+    [InlineData(0, "{\"continue\":true}\n")]
+    [InlineData(0, "")]
+    [InlineData(3, "{\"systemMessage\":\"partial\"}\n")]
+    public void Pwsh_wrapper_passes_the_tool_output_and_exit_code_through(int exitCode, string output)
+    {
+        string dir = WriteFakeTool(
+            "fake-tool",
+            "dotnet-fdg",
+            FakeBehavior.Print,
+            forPwsh: true,
+            exitCode: exitCode,
+            output: Encoding.UTF8.GetBytes(output));
+
+        AssertPassedThrough(RunPwsh(PwshPath(dir)), exitCode, output);
+    }
+
+    [PwshFact]
+    public void Pwsh_wrapper_reports_the_exit_code_of_a_failure_without_stderr()
+    {
+        string dir = WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Fail, forPwsh: true, exitCode: 3);
+
+        AssertFailure(RunPwsh(PwshPath(dir)), "exit code 3");
+    }
+
+    [PwshFact]
+    public void Codex_windows_command_keeps_the_tool_exit_code()
+    {
+        // Under `pwsh -Command` a script's `exit 3` would end pwsh with 1; fdg-hook.ps1 uses Environment.Exit.
+        const string Output = "{\"systemMessage\":\"partial\"}\n";
+        string command = SingleHook(ReadHooks("hooks.codex.json"), "Stop")["commandWindows"]!.GetValue<string>();
+        string root = _tree.Path("codex root");
+        Directory.CreateDirectory(Path.Combine(root, "hooks"));
+        File.Copy(Path.Combine(HooksDir, "fdg-hook.ps1"), Path.Combine(root, "hooks", "fdg-hook.ps1"));
+        string dir = WriteFakeTool(
+            "fake-tool",
+            "dotnet-fdg",
+            FakeBehavior.Print,
+            forPwsh: true,
+            exitCode: 3,
+            output: Encoding.UTF8.GetBytes(Output));
+        string path = PwshPath(dir) + Path.PathSeparator + Path.GetDirectoryName(Shells.Pwsh);
+        var environment = new Dictionary<string, string> { ["PLUGIN_ROOT"] = root };
+
+        // The line's own pwsh, started as Codex does without a session shell: the code comes through.
+        const string Prefix = "pwsh -NoProfile -ExecutionPolicy Bypass -Command \"";
+        Assert.StartsWith(Prefix, command);
+        Assert.EndsWith("\"", command);
+        string script = command[Prefix.Length..^1];
+        string[] arguments = { "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script };
+        AssertPassedThrough(Run(Shells.Pwsh!, arguments, path, environment: environment), 3, Output);
+        if (OperatingSystem.IsWindows())
+        {
+            // The cmd.exe fallback passes it on too.
+            string cmd = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+            var viaCmd = Run(cmd, null, path, environment: environment, rawArguments: $"/d /s /c \"{command}\"");
+            AssertPassedThrough(viaCmd, 3, Output);
+        }
+
+        // A PowerShell session shell around the line turns any non-zero code into 1; the stdout still comes through.
+        var viaPwsh = Run(Shells.Pwsh!, new[] { "-NoProfile", "-Command", command }, path, environment: environment);
+        AssertPassedThrough(viaPwsh, 1, Output);
+    }
+
+    [PwshFact]
+    public void Codex_windows_command_survives_special_characters()
+    {
+        // Codex substitutes nothing in commandWindows any more: the wrapper reads PLUGIN_ROOT, which Codex sets for
+        // plugin hooks, and runs the command through the session shell, PowerShell or cmd.exe (docs/hosts.md).
+        const string PluginRoot = "a b$c`d'e 中文";
+        string command = SingleHook(ReadHooks("hooks.codex.json"), "SessionStart")["commandWindows"]!.GetValue<string>();
+        string wrapper = _tree.Path(Path.Combine(PluginRoot, "hooks", "fdg-hook.ps1"));
+        Directory.CreateDirectory(Path.GetDirectoryName(wrapper)!);
+        File.Copy(Path.Combine(HooksDir, "fdg-hook.ps1"), wrapper);
+        string path = PwshPath(WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Echo, forPwsh: true)) +
+            Path.PathSeparator + Path.GetDirectoryName(Shells.Pwsh);
+        var environment = new Dictionary<string, string> { ["PLUGIN_ROOT"] = _tree.Path(PluginRoot) };
+
+        AssertForwarded(Run(Shells.Pwsh!, new[] { "-NoProfile", "-Command", command }, path, environment: environment));
+        if (OperatingSystem.IsWindows())
+        {
+            // cmd.exe parses its command line itself, so it gets the raw string rather than ArgumentList's quoting.
+            string cmd = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+            AssertForwarded(Run(cmd, null, path, environment: environment, rawArguments: $"/d /s /c \"{command}\""));
+        }
+    }
+
+    [BashFact]
+    public void Codex_unix_command_survives_special_characters()
+    {
+        // Codex substitutes only `${KEY}` in the command text and puts PLUGIN_ROOT into the hook's environment, so
+        // `$PLUGIN_ROOT` reaches the shell, which expands it inside the double quotes without parsing the value.
+        // Windows file names cannot contain a double quote.
+        string pluginRoot = OperatingSystem.IsWindows() ? "a b$c`d'e 中文" : "a b$c`d\"f'e 中文";
+        string wrapper = _tree.Path(Path.Combine(pluginRoot, "hooks", "fdg-hook.sh"));
+        Directory.CreateDirectory(Path.GetDirectoryName(wrapper)!);
+        File.Copy(Path.Combine(HooksDir, "fdg-hook.sh"), wrapper);
+        string path = BashPath(WriteFakeTool("fake-tool", "dotnet-fdg", FakeBehavior.Echo, forPwsh: false));
+        var environment = new Dictionary<string, string> { ["PLUGIN_ROOT"] = _tree.Path(pluginRoot) };
+        string bashDir = Path.GetDirectoryName(Shells.Bash)!;
+        string sh = Path.Combine(bashDir, OperatingSystem.IsWindows() ? "sh.exe" : "sh");
+
+        foreach ((string hookEvent, string argument) in new[]
+        {
+            ("SessionStart", "session-start"), ("UserPromptSubmit", "turn-start"), ("Stop", "turn-stop"),
+        })
+        {
+            // What Codex does to the text before it runs it (discovery.rs): replace each braced `${KEY}`.
+            string command = SingleHook(ReadHooks("hooks.codex.json"), hookEvent)["command"]!.GetValue<string>()
+                .Replace("${PLUGIN_ROOT}", environment["PLUGIN_ROOT"], StringComparison.Ordinal);
+            foreach (string shell in File.Exists(sh) ? new[] { sh, Shells.Bash! } : new[] { Shells.Bash! })
+            {
+                AssertForwarded(Run(shell, new[] { "-c", command }, path, environment: environment), "hook " + argument);
+            }
+        }
     }
 
     [Fact]
@@ -110,12 +390,19 @@ public sealed class HookShellTests : IDisposable
 
             JsonObject codexHook = SingleHook(codex, hookEvent);
             Assert.Equal(timeout, codexHook["timeout"]!.GetValue<int>());
+            // Not `${PLUGIN_ROOT}`, which Codex would substitute into the text for the shell to parse.
             Assert.Equal(
-                $"bash \"${{PLUGIN_ROOT}}/hooks/fdg-hook.sh\" {argument}",
+                $"bash \"$PLUGIN_ROOT/hooks/fdg-hook.sh\" {argument}",
                 codexHook["command"]!.GetValue<string>());
+
+            // The plugin root comes from the environment, so no shell parses it: the text has no `$` or backtick.
+            string commandWindows = codexHook["commandWindows"]!.GetValue<string>();
             Assert.Equal(
-                $"pwsh -NoProfile -ExecutionPolicy Bypass -File \"${{PLUGIN_ROOT}}/hooks/fdg-hook.ps1\" {argument}",
-                codexHook["commandWindows"]!.GetValue<string>());
+                "pwsh -NoProfile -ExecutionPolicy Bypass -Command \"& (Join-Path " +
+                "([Environment]::GetEnvironmentVariable('PLUGIN_ROOT')) 'hooks/fdg-hook.ps1') " + argument + "\"",
+                commandWindows);
+            Assert.DoesNotContain('$', commandWindows);
+            Assert.DoesNotContain('`', commandWindows);
         }
     }
 
@@ -148,22 +435,52 @@ public sealed class HookShellTests : IDisposable
         Assert.Equal(InstallHint, Encoding.UTF8.GetString(result.Output).TrimEnd('\r', '\n'));
     }
 
-    private static void AssertFailedToStart((int ExitCode, byte[] Output, string Error) result)
+    /// <summary>
+    /// Asserts one line of strict UTF-8 JSON holding only a <c>systemMessage</c>, and exit code 0. Returns the
+    /// message.
+    /// </summary>
+    private static string AssertFailure((int ExitCode, byte[] Output, string Error) result, string? expectedLine)
     {
-        Assert.Equal(0, result.ExitCode);
-        string output = Encoding.UTF8.GetString(result.Output).TrimEnd('\r', '\n');
+        Assert.True(
+            result.ExitCode == 0,
+            $"Exit code {result.ExitCode}: {Encoding.UTF8.GetString(result.Output)}\n{result.Error}");
+        string output = new UTF8Encoding(false, throwOnInvalidBytes: true).GetString(result.Output).TrimEnd('\r', '\n');
         Assert.DoesNotContain('\n', output);
         JsonObject json = JsonNode.Parse(output)!.AsObject();
         Assert.Equal(new[] { "systemMessage" }, json.Select(p => p.Key));
-        Assert.Equal("FDG: dotnet-fdg failed to start: " + VersionError, json["systemMessage"]!.GetValue<string>());
+        string message = json["systemMessage"]!.GetValue<string>();
+        if (expectedLine is not null)
+        {
+            Assert.Equal("FDG: dotnet-fdg failed: " + expectedLine, message);
+        }
+
+        return message;
     }
 
-    private static void AssertForwarded((int ExitCode, byte[] Output, string Error) result)
+    private static void AssertForwarded(
+        (int ExitCode, byte[] Output, string Error) result, string arguments = "hook session-start")
     {
-        // The fake prints its arguments, then echoes stdin, and exits 1 like `dotnet-fdg hook` on a bad payload.
-        byte[] expected = Encoding.UTF8.GetBytes("hook session-start\n").Concat(Payload).ToArray();
-        Assert.True(expected.SequenceEqual(result.Output), $"Output was: {Encoding.UTF8.GetString(result.Output)}\n{result.Error}");
+        // The fake prints its arguments, then echoes stdin, and exits 1: its stdout and exit code pass through.
+        byte[] expected = Encoding.UTF8.GetBytes(arguments + "\n").Concat(Payload).ToArray();
+        Assert.True(
+            expected.SequenceEqual(result.Output),
+            $"Output was: {Encoding.UTF8.GetString(result.Output)}\n{result.Error}");
         Assert.Equal(1, result.ExitCode);
+    }
+
+    private static void AssertPassedThrough(
+        (int ExitCode, byte[] Output, string Error) result, int exitCode, string output)
+    {
+        Assert.True(
+            Encoding.UTF8.GetBytes(output).SequenceEqual(result.Output),
+            $"Output was: {Encoding.UTF8.GetString(result.Output)}\n{result.Error}");
+        Assert.Equal(exitCode, result.ExitCode);
+    }
+
+    private static void AssertCalls(string fakeDir, params string[] expected)
+    {
+        string[] calls = File.ReadAllLines(Path.Combine(fakeDir, "calls.txt"));
+        Assert.Equal(expected, calls.Select(c => c.TrimEnd()));
     }
 
     // The fake's cat comes from bash's own directory (Git for Windows' usr/bin, or /usr/bin).
@@ -177,15 +494,21 @@ public sealed class HookShellTests : IDisposable
         return OperatingSystem.IsWindows() ? directory : BashPath(directory);
     }
 
-    private (int ExitCode, byte[] Output, string Error) RunBash(string path)
+    private (int ExitCode, byte[] Output, string Error) RunBash(
+        string path, string? workingDirectory = null, string hookEvent = "session-start", string? dotnetCliHome = null)
     {
-        return Run(Shells.Bash!, new[] { CopyWrapper("fdg-hook.sh"), "session-start" }, path);
+        string[] arguments = { CopyWrapper("fdg-hook.sh"), hookEvent };
+        return Run(Shells.Bash!, arguments, path, workingDirectory, dotnetCliHome);
     }
 
-    private (int ExitCode, byte[] Output, string Error) RunPwsh(string path)
+    private (int ExitCode, byte[] Output, string Error) RunPwsh(
+        string path, string? workingDirectory = null, string hookEvent = "session-start", string? dotnetCliHome = null)
     {
-        string[] arguments = { "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", CopyWrapper("fdg-hook.ps1"), "session-start" };
-        return Run(Shells.Pwsh!, arguments, path);
+        string[] arguments =
+        {
+            "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", CopyWrapper("fdg-hook.ps1"), hookEvent,
+        };
+        return Run(Shells.Pwsh!, arguments, path, workingDirectory, dotnetCliHome);
     }
 
     private string CopyWrapper(string fileName)
@@ -197,61 +520,125 @@ public sealed class HookShellTests : IDisposable
     }
 
     /// <summary>
-    /// Writes a fake <c>dotnet-fdg</c> into <paramref name="relativeDir"/>. On <c>--version</c> it prints a version
-    /// and exits 0, or prints <see cref="VersionError"/> and a second line to stderr and exits
-    /// <paramref name="versionExitCode"/>; for anything else it prints its arguments, echoes stdin byte for byte and
-    /// exits 1. Returns its directory.
+    /// Writes a repository whose <c>.config/dotnet-tools.json</c> lists the package <paramref name="toolName"/>
+    /// with the command <c>dotnet-fdg</c>, and an empty <c>src</c> directory in it. Returns the repository directory.
     /// </summary>
-    private string WriteFakeTool(string relativeDir, int versionExitCode, bool forPwsh)
+    private string WriteManifest(string toolName)
+    {
+        _tree.Directory(Path.Combine("repo", "src"));
+        _tree.Write(
+            Path.Combine("repo", ".config", "dotnet-tools.json"),
+            "{\n" +
+            "  \"version\": 1,\n" +
+            "  \"isRoot\": true,\n" +
+            "  \"tools\": {\n" +
+            $"    \"{toolName}\": {{\n" +
+            "      \"version\": \"1.0.0\",\n" +
+            "      \"commands\": [\n" +
+            "        \"dotnet-fdg\"\n" +
+            "      ],\n" +
+            "      \"rollForward\": false\n" +
+            "    }\n" +
+            "  }\n" +
+            "}\n");
+        return _tree.Path("repo");
+    }
+
+    /// <summary>
+    /// Writes a fake tool called <paramref name="name"/> into <paramref name="relativeDir"/>. Each run appends its
+    /// arguments to <c>calls.txt</c> next to it, then behaves as <paramref name="behavior"/> says, writing
+    /// <paramref name="error"/> to stderr for <see cref="FakeBehavior.Fail"/> or <paramref name="output"/> to stdout
+    /// for <see cref="FakeBehavior.Print"/>, and exits with <paramref name="exitCode"/>. Returns its directory.
+    /// </summary>
+    private string WriteFakeTool(
+        string relativeDir,
+        string name,
+        FakeBehavior behavior,
+        bool forPwsh,
+        byte[]? error = null,
+        int exitCode = 1,
+        byte[]? output = null)
     {
         string dir = _tree.Directory(relativeDir);
+        byte[] stderr = error is null
+            ? Array.Empty<byte>()
+            : error.Concat(Encoding.UTF8.GetBytes("\nsecond line\n")).ToArray();
+        byte[] stdout = output ?? Array.Empty<byte>();
         if (forPwsh && OperatingSystem.IsWindows())
         {
-            // PowerShell only runs PATHEXT commands on Windows: a batch file hands over to an echo script. cmd.exe
-            // reads batch files in the OEM code page, so the CJK path is only reached through %~dp0.
+            // PowerShell only runs PATHEXT commands on Windows: a batch file hands over to a script. cmd.exe reads
+            // batch files in the OEM code page, so the CJK path is only reached through %~dp0.
+            string run = behavior switch
+            {
+                FakeBehavior.Echo =>
+                    "$header = [Text.Encoding]::UTF8.GetBytes(($args -join ' ') + \"`n\")\n" +
+                    "$out.Write($header, 0, $header.Length)\n" +
+                    "[Console]::OpenStandardInput().CopyTo($out)\n",
+                FakeBehavior.Fail =>
+                    $"$bytes = [byte[]]@({PwshBytes(stderr)})\n" +
+                    "$err = [Console]::OpenStandardError()\n" +
+                    "$err.Write($bytes, 0, $bytes.Length)\n" +
+                    "$err.Flush()\n",
+                _ =>
+                    "[Console]::OpenStandardInput().CopyTo([IO.Stream]::Null)\n" +
+                    $"$bytes = [byte[]]@({PwshBytes(stdout)})\n" +
+                    "$out.Write($bytes, 0, $bytes.Length)\n",
+            };
             _tree.Write(
-                Path.Combine(relativeDir, "echo.ps1"),
+                Path.Combine(relativeDir, "fake.ps1"),
+                "[IO.File]::AppendAllText((Join-Path $PSScriptRoot 'calls.txt'), ($args -join ' ') + \"`n\")\n" +
                 "$out = [Console]::OpenStandardOutput()\n" +
-                "$header = [Text.Encoding]::UTF8.GetBytes(($args -join ' ') + \"`n\")\n" +
-                "$out.Write($header, 0, $header.Length)\n" +
-                "[Console]::OpenStandardInput().CopyTo($out)\n" +
+                run +
                 "$out.Flush()\n" +
-                "exit 1\n");
-            string failure = versionExitCode == 0
-                ? "echo 0.1.0\r\n"
-                : $">&2 echo {VersionError}\r\n>&2 echo second line\r\n";
+                $"exit {exitCode}\n");
             _tree.Write(
-                Path.Combine(relativeDir, "dotnet-fdg.cmd"),
+                Path.Combine(relativeDir, name + ".cmd"),
                 "@echo off\r\n" +
-                "if not \"%~1\"==\"--version\" goto run\r\n" +
-                failure +
-                $"exit /b {versionExitCode}\r\n" +
-                ":run\r\n" +
-                $"\"{Shells.Pwsh}\" -NoProfile -ExecutionPolicy Bypass -File \"%~dp0echo.ps1\" %*\r\n");
+                $"\"{Shells.Pwsh}\" -NoProfile -ExecutionPolicy Bypass -File \"%~dp0fake.ps1\" %*\r\n");
             return dir;
         }
 
-        string version = versionExitCode == 0
-            ? "printf '0.1.0\\n'"
-            : $"printf '%s\\n' '{VersionError}' 'second line' >&2";
+        string body = behavior switch
+        {
+            FakeBehavior.Echo => "printf '%s\\n' \"$*\"\ncat\n",
+            FakeBehavior.Fail => $"printf '{ShBytes(stderr)}' >&2\n",
+            _ => $"cat >/dev/null\nprintf '{ShBytes(stdout)}'\n",
+        };
         _tree.Write(
-            Path.Combine(relativeDir, "dotnet-fdg"),
+            Path.Combine(relativeDir, name),
             "#!/bin/sh\n" +
-            $"if [ \"$1\" = \"--version\" ]; then {version}; exit {versionExitCode}; fi\n" +
-            "printf '%s\\n' \"$*\"\n" +
-            "cat\n" +
-            "exit 1\n");
+            "printf '%s\\n' \"$*\" >> \"$(dirname \"$0\")/calls.txt\"\n" +
+            body +
+            $"exit {exitCode}\n");
         if (!OperatingSystem.IsWindows())
         {
             File.SetUnixFileMode(
-                Path.Combine(dir, "dotnet-fdg"),
+                Path.Combine(dir, name),
                 UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         }
 
         return dir;
     }
 
-    private (int ExitCode, byte[] Output, string Error) Run(string fileName, IEnumerable<string> arguments, string path)
+    private static string PwshBytes(byte[] bytes)
+    {
+        return string.Join(',', bytes.Select(b => "0x" + b.ToString("X2")));
+    }
+
+    // Octal escapes for printf, so that any byte survives the shell.
+    private static string ShBytes(byte[] bytes)
+    {
+        return string.Concat(bytes.Select(b => "\\" + Convert.ToString(b, 8).PadLeft(3, '0')));
+    }
+
+    private (int ExitCode, byte[] Output, string Error) Run(
+        string fileName,
+        IEnumerable<string>? arguments,
+        string path,
+        string? workingDirectory = null,
+        string? dotnetCliHome = null,
+        IDictionary<string, string>? environment = null,
+        string? rawArguments = null)
     {
         var startInfo = new ProcessStartInfo(fileName)
         {
@@ -259,8 +646,16 @@ public sealed class HookShellTests : IDisposable
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
+
+            // Outside any repository, so no tool manifest is found unless a test writes one.
+            WorkingDirectory = workingDirectory ?? _tree.Directory("cwd"),
         };
-        foreach (string argument in arguments)
+        if (rawArguments is not null)
+        {
+            startInfo.Arguments = rawArguments;
+        }
+
+        foreach (string argument in arguments ?? Array.Empty<string>())
         {
             startInfo.ArgumentList.Add(argument);
         }
@@ -268,6 +663,17 @@ public sealed class HookShellTests : IDisposable
         startInfo.Environment["PATH"] = path;
         startInfo.Environment["HOME"] = _tree.Directory("home");
         startInfo.Environment["USERPROFILE"] = _tree.Directory("home");
+        startInfo.Environment.Remove("DOTNET_CLI_HOME");
+        startInfo.Environment.Remove("PLUGIN_ROOT");
+        if (dotnetCliHome is not null)
+        {
+            startInfo.Environment["DOTNET_CLI_HOME"] = dotnetCliHome;
+        }
+
+        foreach (KeyValuePair<string, string> variable in environment ?? new Dictionary<string, string>())
+        {
+            startInfo.Environment[variable.Key] = variable.Value;
+        }
 
         using Process process = Process.Start(startInfo)!;
         Task<string> error = process.StandardError.ReadToEndAsync();
@@ -342,6 +748,28 @@ public sealed class BashFactAttribute : FactAttribute
 public sealed class PwshFactAttribute : FactAttribute
 {
     public PwshFactAttribute()
+    {
+        if (Shells.Pwsh is null)
+        {
+            Skip = "pwsh is not available.";
+        }
+    }
+}
+
+public sealed class BashTheoryAttribute : TheoryAttribute
+{
+    public BashTheoryAttribute()
+    {
+        if (Shells.Bash is null)
+        {
+            Skip = "bash is not available.";
+        }
+    }
+}
+
+public sealed class PwshTheoryAttribute : TheoryAttribute
+{
+    public PwshTheoryAttribute()
     {
         if (Shells.Pwsh is null)
         {

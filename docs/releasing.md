@@ -50,12 +50,15 @@ The first push creates both package ids under your nuget.org account.
    dotnet test -c Release
    ```
 
-3. Update the version in the README's package reference example, commit, and push to `main`. Wait for CI to pass.
+3. Update the version in the README's package reference example and check the release's section in
+   `CHANGELOG.md`, with the changes that can fail a `TreatWarningsAsErrors` build in their own subsection. For a
+   prerelease tag such as `v1.0.0-rc.1` the section stays `Unreleased`; for the final release, replace
+   `Unreleased` with the date. Commit, and push to `main`. Wait for CI to pass.
 4. Tag and push:
 
    ```
-   git tag v0.1.0
-   git push origin v0.1.0
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
    ```
 
 5. Watch the run with `gh run watch`. After it succeeds, check that both packages appear on nuget.org (indexing
@@ -65,3 +68,42 @@ A failed release can be re-run from the Actions page once the cause is fixed. If
 the tag (`git push --delete origin vX.Y.Z`, `git tag -d vX.Y.Z`) and tag the new commit. A version that already
 reached nuget.org cannot be replaced: publish the next version instead, and unlist the bad one on nuget.org if
 needed.
+
+## Versioning and compatibility
+
+From 1.0.0 on, the version number tells you what an update can break. It covers the diagnostic ids, the
+`dotnet-fdg` commands and options, the hook protocol between the plugin and `dotnet-fdg`, the `rules.json` manifest
+and build marker that the analyzer package writes for `dotnet-fdg`, the profiles, and the minimum SDK. The two
+packages and the plugin are released together with one version.
+
+- **Ids**: FDG and FDGA ids are never reused and never renumbered. A rule that is removed keeps its id retired.
+- **Major version** for:
+  - removing a diagnostic id;
+  - removing or renaming a `dotnet-fdg` command or option;
+  - an incompatible change to the hook protocol (the `dotnet-fdg hook <event>` command line and the JSON it reads
+    and writes) or to the `rules.json` and marker protocol;
+  - raising the minimum SDK.
+- **Minor version** for:
+  - new diagnostics;
+  - raising a severity;
+  - changing a profile's defaults, such as turning a rule on or changing an analyzer option.
+
+  Each of these can fail a build that uses `TreatWarningsAsErrors`, so [CHANGELOG.md](../CHANGELOG.md) lists them
+  in a section of their own in every release.
+- **Patch version** only for fewer false positives, crash fixes and corrected wording.
+
+### Matching the package, the tool and the plugin
+
+The analyzer package writes a protocol number into each project's build marker (`obj/fdg/marker.json`) and into its
+`data/rules.json`. `dotnet-fdg` supports every protocol up to its own (`FixCommand.SupportedProtocol`, currently 1)
+and reads older ones unchanged. A project whose package has a newer protocol than the tool is not checked: session
+start lists it as a setup issue, and Stop and `dotnet fdg fix` skip it with a message to run
+`dotnet tool update -g dotnet-fdg`. Package and tool versions therefore do not have to be equal; a tool at least as
+new as the package always works. Every release from 0.1.0 to 1.0.0 uses protocol 1, and 1.0.0 does not change its
+meaning. A change that an older tool cannot read raises the protocol number, and is a major version.
+
+The plugin does not check the tool's version. Its hooks run `dotnet-fdg hook session-start`, `turn-start` and
+`turn-stop` (through the repository's local tool manifest when it lists `dotnet-fdg`). A tool that cannot run the
+command, for example one that fails to start because its runtime is missing, exits without output, and the wrapper
+then shows `FDG: dotnet-fdg failed:` with the first line of its error instead of failing silently. Keep the tool
+updated with the plugin; the tested combination is the same version of all three.

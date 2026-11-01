@@ -14,6 +14,9 @@ dotnet_code_quality.CA1707.api_surface = public
 # FDG3046
 dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true
 
+# FDG3048
+dotnet_code_quality.CA1710.exclude_indirect_base_types = false
+
 # FDGA001
 csharp_new_line_before_open_brace = all
 

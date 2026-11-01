@@ -96,6 +96,48 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Conflicting_globalconfig_values_fail_with_both_rule_ids()
+    {
+        // The same option, but the diagnostics each rule maps give it different severity suffixes in the library profile.
+        GeneratorInput input = Edit(Input(), OnRule("FDG9010", m => m with
+        {
+            Check = m.Check with { Diagnostics = new[] { "IDE0011" } },
+            Config = new[] { "csharp_prefer_braces = true" },
+        }));
+        input = Edit(input, OnRule("FDG9001", m => m with
+        {
+            Check = m.Check with { Diagnostics = new[] { "IDE0012" } },
+            Severity = m.Severity with { Library = SeverityLevel.Suggestion },
+            Config = new[] { "csharp_prefer_braces = true" },
+        }));
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => GlobalConfigEmitter.Emit(input, "library"));
+
+        Assert.Contains("csharp_prefer_braces", exception.Message);
+        Assert.Contains("FDG9001", exception.Message);
+        Assert.Contains("FDG9010", exception.Message);
+    }
+
+    [Fact]
+    public void Equal_globalconfig_values_after_the_severity_suffix_are_written_once()
+    {
+        GeneratorInput input = Edit(Input(), OnRule("FDG9010", m => m with
+        {
+            Check = m.Check with { Diagnostics = new[] { "IDE0011" } },
+            Config = new[] { "csharp_prefer_braces = true" },
+        }));
+        input = Edit(input, OnRule("FDG9001", m => m with
+        {
+            Check = m.Check with { Diagnostics = new[] { "IDE0012" } },
+            Config = new[] { "csharp_prefer_braces = true" },
+        }));
+
+        string[] lines = Lines(GlobalConfigEmitter.Emit(input, "library"));
+
+        Assert.Single(lines, "csharp_prefer_braces = true:warning");
+    }
+
+    [Fact]
     public void Equal_config_values_are_written_once()
     {
         GeneratorInput input = Edit(Input(), OnRule("FDG9001", m => m with { Config = new[] { "indent_size = 4" } }));
@@ -213,13 +255,12 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
-    public void Skill_reference_excludes_tool_checked_do_rules()
+    public void Skill_reference_excludes_fully_tool_checked_rules()
     {
         string main = ReferenceMain(Input());
 
         Assert.Contains("**FDG9001**", main);
         Assert.DoesNotContain("**FDG9002**", main);
-        Assert.DoesNotContain("**FDG9003**", main);
         Assert.DoesNotContain("**FDG9007**", main);
         Assert.DoesNotContain("**FDG9009**", main);
         Assert.DoesNotContain("**FDG9010**", main);
@@ -555,6 +596,67 @@ public sealed class EmitterTests : IDisposable
     }
 
     [Fact]
+    public void Reference_stems_are_lowercase()
+    {
+        GeneratorInput input = Input();
+        input = input with { Files = input.Files.Select(f => f with { RulesFile = "appA-coding-style.yaml" }).ToList() };
+
+        IReadOnlyList<GeneratedFile> files = SkillReferenceEmitter.Emit(input);
+
+        Assert.Equal(
+            new[]
+            {
+                "plugins/framework-design-guidelines/skills/fdg-write/references/appa-coding-style.md",
+                "plugins/framework-design-guidelines/skills/fdg-write/references/examples/appa-coding-style.md",
+            },
+            files.Select(f => f.Path).ToArray());
+        Assert.Contains("examples/appa-coding-style.md#fdg9001", files[0].Content);
+    }
+
+    [Fact]
+    public void Uppercase_reference_split_name_is_an_error()
+    {
+        GeneratorInput input = Split(_ => true, Part("ch09-Patterns", "9.1", "9.2", "9.3"));
+
+        GenerationException exception = Assert.Throws<GenerationException>(() => SkillReferenceEmitter.Emit(input));
+
+        Assert.Equal("Chapter 9: reference file name 'ch09-Patterns' must be lowercase.", exception.Message);
+    }
+
+    [Fact]
+    public void Uppercase_reference_name_in_meta_yaml_is_an_error()
+    {
+        FormatException exception = Assert.Throws<FormatException>(
+            () => LoadMetaWith("    references: [{ file: ch09-Patterns, sections: [\"9.1\"] }]\n"));
+
+        Assert.Contains("reference file name 'ch09-Patterns' must be lowercase", exception.Message);
+    }
+
+    [Fact]
+    public void Generate_command_rejects_an_uppercase_reference_name()
+    {
+        string rules = TempDir();
+        foreach (string path in Directory.GetFiles(_fixtureRules))
+        {
+            File.Copy(path, Path.Combine(rules, Path.GetFileName(path)));
+        }
+
+        string meta = Path.Combine(rules, "meta.yaml");
+        File.WriteAllText(
+            meta,
+            File.ReadAllText(meta) + "    references: [{ file: ch09-Patterns, sections: [\"9.1\", \"9.2\", \"9.3\"] }]\n");
+        var error = new StringWriter();
+
+        int exitCode = GeneratorCli.Run(
+            new[] { "generate", "--rules", rules, "--out", TempDir(), "--version", "0.1.0" },
+            new StringWriter(),
+            error);
+
+        Assert.NotEqual(0, exitCode);
+        Assert.Contains("reference file name 'ch09-Patterns' must be lowercase", error.ToString());
+    }
+
+    [Fact]
     public void Split_matching_no_rule_fails_generation()
     {
         GeneratorInput input = Split(_ => true, Part("ch09-a", "9.1", "9.2", "9.3"), Part("ch09-empty", "9.4"));
@@ -696,6 +798,40 @@ public sealed class EmitterTests : IDisposable
         Assert.Contains("isEnabledByDefault: false", source);
         Assert.Contains("internal static class FdgDescriptors", source);
         Assert.DoesNotContain("FDG9002", source);
+    }
+
+    [Fact]
+    public void Compilation_end_rule_descriptor_has_the_custom_tag()
+    {
+        string path = Path.Combine(
+            InstalledSdkFixture.RepositoryRoot(),
+            "src",
+            "FrameworkDesignGuidelines.Analyzers",
+            "Generated",
+            "FdgDescriptors.g.cs");
+        string[] descriptors = File.ReadAllText(path).Split("public static readonly DiagnosticDescriptor ")[1..];
+
+        string[] tagged = descriptors
+            .Where(d => d.Contains("customTags: new[] { WellKnownDiagnosticTags.CompilationEnd }", StringComparison.Ordinal))
+            .Select(d => d[..d.IndexOf(' ', StringComparison.Ordinal)])
+            .ToArray();
+
+        // The analyzers of FDG5077 and FDG6019 report from a compilation end action.
+        Assert.Equal(new[] { "FDG5077", "FDG6019" }, tagged);
+    }
+
+    [Fact]
+    public void Descriptor_gets_the_custom_tag_only_for_a_compilation_end_rule()
+    {
+        GeneratorInput input = Edit(Input(), OnRule("FDG9007", m => m with { Analyzer = m.Analyzer! with { CompilationEnd = true } }));
+
+        string source = DescriptorEmitter.Emit(input);
+
+        Assert.Contains(
+            "helpLinkUri: \"https://example.test/repo/blob/main/docs/rules/FDG9007.md\",\n" +
+            "        customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });",
+            source);
+        Assert.DoesNotContain("customTags", DescriptorEmitter.Emit(Input()));
     }
 
     [Fact]
@@ -868,6 +1004,66 @@ public sealed class EmitterTests : IDisposable
             line);
     }
 
+    /// <summary>
+    /// A DO, DO NOT or AVOID rule that an analyzer checks only in part is listed, so the AI applies the part tools
+    /// cannot check; the marker comes right after the rule text, ahead of the profile marker. A partly checked CONSIDER
+    /// rule carries it too, and so does a rule that a custom analyzer checks in part.
+    /// </summary>
+    [Fact]
+    public void Partial_sdk_rule_is_listed_with_the_partly_checked_marker()
+    {
+        GeneratorInput input = Edit(Input(), rule => rule.Id switch
+        {
+            "FDG9003" => rule with { Body = new[] { new Block(BlockKind.Paragraph, "Handlers end with EventHandler.") } },
+            "FDG9006" => Map(rule, m => m with { Check = m.Check with { Coverage = CoverageLevel.Partial } }),
+            "FDG9007" => Map(rule, m => m with { Check = m.Check with { Coverage = CoverageLevel.Partial } }),
+            _ => rule,
+        });
+
+        IReadOnlyList<GeneratedFile> files = SkillReferenceEmitter.Emit(input);
+
+        string main = files.Single(f => f.Path.EndsWith("references/ch09-sample.md", StringComparison.Ordinal)).Content;
+        string examples = files.Single(f => f.Path.EndsWith("references/examples/ch09-sample.md", StringComparison.Ordinal)).Content;
+        Assert.Contains(
+            "- **FDG9003** DO name event handlers consistently. " + SkillReferenceEmitter.PartlyCheckedMarker +
+            " (not in test projects) — examples: examples/ch09-sample.md#fdg9003\n",
+            main);
+        Assert.Contains("- **FDG9004** AVOID suffixing a type with a base type name that it does not derive from. (partly checked)", main);
+        Assert.Contains("- **FDG9006** CONSIDER making types sealed. (partly checked) (not in test projects) (context: System.Object)", main);
+        Assert.Contains("- **FDG9007** DO put each statement on its own line. (partly checked)\n", main);
+        Assert.Contains("## FDG9003\n\nDO name event handlers consistently.\n\nHandlers end with EventHandler.", examples);
+    }
+
+    [Fact]
+    public void Full_sdk_rule_is_not_listed()
+    {
+        // FDG9002 is a full sdk DO NOT rule; FDG9003, partial in the sample, is made full here.
+        GeneratorInput input = Edit(Input(), rule => rule.Id switch
+        {
+            "FDG9002" => rule with { Body = new[] { new Block(BlockKind.Paragraph, "Keywords break other languages.") } },
+            "FDG9003" => Map(rule, m => m with { Check = m.Check with { Coverage = CoverageLevel.Full } }),
+            _ => rule,
+        });
+
+        IReadOnlyList<GeneratedFile> files = SkillReferenceEmitter.Emit(input);
+
+        Assert.All(files, f => Assert.DoesNotContain("FDG9002", f.Content));
+        Assert.All(files, f => Assert.DoesNotContain("FDG9003", f.Content));
+        // The partial sdk rule stays listed, and its own line carries the marker; every header mentions the marker,
+        // so only the line itself shows it.
+        string line = Lines(ReferenceMain(input)).Single(l => l.StartsWith("- **FDG9004** ", StringComparison.Ordinal));
+        Assert.Contains(" " + SkillReferenceEmitter.PartlyCheckedMarker, line);
+    }
+
+    [Fact]
+    public void Consider_full_sdk_rule_is_listed_without_the_marker()
+    {
+        string line = Lines(ReferenceMain(Input())).Single(l => l.StartsWith("- **FDG9006** ", StringComparison.Ordinal));
+
+        Assert.Equal("- **FDG9006** CONSIDER making types sealed. (not in test projects) (context: System.Object)", line);
+        Assert.DoesNotContain(SkillReferenceEmitter.PartlyCheckedMarker, line);
+    }
+
     [Fact]
     public void Rule_on_in_application_is_not_marked_library_only()
     {
@@ -1001,6 +1197,32 @@ public sealed class EmitterTests : IDisposable
         Assert.All(stale, path => Assert.False(File.Exists(path), path));
         Assert.All(kept, path => Assert.True(File.Exists(path), path));
         Assert.Equal(2, changes);
+    }
+
+    /// <summary>
+    /// A case-insensitive file system treats <c>X.md</c> as the file <c>x.md</c>, so a file whose content is right but
+    /// whose name has the wrong case must still be rewritten under the generated name.
+    /// </summary>
+    [Fact]
+    public void Write_fixes_the_case_of_an_existing_file()
+    {
+        string root = TempDir();
+        IReadOnlyList<GeneratedFile> files = GeneratedFiles.Create(Input());
+        GeneratedFiles.Write(root, files);
+        string references = Path.Combine(root, "plugins", "framework-design-guidelines", "skills", "fdg-write", "references");
+        string lower = Path.Combine(references, "ch09-sample.md");
+        string wrongCase = Path.Combine(references, "Ch09-Sample.md");
+        byte[] content = File.ReadAllBytes(lower);
+        File.Delete(lower);
+        File.WriteAllBytes(wrongCase, content);
+
+        int changes = GeneratedFiles.Write(root, files);
+
+        string[] names = Directory.GetFiles(references, "*.md").Select(f => Path.GetFileName(f)).Order(StringComparer.Ordinal).ToArray();
+        Assert.Equal(new[] { "ch09-sample.md" }, names);
+        Assert.Equal(content, File.ReadAllBytes(lower));
+        Assert.True(changes > 0, "the file under the wrong case was not rewritten");
+        Assert.Equal(0, GeneratedFiles.Write(root, files));
     }
 
     [Fact]

@@ -2,7 +2,7 @@
 
 # Chapter 4: Type Design Guidelines — 4–4.4
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 ## 4
 
@@ -14,6 +14,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 - **FDG4003** AVOID very deep namespace hierarchies. Such hierarchies are difficult to browse because the user has to backtrack often. (not in test projects)
 - **FDG4004** AVOID having too many namespaces. (not in test projects) — examples: examples/ch04-types-4-1-to-4-4.md#fdg4004
 - **FDG4005** AVOID having types designed for advanced scenarios in the same namespace as types intended for common programming tasks. (not in test projects) — examples: examples/ch04-types-4-1-to-4-4.md#fdg4005
+- **FDG4006** DO NOT define types without specifying their namespaces. (partly checked) (not in test projects) — examples: examples/ch04-types-4-1-to-4-4.md#fdg4006
 
 ## 4.2 Choosing Between Class and Struct
 
@@ -29,4 +30,5 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 4.4 Abstract Class Design
 
+- **FDG4014** DO define a protected or an internal constructor in abstract classes. (partly checked) (not in test projects) — examples: examples/ch04-types-4-1-to-4-4.md#fdg4014
 - **FDG4015** DO provide at least one concrete type that inherits from each abstract class that you ship. (not in test projects) — examples: examples/ch04-types-4-1-to-4-4.md#fdg4015

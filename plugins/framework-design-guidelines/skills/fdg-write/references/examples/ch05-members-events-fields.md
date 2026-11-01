@@ -10,6 +10,23 @@ When referring to events in documentation, use the phrase “an event was raised
 
 > **Brad Abrams:** Why did we decide to use “raise” rather than “fire”? Well, we certainly have some prior art on our side on this one, but we also felt like “fire” was too negative a term. After all, you fire a gun or you fire an employee. “Raise” sounds more peaceful.
 
+## FDG5057
+
+DO use `System.EventHandler<T>` instead of manually creating new delegates to be used as event handlers.
+
+```csharp
+public class NotifyingContactCollection : Collection<Contact> {
+  public event EventHandler<ContactAddedEventArgs> ContactAdded;
+   ...
+}
+```
+
+If you’re adding new events to an existing feature area that uses traditional event handlers, then continue using the existing event handler types to remain consistent within the feature area, and use new custom event handler types if using the generic handler feels inconsistent with the feature area. For example, when defining new events related to types in the `System.Windows.Forms` namespace, you might want to continue using manually created handlers.
+
+> **Brian Pepin:** You wouldn’t believe how long we debated this. On the one hand, `EventHandler<T>` doesn’t really buy you that much over the one-line declaration of your own event handler. In fact, the syntax is quite a bit more confusing. On the other hand, reducing the number of classes that need to be loaded by your code improves performance. I’ve never been a big fan of choosing performance over ease of use (performance gets better over time; ease of use doesn’t). The current round of compilers allows you to leave out the new `EventHandler<ContactAddedEventArgs>()` business, however, so this doesn’t really impact ease of use that much. We also solved the last hurdle—getting the Visual Studio designers to understand generic events—so I’ll be glad to finally put this debate to bed.
+
+Creating new custom event handlers is rare, and the guidance has been archived to Appendix B.
+
 ## FDG5058
 
 CONSIDER using a subclass of `EventArgs` as the event argument, unless you are absolutely sure the event will never need to carry any data to the event handling method, in which case you can use the `EventArgs` type directly.
@@ -27,6 +44,56 @@ public class AlarmRaisedEventArgs : EventArgs {
 }
 ```
 
+## FDG5059
+
+DO use a protected virtual method to raise each event. This is applicable only to nonstatic events on unsealed classes—not to structs, sealed classes, or static events.
+
+For each event, include a corresponding protected virtual method that raises the event. The purpose of the method is to provide a way for a derived class to handle the event using an override. Overriding is a more flexible, faster, and more natural way to handle base class events in derived classes. By convention, the name of the method should start with “On” and be followed with the name of the event.
+
+> **Rico Mariani:** Note that using an event handler mechanism gives you maximum flexibility in terms of code that can receive the event—in principle, any object could be notified. Sometimes all that’s necessary is for the object to notify itself or more generally the subtype. If that’s the case, an event might be overkill and all you need is a virtual protected `OnWhatever()` method. This is both cheaper and simpler than an event.
+>
+> ```
+> public class AlarmClock {
+>    public event EventHandler<AlarmRaisedEventArgs> AlarmRaised;
+>
+>    protected virtual void OnAlarmRaised(AlarmRaisedEventArgs e){
+>      EventHandler<AlarmRaisedEventArgs> handler = AlarmRaised;
+>      if (handler != null) {
+>         handler(this, e);
+>      }
+>   }
+> }
+> ```
+
+The derived class can choose not to call the base implementation of the method in its override. Be prepared for this by not including any processing in the method that is required for the base class to work correctly.
+
+## FDG5060
+
+DO take one parameter to the protected method that raises an event.
+
+The parameter should be named `e` and should be typed as the event argument class.
+
+```csharp
+protected virtual void OnAlarmRaised(AlarmRaisedEventArgs e){
+  AlarmRaised?.Invoke(this, e);
+}
+```
+
+## FDG5062
+
+DO pass `null` as the sender when raising a static event.
+
+```csharp
+EventHandler<EventArgs> handler = ...;
+if (handler!=null) handler(null,...);
+```
+
+## FDG5063
+
+DO NOT pass `null` as the event data parameter when raising an event.
+
+You should pass `EventArgs.Empty` if you don’t want to pass any data to the event handling method. Developers expect this parameter not to be `null`.
+
 ## FDG5064
 
 CONSIDER raising events that the end user can cancel. This guideline applies only to pre-events.
@@ -36,6 +103,19 @@ Use `System.ComponentModel.CancelEventArgs` or its subclass as the event argumen
 ```csharp
 void ClosingHandler(object sender, CancelEventArgs e) {
   e.Cancel = true;
+}
+```
+
+## FDG5066
+
+DO use constant fields for constants that will never change.
+
+The compiler burns the values of `const` fields directly into calling code. Therefore, `const` values can never be changed without the risk of breaking compatibility.
+
+```csharp
+public struct Int32 {
+   public const int MaxValue = 0x7fffffff;
+   public const int MinValue = unchecked((int)0x80000000);
 }
 ```
 
@@ -69,3 +149,19 @@ public static Encoding UTF8 {
 > ```
 > public static Color Red { get; } = new Color(0x0000FF);
 > ```
+
+## FDG5068
+
+DO NOT assign instances of mutable types to public or protected `readonly` fields.
+
+A mutable type is a type with instances that can be modified after they are instantiated. For example, arrays, most collections, and streams are mutable types, but `System.Int32`, `System.Uri`, and `System.String` are all immutable. The `readonly` modifier on a reference type field prevents the instance stored in the field from being replaced, but it does not prevent the field’s instance data from being modified by calling members changing the instance. The following example shows how it is possible to change the value of an object referred to by a `readonly` field.
+
+```csharp
+public class SomeType {
+  public static readonly int[] Numbers = new int[10];
+}
+...
+SomeType.Numbers[5] = 10; // changes a value in the array
+```
+
+> **Joe Duffy:** The real distinction here is between *deep* versus *shallow* immutability. A deeply immutable type is one whose fields are all `readonly`, and each field is of a type that itself is also deeply immutable. This ensures that a whole object graph is transitively immutable. While deep immutability is certainly the most useful kind, shallow immutability can also be useful. What this guideline is trying to protect you from is believing you’ve exposed a deeply immutable object graph when in fact it is shallow, and then writing code that assumes the whole graph is immutable.

@@ -2,7 +2,7 @@
 
 # Chapter 9: Common Design Patterns — 9.5–9.6
 
-Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers only suggest. Open the examples file for the explanation and code the book gives with each rule.
+Rules that no analyzer enforces (judgment), CONSIDER rules that analyzers only suggest, and rules that analyzers check only in part, marked "(partly checked)". Open the examples file for the explanation and code the book gives with each rule.
 
 ## 9.5 Factories
 
@@ -18,6 +18,7 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 
 ## 9.6.3 Supporting LINQ through IEnumerable&lt;T>
 
+- **FDG9093** DO implement `IEnumerable<T>` to enable basic LINQ support. (partly checked) (not in test projects) — examples: examples/ch09-patterns-factories-linq.md#fdg9093
 - **FDG9094** CONSIDER implementing `ICollection<T>` to improve the performance of query operators. (not in test projects) — examples: examples/ch09-patterns-factories-linq.md#fdg9094
 - **FDG9095** CONSIDER supporting selected methods of `System.Linq.Enumerable` or the Query Pattern (see section 9.6.5) directly on new types implementing `IEnumerable<T>` if it is desirable to override the default `System.Linq.Enumerable` implementation (e.g., for performance optimization reasons). (not in test projects) — examples: examples/ch09-patterns-factories-linq.md#fdg9095
 
@@ -30,8 +31,11 @@ Rules that no analyzer enforces (judgment), and CONSIDER rules that analyzers on
 ## 9.6.5 Supporting LINQ through the Query Pattern
 
 - **FDG9099** DO implement the Query Pattern as instance members on the new type, if the members make sense on the type even outside the context of LINQ. Otherwise, implement them as extension methods. (not in test projects) — examples: examples/ch09-patterns-factories-linq.md#fdg9099
+- **FDG9100** DO implement `IEnumerable<T>` on types implementing the Query Pattern. (partly checked) (not in test projects)
 - **FDG9101** CONSIDER designing the LINQ operators to return domain-specific enumerable types. Essentially, you can return anything from a `Select` query method; however, the expectation is that the query result type should be at least enumerable. (not in test projects) — examples: examples/ch09-patterns-factories-linq.md#fdg9101
 - **FDG9102** AVOID implementing just a part of the Query Pattern if fallback to the basic `IEnumerable<T>` implementations is undesirable. (not in test projects) — examples: examples/ch09-patterns-factories-linq.md#fdg9102
+- **FDG9103** DO represent ordered sequences as a separate type from their unordered counterpart. (partly checked) (not in test projects)
 - **FDG9104** DO define the `ThenBy` method, or implement `IOrderedEnumerable<T>`, on ordered sequence types. (not in test projects) — examples: examples/ch09-patterns-factories-linq.md#fdg9104
 - **FDG9105** DO defer execution of query operator implementations. The expected behavior of most of the Query Pattern members is that they simply construct a new object which, upon enumeration, produces the elements of the set that match the query. (not in test projects) — examples: examples/ch09-patterns-factories-linq.md#fdg9105
+- **FDG9106** DO place query extensions methods in a “Linq” subnamespace of the main namespace. For example, extension methods for `System.Data` features reside in `System.Data.Linq` namespace. (partly checked) (library only)
 - **FDG9107** DO use `Expression<Func<...>>` as a parameter instead of `Func<...>` when it is necessary to inspect the query. See section 9.6.5 for more details. (not in test projects) — examples: examples/ch09-patterns-factories-linq.md#fdg9107

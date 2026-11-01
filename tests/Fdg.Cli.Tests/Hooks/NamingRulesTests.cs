@@ -9,13 +9,16 @@ public sealed class NamingRulesTests
     private static readonly RulesManifest Manifest = RulesManifest.LoadEmbedded();
 
     private static string[] Quoted(NamingSymbolKind? kind, NamingFailure? failure, string? profile = "library") =>
+        QuotedKinds(kind is { } k ? [k] : null, failure, profile);
+
+    private static string[] QuotedKinds(NamingSymbolKind[]? kinds, NamingFailure? failure, string? profile = "library") =>
         StopReport.RulesFor(
                 Manifest,
                 "IDE1006",
                 "Naming rule violation",
                 "int x;",
                 profile,
-                kind is { } k && failure is { } f ? (k, f) : null)
+                kinds is not null && failure is { } f ? (kinds, f) : null)
             .Select(r => r.Id)
             .ToArray();
 
@@ -88,6 +91,33 @@ public sealed class NamingRulesTests
     public void Lower_case_public_field_quotes_the_visible_field_rules()
     {
         Assert.Equal(["FDG3077", "FDG3079"], Quoted(NamingSymbolKind.VisibleField, NamingFailure.Casing));
+    }
+
+    [Theory]
+    [InlineData("library")]
+    [InlineData("application")]
+    public void Miscased_public_const_quotes_FDG3077(string profile)
+    {
+        string[] quoted = QuotedKinds([NamingSymbolKind.ConstField, NamingSymbolKind.VisibleField], NamingFailure.Casing, profile);
+
+        Assert.Contains("FDG3077", quoted);
+        Assert.InRange(quoted.Length, 1, StopReport.MaxRulesPerIssue);
+    }
+
+    [Fact]
+    public void Miscased_public_const_in_a_test_project_quotes_the_rules_that_apply_there()
+    {
+        // FDG3077 is not enforced in the test profile, so the profile filter drops it.
+        Assert.DoesNotContain("FDG3077", QuotedKinds([NamingSymbolKind.ConstField, NamingSymbolKind.VisibleField], NamingFailure.Casing, "test"));
+    }
+
+    [Theory]
+    [InlineData("library")]
+    [InlineData("application")]
+    [InlineData("test")]
+    public void Miscased_private_const_quotes_only_FDGA053(string profile)
+    {
+        Assert.Equal(["FDGA053"], QuotedKinds([NamingSymbolKind.ConstField], NamingFailure.Casing, profile));
     }
 
     [Fact]

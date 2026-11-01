@@ -1,3 +1,4 @@
+using System.Text;
 using Fdg.Cli.Commands;
 using Fdg.Cli.Projects;
 using Fdg.Cli.Tooling;
@@ -186,6 +187,91 @@ public sealed class FixCommandTests : IDisposable
     }
 
     [Fact]
+    public async Task Fix_reports_files_with_syntax_errors_as_skipped()
+    {
+        string project = AddProject("A/A.csproj", ProjectState.InScope);
+        _tree.Write("A/Good.cs", "class Good { }\n");
+        _tree.Write("A/中文 目录/Broken.cs", "class Broken\n{\n    void M( { }\n}\n");
+
+        int exitCode = await RunAsync();
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(
+            "skipped A/中文 目录/Broken.cs: it has syntax errors (first at line 3); dotnet format does not change it\n" +
+            "fixed A/A.csproj\n",
+            Output);
+        // The broken file is excluded from the run, so dotnet format really does not change it; the project keeps
+        // its whole scope, linked files included.
+        FormatCall call = Assert.Single(_formatter.Calls);
+        Assert.Equal(project, call.ProjectPath);
+        Assert.Null(call.IncludeFiles);
+        Assert.Equal(["中文 目录/Broken.cs"], call.ExcludeFiles);
+    }
+
+    [Fact]
+    public async Task Broken_files_are_removed_from_the_given_includes_and_excluded_below_given_directories()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        _tree.Write("A/Good.cs", "class Good { }\n");
+        _tree.Write("A/Broken.cs", "class Broken {\n");
+        _tree.Write("A/Dir/Fine.cs", "class Fine { }\n");
+        _tree.Write("A/Dir/Bad.cs", "class Bad {\n");
+
+        Assert.Equal(0, await RunAsync("A/Good.cs", "A/Broken.cs", "A/Dir"));
+
+        FormatCall call = Assert.Single(_formatter.Calls);
+        Assert.Equal(["Good.cs", "Dir/"], call.IncludeFiles);
+        Assert.Equal(["Dir/Bad.cs"], call.ExcludeFiles);
+    }
+
+    [Fact]
+    public async Task Named_broken_file_under_a_named_directory_is_excluded()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        _tree.Write("A/Dir/Fine.cs", "class Fine { }\n");
+        _tree.Write("A/Dir/Bad.cs", "class Bad {\n");
+
+        Assert.Equal(0, await RunAsync("A/Dir", "A/Dir/Bad.cs"));
+
+        // The directory include still covers the broken file, so dropping it from the includes is not enough.
+        FormatCall call = Assert.Single(_formatter.Calls);
+        Assert.Equal(["Dir/"], call.IncludeFiles);
+        Assert.Equal(["Dir/Bad.cs"], call.ExcludeFiles);
+    }
+
+    [Fact]
+    public async Task Too_many_broken_files_to_exclude_narrow_the_includes_instead()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        _tree.Write("A/Good.cs", "class Good { }\n");
+        for (int i = 0; i < 200; i++)
+        {
+            _tree.Write($"A/a rather long directory name for broken files/BrokenFileWithAFairlyLongName{i:D3}.cs", "class B {\n");
+        }
+
+        Assert.Equal(0, await RunAsync());
+
+        FormatCall call = Assert.Single(_formatter.Calls);
+        Assert.Equal(["Good.cs"], call.IncludeFiles);
+        Assert.Empty(call.ExcludeFiles);
+    }
+
+    [Fact]
+    public async Task Fix_of_broken_files_only_runs_no_format()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        _tree.Write("A/Broken.cs", "class Broken\n{\n    int x\n}\n");
+
+        int exitCode = await RunAsync("A/Broken.cs");
+
+        Assert.Equal(0, exitCode);
+        Assert.Empty(_formatter.Calls);
+        Assert.Equal(
+            "skipped A/Broken.cs: it has syntax errors (first at line 3); dotnet format does not change it\n",
+            Output);
+    }
+
+    [Fact]
     public async Task Format_failure_returns_exit_code_1_with_message()
     {
         AddProject("A/A.csproj", ProjectState.InScope);
@@ -221,7 +307,7 @@ public sealed class FixCommandTests : IDisposable
     public async Task Format_is_repeated_while_files_change_up_to_three_passes()
     {
         AddProject("A/A.csproj", ProjectState.InScope);
-        string file = _tree.Write("A/Code.cs", "0");
+        string file = _tree.Write("A/Code.cs", "// 0");
         _formatter.OnCall = _ => File.AppendAllText(file, "+");
 
         Assert.Equal(0, await RunAsync());
@@ -232,12 +318,12 @@ public sealed class FixCommandTests : IDisposable
     public async Task Format_stops_once_a_pass_changes_nothing()
     {
         AddProject("A/A.csproj", ProjectState.InScope);
-        string file = _tree.Write("A/Code.cs", "0");
+        string file = _tree.Write("A/Code.cs", "// 0");
         _formatter.OnCall = count =>
         {
             if (count == 1)
             {
-                File.WriteAllText(file, "1");
+                File.WriteAllText(file, "// 1");
             }
         };
 
@@ -249,12 +335,171 @@ public sealed class FixCommandTests : IDisposable
     public async Task Changes_outside_the_include_do_not_trigger_another_pass()
     {
         AddProject("A/A.csproj", ProjectState.InScope);
-        _tree.Write("A/Included.cs", "0");
-        string other = _tree.Write("A/Other.cs", "0");
+        _tree.Write("A/Included.cs", "// 0");
+        string other = _tree.Write("A/Other.cs", "// 0");
         _formatter.OnCall = _ => File.AppendAllText(other, "+");
 
         Assert.Equal(0, await RunAsync("A/Included.cs"));
         Assert.Single(_formatter.Calls);
+    }
+
+    [Fact]
+    public async Task Format_keeps_the_line_ending_of_LF_files_and_their_BOM()
+    {
+        // dotnet format writes the platform newline before a line that starts with a block comment.
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string plain = WriteBytes("A/Plain.cs", "class A\n{\n}\n");
+        string bom = WriteBytes("A/Bom.cs", "class B\n{\n}\n", Utf8Bom);
+        _formatter.OnCall = _ =>
+        {
+            WriteBytes("A/Plain.cs", "class A\r\n{\n    /* c */ int x;\r\n}\n");
+            WriteBytes("A/Bom.cs", "class B\r\n{\n    /* c */ int y;\r\n}\n", Utf8Bom);
+        };
+
+        Assert.Equal(0, await RunAsync());
+        Assert.Equal(Encode("class A\n{\n    /* c */ int x;\n}\n"), File.ReadAllBytes(plain));
+        Assert.Equal(Encode("class B\n{\n    /* c */ int y;\n}\n", Utf8Bom), File.ReadAllBytes(bom));
+    }
+
+    [Fact]
+    public async Task Format_keeps_the_line_ending_of_included_CRLF_and_UTF16_files()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string crlf = WriteBytes("A/Crlf.cs", "class A\r\n{\r\n}\r\n");
+        string utf16 = _tree.Path("A/Utf16.cs");
+        File.WriteAllText(utf16, "class B\n{\n}\n", Encoding.Unicode);
+        _formatter.OnCall = _ =>
+        {
+            WriteBytes("A/Crlf.cs", "class A\r\n{\n    /* c */ int x;\r\n}\r\n");
+            File.WriteAllText(utf16, "class B\r\n{\n    /* c */ int y;\r\n}\n", Encoding.Unicode);
+        };
+
+        Assert.Equal(0, await RunAsync("A/Crlf.cs", "A/Utf16.cs"));
+        Assert.Equal(Encode("class A\r\n{\r\n    /* c */ int x;\r\n}\r\n"), File.ReadAllBytes(crlf));
+        Assert.Equal(
+            [.. Encoding.Unicode.GetPreamble(), .. Encoding.Unicode.GetBytes("class B\n{\n    /* c */ int y;\n}\n")],
+            File.ReadAllBytes(utf16));
+    }
+
+    [Fact]
+    public async Task Format_leaves_files_that_were_mixed_or_had_no_line_break_as_written()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string mixed = WriteBytes("A/Mixed.cs", "class A\r\n{\n}\n");
+        string single = WriteBytes("A/Single.cs", "class B { }");
+        _formatter.OnCall = _ =>
+        {
+            WriteBytes("A/Mixed.cs", "class A\r\n{\r\n    int x;\n}\n");
+            WriteBytes("A/Single.cs", "class B\r\n{\n}");
+        };
+
+        Assert.Equal(0, await RunAsync());
+        Assert.Equal(Encode("class A\r\n{\r\n    int x;\n}\n"), File.ReadAllBytes(mixed));
+        Assert.Equal(Encode("class B\r\n{\n}"), File.ReadAllBytes(single));
+    }
+
+    [Fact]
+    public async Task Format_leaves_a_uniform_conversion_of_the_line_endings()
+    {
+        // end_of_line in .editorconfig makes dotnet format convert every line; that is the user's choice.
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string toCrLf = WriteBytes("A/ToCrLf.cs", "class A\n{\n}\n");
+        string toLf = WriteBytes("A/ToLf.cs", "class B\r\n{\r\n}\r\n");
+        _formatter.OnCall = _ =>
+        {
+            WriteBytes("A/ToCrLf.cs", "class A\r\n{\r\n    int x;\r\n}\r\n");
+            WriteBytes("A/ToLf.cs", "class B\n{\n    int y;\n}\n");
+        };
+
+        Assert.Equal(0, await RunAsync());
+        Assert.Equal(Encode("class A\r\n{\r\n    int x;\r\n}\r\n"), File.ReadAllBytes(toCrLf));
+        Assert.Equal(Encode("class B\n{\n    int y;\n}\n"), File.ReadAllBytes(toLf));
+    }
+
+    [Fact]
+    public async Task Format_repairs_a_lone_carriage_return_left_by_a_pass()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string file = WriteBytes("A/Code.cs", "class A\n{\n}\n");
+        _formatter.OnCall = _ => WriteBytes("A/Code.cs", "class A\r\n{\r\n    int x;\r}\r\n");
+
+        Assert.Equal(0, await RunAsync());
+        Assert.Equal(Encode("class A\n{\n    int x;\r}\n"), File.ReadAllBytes(file));
+    }
+
+    [Fact]
+    public async Task Format_stops_once_a_pass_only_changes_line_endings()
+    {
+        // Restored to its line ending, the file equals the one before the pass, so no second pass runs.
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string file = WriteBytes("A/Code.cs", "class A\n{\n}\n");
+        _formatter.OnCall = _ => WriteBytes("A/Code.cs", "class A\r\n{\n}\n");
+
+        Assert.Equal(0, await RunAsync());
+        Assert.Single(_formatter.Calls);
+        Assert.Equal(Encode("class A\n{\n}\n"), File.ReadAllBytes(file));
+    }
+
+    [Fact]
+    public async Task Failed_format_still_restores_the_line_endings()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string file = WriteBytes("A/Code.cs", "class A\n{\n}\n");
+        _formatter.OnCall = _ => WriteBytes("A/Code.cs", "class A\r\n{\n}\n");
+        _formatter.Result = _ => new ToolResult(1, "boom", false);
+
+        Assert.Equal(1, await RunAsync());
+        Assert.Equal(Encode("class A\n{\n}\n"), File.ReadAllBytes(file));
+    }
+
+    [Fact]
+    public async Task Thrown_format_still_restores_the_line_endings()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string file = WriteBytes("A/Code.cs", "class A\n{\n}\n");
+        _formatter.OnCall = _ =>
+        {
+            WriteBytes("A/Code.cs", "class A\r\n{\n}\n");
+            throw new OperationCanceledException();
+        };
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => RunAsync());
+        Assert.Equal(Encode("class A\n{\n}\n"), File.ReadAllBytes(file));
+    }
+
+    [Fact]
+    public async Task Failed_restore_does_not_hide_the_format_exception()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        string file = WriteBytes("A/Code.cs", "class A\n{\n}\n");
+        FileStream? locked = null;
+        _formatter.OnCall = _ =>
+        {
+            WriteBytes("A/Code.cs", "class A\r\n{\n}\n");
+            locked = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            throw new OperationCanceledException();
+        };
+
+        try
+        {
+            await Assert.ThrowsAsync<OperationCanceledException>(() => RunAsync());
+        }
+        finally
+        {
+            locked?.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task File_deleted_during_the_run_is_not_an_error()
+    {
+        AddProject("A/A.csproj", ProjectState.InScope);
+        _tree.Write("A/Kept.cs", "class Kept { }\n");
+        string deleted = _tree.Write("A/Deleted.cs", "class Deleted { }\n");
+        _formatter.OnCall = _ => File.Delete(deleted);
+
+        Assert.Equal(0, await RunAsync());
+        Assert.Equal("fixed A/A.csproj\n", Output);
     }
 
     [Fact]
@@ -306,6 +551,22 @@ public sealed class FixCommandTests : IDisposable
 
     private string Output => _output.ToString().ReplaceLineEndings("\n");
 
+    private static byte[] Utf8Bom => [0xEF, 0xBB, 0xBF];
+
+    private static byte[] Encode(string text, byte[]? preamble = null)
+    {
+        return [.. preamble ?? [], .. Encoding.UTF8.GetBytes(text)];
+    }
+
+    /// <summary>Writes the exact bytes of <paramref name="text"/>, so that its line endings stay as given.</summary>
+    private string WriteBytes(string relativePath, string text, byte[]? preamble = null)
+    {
+        string path = _tree.Path(relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllBytes(path, Encode(text, preamble));
+        return path;
+    }
+
     private string AddProject(
         string relativePath,
         ProjectState state,
@@ -334,6 +595,7 @@ public sealed class FixCommandTests : IDisposable
     private sealed record FormatCall(
         string ProjectPath,
         IReadOnlyList<string>? IncludeFiles,
+        IReadOnlyList<string> ExcludeFiles,
         IReadOnlyList<string> Diagnostics);
 
     /// <summary>Answers with queued infos per project; the last one repeats.</summary>
@@ -396,10 +658,11 @@ public sealed class FixCommandTests : IDisposable
         public Task<ToolResult> FormatAsync(
             string projectPath,
             IReadOnlyList<string>? includeFiles,
+            IReadOnlyList<string> excludeFiles,
             IReadOnlyList<string> diagnostics,
             CancellationToken cancellationToken)
         {
-            Calls.Add(new FormatCall(projectPath, includeFiles, diagnostics));
+            Calls.Add(new FormatCall(projectPath, includeFiles, excludeFiles, diagnostics));
             OnCall(Calls.Count);
             return Task.FromResult(Result(projectPath));
         }
