@@ -506,6 +506,20 @@ public sealed class SkillLintTests
     }
 
     /// <summary>
+    /// A reply that answers fdg-setup's questions or changes its plan is not a confirmation: the 1.0.0-rc.1 host check
+    /// saw the skill apply the changes right after the user asked for one.
+    /// </summary>
+    [Fact]
+    public void Fdg_setup_asks_again_after_the_user_changes_the_plan()
+    {
+        MarkdownFile skill = Read(SkillPath("fdg-setup"));
+        string body = string.Join(" ", skill.Body.Split('\n').Select(l => l.Trim()));
+
+        Assert.Contains("is not a confirmation", body);
+        Assert.Contains("show the whole updated list and wait again", body);
+    }
+
+    /// <summary>
     /// dotnet format applies the fixes of IDE0280, IDE0250 and IDE0251 only when an <c>.editorconfig</c> sets their
     /// severity, so fdg-setup offers those entries, writes them only after the user confirms, never overwrites an
     /// existing one (an existing entry settles only the files it applies to), handles a nested root

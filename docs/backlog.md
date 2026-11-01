@@ -87,3 +87,11 @@ rare layouts, and a fix needs a design for keeping the entries in step with the 
 - **Rider** is not verified: it is not installed on the verification machine. Reason to wait: needs a Rider
   installation. The package uses only standard analyzer and globalconfig support, so the IDE checks of the
   1.0 verification are the ones to repeat there.
+- **The interactive host checks that 1.0.0 shipped without**: Codex `/hooks` listing the changed hooks (A4), Codex
+  SessionStart after a compaction (A8), the `bash` hook line on macOS or Linux, and live analysis in Visual Studio
+  and VS Code (C1, C2). Reason to wait: they need the TUI or an IDE; the headless parts passed, and the results table
+  in [hosts.md](hosts.md#results) gives the evidence for each.
+- **Agents suppress a naming diagnostic instead of renaming.** In every rc.1 run, when Stop blocked with CA1710 on a
+  class the prompt had named, the agent added a justified `[SuppressMessage]` rather than renaming it. Reason to wait:
+  keeping a name the user gave is a defensible reading, and the suppression is visible in the diff; if users report
+  it as unwanted, the Stop message could ask the agent to suppress only when the user asked to keep the code as is.
