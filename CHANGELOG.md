@@ -4,7 +4,7 @@ This file starts at 1.0.0. Earlier releases are described in their
 [GitHub releases](https://github.com/tianvan/framework-design-guidelines/releases). The versioning rules are in
 [docs/releasing.md](docs/releasing.md#versioning-and-compatibility).
 
-## 1.0.0 - Unreleased
+## 1.0.0 - 2026-11-01
 
 0.1.0 covered chapter 3 and appendix A of the book (158 rules); 0.2.0 extended the rule data, the analyzers and the
 skill references to the whole book, chapters 2 to 9 and appendices A and D (830 rules, each checked against the
