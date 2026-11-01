@@ -84,13 +84,15 @@ rare layouts, and a fix needs a design for keeping the entries in step with the 
 
 ## Hosts
 
-- **Rider** is not verified: it is not installed on the verification machine. Reason to wait: needs a Rider
+- **Rider itself** is not verified: it is not installed on the verification machine. ReSharper's command-line
+  InspectCode, which runs the same analysis engine, reported what Visual Studio did. Reason to wait: needs a Rider
   installation. The package uses only standard analyzer and globalconfig support, so the IDE checks of the
   1.0 verification are the ones to repeat there.
-- **The interactive host checks that 1.0.0 shipped without**: Codex `/hooks` listing the changed hooks (A4), Codex
-  SessionStart after a compaction (A8), the `bash` hook line on macOS or Linux, and live analysis in Visual Studio
-  and VS Code (C1, C2). Reason to wait: they need the TUI or an IDE; the headless parts passed, and the results table
-  in [hosts.md](hosts.md#results) gives the evidence for each.
+- **The host checks still open after 1.0**: Codex on macOS or Linux (on Linux, CI runs the `bash` hook line through
+  the tests, not through Codex; macOS is not covered), and the Claude Code steps B2 and B4 in an interactive session
+  (they passed headless). Reason to wait: the first needs a macOS or Linux machine with Codex, and the second an
+  interactive session, which writes a trust entry for the new folder to the user's Claude Code configuration. The
+  results table in [hosts.md](hosts.md#results) gives the evidence for each.
 - **Agents suppress a naming diagnostic instead of renaming.** In every rc.1 run, when Stop blocked with CA1710 on a
   class the prompt had named, the agent added a justified `[SuppressMessage]` rather than renaming it. Reason to wait:
   keeping a name the user gave is a defensible reading, and the suppression is visible in the diff; if users report

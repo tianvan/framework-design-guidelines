@@ -60,7 +60,9 @@ codex plugin add framework-design-guidelines@framework-design-guidelines
 
 Then start Codex, open `/hooks` and approve the three FDG hooks (SessionStart, UserPromptSubmit, Stop).
 **Codex skips hooks that are not approved, silently.** Approve them again after every plugin update that changes
-them; until then the old approval does not apply and the hooks do nothing.
+them; until then the old approval does not apply and the hooks do nothing. A Codex update can ask for approval
+again too: Codex 0.164.0 did so for hooks approved under an earlier Codex. Codex shows "Hooks need review" at
+start when it does.
 
 **Upgrading from 0.2.0:** 1.0 changes the command line of all three Codex hooks (they now read the plugin root from
 the environment, so a path with `$` or a backtick works), so Codex lists them as modified after the update. Open
