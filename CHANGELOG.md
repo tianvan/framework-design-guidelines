@@ -4,6 +4,14 @@ This file starts at 1.0.0. Earlier releases are described in their
 [GitHub releases](https://github.com/tianvan/framework-design-guidelines/releases). The versioning rules are in
 [docs/releasing.md](docs/releasing.md#versioning-and-compatibility).
 
+## 2.0.0 - 2026-11-20
+
+- Repository-scoped Claude Code and Codex integration ships in `dotnet-fdg`. The `init` command installs project
+  skills and hooks, with a preview and a version pin in the host's installation record. Repositories can share a
+  local tool cache. `uninstall` removes the selected host's integration. See [installation](docs/install.md).
+- Marketplace distribution ends with 1.x. The 2.0 setup, fix and review skills use the project commands
+  `fdg-setup`, `fdg-fix` and `fdg-review`.
+
 ## 1.0.0 - 2026-11-01
 
 0.1.0 covered chapter 3 and appendix A of the book (158 rules); 0.2.0 extended the rule data, the analyzers and the

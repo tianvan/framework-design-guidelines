@@ -1,6 +1,5 @@
 using System.Text.Json.Nodes;
 using Fdg.Generator.Commands;
-using Fdg.Generator.Plugin;
 using Fdg.Generator.Rules;
 using Fdg.Generator.Sdk;
 using Microsoft.CodeAnalysis;
@@ -19,10 +18,6 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
         new SdkDiagnostic("IDE0055", "Fix formatting", DiagnosticSeverity.Hidden, HasCodeFix: true),
     }.ToDictionary(d => d.Id);
 
-    private const string ClaudeManifest = "plugins/framework-design-guidelines/.claude-plugin/plugin.json";
-    private const string CodexManifest = "plugins/framework-design-guidelines/.codex-plugin/plugin.json";
-    private const string Marketplace = ".claude-plugin/marketplace.json";
-
     private readonly InstalledSdkFixture _sdk;
     private readonly string _root;
     private readonly string _rulesDir;
@@ -34,13 +29,6 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
         _root = Path.Combine(Path.GetTempPath(), "fdg-check-tests-" + Guid.NewGuid().ToString("N"));
         _rulesDir = Path.Combine(_root, "rules");
         Directory.CreateDirectory(_rulesDir);
-        WriteRootFile("Directory.Build.props", "<Project>\n  <PropertyGroup>\n    <Version>0.1.0</Version>\n  </PropertyGroup>\n</Project>\n");
-        WriteRootFile(ClaudeManifest, "{ \"name\": \"framework-design-guidelines\", \"version\": \"0.1.0\" }\n");
-        WriteRootFile(CodexManifest, "{ \"name\": \"framework-design-guidelines\", \"version\": \"0.1.0\" }\n");
-        WriteRootFile(
-            Marketplace,
-            "{ \"name\": \"framework-design-guidelines\", \"version\": \"0.1.0\", \"plugins\": " +
-            "[ { \"name\": \"framework-design-guidelines\", \"version\": \"0.1.0\" } ] }\n");
         File.WriteAllText(
             Path.Combine(_rulesDir, "meta.yaml"),
             "repositoryUrl: https://example.test/repo\n" +
@@ -57,19 +45,6 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
     public void Dispose()
     {
         Directory.Delete(_root, recursive: true);
-    }
-
-    private void WriteRootFile(string relativePath, string content)
-    {
-        string path = Path.Combine(_root, relativePath);
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllText(path, content);
-    }
-
-    private void EditRootFile(string relativePath, Func<string, string> edit)
-    {
-        string path = Path.Combine(_root, relativePath);
-        File.WriteAllText(path, edit(File.ReadAllText(path)));
     }
 
     private string RulesPath => Path.Combine(_rulesDir, RulesFileName);
@@ -664,37 +639,6 @@ public sealed class CheckCommandTests : IDisposable, IClassFixture<InstalledSdkF
 
         Assert.Contains(errors, e => e.StartsWith("profiles.yaml:", StringComparison.Ordinal) && e.Contains("'test'"));
         Assert.Contains(errors, e => e.StartsWith("profiles.yaml:", StringComparison.Ordinal) && e.Contains("'tests'"));
-    }
-
-    [Fact]
-    public void Versions_in_manifests_match_directory_build_props()
-    {
-        Assert.Empty(ManifestVersionValidator.Validate(InstalledSdkFixture.RepositoryRoot()));
-
-        EditRootFile(CodexManifest, json => json.Replace("\"version\": \"0.1.0\"", "\"version\": \"0.2.0\""));
-        EditRootFile(Marketplace, json => json.Replace("\"0.1.0\" } ]", "\"0.0.9\" } ]"));
-        File.Delete(Path.Combine(_root, ClaudeManifest));
-
-        IReadOnlyList<string> errors = Check();
-
-        Assert.Equal(3, errors.Count);
-        Assert.Contains(errors, e => e.StartsWith($"{CodexManifest}:-: ", StringComparison.Ordinal) && e.Contains("0.2.0") && e.Contains("0.1.0"));
-        Assert.Contains(errors, e => e.StartsWith($"{Marketplace}:-: ", StringComparison.Ordinal) && e.Contains("0.0.9"));
-        Assert.Contains(errors, e => e.StartsWith($"{ClaudeManifest}:-: ", StringComparison.Ordinal) && e.Contains("does not exist"));
-
-        EditRootFile("Directory.Build.props", props => props.Replace("0.1.0", "0.2.0"));
-        WriteRootFile(ClaudeManifest, "{ \"name\": \"framework-design-guidelines\" }\n");
-
-        errors = Check();
-
-        Assert.Contains(errors, e => e.StartsWith($"{ClaudeManifest}:-: ", StringComparison.Ordinal) && e.Contains("version"));
-        Assert.DoesNotContain(errors, e => e.StartsWith($"{CodexManifest}:", StringComparison.Ordinal));
-        Assert.Contains(errors, e => e.StartsWith($"{Marketplace}:-: ", StringComparison.Ordinal) && e.Contains("0.1.0"));
-
-        var result = Run("check", "--rules", _rulesDir, "--sdk", _sdk.Directory);
-
-        Assert.Equal(1, result.ExitCode);
-        Assert.Contains($"{ClaudeManifest}:-: ", result.Error);
     }
 
     [Fact]

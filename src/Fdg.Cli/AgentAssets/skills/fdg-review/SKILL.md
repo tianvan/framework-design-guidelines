@@ -12,6 +12,8 @@ argument-hint: "[<path>...]"
 
 Paths to review: $ARGUMENTS
 
+Start from the current Git worktree. If @FDG_RECEIPT@ is absent, stop and report that FDG is inactive there.
+
 If the line above is empty or still shows a placeholder (Codex does not substitute it), take the paths from the
 user's message. With no paths, review the current changes: `git diff HEAD` (staged and unstaged) plus the untracked
 `.cs` files (`git ls-files --others --exclude-standard -- "*.cs"`). In a repository with no commits yet
@@ -21,19 +23,18 @@ This is a review: give findings and change no files.
 
 ## Where to run it
 
-- **Claude Code**: delegate the review to the `fdg-reviewer` subagent (named
-  `framework-design-guidelines:fdg-reviewer` when the plugin namespaces it) and pass it: the paths, or that the scope
-  is the current changes; the baseline, if the user named one; the path of the design specification, if the change
-  comes with one (step 6); and the absolute path of the rule references, which is this skill's base directory
-  followed by `../fdg-write/references`. Show the user its findings as it returns them.
-- **Codex** (no subagents): review in this session by following the steps below.
+Delegate to this project's `fdg-reviewer` agent. Pass the paths or current-change scope, any requested baseline
+or design specification, and the absolute rule references path. Resolve it from this skill's directory using
+`../fdg-write/references`. Show the agent's findings to the user.
 
 ## Steps
 
 1. Collect the scope as above. For changes, review the changed and added lines and the declarations they belong
    to, not the rest of the file.
-2. Find each file's profile: the `FrameworkDesignGuidelinesProfile` of the project that contains it (in the
-   project file or a `Directory.Build.props` above it, or `profile` in the project's `obj/fdg/marker.json`).
+2. Resolve each file to a C# project in the current worktree. Report unresolved or external sources as unchecked.
+   From the Git root, use @FDG_LAUNCHER@ with `project <project.csproj>` for the evaluated profile and language
+   version. If the project has no FDG profile, skip it. If the launcher reports a missing tool, show the user its
+   `prepare` command.
 3. Read the rule references for the topics the code in scope touches. Read
    [ch03-naming-3-1-to-3-2.md](../fdg-write/references/ch03-naming-3-1-to-3-2.md) and
    [ch03-naming-3-3-on.md](../fdg-write/references/ch03-naming-3-3-on.md) for every review outside `test` projects

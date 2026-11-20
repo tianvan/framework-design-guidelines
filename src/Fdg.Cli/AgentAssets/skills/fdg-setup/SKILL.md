@@ -2,30 +2,34 @@
 name: fdg-setup
 description: >-
   Set up Framework Design Guidelines checks in this repository: add the FrameworkDesignGuidelines.Analyzers package,
-  choose a profile (library, application or test) for each directory, build once to confirm the rules are active,
-  and install the dotnet fdg CLI. Use when the user runs /fdg-setup (or `$fdg-setup` on Codex) or asks to set up or
+  choose a profile (library, application or test) for each directory, and build once to confirm the rules are active. Use when the user runs /fdg-setup (or `$fdg-setup` on Codex) or asks to set up or
   repair FDG.
 disable-model-invocation: true
 ---
 
 # Set up Framework Design Guidelines
 
+Start from the current Git worktree. If @FDG_RECEIPT@ is absent, tell the user to run FDG `init` there first.
+
 Onboard this repository's C# projects in four steps. Ground rules for every step:
 
 - Change only files in the working tree. Never run `git add`, `git commit`, `git stash` or `git checkout`, and never
   create a branch. The user reviews the result with `git diff` and commits it.
+- Write only through paths in the current worktree. If a proposed settings file or any of its parent directories
+  uses a symbolic link, report it and ask the user to choose an in-repository file.
 - Before you edit anything, list every file you will create or change, with what you will put in it, and wait for
   the user to confirm. Edit nothing until they do. A reply that answers your questions or asks for a change is not a
   confirmation: apply the answers to the plan, show the whole updated list and wait again, until the user confirms
   the list as it stands.
-- Add no plugin-specific files at the repository root. Settings go into the project's own MSBuild files; the only
+- Add no FDG Agent configuration files at the repository root. Settings go into the project's own MSBuild files; the only
   exception is the three severities that step 3 offers for the root `.editorconfig`.
 - Never put the package id in comments: the hooks would read a commented-out reference as onboarding.
 
 ## Step 1: Find the projects
 
-1. List the project files: `git ls-files "*.csproj"` plus untracked ones (`git ls-files --others --exclude-standard
-   "*.csproj"`); outside git, search the directory tree.
+1. From the Git root, list tracked and untracked project files with
+   `git ls-files --cached --others --exclude-standard -- "*.csproj"`. Skip files and directories that use symbolic
+   links or are outside this worktree.
 2. A project is SDK-style when its root element is `<Project Sdk="...">`, or it contains `<Sdk Name="..." />` or
    `<Import ... Sdk="..." />`. Only SDK-style projects are supported. Name every other (legacy) project and tell the
    user it is not supported and will be left untouched.
@@ -64,8 +68,9 @@ For each `library` directory, also ask whether to enable PublicApiAnalyzers
 
 First show the user the list of files you will change, then wait for confirmation (see the ground rules).
 
-1. Find the latest version of `FrameworkDesignGuidelines.Analyzers` with
-   `dotnet package search FrameworkDesignGuidelines.Analyzers --exact-match`. If that fails, ask the user.
+1. From the Git root, use @FDG_LAUNCHER@. If it reports a missing tool, show its `prepare` command to the user.
+   Run the launcher with `--version` and use that version of `FrameworkDesignGuidelines.Analyzers` for new
+   references. Keep compatible existing pins unless their update is part of the user's confirmed changes.
 2. Reference the package, always with `PrivateAssets="all"` (it is a development dependency, so its rules never
    flow to the library's consumers):
    - With central package management, put the version in `Directory.Packages.props` only, and leave it off the
@@ -183,29 +188,11 @@ Work through this list in order; do not skip a project.
    2. For each solution, list its projects with `dotnet sln <solution> list`. Build every solution that contains at
       least one onboarded project: `dotnet build <solution>`.
    3. Build every onboarded project that is in no solution on its own: `dotnet build <the .csproj>`.
-3. For each onboarded project, one by one, open `obj/fdg/marker.json` in the project directory. Write down every
-   project whose marker is missing, or whose `profile` is not the one chosen, and every project whose build showed
+3. From the Git root, use the launcher with `project <project.csproj>` to inspect each build's marker at its
+   MSBuild intermediate path. Write down every project with `markerFound: false`, a different profile, or a build showing
    FDG0001 (profile not set) or FDG0002 (unknown profile). For each, fix the cause (the `PackageReference`, the
    `FrameworkDesignGuidelinesProfile` property, or the import of the `Directory.Build.props` above), build that
-   project again, and check its marker again. Go on until no project is left on the list.
+   project again, and rerun the same inspection. Go on until no project is left on the list.
 4. Existing code may now show FDG, CA and IDE warnings. That is expected: the end-of-turn check reports only the
    lines the AI changes, and `/fdg-fix` cleans up a directory when the user wants it.
 5. Summarize the files you changed and remind the user to review them with `git diff` and commit them.
-6. Check the CLI that the hooks and `/fdg-fix` use: run `dotnet-fdg --version` (the same tool as `dotnet fdg`;
-   its own executable starts without resolving an SDK). If the shell cannot find `dotnet-fdg` ("command not found",
-   "is not recognized"), and neither `~/.dotnet/tools/dotnet-fdg` nor `~/.dotnet/tools/dotnet-fdg.exe` exists, it is
-   not installed: tell the user to install it, then restart Claude Code or Codex:
-
-   ```
-   dotnet tool install -g dotnet-fdg
-   ```
-
-   If the shell cannot find `dotnet-fdg` but one of those files exists, the tool was installed after Claude Code or
-   Codex started, so the tools directory is not on its PATH yet: tell the user to restart Claude Code or Codex.
-
-   An error that says "A compatible .NET SDK was not found" or names a requested SDK version is not a missing tool:
-   the repository's `global.json` pins an SDK that is not installed. Tell the user to install that SDK or relax
-   `rollForward`; do not suggest installing dotnet-fdg.
-
-   On Codex, the plugin's hooks also have to be approved once in `/hooks`, and again after an update changes them;
-   until then they silently do nothing.

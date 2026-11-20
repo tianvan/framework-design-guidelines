@@ -7,7 +7,7 @@ namespace Fdg.Generator.Emit;
 public static class GeneratedFiles
 {
     private const string RuleDocsDirectory = "docs/rules";
-    private const string ReferencesDirectory = "plugins/framework-design-guidelines/skills/fdg-write/references";
+    private const string ReferencesDirectory = "src/Fdg.Cli/AgentAssets/skills/fdg-write/references";
 
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false);
 

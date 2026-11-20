@@ -46,13 +46,13 @@ public sealed class GitRepository
             return null;
         }
 
-        string[] lines = result.Text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        string[] lines = result.Text.TrimEnd('\n').Split('\n');
         if (result.ExitCode != 0 || lines.Length != 2)
         {
             return null;
         }
 
-        return new GitRepository(Path.GetFullPath(lines[0]), Path.GetFullPath(lines[1]));
+        return new GitRepository(Path.GetFullPath(lines[0].TrimEnd('\r')), Path.GetFullPath(lines[1].TrimEnd('\r')));
     }
 
     /// <returns>The commit HEAD points to, or <see langword="null"/> in a repository without commits.</returns>

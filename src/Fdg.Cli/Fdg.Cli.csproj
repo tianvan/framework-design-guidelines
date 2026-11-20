@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    dotnet-fdg: the .NET tool behind `dotnet fdg fix` and the plugin hooks. It targets net8.0 and rolls forward to
+    dotnet-fdg: the .NET tool behind `dotnet fdg fix` and the project hooks. It targets net8.0 and rolls forward to
     any newer runtime, so it runs wherever a supported SDK is installed.
   -->
   <PropertyGroup>
@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Tomlyn" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +34,7 @@
   <!-- Fallback manifest for projects whose package copy of rules.json cannot be read. -->
   <ItemGroup>
     <EmbeddedResource Include="..\FrameworkDesignGuidelines.Package\data\rules.json" Link="Rules\rules.json" LogicalName="Fdg.Cli.Rules.rules.json" />
+    <EmbeddedResource Include="AgentAssets\**\*" LogicalName="Fdg.Agent/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

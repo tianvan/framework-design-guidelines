@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Fdg.Cli.IO;
 using Fdg.Cli.Projects;
 using Fdg.Cli.Rules;
 using Fdg.Cli.Tooling;
@@ -39,12 +40,23 @@ public sealed class FixCommand
         _error = error;
     }
 
-    public async Task<int> RunAsync(IReadOnlyList<string> paths, string cwd, CancellationToken cancellationToken)
+    public Task<int> RunAsync(IReadOnlyList<string> paths, string cwd, CancellationToken cancellationToken) =>
+        RunAsync(paths, cwd, cancellationToken, worktree: null);
+
+    internal async Task<int> RunAsync(
+        IReadOnlyList<string> paths, string cwd, CancellationToken cancellationToken, string? worktree)
     {
         IReadOnlyList<FixTarget> targets;
         try
         {
-            targets = PathResolver.Resolve(paths, cwd);
+            if (worktree is not null && paths.Any(path =>
+                !ProjectFiles.PathComparer.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(path, cwd)), worktree) &&
+                !WorktreePath.IsSafe(worktree, Path.GetFullPath(path, cwd))))
+            {
+                throw new CommandException("Choose paths inside the current worktree without symbolic links.");
+            }
+
+            targets = PathResolver.Resolve(paths, cwd, skipLinkedDirectories: worktree is not null);
         }
         catch (CommandException e)
         {
@@ -61,16 +73,22 @@ public sealed class FixCommand
         bool failed = false;
         foreach (FixTarget target in targets)
         {
-            failed |= !await FixAsync(target, cwd, cancellationToken).ConfigureAwait(false);
+            failed |= !await FixAsync(target, cwd, worktree, cancellationToken).ConfigureAwait(false);
         }
 
         return failed ? 1 : 0;
     }
 
     /// <returns><see langword="false"/> when the project failed; skipping an out-of-scope project is not a failure.</returns>
-    private async Task<bool> FixAsync(FixTarget target, string cwd, CancellationToken cancellationToken)
+    private async Task<bool> FixAsync(FixTarget target, string cwd, string? worktree, CancellationToken cancellationToken)
     {
         string display = DisplayPath(target.ProjectPath, cwd);
+        if (worktree is not null && !WorktreePath.IsSafe(worktree, target.ProjectPath))
+        {
+            _output.WriteLine($"skipped {display}: project is outside the worktree or uses a symbolic link");
+            return true;
+        }
+
         if (!File.Exists(target.ProjectPath))
         {
             // A solution can list a project that has since been deleted or moved.
@@ -115,7 +133,7 @@ public sealed class FixCommand
         {
             _output.WriteLine(
                 $"skipped {display}: package protocol {info.Protocol} is newer than this dotnet-fdg supports " +
-                $"({SupportedProtocol}); update it with: dotnet tool update -g dotnet-fdg");
+                $"({SupportedProtocol}); update FDG to a compatible release.");
             return false;
         }
 
@@ -130,11 +148,29 @@ public sealed class FixCommand
             return false;
         }
 
-        string[] sources = SourceFiles(target);
+        string[] sources = SourceFiles(target, skipLinkedDirectories: worktree is not null);
         IReadOnlyList<string>? includes = target.IncludeFiles is null
             ? null
             : FormatIncludes.ToProjectRelative(target.ProjectPath, target.IncludeFiles);
         IReadOnlyList<string> excludes = [];
+        if (worktree is not null)
+        {
+            // An explicit list prevents the formatter expanding a project glob to files outside the worktree.
+            foreach (string file in sources.Concat(ProjectFiles.StaticCompileItems(target.ProjectPath))
+                .Distinct(ProjectFiles.PathComparer).Where(file => !WorktreePath.IsSafe(worktree, file)))
+            {
+                _output.WriteLine($"skipped {DisplayPath(file, cwd)}: source is outside the worktree or uses a symbolic link");
+            }
+
+            sources = sources.Where(file => WorktreePath.IsSafe(worktree, file)).ToArray();
+            if (sources.Length == 0)
+            {
+                return true;
+            }
+
+            target = target with { IncludeFiles = sources };
+            includes = FormatIncludes.ToProjectRelative(target.ProjectPath, sources);
+        }
         (string File, int Line)[] broken = sources
             .Select(file => (File: file, Line: FirstSyntaxErrorLine(file) ?? 0))
             .Where(file => file.Line > 0)
@@ -234,11 +270,11 @@ public sealed class FixCommand
     private static string DisplayPath(string path, string cwd) => Path.GetRelativePath(cwd, path).Replace('\\', '/');
 
     /// <summary>The files a format pass may change: the included files, or the project's C# files.</summary>
-    private static string[] SourceFiles(FixTarget target)
+    private static string[] SourceFiles(FixTarget target, bool skipLinkedDirectories)
     {
         IEnumerable<string> roots = target.IncludeFiles ?? [Path.GetDirectoryName(target.ProjectPath)!];
         return roots
-            .SelectMany(root => Directory.Exists(root) ? ProjectFiles.Enumerate(root, "*.cs") : [root])
+            .SelectMany(root => Directory.Exists(root) ? ProjectFiles.Enumerate(root, "*.cs", skipLinkedDirectories) : [root])
             .Where(File.Exists)
             .Distinct(ProjectFiles.PathComparer)
             .ToArray();

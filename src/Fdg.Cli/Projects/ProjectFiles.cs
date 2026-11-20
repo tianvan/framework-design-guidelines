@@ -15,7 +15,10 @@ public static class ProjectFiles
         name.Equals("obj", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Files matching <paramref name="searchPattern"/> under <paramref name="directory"/>, in a stable order.</summary>
-    public static IEnumerable<string> Enumerate(string directory, string searchPattern)
+    public static IEnumerable<string> Enumerate(string directory, string searchPattern) =>
+        Enumerate(directory, searchPattern, skipLinkedDirectories: false);
+
+    internal static IEnumerable<string> Enumerate(string directory, string searchPattern, bool skipLinkedDirectories)
     {
         foreach (string file in Directory.EnumerateFiles(directory, searchPattern).Order(StringComparer.OrdinalIgnoreCase))
         {
@@ -24,10 +27,11 @@ public static class ProjectFiles
 
         IEnumerable<string> children = Directory.EnumerateDirectories(directory)
             .Where(d => !IsSkippedDirectory(Path.GetFileName(d)))
+            .Where(d => !skipLinkedDirectories || (File.GetAttributes(d) & FileAttributes.ReparsePoint) == 0)
             .Order(StringComparer.OrdinalIgnoreCase);
         foreach (string child in children)
         {
-            foreach (string file in Enumerate(child, searchPattern))
+            foreach (string file in Enumerate(child, searchPattern, skipLinkedDirectories))
             {
                 yield return file;
             }

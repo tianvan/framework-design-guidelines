@@ -81,7 +81,7 @@ public sealed record RulesManifest(
         {
             throw new NotSupportedException(
                 $"rules.json protocol {manifest.Protocol} is newer than this dotnet-fdg supports " +
-                $"({FixCommand.SupportedProtocol}); update it with: dotnet tool update -g dotnet-fdg");
+                $"({FixCommand.SupportedProtocol}). Update FDG to a compatible release.");
         }
 
         return manifest;

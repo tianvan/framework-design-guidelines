@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
     env:
       DOTNET_NOLOGO: "1"
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
@@ -38,10 +38,6 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
-
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 22
 
       - name: Build
         run: dotnet build -c Release
@@ -60,20 +56,16 @@ jobs:
 
       # Includes the Integration tests, which pack the package and the CLI into temporary feeds.
       - name: Test
-        run: dotnet test -c Release --no-build --logger trx --results-directory TestResults
+        run: |
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            # Git returns physical paths on macOS, including for repositories under /var/folders.
+            export TMPDIR="$(cd -P "${TMPDIR:-/tmp}" && pwd -P)"
+          fi
+          dotnet test -c Release --no-build --logger trx --results-directory TestResults
 
       # There is no book in CI, so this validates the rule mappings against the installed SDK only.
       - name: Check rule mappings
         run: dotnet run -c Release --no-build --project src/Fdg.Generator -- check
-
-      - name: Install the Claude Code CLI
-        run: npm i -g @anthropic-ai/claude-code@2.1.303
-
-      - name: Validate the marketplace
-        run: claude plugin validate --strict .
-
-      - name: Validate the plugin
-        run: claude plugin validate --strict plugins/framework-design-guidelines
 
       - name: Upload test results
         if: failure()

@@ -73,7 +73,7 @@ public static class SelfCheck
         {
             issues.Add(IssuePrefix +
                 $"FDG package protocol newer than this dotnet-fdg supports ({FixCommand.SupportedProtocol}): " +
-                $"{Names(facts.NewerProtocol)}. Update it with: dotnet tool update -g dotnet-fdg");
+                $"{Names(facts.NewerProtocol)}. Update FDG to a compatible release.");
         }
 
         if (facts.LegacyOnboarded.Count > 0)

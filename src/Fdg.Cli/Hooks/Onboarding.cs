@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
+using Fdg.Cli.IO;
 using Fdg.Cli.Projects;
 
 namespace Fdg.Cli.Hooks;
@@ -49,7 +50,8 @@ public sealed partial class Onboarding
         foreach (string relativePath in await git.ListFilesAsync(Pathspecs, cancellationToken).ConfigureAwait(false))
         {
             string projectPath = Path.GetFullPath(Path.Combine(git.TopLevel, relativePath));
-            if (relativePath.Split('/')[..^1].Any(ProjectFiles.IsSkippedDirectory) || !File.Exists(projectPath))
+            if (relativePath.Split('/')[..^1].Any(ProjectFiles.IsSkippedDirectory) ||
+                !WorktreePath.IsSafe(git.TopLevel, projectPath) || !File.Exists(projectPath))
             {
                 continue;
             }

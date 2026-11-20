@@ -12,6 +12,8 @@ argument-hint: "[<path>...]"
 
 Paths to fix: $ARGUMENTS
 
+Start from the current Git worktree. If @FDG_RECEIPT@ is absent, stop and report that FDG is inactive there.
+
 If the line above is empty or still shows a placeholder (Codex does not substitute it), take the paths from the
 user's message. With no paths at all, use the current directory. A path can be a directory, a `.csproj`, a `.sln` or
 `.slnx`, or a `.cs` file.
@@ -29,10 +31,12 @@ Ground rules:
 Note `git diff --stat` first, so you can tell the CLI's changes from the user's. Then run:
 
 ```
-dotnet-fdg fix <paths>
+<launcher> fix <paths>
 ```
 
-`dotnet-fdg fix` is the same as `dotnet fdg fix`; the tool's own executable starts without resolving an SDK. It
+Run from the Git root, using @FDG_LAUNCHER@ as `<launcher>`. If the launcher reports that the pinned
+version is missing, tell the user to run the `prepare` command it prints. Report external or unresolved linked
+sources as unchecked. The pinned tool
 fixes layout, applies the non-breaking fixes of the diagnostics FDG registers (no other analyzer's), and prints no
 report. It skips projects that are legacy (non-SDK) or have no `FrameworkDesignGuidelinesProfile`; name any such
 project the paths cover and suggest `/fdg-setup`.
@@ -54,14 +58,15 @@ Tell the two kinds of failure apart:
 The projects to check are the onboarded SDK-style projects the paths cover (the project that contains a `.cs` file).
 For each one:
 
-1. Read `obj/fdg/marker.json` in the project directory. If it is missing, the project has not been built since it
-   was onboarded: build it once (`dotnet build <the .csproj>`) and read it again; if it is still missing, the project
-   is not onboarded, so report it and suggest `/fdg-setup`. The marker's `projectPath` is the project's full path as
-   MSBuild sees it, and its `rulesPath` is the package's `rules.json`. From that file take `registeredDiagnostics`
-   (the diagnostic ids FDG reports), `breakingFixDiagnostics` (ids whose fix renames or moves a symbol), and `rules`
-   (each rule's `id`, `strength`, `text` and the `diagnostics` that check it).
+1. Run `<launcher> project <project.csproj>` to get the profile, marker status, and rules path using the
+   project's evaluated intermediate directory. If the marker is missing, build once (`dotnet build <project.csproj>`)
+   and try again. If the project still has no in-scope profile or marker, report it and suggest the setup skill.
+   If the protocol is greater than 1, report that the project needs a compatible FDG release and skip it.
+   Use the returned `rulesPath` to read `registeredDiagnostics` (the diagnostic ids FDG reports),
+   `breakingFixDiagnostics` (ids whose fix renames or moves a symbol), and `rules` (each rule's `id`, `strength`,
+   `text` and the `diagnostics` that check it).
 2. Create a new, empty directory under the system temporary directory (`$TMPDIR`, `$TEMP` or `/tmp`), never inside
-   the repository, and build with the marker's `projectPath`, quoted, as both the project and `FdgSarifProject`:
+   the repository, and build with the returned `projectPath`, quoted, as both the project and `FdgSarifProject`:
 
    ```
    dotnet build <projectPath> --no-restore -p:FdgSarifDir=<temp dir> -p:FdgSarifProject=<projectPath>
@@ -97,7 +102,7 @@ that its issues are gone before you move on. This keeps the context small. Fix c
 
 ## Step 5: Verify and summarize
 
-Run `dotnet-fdg fix <paths>` and the builds from step 2 once more. Then report briefly:
+Run `<launcher> fix <paths>` and the builds from step 2 once more. Then report briefly:
 
 - what the CLI fixed automatically (the files it changed, from `git diff --stat`);
 - what you changed by hand, by project;

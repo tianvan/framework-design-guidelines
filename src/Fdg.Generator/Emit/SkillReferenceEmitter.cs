@@ -33,7 +33,7 @@ public static class SkillReferenceEmitter
     /// </summary>
     public const string PartlyCheckedMarker = "(partly checked)";
 
-    private const string ReferencesDirectory = "plugins/framework-design-guidelines/skills/fdg-write/references/";
+    private const string ReferencesDirectory = "src/Fdg.Cli/AgentAssets/skills/fdg-write/references/";
 
     public static IReadOnlyList<GeneratedFile> Emit(GeneratorInput input)
     {

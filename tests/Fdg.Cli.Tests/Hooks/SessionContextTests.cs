@@ -274,7 +274,7 @@ public sealed class SessionContextTests : IDisposable
         Assert.Equal(
             [
                 "FDG setup issue: FDG package protocol newer than this dotnet-fdg supports (1): src/A/A.csproj. " +
-                "Update it with: dotnet tool update -g dotnet-fdg",
+                "Update FDG to a compatible release.",
             ],
             Issues(Build()!));
     }

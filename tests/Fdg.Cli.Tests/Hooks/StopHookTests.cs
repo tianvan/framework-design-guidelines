@@ -102,8 +102,8 @@ public sealed class StopHookTests : IDisposable
         string output = await TurnStopAsync();
 
         Assert.Equal(
-            "FDG: Newer/Newer.csproj: rules.json protocol 2 is newer than this dotnet-fdg supports (1); update it " +
-            "with: dotnet tool update -g dotnet-fdg; its files were not checked.",
+            "FDG: Newer/Newer.csproj: rules.json protocol 2 is newer than this dotnet-fdg supports (1). " +
+            "Update FDG to a compatible release. Its files were not checked.",
             Json(output, "systemMessage"));
         Assert.Empty(_formatter.Calls);
     }

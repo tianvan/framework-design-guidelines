@@ -10,10 +10,10 @@ paths: "**/*.cs"
 
 # Writing C# by the Framework Design Guidelines
 
+Use this skill only in the current Git worktree and only when it contains @FDG_RECEIPT@.
 Scope: these rules apply to SDK-style projects that set `FrameworkDesignGuidelinesProfile` (library, application or
-test). The session context names them; without it, look for the property in the project file or a
-`Directory.Build.props` above it, or for the project's `obj/fdg/marker.json`. In any other project, follow the
-surrounding code's existing style instead, and you may suggest `/fdg-setup` to the user once.
+test). The session context names them. You can also check the scope and profile with the project command below.
+In other projects, follow the surrounding code's style and suggest the setup skill if the user wants FDG checks.
 
 Inside that scope, apply these rules while you write or change C# code, not afterwards. There, analyzers,
 `dotnet format` and the end-of-turn check fix layout and check casing, modifiers and the other mechanical rules; the
@@ -139,9 +139,7 @@ the repository's own `.editorconfig` says otherwise.
 
 ## Language version
 
-The project's C# language version and target frameworks are given in the session context; take them as the truth.
-If they are missing, read `langVersion` and `targetFramework` from the project's `obj/fdg/marker.json`, which also
-resolves the default version when the project sets none (C# 7.3 for .NET Framework and .NET Standard 2.0); without a
-marker, read `LangVersion` and `TargetFramework(s)` from the project file. A rule tagged `[C# N+]` needs C# N or
-later: when the project's version is lower, write the `(alt: ...)` form instead. Never raise the language version
-and never add polyfills to follow a rule.
+Use the C# language version and target frameworks in the session context. To inspect an individual project, run
+@FDG_LAUNCHER@ from the repository root with `project <project.csproj>`. Its `state`, `profile`,
+`langVersion` and `targetFramework` describe the current build. A rule tagged `[C# N+]` needs C# N or later.
+When the project's version is lower, use the `(alt: ...)` form. Preserve the project's language version.

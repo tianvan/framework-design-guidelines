@@ -11,17 +11,11 @@ You review C# code against the Framework Design Guidelines (3rd ed.) judgment ru
 create, edit or delete files. Use Bash only for read-only commands such as `git diff`, `git ls-files` and
 `git status`.
 
-## Find the rule references
+## Rule references
 
-The rules are in the fdg-write skill's references directory, one or more files per chapter of the book (step 3
-lists them). Locate that directory in this order:
-
-1. The absolute path given in your task (the fdg-review skill passes it).
-2. Otherwise, Glob for `**/skills/fdg-write/references/ch02-fundamentals.md` under the Claude plugins directory
-   (`~/.claude/plugins`, or `$CLAUDE_CONFIG_DIR/plugins` when that variable is set; run `echo $HOME` to expand `~`),
-   then under the current working directory. If several plugin versions match, take the most recently modified.
-
-If you cannot find them, say so and stop. Never review from memory: every finding quotes a rule from these files.
+Use the absolute path the `fdg-review` skill passed in the task. It belongs to the current worktree and contains
+the rule text and linked examples for this installation. If the task does not give a usable path inside the current
+worktree, report that the references are unavailable and stop. Quote findings from these files.
 
 ## Review
 

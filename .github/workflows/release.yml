@@ -42,8 +42,7 @@ jobs:
         with:
           global-json-file: global.json
 
-      # The tag, the package version and the plugin manifests must agree, or users get a plugin and a tool that
-      # do not match.
+      # The tag, package versions and generated rule metadata must agree.
       - name: Tag matches the versions in the repository
         run: |
           tag="${GITHUB_REF_NAME#v}"
@@ -53,17 +52,12 @@ jobs:
             echo "::error::Tag $GITHUB_REF_NAME does not match <Version>$version</Version> in Directory.Build.props."
             status=1
           fi
-          for file in .claude-plugin/marketplace.json \
-                      plugins/framework-design-guidelines/.claude-plugin/plugin.json \
-                      plugins/framework-design-guidelines/.codex-plugin/plugin.json \
-                      src/FrameworkDesignGuidelines.Package/data/rules.json; do
-            for found in $(grep -o '"version": *"[^"]*"' "$file" | sed 's/.*"\([^"]*\)"$/\1/'); do
-              if [ "$found" != "$version" ]; then
-                echo "::error file=$file::version $found does not match $version."
-                status=1
-              fi
-            done
-          done
+          file=src/FrameworkDesignGuidelines.Package/data/rules.json
+          found="$(jq -r .version "$file")"
+          if [ "$found" != "$version" ]; then
+            echo "::error file=$file::version $found does not match $version."
+            status=1
+          fi
           exit $status
 
       - name: Pack

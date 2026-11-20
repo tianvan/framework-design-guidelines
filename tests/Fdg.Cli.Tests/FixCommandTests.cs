@@ -128,8 +128,7 @@ public sealed class FixCommandTests : IDisposable
         Assert.Equal(1, exitCode);
         Assert.Empty(_formatter.Calls);
         Assert.Equal(
-            "skipped A/A.csproj: rules.json protocol 2 is newer than this dotnet-fdg supports (1); update it with: " +
-            "dotnet tool update -g dotnet-fdg\n",
+            "skipped A/A.csproj: rules.json protocol 2 is newer than this dotnet-fdg supports (1). Update FDG to a compatible release.\n",
             Output);
     }
 

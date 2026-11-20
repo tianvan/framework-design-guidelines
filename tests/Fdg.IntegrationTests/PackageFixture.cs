@@ -65,6 +65,24 @@ public sealed class PackageFixture : IDisposable
     /// <summary>The feed that holds the packed dotnet-fdg tool once <see cref="FdgToolPath"/> has been used.</summary>
     public string ToolFeedDirectory => Path.Combine(Root, "tool-feed");
 
+    public void PackTool(string version)
+    {
+        DotnetResult pack = PackSerialized(
+            RepositoryRoot,
+            Path.Combine(RepositoryRoot, "src", "Fdg.Cli"),
+            "-c",
+            "Release",
+            "-o",
+            ToolFeedDirectory,
+            "-p:Version=" + version,
+            "-tl:off",
+            "-nodeReuse:false");
+        if (pack.ExitCode != 0)
+        {
+            throw new InvalidOperationException("dotnet pack of dotnet-fdg failed:\n" + pack.Output);
+        }
+    }
+
     public void Dispose()
     {
         TempDirectory.Delete(Root);
@@ -105,20 +123,7 @@ public sealed class PackageFixture : IDisposable
     {
         string toolFeed = ToolFeedDirectory;
         string toolDirectory = Path.Combine(Root, "tools");
-        DotnetResult pack = PackSerialized(
-            RepositoryRoot,
-            Path.Combine(RepositoryRoot, "src", "Fdg.Cli"),
-            "-c",
-            "Release",
-            "-o",
-            toolFeed,
-            "-p:Version=" + Version,
-            "-tl:off",
-            "-nodeReuse:false");
-        if (pack.ExitCode != 0)
-        {
-            throw new InvalidOperationException("dotnet pack of dotnet-fdg failed:\n" + pack.Output);
-        }
+        PackTool(Version);
 
         DotnetResult install = Dotnet.Run(
             Root,

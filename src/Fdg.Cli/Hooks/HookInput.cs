@@ -16,7 +16,9 @@ public sealed record HookInput(HostKind Host, string SessionId, string Cwd, stri
 
     /// <param name="environment">Looks up environment variables; consulted only when the fields cannot tell the host.</param>
     /// <exception cref="FormatException">The input is not a hook payload.</exception>
-    public static HookInput Parse(string json, Func<string, string?> environment)
+    public static HookInput Parse(string json, Func<string, string?> environment) => Parse(json, environment, host: null);
+
+    internal static HookInput Parse(string json, Func<string, string?> environment, HostKind? host)
     {
         JsonDocument document;
         try
@@ -43,7 +45,7 @@ public sealed record HookInput(HostKind Host, string SessionId, string Cwd, stri
                 active.ValueKind is JsonValueKind.True or JsonValueKind.False
                 ? active.GetBoolean()
                 : null;
-            return new HookInput(DetectHost(root, environment), sessionId, cwd, eventName)
+            return new HookInput(host ?? DetectHost(root, environment), sessionId, cwd, eventName)
             {
                 StopHookActive = stopHookActive,
             };

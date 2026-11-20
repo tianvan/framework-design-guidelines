@@ -41,18 +41,20 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
         _languageVersions = languageVersions;
     }
 
-    public ProjectInfo Get(string csprojPath)
+    public ProjectInfo Get(string csprojPath) => Inspect(csprojPath, queryIntermediatePath: false).Info;
+
+    internal (ProjectInfo Info, ProjectMarker? Marker) Inspect(string csprojPath, bool queryIntermediatePath)
     {
         if (!SdkStyleDetector.IsSdkStyle(csprojPath))
         {
-            return Unknown(csprojPath, ProjectState.NotSdkStyle);
+            return (Unknown(csprojPath, ProjectState.NotSdkStyle), null);
         }
 
         string projectDirectory = Path.GetDirectoryName(csprojPath)!;
         string intermediateDirectory = Path.Combine(projectDirectory, "obj");
         string assetsFile = Path.Combine(intermediateDirectory, "project.assets.json");
         IReadOnlyDictionary<string, string>? properties = null;
-        if (!File.Exists(assetsFile))
+        if (queryIntermediatePath || !File.Exists(assetsFile))
         {
             // A custom BaseIntermediateOutputPath, or not restored yet.
             properties = Query(csprojPath, QueriedProperties, targetFramework: null);
@@ -72,16 +74,19 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
 
             if (!File.Exists(assetsFile))
             {
-                return Unknown(csprojPath, ProjectState.NotRestored);
+                return (Unknown(csprojPath, ProjectState.NotRestored), null);
             }
         }
 
         if (!ReferencesPackage(assetsFile))
         {
-            return Unknown(csprojPath, ProjectState.NoPackage);
+            return (Unknown(csprojPath, ProjectState.NoPackage), null);
         }
 
-        ProjectMarker? marker = ProjectMarker.ReadCurrent(MarkerDirectories(csprojPath, intermediateDirectory), csprojPath)
+        IEnumerable<string> markerDirectories = queryIntermediatePath
+            ? [Path.Combine(intermediateDirectory, "fdg")]
+            : MarkerDirectories(csprojPath, intermediateDirectory);
+        ProjectMarker? marker = ProjectMarker.ReadCurrent(markerDirectories, csprojPath)
             .FirstOrDefault();
         string? profile;
         string? packageVersion;
@@ -135,7 +140,7 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
 
         profile = Normalize(profile)?.ToLowerInvariant();
         ProjectState state = profile is not null && Profiles.Contains(profile) ? ProjectState.InScope : ProjectState.NoProfile;
-        return new ProjectInfo(
+        return (new ProjectInfo(
             csprojPath,
             profile,
             Normalize(packageVersion),
@@ -143,7 +148,7 @@ public sealed class ProjectInfoProvider : IProjectInfoProvider
             langVersion,
             Normalize(targetFramework),
             Normalize(rulesPath),
-            state);
+            state), marker);
     }
 
     /// <summary>

@@ -32,7 +32,7 @@ public sealed class RulesManifestTests
         var e = Assert.Throws<NotSupportedException>(() => RulesManifest.LoadOrEmbedded(path));
 
         Assert.Equal(
-            "rules.json protocol 2 is newer than this dotnet-fdg supports (1); update it with: dotnet tool update -g dotnet-fdg",
+            "rules.json protocol 2 is newer than this dotnet-fdg supports (1). Update FDG to a compatible release.",
             e.Message);
     }
 

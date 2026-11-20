@@ -489,8 +489,8 @@ public sealed class EmitterTests : IDisposable
         Assert.Equal(
             new[]
             {
-                "plugins/framework-design-guidelines/skills/fdg-write/references/ch09-sample.md",
-                "plugins/framework-design-guidelines/skills/fdg-write/references/examples/ch09-sample.md",
+                "src/Fdg.Cli/AgentAssets/skills/fdg-write/references/ch09-sample.md",
+                "src/Fdg.Cli/AgentAssets/skills/fdg-write/references/examples/ch09-sample.md",
             },
             paths);
     }
@@ -606,8 +606,8 @@ public sealed class EmitterTests : IDisposable
         Assert.Equal(
             new[]
             {
-                "plugins/framework-design-guidelines/skills/fdg-write/references/appa-coding-style.md",
-                "plugins/framework-design-guidelines/skills/fdg-write/references/examples/appa-coding-style.md",
+                "src/Fdg.Cli/AgentAssets/skills/fdg-write/references/appa-coding-style.md",
+                "src/Fdg.Cli/AgentAssets/skills/fdg-write/references/examples/appa-coding-style.md",
             },
             files.Select(f => f.Path).ToArray());
         Assert.Contains("examples/appa-coding-style.md#fdg9001", files[0].Content);
@@ -1182,7 +1182,7 @@ public sealed class EmitterTests : IDisposable
     {
         string root = TempDir();
         GeneratedFiles.Write(root, GeneratedFiles.Create(Input()));
-        string skill = Path.Combine(root, "plugins", "framework-design-guidelines", "skills", "fdg-write");
+        string skill = Path.Combine(root, "src", "Fdg.Cli", "AgentAssets", "skills", "fdg-write");
         string references = Path.Combine(skill, "references");
         string[] stale = { Path.Combine(references, "old.md"), Path.Combine(references, "examples", "old.md") };
         string[] kept = { Path.Combine(references, "keep.txt"), Path.Combine(skill, "SKILL.md") };
@@ -1209,7 +1209,7 @@ public sealed class EmitterTests : IDisposable
         string root = TempDir();
         IReadOnlyList<GeneratedFile> files = GeneratedFiles.Create(Input());
         GeneratedFiles.Write(root, files);
-        string references = Path.Combine(root, "plugins", "framework-design-guidelines", "skills", "fdg-write", "references");
+        string references = Path.Combine(root, "src", "Fdg.Cli", "AgentAssets", "skills", "fdg-write", "references");
         string lower = Path.Combine(references, "ch09-sample.md");
         string wrongCase = Path.Combine(references, "Ch09-Sample.md");
         byte[] content = File.ReadAllBytes(lower);
@@ -1294,8 +1294,8 @@ public sealed class EmitterTests : IDisposable
             "src/FrameworkDesignGuidelines.Package/build/globalconfigs/fdg.application.globalconfig",
             "src/FrameworkDesignGuidelines.Package/build/globalconfigs/fdg.test.globalconfig",
             "src/FrameworkDesignGuidelines.Package/data/rules.json",
-            "plugins/framework-design-guidelines/skills/fdg-write/references/ch09-sample.md",
-            "plugins/framework-design-guidelines/skills/fdg-write/references/examples/ch09-sample.md",
+            "src/Fdg.Cli/AgentAssets/skills/fdg-write/references/ch09-sample.md",
+            "src/Fdg.Cli/AgentAssets/skills/fdg-write/references/examples/ch09-sample.md",
             "docs/rules/FDG9001.md",
             "docs/coverage.md",
         })

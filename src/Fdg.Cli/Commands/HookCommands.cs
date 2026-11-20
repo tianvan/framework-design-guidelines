@@ -1,4 +1,6 @@
 using Fdg.Cli.Hooks;
+using Fdg.Cli.Integration;
+using Fdg.Cli.Projects;
 
 namespace Fdg.Cli.Commands;
 
@@ -12,13 +14,23 @@ public static class HookCommands
 {
     public static IReadOnlyList<string> Events { get; } = ["session-start", "turn-start", "turn-stop"];
 
-    public static async Task<int> RunAsync(
+    public static Task<int> RunAsync(
         string hookEvent,
         TextReader input,
         TextWriter output,
         TextWriter error,
         HookRunner runner,
         CancellationToken cancellationToken)
+        => RunAsync(hookEvent, input, output, error, runner, cancellationToken, host: null);
+
+    internal static async Task<int> RunAsync(
+        string hookEvent,
+        TextReader input,
+        TextWriter output,
+        TextWriter error,
+        HookRunner runner,
+        CancellationToken cancellationToken,
+        AgentHost? host)
     {
         string result;
         try
@@ -28,12 +40,35 @@ public static class HookCommands
             HookInput hookInput;
             try
             {
-                hookInput = HookInput.Parse(text);
+                hookInput = HookInput.Parse(text, Environment.GetEnvironmentVariable, host?.Kind);
             }
             catch (FormatException e)
             {
                 error.WriteLine("FDG hook error: " + e.Message);
                 return 1;
+            }
+
+            if (host is not null)
+            {
+                GitRepository? git = await GitRepository.OpenAsync(Directory.GetCurrentDirectory(), cancellationToken).ConfigureAwait(false);
+                GitRepository? payload = await GitRepository.OpenAsync(hookInput.Cwd, cancellationToken).ConfigureAwait(false);
+                if (git is null || payload is null || !ProjectFiles.PathComparer.Equals(git.TopLevel, payload.TopLevel) ||
+                    File.Exists(Path.Combine(git.GitDirectory, "fdg-install", "transaction.json")))
+                {
+                    return 0;
+                }
+
+                InstallReceipt? receipt = InstallReceipt.Read(host, InstallChanges.ReadCurrent(git.TopLevel, host.ReceiptPath));
+                if (receipt is null)
+                {
+                    return 0;
+                }
+
+                if (!string.Equals(receipt.ToolVersion, FdgCli.Version, StringComparison.OrdinalIgnoreCase))
+                {
+                    output.Write(HookOutput.SystemMessage($"FDG expected {receipt.ToolVersion}, but ran {FdgCli.Version}. Run: {host.PrepareCommand}"));
+                    return 0;
+                }
             }
 
             result = hookEvent switch

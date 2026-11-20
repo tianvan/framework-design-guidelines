@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Text;
+using Fdg.Cli.IO;
 using Fdg.Cli.Commands;
 using Fdg.Cli.Projects;
 using Fdg.Cli.Tooling;
@@ -315,7 +316,7 @@ public sealed class SessionContext
             }
 
             string fullPath = Path.Combine(root, relativePath);
-            if (!File.Exists(fullPath))
+            if (!WorktreePath.IsSafe(root, fullPath) || !File.Exists(fullPath))
             {
                 // Tracked but deleted in the working tree.
                 continue;

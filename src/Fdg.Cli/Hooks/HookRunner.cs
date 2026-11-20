@@ -352,8 +352,15 @@ public sealed partial class HookRunner
         var work = new List<ProjectWork>();
         foreach (string path in changed)
         {
+            if (!WorktreePath.IsSafe(git.TopLevel, Snapshot.FullPath(git, path)))
+            {
+                notes.Add($"FDG: {path} uses a symbolic link or is outside this worktree. It was not checked.");
+                continue;
+            }
+
             string directory = Path.GetDirectoryName(Snapshot.FullPath(git, path))!;
-            foreach (string projectPath in ProjectFiles.FindOwningProjects(directory))
+            foreach (string projectPath in ProjectFiles.FindOwningProjects(directory)
+                .Where(projectPath => WorktreePath.IsSafe(git.TopLevel, projectPath)))
             {
                 if (!projects.TryGetValue(projectPath, out ProjectWork? project))
                 {
@@ -371,6 +378,15 @@ public sealed partial class HookRunner
                     project.Files.Add(path);
                     break;
                 }
+            }
+        }
+
+        foreach (ProjectWork project in work)
+        {
+            foreach (string file in ProjectFiles.StaticCompileItems(project.Info.ProjectPath)
+                .Where(file => !WorktreePath.IsSafe(git.TopLevel, file)))
+            {
+                notes.Add($"FDG: linked source {Display(git, file)} is outside this worktree or uses a symbolic link. It was not checked.");
             }
         }
 
@@ -405,7 +421,7 @@ public sealed partial class HookRunner
         {
             notes.Add(
                 $"FDG: {Display(git, projectPath)} uses package protocol {info.Protocol}, newer than this dotnet-fdg " +
-                "supports; update it with: dotnet tool update -g dotnet-fdg");
+                "supports. Update the repository integration to a compatible FDG release.");
             return null;
         }
 
@@ -415,7 +431,7 @@ public sealed partial class HookRunner
         }
         catch (NotSupportedException e)
         {
-            notes.Add($"FDG: {Display(git, projectPath)}: {e.Message}; its files were not checked.");
+            notes.Add($"FDG: {Display(git, projectPath)}: {e.Message.TrimEnd('.')}. Its files were not checked.");
             return null;
         }
     }

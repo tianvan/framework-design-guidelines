@@ -1,5 +1,4 @@
 using Fdg.Generator.Book;
-using Fdg.Generator.Plugin;
 using Fdg.Generator.Rules;
 using Fdg.Generator.Sdk;
 using YamlDotNet.Core;
@@ -11,8 +10,7 @@ namespace Fdg.Generator.Commands;
 /// conventions, every referenced CA/IDE diagnostic against the SDK that <c>global.json</c> selects for the current
 /// directory (or the one in <c>--sdk</c>), and every rule id cited in a <c>meta.yaml</c> note against the rules.
 /// With <c>--book</c> it also runs <c>verify-source</c> and checks that no <c>meta.yaml</c> note copies the book
-/// (<see cref="NoteCopyValidator"/>). It also checks that the plugin manifests carry the version of
-/// <c>Directory.Build.props</c> in the parent of the rules directory.
+/// (<see cref="NoteCopyValidator"/>).
 /// </summary>
 public static class CheckCommand
 {
@@ -115,8 +113,7 @@ public static class CheckCommand
     }
 
     /// <summary>
-    /// Collects every problem in the rules directory, and in the plugin manifest versions of the repository that
-    /// contains it; files that fail the schema skip the mapping checks.
+    /// Collects problems in the rules directory. Files that fail the schema skip the mapping checks.
     /// </summary>
     public static IReadOnlyList<CheckError> Check(string rulesDir, IReadOnlyDictionary<string, SdkDiagnostic> catalog)
     {
@@ -182,7 +179,6 @@ public static class CheckCommand
             errors.AddRange(MappingValidator.ValidateNotes(meta, chapters));
         }
 
-        errors.AddRange(ManifestVersionValidator.Validate(Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(Path.GetFullPath(rulesDir)))!));
         return errors;
     }
 }

@@ -9,7 +9,10 @@ public static class PathResolver
 
     /// <param name="paths">Directories, .csproj, .sln, .slnx or .cs files; none means <paramref name="cwd"/>.</param>
     /// <exception cref="CommandException">A path does not exist, has an unsupported type, or its solution cannot be listed.</exception>
-    public static IReadOnlyList<FixTarget> Resolve(IReadOnlyList<string> paths, string cwd)
+    public static IReadOnlyList<FixTarget> Resolve(IReadOnlyList<string> paths, string cwd) =>
+        Resolve(paths, cwd, skipLinkedDirectories: false);
+
+    internal static IReadOnlyList<FixTarget> Resolve(IReadOnlyList<string> paths, string cwd, bool skipLinkedDirectories)
     {
         var order = new List<string>();
         var includes = new Dictionary<string, List<string>?>(ProjectFiles.PathComparer);
@@ -36,7 +39,7 @@ public static class PathResolver
             string fullPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path, cwd));
             if (Directory.Exists(fullPath))
             {
-                ResolveDirectory(fullPath, Add);
+                ResolveDirectory(fullPath, Add, skipLinkedDirectories);
             }
             else if (File.Exists(fullPath))
             {
@@ -51,9 +54,9 @@ public static class PathResolver
         return order.Select(p => new FixTarget(p, includes[p])).ToArray();
     }
 
-    private static void ResolveDirectory(string directory, Action<string, string?> add)
+    private static void ResolveDirectory(string directory, Action<string, string?> add, bool skipLinkedDirectories)
     {
-        string[] nested = ProjectFiles.Enumerate(directory, "*.csproj").ToArray();
+        string[] nested = ProjectFiles.Enumerate(directory, "*.csproj", skipLinkedDirectories).ToArray();
         foreach (string project in nested)
         {
             add(project, null);
@@ -77,7 +80,7 @@ public static class PathResolver
             .ToArray();
         IReadOnlyList<string> includes = nested.Length == 0
             ? [directory]
-            : ProjectFiles.Enumerate(directory, "*.cs")
+            : ProjectFiles.Enumerate(directory, "*.cs", skipLinkedDirectories)
                 .Where(f => !nestedDirectories.Any(d => f.StartsWith(d, StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
         foreach (string owner in owners)

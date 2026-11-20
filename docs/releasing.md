@@ -2,7 +2,7 @@
 
 Pushing a tag `vX.Y.Z` runs [`.github/workflows/release.yml`](../.github/workflows/release.yml):
 
-1. the full CI (build, generated-file check, tests, rule mapping check, plugin validation) on Windows and Ubuntu;
+1. the full CI (build, generated-file check, tests, rule mapping check) on Windows, Ubuntu and macOS;
 2. a check that the tag matches every version in the repository (see below);
 3. `dotnet pack -c Release`, which produces `FrameworkDesignGuidelines.Analyzers.X.Y.Z.nupkg` and
    `dotnet-fdg.X.Y.Z.nupkg`;
@@ -10,8 +10,8 @@ Pushing a tag `vX.Y.Z` runs [`.github/workflows/release.yml`](../.github/workflo
 5. a GitHub release for the tag with both packages attached. Versions `0.x` and versions with a suffix such as
    `-preview.1` are marked as prereleases.
 
-The plugin itself is not packaged: Claude Code and Codex install it from this repository's default branch through
-`.claude-plugin/marketplace.json`. Tag a commit on `main`, so the plugin users get and the packages match.
+The `dotnet-fdg` NuGet package contains both hosts' project assets, including generated references. CI tests
+installation, preparation and uninstall from the two built packages.
 
 ## One-time setup
 
@@ -38,11 +38,7 @@ The first push creates both package ids under your nuget.org account.
 
 ## Cutting a release
 
-1. Set the new version in all of these files (they must match, or the release fails before it publishes anything):
-   - `Directory.Build.props`: `<Version>`
-   - `.claude-plugin/marketplace.json`: both `version` fields
-   - `plugins/framework-design-guidelines/.claude-plugin/plugin.json`: `version`
-   - `plugins/framework-design-guidelines/.codex-plugin/plugin.json`: `version`
+1. Set `<Version>` in `Directory.Build.props`.
 2. Regenerate, so `src/FrameworkDesignGuidelines.Package/data/rules.json` picks up the version, and run the tests:
 
    ```
@@ -62,7 +58,7 @@ The first push creates both package ids under your nuget.org account.
    ```
 
 5. Watch the run with `gh run watch`. After it succeeds, check that both packages appear on nuget.org (indexing
-   can take a few minutes) and that `dotnet tool install -g dotnet-fdg` installs the new version.
+   can take a few minutes) and that `dotnet tool exec dotnet-fdg@X.Y.Z -- --version` resolves the new version.
 
 A failed release can be re-run from the Actions page once the cause is fixed. If the fix needs a new commit, delete
 the tag (`git push --delete origin vX.Y.Z`, `git tag -d vX.Y.Z`) and tag the new commit. A version that already
@@ -72,12 +68,13 @@ needed.
 ## Versioning and compatibility
 
 From 1.0.0 on, the version number tells you what an update can break. It covers the diagnostic ids, the
-`dotnet-fdg` commands and options, the hook protocol between the plugin and `dotnet-fdg`, the `rules.json` manifest
+`dotnet-fdg` commands and options, the hook protocol between the host launchers and `dotnet-fdg`, the `rules.json` manifest
 and build marker that the analyzer package writes for `dotnet-fdg`, the profiles, and the minimum SDK. The two
-packages and the plugin are released together with one version.
+packages and the embedded host assets share one release version.
 
 - **Ids**: FDG and FDGA ids are never reused and never renumbered. A rule that is removed keeps its id retired.
 - **Major version** for:
+  - removing a supported installation or distribution method;
   - removing a diagnostic id;
   - removing or renaming a `dotnet-fdg` command or option;
   - an incompatible change to the hook protocol (the `dotnet-fdg hook <event>` command line and the JSON it reads
@@ -92,18 +89,12 @@ packages and the plugin are released together with one version.
   in a section of their own in every release.
 - **Patch version** only for fewer false positives, crash fixes and corrected wording.
 
-### Matching the package, the tool and the plugin
+### Matching the Analyzer, tool and host assets
 
-The analyzer package writes a protocol number into each project's build marker (`obj/fdg/marker.json`) and into its
-`data/rules.json`. `dotnet-fdg` supports every protocol up to its own (`FixCommand.SupportedProtocol`, currently 1)
-and reads older ones unchanged. A project whose package has a newer protocol than the tool is not checked: session
-start lists it as a setup issue, and Stop and `dotnet fdg fix` skip it with a message to run
-`dotnet tool update -g dotnet-fdg`. Package and tool versions therefore do not have to be equal; a tool at least as
-new as the package always works. Every release from 0.1.0 to 1.0.0 uses protocol 1, and 1.0.0 does not change its
-meaning. A change that an older tool cannot read raises the protocol number, and is a major version.
+The Analyzer writes a protocol number into the build marker and its `data/rules.json`. The tool supports every
+protocol up to `FixCommand.SupportedProtocol` (currently 1). SessionStart reports a newer protocol as a setup
+issue. Stop and `fix` skip that project until its tool is updated to a compatible release.
 
-The plugin does not check the tool's version. Its hooks run `dotnet-fdg hook session-start`, `turn-start` and
-`turn-stop` (through the repository's local tool manifest when it lists `dotnet-fdg`). A tool that cannot run the
-command, for example one that fails to start because its runtime is missing, exits without output, and the wrapper
-then shows `FDG: dotnet-fdg failed:` with the first line of its error instead of failing silently. Keep the tool
-updated with the plugin; the tested combination is the same version of all three.
+The project installation records pin the CLI version. Launchers select that version from the local cache.
+`init` updates the pins and the installed host assets together. Keep the bare `hook <event>` entry point for
+existing command callers. The current launchers pass the host explicitly and validate the worktree's record.

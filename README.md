@@ -3,18 +3,14 @@
 Keeps the C# that an AI coding agent writes in line with
 *Framework Design Guidelines* (3rd edition) by Krzysztof Cwalina, Jeremy Barton and Brad Abrams.
 
-It has three parts:
+Two NuGet packages provide the analyzer and the .NET tool:
 
 - **[`FrameworkDesignGuidelines.Analyzers`](https://www.nuget.org/packages/FrameworkDesignGuidelines.Analyzers)**: a
   NuGet package that turns on the SDK analyzers that check the book's rules, with severities chosen per profile
   (`library`, `application` or `test`), plus this project's own analyzers for rules the SDK does not check. It works
   in any build and IDE, with or without an AI agent.
-- **[`dotnet-fdg`](https://www.nuget.org/packages/dotnet-fdg)**: a .NET tool. `dotnet fdg fix` applies the formatting
-  and the fixes that do not change a public API. The plugin's hooks also run it.
-- **The `framework-design-guidelines` plugin** for Claude Code and Codex:
-  - skills that give the agent the book's rules that tools cannot check, quoted word for word with their ids;
-  - a review skill;
-  - hooks that format and check the lines the agent changed before it ends its turn.
+- **[`dotnet-fdg`](https://www.nuget.org/packages/dotnet-fdg)**: applies formatting and safe fixes, and adds
+  project skills, rule references and hooks for Claude Code and Codex to the repositories you select.
 
 It covers the whole book, chapters 2 to 9 and appendices A and D: 830 rules, every one checked against the book. 320
 of them map to analyzers (176 to SDK analyzers, 144 to this project's own), some of them only in part; the other 510
@@ -24,58 +20,31 @@ are judgment rules, which the skills give to the agent and the reviewer. See
 This project is independent. It is not affiliated with, endorsed by or sponsored by the authors of the book,
 Microsoft or Pearson. See [NOTICE](https://github.com/tianvan/framework-design-guidelines/blob/main/NOTICE).
 
-## Requirements
-
-- .NET SDK 10.0.100 or later. CI runs the integration tests on 10.0.100, the minimum, and the whole suite on
-  10.0.402, which the pilot also used. With an older SDK, some rules do not run, and the session start message says
-  so.
-- SDK-style C# projects. Projects can still target .NET Framework or .NET Standard and use C# 7.3: the SDK version
-  is independent of the target framework.
-- For the plugin: Claude Code or Codex CLI 0.163.0 or later, and git. The Codex hooks need the plugin root that
-  Codex puts in the hook environment (`PLUGIN_ROOT`), as 0.163.0 does; see [docs/hosts.md](docs/hosts.md). On
-  Windows, Git for Windows (Claude Code runs the hooks in Git Bash). For Codex on Windows, also PowerShell 7 (`pwsh`)
-  on the PATH.
-
 ## Quick start with Claude Code or Codex
 
-1. Install the tool, then restart Claude Code or Codex so that `~/.dotnet/tools` is on its PATH:
+Use Git, an SDK-style C# project and .NET SDK 10.0.100 or later. Windows users need Git for Windows. Codex on Windows
+also uses PowerShell 7 (`pwsh`).
 
-   ```
-   dotnet tool install -g dotnet-fdg
-   ```
+1. From the target repository, preview a project installation. Replace `<version>` with the release number you
+   want. Choose `claude`, `codex`, or `both`.
 
-2. Install the plugin.
-
-   Claude Code:
-
-   ```
-   claude plugin marketplace add tianvan/framework-design-guidelines
-   claude plugin install framework-design-guidelines@framework-design-guidelines
+   ```sh
+   dotnet tool exec dotnet-fdg@<version> -- init --host codex --dry-run
    ```
 
-   Codex:
+2. Run the same command without `--dry-run` and confirm. Reopen the repository at its Git root in the selected host and trust
+   the project. In Codex, review and approve the three FDG entries in `/hooks`.
+3. Run `$fdg-setup` in Codex or `/fdg-setup` in Claude Code. The skill proposes the Analyzer version and profiles,
+   asks for confirmation, then builds the projects. Review and commit the host files and MSBuild changes.
 
-   ```
-   codex plugin marketplace add tianvan/framework-design-guidelines
-   codex plugin add framework-design-guidelines@framework-design-guidelines
-   ```
+The integration lives in `.agents/` and `.codex/` for Codex, or `.claude/` for Claude Code. The selected
+repository pins the CLI and carries its rule references. A member cloning the repository can reuse a matching tool
+already on their machine. If it is missing, SessionStart shows the one-time `prepare` command. Hooks run only in
+repositories with the project integration. Stop formats and applies safe fixes to **entire C# files touched this
+turn** in the projects you onboarded.
 
-   Then start Codex, open `/hooks` and approve the three FDG hooks. **Codex silently skips hooks that are not
-   approved.** Approve them again after a plugin update that changes them, which includes the update from 0.2.0 to
-   1.0.
-
-   The hooks run `dotnet build` and `dotnet format` in the repository, so use the plugin only in repositories you
-   trust.
-
-3. In each repository, run the setup skill: `/framework-design-guidelines:fdg-setup` in Claude Code (or `/fdg-setup`
-   when no other command has that name), `framework-design-guidelines:fdg-setup` in Codex.
-
-   It lists the files it will change and waits for you to confirm. Then it adds the analyzer package, gives each
-   directory a profile and builds once. It only changes files in the working tree: review them with `git diff` and
-   commit them yourself.
-
-[docs/install.md](https://github.com/tianvan/framework-design-guidelines/blob/main/docs/install.md) has the details
-and the known limitations.
+See [installation and team workflow](docs/install.md) for the generated file list, offline behavior, and the
+Codex linked-worktree limitation.
 
 ## What happens while the agent works
 
@@ -161,12 +130,10 @@ src/Shipping/OrderCollection.cs:9 — FDG5023 CONSIDER using a property if the m
 
 | Claude Code | Codex | What it does |
 |---|---|---|
-| `/fdg-setup` | `framework-design-guidelines:fdg-setup` | Sets up the repository: package, profiles, first build, tool check. |
-| `/fdg-review [<path>...]` | `framework-design-guidelines:fdg-review` | Reviews C# against the rules that tools cannot check. It reports findings that quote each rule and changes no code. |
-| `/fdg-fix [<path>...]` | `framework-design-guidelines:fdg-fix` | Makes the given code pass every tool check: runs `dotnet-fdg fix`, builds, then fixes the remaining diagnostics project by project. |
-| (automatic) | (automatic) | `fdg-write` loads by itself when the agent writes C#. |
-
-In Claude Code, prefix the commands with `framework-design-guidelines:` if another plugin uses the same name.
+| `/fdg-setup` | `$fdg-setup` | Sets up the repository: package, profiles, first build, tool check. |
+| `/fdg-review [<path>...]` | `$fdg-review` | Reviews C# against the rules that tools cannot check. It reports findings that quote each rule and changes no code. |
+| `/fdg-fix [<path>...]` | `$fdg-fix` | Makes the given code pass every tool check: runs `dotnet-fdg fix`, builds, then fixes the remaining diagnostics project by project. |
+| (automatic) | (automatic) | The agent can invoke `fdg-write` while editing C# in an onboarded project. |
 
 ## Profiles
 
@@ -183,7 +150,7 @@ gives FDG0002.
 
 ## Using the analyzer package without an agent
 
-The package works without the plugin. Add it to a `Directory.Build.props`:
+The Analyzer also works in an IDE or build without an Agent integration. Add it to a `Directory.Build.props`:
 
 ```xml
 <Project>
@@ -191,7 +158,7 @@ The package works without the plugin. Add it to a `Directory.Build.props`:
     <FrameworkDesignGuidelinesProfile>library</FrameworkDesignGuidelinesProfile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FrameworkDesignGuidelines.Analyzers" Version="1.0.0" PrivateAssets="all" />
+    <PackageReference Include="FrameworkDesignGuidelines.Analyzers" Version="2.0.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -206,44 +173,19 @@ Each FDG diagnostic links to its rule page in
 
 ## Cleaning up existing code
 
-`dotnet fdg fix` applies the formatting and the automatic fixes that do not change a public API:
+Run `$fdg-fix` in Codex or `/fdg-fix` in Claude Code to use the repository's pinned tool and rules. To use the CLI
+directly, run `dotnet tool exec dotnet-fdg@<version> -- fix [<path>...]`. Paths can be directories, `.csproj`,
+`.sln`, `.slnx` or `.cs` files. The default is the current directory.
 
-```
-dotnet fdg fix [<path>...]
-```
+## Updating and removing
 
-Paths can be directories, `.csproj`, `.sln`, `.slnx` or `.cs` files. The default is the current directory. Fixes
-that would rename or change a public API are never applied automatically.
+Run `init` with the new release number to update the tool pin, all installed host files and the shared references
+in one change. Preview with `--dry-run`. The update reports locally edited files before it writes. Adjust the
+Analyzer version through your project's usual NuGet configuration and include it in the same PR when upgrading
+both. To roll back, revert that PR and use `prepare` if the previous tool is missing from the cache.
 
-To keep the history readable, you can run it once over the whole repository before you start, commit that change on
-its own, and add the commit to `.git-blame-ignore-revs`:
-
-```
-dotnet fdg fix
-git commit -am "style: apply dotnet fdg fix"
-git rev-parse HEAD >> .git-blame-ignore-revs
-git config blame.ignoreRevsFile .git-blame-ignore-revs
-```
-
-## Updating
-
-```
-dotnet tool update -g dotnet-fdg
-claude plugin marketplace update framework-design-guidelines      # Claude Code
-codex plugin marketplace upgrade framework-design-guidelines      # Codex
-```
-
-Update the `FrameworkDesignGuidelines.Analyzers` version in your projects to match the tool. In Codex, approve the
-hooks again in `/hooks` if the update changed them. **The update from 0.2.0 to 1.0 changes all three**, so Codex
-users approve them once more after it.
-
-A repository that pins `dotnet-fdg` in its local tool manifest (`.config/dotnet-tools.json`) gets that version in the
-hooks; update it there with `dotnet tool update --local dotnet-fdg`.
-
-[CHANGELOG.md](https://github.com/tianvan/framework-design-guidelines/blob/main/CHANGELOG.md) lists the changes of
-each release, with the ones that can fail a `TreatWarningsAsErrors` build in a section of their own.
-[docs/releasing.md](https://github.com/tianvan/framework-design-guidelines/blob/main/docs/releasing.md#versioning-and-compatibility)
-says what each kind of version number can change.
+Run `dotnet tool exec dotnet-fdg@<installed-version> -- uninstall --host codex|claude|both` to remove the
+integration. Choose one of the three host values. See [removal and rollback](docs/install.md#update-and-remove).
 
 ## Building from source
 
@@ -254,7 +196,7 @@ dotnet pack -c Release -o artifacts/packages
 ```
 
 `artifacts/packages` then holds both packages. Use it as a NuGet source to try them before a release, for example
-`dotnet tool install -g dotnet-fdg --add-source artifacts/packages`.
+`dotnet tool exec --source /absolute/path/to/artifacts/packages dotnet-fdg@<version> -- --version`.
 
 The rule data in `rules/*.yaml` is the single source of the analyzer configuration, the rules manifest, the skill
 references and the docs. After you change it, regenerate with `dotnet run --project src/Fdg.Generator -- generate`.

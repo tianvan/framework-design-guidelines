@@ -1,5 +1,9 @@
 # Host hook behavior
 
+The [current installation guide](install.md) covers the repository integration. The checks below document the
+1.0.0 plugin distribution and its host observations. The current launchers pass the host explicitly and read the
+pinned tool version from the current worktree.
+
 What `dotnet fdg hook ...` relies on in the two hosts, measured on Windows 11 with Claude Code 2.1.303 and
 Codex CLI 0.163.0 (2026-10-22), plus what the Codex rust-v0.163.0 source says where a measurement was not
 possible. Task 10 re-checked this with the plugin loaded; see "Real-host checks" below.

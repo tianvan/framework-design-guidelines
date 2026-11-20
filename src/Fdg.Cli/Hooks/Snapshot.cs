@@ -49,6 +49,12 @@ public static class Snapshot
         var dirty = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (string path in await CandidatesAsync(git, cancellationToken).ConfigureAwait(false))
         {
+            if (!WorktreePath.IsSafe(git.TopLevel, FullPath(git, path)))
+            {
+                dirty.Add(path, string.Empty);
+                continue;
+            }
+
             byte[] content = await File.ReadAllBytesAsync(FullPath(git, path), cancellationToken).ConfigureAwait(false);
             string baseline = state.BaselinePath(path);
             Directory.CreateDirectory(Path.GetDirectoryName(baseline)!);
@@ -95,6 +101,12 @@ public static class Snapshot
         var changed = new List<string>();
         foreach (string path in Candidates(git, paths))
         {
+            if (!WorktreePath.IsSafe(git.TopLevel, FullPath(git, path)))
+            {
+                notes.Add($"FDG: {path} uses a symbolic link or is outside this worktree. It was not checked.");
+                continue;
+            }
+
             if (!snapshot.DirtyFiles.TryGetValue(path, out string? hash) ||
                 hash != Hash(await File.ReadAllBytesAsync(FullPath(git, path), cancellationToken).ConfigureAwait(false)))
             {
@@ -238,10 +250,17 @@ public static class Snapshot
         paths
             .Where(IsCandidatePath)
             .Where(p => File.Exists(FullPath(git, p)))
-            .Where(p => ProjectFiles.FindOwningProjects(Path.GetDirectoryName(FullPath(git, p))!).Count > 0)
+            .Where(p => TrackSource(git, p))
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)
             .ToArray();
 
     private static string Hash(byte[] content) => Convert.ToHexString(SHA256.HashData(content));
+
+    private static bool TrackSource(GitRepository git, string relativePath)
+    {
+        string fullPath = FullPath(git, relativePath);
+        return !WorktreePath.IsSafe(git.TopLevel, fullPath) ||
+            ProjectFiles.FindOwningProjects(Path.GetDirectoryName(fullPath)!).Count > 0;
+    }
 }

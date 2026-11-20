@@ -6,7 +6,7 @@ using YamlDotNet.Serialization;
 namespace Fdg.Generator.Tests;
 
 /// <summary>
-/// Lints the hand-written plugin skills (<c>skills/*/SKILL.md</c>) and the reviewer agent
+/// Lints the hand-written project skills (<c>skills/*/SKILL.md</c>) and the reviewer agent
 /// (<c>agents/fdg-reviewer.md</c>) against the Agent Skills conventions and the rule data in <c>rules/*.yaml</c>.
 /// </summary>
 public sealed class SkillLintTests
@@ -64,13 +64,13 @@ public sealed class SkillLintTests
             .SelectMany(f => f.Rules)
             .ToDictionary(r => r.Id));
 
-    private static string PluginDirectory => Path.Combine(Root.Value, "plugins", "framework-design-guidelines");
+    private static string AssetsDirectory => Path.Combine(Root.Value, "src", "Fdg.Cli", "AgentAssets");
 
-    private static string SkillPath(string name) => Path.Combine(PluginDirectory, "skills", name, "SKILL.md");
+    private static string SkillPath(string name) => Path.Combine(AssetsDirectory, "skills", name, "SKILL.md");
 
-    private static string AgentPath => Path.Combine(PluginDirectory, "agents", "fdg-reviewer.md");
+    private static string AgentPath => Path.Combine(AssetsDirectory, "agents", "fdg-reviewer.md");
 
-    private static string FdgWriteReferences => Path.Combine(PluginDirectory, "skills", "fdg-write", "references");
+    private static string FdgWriteReferences => Path.Combine(AssetsDirectory, "skills", "fdg-write", "references");
 
     /// <summary>Every SKILL.md and the reviewer agent: the files whose rule lines must quote the rule data.</summary>
     private static IEnumerable<string> LintedFiles() => SkillNames.Select(SkillPath).Append(AgentPath);
@@ -78,7 +78,7 @@ public sealed class SkillLintTests
     [Fact]
     public void Every_skill_has_name_matching_directory_and_description()
     {
-        string[] directories = Directory.GetDirectories(Path.Combine(PluginDirectory, "skills"))
+        string[] directories = Directory.GetDirectories(Path.Combine(AssetsDirectory, "skills"))
             .Select(Path.GetFileName)
             .OfType<string>()
             .Order(StringComparer.Ordinal)
@@ -435,10 +435,11 @@ public sealed class SkillLintTests
         string opening = string.Join("\n", lines.Take(firstRule));
 
         Assert.Contains("FrameworkDesignGuidelinesProfile", opening);
+        Assert.Contains("@FDG_RECEIPT@", opening);
         Assert.Contains("SDK-style", opening);
-        Assert.Contains("obj/fdg/marker.json", opening);
-        Assert.Contains("existing style", opening);
-        Assert.Contains("/fdg-setup", opening);
+        Assert.Contains("project command", opening);
+        Assert.Contains("surrounding code's style", opening);
+        Assert.Contains("setup skill", opening);
     }
 
     /// <summary>

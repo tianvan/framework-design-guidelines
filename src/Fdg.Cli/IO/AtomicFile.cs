@@ -46,6 +46,14 @@ public static class AtomicFile
         string temporary = Path.Combine(
             Path.GetDirectoryName(target)!,
             "." + Path.GetFileName(target) + "." + Guid.NewGuid().ToString("N")[..8] + ".tmp");
+        WriteVia(target, temporary, write);
+    }
+
+    internal static void WriteAllBytesVia(string path, string temporary, byte[] bytes) =>
+        WriteVia(path, temporary, stream => stream.Write(bytes));
+
+    private static void WriteVia(string target, string temporary, Action<Stream> write)
+    {
         try
         {
             using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
